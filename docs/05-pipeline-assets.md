@@ -110,6 +110,39 @@ où c'est le **client Discord** qui les rend, avec sa propre police.
 - Toute erreur de rendu est capturée : le joueur reçoit la version texte, jamais
   une erreur.
 
+## Identité visuelle du bot
+
+```bash
+npm run brand
+```
+
+Écrit dans `assets/brand/` :
+
+| Fichier | Taille | Usage |
+|---|---|---|
+| `harvester-avatar.png` | 512 × 512 | Avatar de l'application Discord |
+| `harvester-avatar-256.png` | 256 × 256 | Icône de serveur, favicon |
+| `harvester-banner.png` | 680 × 240 | Bannière de profil de l'application |
+
+Ces images sont dessinées en vectoriel par `src/render/brand.ts`, sans aucun asset
+externe : elles n'engagent donc **aucune licence tierce** et sont régénérables à
+n'importe quelle taille. Ce sont les seules images du dépôt à être commitées, parce
+qu'elles nous appartiennent.
+
+Deux contraintes ont guidé la composition :
+
+- **Discord rogne l'avatar en cercle.** Rien d'important ne sort du disque inscrit,
+  et les angles du carré sont traités comme perdus.
+- **L'avatar doit tenir à 32 px** (liste des membres). D'où un épi de blé en fuseau,
+  dense et centré, plutôt qu'une scène détaillée : c'est la silhouette qui porte la
+  reconnaissance à cette taille, pas le détail.
+
+Le nom et la accroche de la bannière se changent sans toucher au code :
+
+```bash
+BRAND_NAME="MA FERME" BRAND_TAGLINE="Ma propre accroche" npm run brand
+```
+
 ## Prévisualiser sans lancer le bot
 
 ```bash

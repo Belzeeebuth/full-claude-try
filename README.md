@@ -99,7 +99,8 @@ npm run dev           # développement, rechargement à chaud
 Le bot est en ligne. Tapez `/start` dans un serveur où il est invité.
 
 > **Vérification sans rien installer.** `npm run balance:report` et
-> `npm run render:preview` fonctionnent **sans base ni Redis ni token** : le premier
+> `npm run render:preview` fonctionnent **sans base ni Redis ni token** (voir
+> `src/scripts/offline-env.ts`) : le premier
 > imprime toutes les tables d'équilibrage, le second écrit quatre PNG dans `out/`.
 > C'est le moyen le plus rapide de voir ce que le projet produit.
 
@@ -487,6 +488,7 @@ npm run test:coverage    # couverture (seuil 70 % sur src/game/**)
 npm run db:studio        # explorateur de base Drizzle
 npm run balance:report   # tables d'équilibrage
 npm run render:preview   # écrit 4 PNG dans out/
+npm run brand            # régénère l'avatar et la bannière du bot
 npm run commands:clear   # retire les commandes publiées
 ```
 

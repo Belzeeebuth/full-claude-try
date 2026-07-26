@@ -25,6 +25,7 @@
     "db:studio": "drizzle-kit studio",
     "balance:report": "tsx src/scripts/balance-report.ts",
     "render:preview": "tsx src/scripts/render-preview.ts",
+    "brand": "tsx src/scripts/generate-brand.ts",
     "build:assets": "node -e \"const fs=require('fs');fs.cpSync('src/config/gameplay','dist/config/gameplay',{recursive:true,filter:(s)=>!s.endsWith('.ts')});fs.cpSync('src/i18n/locales','dist/i18n/locales',{recursive:true});console.log('assets copiés dans dist/')\""
   },
   "dependencies": {

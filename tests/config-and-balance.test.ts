@@ -263,11 +263,20 @@ describe('custom_id', () => {
 
 describe('utilitaires', () => {
   it('génère des UUID v7 croissants et horodatés', () => {
-    const first = uuidv7();
-    const second = uuidv7();
-    expect(isUuid(first)).toBe(true);
-    expect(first < second || first === second).toBe(true);
-    const timestamp = uuidTimestamp(first);
+    // 5 000 identifiants d'affilée : la boucle tient dans quelques
+    // millisecondes, donc la plupart partagent leur horodatage. C'est
+    // précisément le cas qui compte — comparer deux appels ne prouvait rien,
+    // puisqu'ils tombaient le plus souvent dans des millisecondes différentes.
+    const ids = Array.from({ length: 5_000 }, () => uuidv7());
+
+    for (const id of ids) expect(isUuid(id)).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
+
+    for (let index = 1; index < ids.length; index += 1) {
+      expect(ids[index]! > ids[index - 1]!).toBe(true);
+    }
+
+    const timestamp = uuidTimestamp(ids[0]!);
     expect(timestamp).toBeInstanceOf(Date);
     expect(Math.abs(Date.now() - timestamp!.getTime())).toBeLessThan(5_000);
   });
