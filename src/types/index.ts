@@ -104,15 +104,15 @@ export type CommandCategory =
   | 'admin';
 
 export const CATEGORY_LABELS: Record<CommandCategory, { label: string; emoji: string; description: string }> = {
-  demarrage: { label: 'Démarrage', emoji: '🌱', description: 'Créer et configurer votre ferme' },
-  agriculture: { label: 'Agriculture', emoji: '🌾', description: 'Planter, arroser, récolter' },
-  elevage: { label: 'Élevage', emoji: '🐄', description: 'Animaux, bâtiments, production' },
-  inventaire: { label: 'Inventaire', emoji: '🎒', description: 'Objets, artisanat, transformation' },
-  economie: { label: 'Économie', emoji: '🪙', description: 'Boutique, marché, banque, échanges' },
-  progression: { label: 'Progression', emoji: '⭐', description: 'Quêtes, succès, passe, prestige' },
-  social: { label: 'Social', emoji: '🤝', description: 'Coopératives, classements, visites' },
-  monde: { label: 'Monde', emoji: '🌍', description: 'Météo, saisons, événements' },
-  admin: { label: 'Administration', emoji: '🛠️', description: 'Commandes réservées au staff' },
+  demarrage: { label: 'Getting started', emoji: '🌱', description: 'Create and configure your farm' },
+  agriculture: { label: 'Farming', emoji: '🌾', description: 'Plant, water, harvest' },
+  elevage: { label: 'Livestock', emoji: '🐄', description: 'Animals, buildings, production' },
+  inventaire: { label: 'Inventory', emoji: '🎒', description: 'Items, crafting, processing' },
+  economie: { label: 'Economy', emoji: '🪙', description: 'Shop, market, bank, trading' },
+  progression: { label: 'Progression', emoji: '⭐', description: 'Quests, achievements, pass, prestige' },
+  social: { label: 'Social', emoji: '🤝', description: 'Co-ops, leaderboards, visits' },
+  monde: { label: 'World', emoji: '🌍', description: 'Weather, seasons, events' },
+  admin: { label: 'Administration', emoji: '🛠️', description: 'Staff-only commands' },
 };
 
 /** Gestionnaire de composant (bouton, menu, modal). */

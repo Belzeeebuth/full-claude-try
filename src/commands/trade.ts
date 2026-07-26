@@ -48,10 +48,10 @@ const hdv: Command = {
             .setName('duration')
             .setDescription('Duration in hours')
             .addChoices(
-              { name: '6 heures', value: 6 },
-              { name: '12 heures', value: 12 },
-              { name: '24 heures', value: 24 },
-              { name: '48 heures', value: 48 },
+              { name: '6 hours', value: 6 },
+              { name: '12 hours', value: 12 },
+              { name: '24 hours', value: 24 },
+              { name: '48 hours', value: 48 },
             ),
         ),
     )

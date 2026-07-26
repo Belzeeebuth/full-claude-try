@@ -39,9 +39,9 @@ const boutique: Command = {
         .setName('category')
         .setDescription('Filter the shop')
         .addChoices(
-          { name: '✨ Offres du jour', value: 'daily' },
-          { name: '🌱 Graines', value: 'seeds' },
-          { name: '📦 Fournitures', value: 'supplies' },
+          { name: "✨ Today's deals", value: 'daily' },
+          { name: '🌱 Seeds', value: 'seeds' },
+          { name: '📦 Supplies', value: 'supplies' },
         ),
     )
     .toJSON(),
@@ -195,9 +195,9 @@ const marche: Command = {
         .setName('category')
         .setDescription('Filter by product type')
         .addChoices(
-          { name: '🌾 Récoltes', value: 'harvest' },
-          { name: '🥚 Produits animaux', value: 'animal_product' },
-          { name: '🧀 Produits transformés', value: 'product' },
+          { name: '🌾 Harvests', value: 'harvest' },
+          { name: '🥚 Animal products', value: 'animal_product' },
+          { name: '🧀 Processed goods', value: 'product' },
         ),
     )
     .toJSON(),
@@ -298,15 +298,15 @@ const inventaire: Command = {
         .setName('category')
         .setDescription('Filter')
         .addChoices(
-          { name: '🌱 Graines', value: 'seed' },
-          { name: '🌾 Récoltes', value: 'harvest' },
-          { name: '🥚 Produits animaux', value: 'animal_product' },
-          { name: '🧀 Produits transformés', value: 'product' },
-          { name: '🛠️ Outils', value: 'tool' },
-          { name: '🧪 Consommables', value: 'consumable' },
-          { name: '🪵 Matériaux', value: 'material' },
-          { name: '🎨 Cosmétiques', value: 'cosmetic' },
-          { name: '🎉 Événement', value: 'event' },
+          { name: '🌱 Seeds', value: 'seed' },
+          { name: '🌾 Harvests', value: 'harvest' },
+          { name: '🥚 Animal products', value: 'animal_product' },
+          { name: '🧀 Processed goods', value: 'product' },
+          { name: '🛠️ Tools', value: 'tool' },
+          { name: '🧪 Consumables', value: 'consumable' },
+          { name: '🪵 Materials', value: 'material' },
+          { name: '🎨 Cosmetics', value: 'cosmetic' },
+          { name: '🎉 Event', value: 'event' },
         ),
     )
     .addIntegerOption((option) => option.setName('page').setDescription('Page').setMinValue(1))

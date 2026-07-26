@@ -83,7 +83,7 @@ const profil: Command = {
 
     if (!image.attachment) {
       embed.addFields(
-        { name: '🌾 Récoltes', value: formatNumber(profile.user.totalHarvests), inline: true },
+        { name: '🌾 Harvests', value: formatNumber(profile.user.totalHarvests), inline: true },
         { name: '🐄 Animaux élevés', value: formatNumber(profile.user.totalAnimalsRaised), inline: true },
         { name: '🛠️ Objets fabriqués', value: formatNumber(profile.user.totalCrafts), inline: true },
         { name: '🗺️ Parcelles', value: `${profile.plotsUnlocked}/64`, inline: true },
@@ -248,7 +248,7 @@ const parametres: Command = {
     .addStringOption((option) =>
       option
         .setName('language')
-        .setDescription('Langue de l\'interface')
+        .setDescription('Interface language')
         .addChoices({ name: 'Français', value: 'fr' }, { name: 'English', value: 'en' }),
     )
     .addStringOption((option) =>
@@ -256,9 +256,9 @@ const parametres: Command = {
         .setName('privacy')
         .setDescription('Who can see your farm?')
         .addChoices(
-          { name: 'Tout le monde', value: 'public' },
-          { name: 'Ma coopérative', value: 'coop_only' },
-          { name: 'Personne', value: 'private' },
+          { name: 'Everyone', value: 'public' },
+          { name: 'My co-op', value: 'coop_only' },
+          { name: 'Nobody', value: 'private' },
         ),
     )
     .addStringOption((option) =>

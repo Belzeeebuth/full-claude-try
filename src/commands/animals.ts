@@ -69,7 +69,7 @@ const acheterAnimal: Command = {
       option.setName('species').setDescription("The species to buy").setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
-      option.setName('quantity').setDescription('Nombre d\'animaux (max 10)').setMinValue(1).setMaxValue(10),
+      option.setName('quantity').setDescription('How many animals (max 10)').setMinValue(1).setMaxValue(10),
     )
     .toJSON(),
 

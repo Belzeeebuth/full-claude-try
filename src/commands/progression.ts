@@ -28,10 +28,10 @@ const quetes: Command = {
         .setName('type')
         .setDescription('Filter')
         .addChoices(
-          { name: '📅 Journalières', value: 'daily' },
-          { name: '🗓️ Hebdomadaires', value: 'weekly' },
-          { name: '📖 Histoire', value: 'story' },
-          { name: '📦 Contrats', value: 'contract' },
+          { name: '📅 Daily', value: 'daily' },
+          { name: '🗓️ Weekly', value: 'weekly' },
+          { name: '📖 Story', value: 'story' },
+          { name: '📦 Contracts', value: 'contract' },
         ),
     )
     .toJSON(),
@@ -116,14 +116,14 @@ const succes: Command = {
         .setName('category')
         .setDescription('Filter')
         .addChoices(
-          { name: '🌾 Agriculture', value: 'agriculture' },
-          { name: '🐄 Élevage', value: 'elevage' },
-          { name: '🛠️ Artisanat', value: 'artisanat' },
-          { name: '💰 Économie', value: 'economie' },
+          { name: '🌾 Farming', value: 'agriculture' },
+          { name: '🐄 Livestock', value: 'elevage' },
+          { name: '🛠️ Crafting', value: 'artisanat' },
+          { name: '💰 Economy', value: 'economie' },
           { name: '⭐ Progression', value: 'progression' },
           { name: '🤝 Social', value: 'social' },
-          { name: '🔥 Fidélité', value: 'fidelite' },
-          { name: '🗺️ Domaine', value: 'domaine' },
+          { name: '🔥 Loyalty', value: 'fidelite' },
+          { name: '🗺️ Estate', value: 'domaine' },
         ),
     )
     .toJSON(),

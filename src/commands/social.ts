@@ -78,9 +78,9 @@ const coop: Command = {
             .setDescription('New rank')
             .setRequired(true)
             .addChoices(
-              { name: 'Chef (transmet la direction)', value: 'owner' },
-              { name: 'Officier', value: 'officer' },
-              { name: 'Membre', value: 'member' },
+              { name: 'Owner (transfers leadership)', value: 'owner' },
+              { name: 'Officer', value: 'officer' },
+              { name: 'Member', value: 'member' },
             ),
         ),
     )
@@ -277,13 +277,13 @@ const classement: Command = {
         .setName('type')
         .setDescription('Leaderboard type')
         .addChoices(
-          { name: '🪙 Richesse', value: 'wealth' },
-          { name: '⭐ Expérience', value: 'level' },
-          { name: '🌾 Récoltes', value: 'harvests' },
-          { name: '🐄 Élevage', value: 'animals' },
-          { name: '🛠️ Artisanat', value: 'crafts' },
-          { name: '📈 XP de la semaine', value: 'weekly_xp' },
-          { name: '🤝 Coopératives', value: 'coop_score' },
+          { name: '🪙 Wealth', value: 'wealth' },
+          { name: '⭐ Experience', value: 'level' },
+          { name: '🌾 Harvests', value: 'harvests' },
+          { name: '🐄 Livestock', value: 'animals' },
+          { name: '🛠️ Crafting', value: 'crafts' },
+          { name: '📈 Weekly XP', value: 'weekly_xp' },
+          { name: '🤝 Co-ops', value: 'coop_score' },
         ),
     )
     .addStringOption((option) =>
@@ -292,8 +292,8 @@ const classement: Command = {
         .setDescription('Leaderboard scope')
         .addChoices(
           { name: '🌍 Global', value: 'global' },
-          { name: '🏠 Ce serveur', value: 'discord' },
-          { name: '🤝 Ma coopérative', value: 'coop' },
+          { name: '🏠 This server', value: 'discord' },
+          { name: '🤝 My co-op', value: 'coop' },
         ),
     )
     .toJSON(),

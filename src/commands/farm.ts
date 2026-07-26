@@ -287,9 +287,9 @@ const fertiliser: Command = {
         .setDescription("The fertilizer type")
         .setRequired(true)
         .addChoices(
-          { name: '💩 Engrais simple (+15 fertilité, +10 % rendement)', value: 'fertilizer_basic' },
-          { name: '🧪 Engrais de qualité (+25 fertilité, +15 % qualité)', value: 'fertilizer_quality' },
-          { name: '✨ Engrais suprême (+40 fertilité, +25 % des deux)', value: 'fertilizer_deluxe' },
+          { name: '💩 Basic fertilizer (+15 fertility, +10% yield)', value: 'fertilizer_basic' },
+          { name: '🧪 Quality fertilizer (+25 fertility, +15% quality)', value: 'fertilizer_quality' },
+          { name: '✨ Deluxe fertilizer (+40 fertility, +25% both)', value: 'fertilizer_deluxe' },
         ),
     )
     .addIntegerOption((option) =>
@@ -431,12 +431,12 @@ const cultures: Command = {
         .setName('rarity')
         .setDescription('Filter by rarity')
         .addChoices(
-          { name: 'Commune', value: 'common' },
-          { name: 'Peu commune', value: 'uncommon' },
+          { name: 'Common', value: 'common' },
+          { name: 'Uncommon', value: 'uncommon' },
           { name: 'Rare', value: 'rare' },
-          { name: 'Épique', value: 'epic' },
-          { name: 'Légendaire', value: 'legendary' },
-          { name: 'Mythique', value: 'mythic' },
+          { name: 'Epic', value: 'epic' },
+          { name: 'Legendary', value: 'legendary' },
+          { name: 'Mythic', value: 'mythic' },
         ),
     )
     .addStringOption((option) =>
@@ -444,10 +444,10 @@ const cultures: Command = {
         .setName('season')
         .setDescription('Filter by season')
         .addChoices(
-          { name: 'Printemps', value: 'spring' },
-          { name: 'Été', value: 'summer' },
-          { name: 'Automne', value: 'autumn' },
-          { name: 'Hiver', value: 'winter' },
+          { name: 'Spring', value: 'spring' },
+          { name: 'Summer', value: 'summer' },
+          { name: 'Autumn', value: 'autumn' },
+          { name: 'Winter', value: 'winter' },
         ),
     )
     .toJSON(),

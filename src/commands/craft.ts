@@ -74,14 +74,14 @@ const recettes: Command = {
         .setName('category')
         .setDescription('Filter by workshop')
         .addChoices(
-          { name: '🌬️ Boulangerie', value: 'boulangerie' },
-          { name: '🫙 Conserverie', value: 'conserverie' },
-          { name: '🧈 Laiterie', value: 'laiterie' },
-          { name: '🍺 Brasserie', value: 'brasserie' },
-          { name: '🫗 Huilerie', value: 'huilerie' },
-          { name: '🔥 Fumoir', value: 'fumoir' },
-          { name: '🍬 Confiserie', value: 'confiserie' },
-          { name: '🛠️ Atelier', value: 'atelier' },
+          { name: '🌬️ Bakery', value: 'boulangerie' },
+          { name: '🫙 Cannery', value: 'conserverie' },
+          { name: '🧈 Dairy', value: 'laiterie' },
+          { name: '🍺 Brewery', value: 'brasserie' },
+          { name: '🫗 Oil press', value: 'huilerie' },
+          { name: '🔥 Smokehouse', value: 'fumoir' },
+          { name: '🍬 Confectionery', value: 'confiserie' },
+          { name: '🛠️ Workshop', value: 'atelier' },
         ),
     )
     .toJSON(),

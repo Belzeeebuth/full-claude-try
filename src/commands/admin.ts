@@ -35,11 +35,11 @@ const admin: Command = {
             .setDescription('Resource type')
             .setRequired(true)
             .addChoices(
-              { name: 'Pièces', value: 'coins' },
-              { name: 'Gemmes', value: 'gems' },
+              { name: 'Coins', value: 'coins' },
+              { name: 'Gems', value: 'gems' },
               { name: 'XP', value: 'xp' },
-              { name: 'Énergie', value: 'energy' },
-              { name: 'Objet', value: 'item' },
+              { name: 'Energy', value: 'energy' },
+              { name: 'Item', value: 'item' },
             ),
         )
         .addIntegerOption((option) =>
@@ -59,9 +59,9 @@ const admin: Command = {
             .setDescription('Resource type')
             .setRequired(true)
             .addChoices(
-              { name: 'Pièces', value: 'coins' },
-              { name: 'Gemmes', value: 'gems' },
-              { name: 'Objet', value: 'item' },
+              { name: 'Coins', value: 'coins' },
+              { name: 'Gems', value: 'gems' },
+              { name: 'Item', value: 'item' },
             ),
         )
         .addIntegerOption((option) =>
@@ -100,7 +100,7 @@ const admin: Command = {
             .setName('enabled')
             .setDescription('Turn on or off')
             .setRequired(true)
-            .addChoices({ name: 'Activer', value: 'on' }, { name: 'Désactiver', value: 'off' }),
+            .addChoices({ name: 'On', value: 'on' }, { name: 'Off', value: 'off' }),
         )
         .addStringOption((option) => option.setName('message').setDescription('Message shown to players')),
     )

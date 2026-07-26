@@ -8,6 +8,9 @@ import { defineConfig } from 'vitest/config';
  */
 export default defineConfig({
   test: {
+    // Renseigne les variables obligatoires avant que src/config/env.ts ne les
+    // valide : les tests chargent le registre sans infrastructure réelle.
+    setupFiles: ['tests/setup-env.ts'],
     environment: 'node',
     include: ['tests/**/*.test.ts'],
     globals: false,

@@ -30,3 +30,7 @@ for (const [key, value] of Object.entries(PLACEHOLDERS)) {
 // Un script hors-ligne ne doit pas polluer la sortie avec des journaux JSON :
 // c'est le rendu ou le rapport qu'on veut lire.
 if (!process.env.LOG_LEVEL) process.env.LOG_LEVEL = 'warn';
+
+// Marque le fichier comme module : sans cela TypeScript le traite comme un
+// script global, et deux préambules déclarant `PLACEHOLDERS` entrent en conflit.
+export {};

@@ -216,10 +216,13 @@ cp .env.example .env && $EDITOR .env
 # Infrastructure
 docker compose up -d db redis
 
-# Schéma et données de configuration
-docker compose run --rm bot npm run db:migrate
-docker compose run --rm bot npm run db:seed
-docker compose run --rm bot npm run commands:deploy
+# Schéma et données de configuration.
+# Noter le suffixe `:prod` : l'image finale ne contient ni `tsx` (devDependency)
+# ni les sources TypeScript, uniquement `dist/`. Les variantes sans suffixe sont
+# réservées au développement.
+docker compose run --rm bot npm run db:migrate:prod
+docker compose run --rm bot npm run db:seed:prod
+docker compose run --rm bot npm run commands:deploy:prod
 
 # Tout démarrer
 docker compose up -d
@@ -244,7 +247,7 @@ nécessite **pas** de reconstruire l'image.
 ```bash
 git pull
 docker compose build bot
-docker compose run --rm bot npm run db:migrate   # si une migration est arrivée
+docker compose run --rm bot npm run db:migrate:prod   # si une migration est arrivée
 docker compose up -d bot
 ```
 
@@ -255,9 +258,9 @@ docker compose up -d bot
 ```bash
 npm ci --omit=dev        # dépendances de production
 npm run build            # compile vers dist/ et copie config + traductions
-npm run db:migrate
-npm run db:seed
-npm run commands:deploy
+npm run db:migrate:prod
+npm run db:seed:prod
+npm run commands:deploy:prod
 ```
 
 ### PM2
@@ -534,6 +537,8 @@ Aucune ligne de code à écrire.
 | **Les commandes n'apparaissent pas** | Les commandes globales mettent jusqu'à 1 h à se propager. Définissez `DISCORD_DEV_GUILD_ID` et relancez `npm run commands:deploy` : la publication par serveur est instantanée. Vérifiez aussi que le scope `applications.commands` était bien coché à l'invitation. |
 | **`Invalid environment` au démarrage** | Zod indique le champ fautif et pourquoi. Comparez avec `.env.example`. |
 | **`ECONNREFUSED` PostgreSQL/Redis** | Services non démarrés (`docker compose up -d db redis`) ou `DATABASE_URL`/`REDIS_URL` pointant vers `localhost` depuis un conteneur — utilisez `db` et `redis`. |
+| **`tsx: not found`** | Vous avez lancé un script de développement dans l'image de production. Celle-ci ne contient que `dist/` : utilisez les variantes `db:migrate:prod`, `db:seed:prod`, `commands:deploy:prod`. |
+| **`failed to bind host port`** | Un autre service occupe déjà 6379 ou 5432 sur l'hôte (Redis système, autre pile Docker). Le port publié ne sert qu'à vous connecter depuis l'hôte : changez-le dans `.env` (`REDIS_PORT=6380`, `POSTGRES_PORT=5433`). Le bot passe par le réseau Docker interne et n'est pas concerné. |
 | **`relation "users" does not exist`** | `npm run db:migrate` n'a pas été exécuté. |
 | **Le migrateur refuse de démarrer** | Un fichier `.sql` déjà appliqué a été modifié : le hash ne correspond plus. C'est intentionnel. Restaurez le fichier et créez une **nouvelle** migration. |
 | **Emoji en carrés dans les images** | Police couleur absente : `apt install fonts-noto-color-emoji`. Les indicateurs critiques (prêt, arrosage, nuisibles, météo, monnaies) sont dessinés en vectoriel et ne sont **jamais** affectés. |

@@ -20,6 +20,23 @@ import {
 } from '../src/utils/time';
 import frCatalog from '../src/i18n/locales/fr.json';
 import enCatalog from '../src/i18n/locales/en.json';
+// Import STATIQUE de chaque module de commandes. Le registre les charge en
+// production par `require` dynamique sur le système de fichiers, ce que le
+// résolveur de vitest ne sait pas suivre ; ici l'objectif est de contrôler les
+// payloads, pas le chargeur.
+import * as adminModule from '../src/commands/admin';
+import * as animalsModule from '../src/commands/animals';
+import * as contextMenusModule from '../src/commands/context-menus';
+import * as craftModule from '../src/commands/craft';
+import * as economyModule from '../src/commands/economy';
+import * as farmModule from '../src/commands/farm';
+import * as languageModule from '../src/commands/language';
+import * as profileModule from '../src/commands/profile';
+import * as progressionModule from '../src/commands/progression';
+import * as socialModule from '../src/commands/social';
+import * as startModule from '../src/commands/start';
+import * as tradeModule from '../src/commands/trade';
+import * as worldModule from '../src/commands/world';
 
 const config = getConfig();
 const balance = getBalance();
@@ -367,5 +384,85 @@ describe('internationalisation', () => {
     };
 
     walk(frCatalog, enCatalog);
+  });
+});
+
+describe('commandes Discord', () => {
+  /**
+   * Ce test sérialise les commandes EXACTEMENT comme elles partent vers l'API
+   * Discord, puis contrôle deux choses que le typage ne peut pas garantir :
+   * les limites de l'API, et l'absence de français résiduel.
+   *
+   * Contrôler le payload plutôt que le code source n'est pas un détail : les
+   * catégories d'aide sont construites dynamiquement depuis `CATEGORY_LABELS`,
+   * donc invisibles à toute recherche de littéral dans `src/commands/`. C'est
+   * précisément par là que trois libellés français étaient passés.
+   */
+  const modules: Array<Record<string, unknown>> = [
+    adminModule, animalsModule, contextMenusModule, craftModule, economyModule,
+    farmModule, languageModule, profileModule, progressionModule, socialModule,
+    startModule, tradeModule, worldModule,
+  ] as Array<Record<string, unknown>>;
+
+  const payloads = modules.flatMap((module) => [
+    ...((module.commands ?? []) as Array<{ data: { name: string } }>),
+    ...((module.contextMenus ?? []) as Array<{ data: { name: string } }>),
+  ].map((entry) => entry.data));
+
+  const walk = (node: unknown, path: string, visit: (n: never, p: string) => void): void => {
+    const value = node as { name?: string; options?: unknown[] };
+    visit(node as never, path);
+    for (const option of value.options ?? []) {
+      visit(option as never, `${path} ${(option as { name?: string }).name ?? '?'}`);
+      walk(option, `${path} ${(option as { name?: string }).name ?? '?'}`, visit);
+    }
+  };
+
+  it('respecte les limites de nommage de l\'API Discord', () => {
+    const problems: string[] = [];
+    for (const payload of payloads) {
+      // type 2/3 = menus contextuels : ils acceptent espaces et majuscules.
+      const isContextMenu = (payload as { type?: number }).type === 2
+        || (payload as { type?: number }).type === 3;
+      if (!isContextMenu && !/^[-_a-z0-9]{1,32}$/u.test(payload.name)) {
+        problems.push(`nom invalide : ${payload.name}`);
+      }
+      walk(payload, `/${payload.name}`, (node, path) => {
+        const description = (node as { description?: string }).description;
+        if (description !== undefined && (description.length < 1 || description.length > 100)) {
+          problems.push(`${path} : description de ${description.length} caractères`);
+        }
+      });
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it('n\'expose plus aucune chaîne française', () => {
+    const FRENCH = /[éèêàùôûçÉÈÀîïœ]|\b(le|la|les|des|une|vos|votre|pour|avec|dans|par)\b/;
+    // Le sélecteur de langue affiche chaque langue DANS sa propre langue :
+    // « Français » y est correct, pas un oubli de traduction.
+    const languagePicker = new Set(['fr', 'en']);
+    const problems: string[] = [];
+
+    for (const payload of payloads) {
+      walk(payload, `/${payload.name}`, (node, path) => {
+        const typed = node as { description?: string; choices?: Array<{ name: string; value: unknown }> };
+        if (typed.description && FRENCH.test(typed.description)) {
+          problems.push(`${path} description : ${typed.description}`);
+        }
+        for (const choice of typed.choices ?? []) {
+          if (FRENCH.test(String(choice.name)) && !languagePicker.has(String(choice.value))) {
+            problems.push(`${path} choix : ${choice.name}`);
+          }
+        }
+      });
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it('charge les 62 commandes sans doublon', () => {
+    const names = payloads.map((payload) => payload.name);
+    expect(new Set(names).size).toBe(names.length);
+    expect(names.length).toBeGreaterThanOrEqual(60);
   });
 });
