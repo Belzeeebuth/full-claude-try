@@ -154,6 +154,7 @@ export function deriveCropItems(crops: CropConfig[]): ItemConfig[] {
       itemSchema.parse({
         key: seedKeyOf(crop.key),
         name: `Graines de ${crop.name.toLowerCase()}`,
+        nameEn: `${crop.nameEn ?? crop.name} seeds`,
         emoji: crop.emoji,
         category: 'seed',
         rarity: crop.rarity,
@@ -163,12 +164,14 @@ export function deriveCropItems(crops: CropConfig[]): ItemConfig[] {
         requiredLevel: crop.requiredLevel,
         sourceKey: crop.key,
         description: `Se plante avec /plant. Pousse en ${Math.round(crop.growthSeconds / 60)} min.`,
+        descriptionEn: `Sow it with /plant. Grows in ${Math.round(crop.growthSeconds / 60)} min.`,
         sortOrder: 100_000 + crop.sortOrder,
         enabled: crop.enabled,
       }),
       itemSchema.parse({
         key: harvestKeyOf(crop.key),
         name: crop.name,
+        ...(crop.nameEn ? { nameEn: crop.nameEn } : {}),
         emoji: crop.emoji,
         category: 'harvest',
         rarity: crop.rarity,
@@ -177,7 +180,9 @@ export function deriveCropItems(crops: CropConfig[]): ItemConfig[] {
         marketTracked: true,
         requiredLevel: crop.requiredLevel,
         sourceKey: crop.key,
-        description: crop.description ?? `Harvested ${crop.name.toLowerCase()}.`,
+        description: crop.description ?? `Récolte de ${crop.name.toLowerCase()}.`,
+        descriptionEn:
+          crop.descriptionEn ?? `Harvested ${(crop.nameEn ?? crop.name).toLowerCase()}.`,
         sortOrder: 200_000 + crop.sortOrder,
         enabled: crop.enabled,
       }),
@@ -407,10 +412,85 @@ function build(): GameConfig {
   return { ...config, loadedAt: new Date() };
 }
 
-let current: GameConfig | undefined;
+// ---------------------------------------------------------------------------
+// LOCALISATION DU CONTENU
+// ---------------------------------------------------------------------------
 
-/** Configuration courante (chargée à la première utilisation). */
-export function getConfig(): GameConfig {
+/**
+ * Le contenu est bilingue : chaque entrée porte `name`/`description` (français,
+ * la référence) et éventuellement `nameEn`/`descriptionEn`.
+ *
+ * Plutôt que de faire résoudre la langue par les ~140 points d'affichage, on
+ * construit UNE VARIANTE COMPLÈTE de la configuration par langue au chargement.
+ * `getConfig('en')` renvoie des entrées dont `name` contient déjà l'anglais :
+ * tout le code appelant continue d'écrire `crop.name`, sans rien savoir de la
+ * localisation.
+ *
+ * Le coût est négligeable — quelques centaines d'objets figés, construits une
+ * fois — et le bénéfice est qu'aucun appel ne peut oublier de traduire.
+ */
+type Localizable = Record<string, unknown>;
+
+/** Remplace `name`/`title`/`description` par leur pendant anglais s'il existe. */
+function localizeEntry<T>(entry: T): T {
+  const source = entry as Localizable;
+  const out: Localizable = { ...source };
+  for (const field of ['name', 'title', 'description'] as const) {
+    const translated = source[`${field}En`];
+    if (typeof translated === 'string' && translated.length > 0) {
+      out[field] = translated;
+    }
+  }
+  return out as T;
+}
+
+function localizeList<T extends { key: string }>(list: T[]): T[] {
+  return list.map(localizeEntry);
+}
+
+/** Dérive la variante anglaise d'une configuration déjà validée. */
+function localizeConfig(config: GameConfig): GameConfig {
+  const cropList = localizeList(config.cropList);
+  const animalList = localizeList(config.animalList);
+  const itemList = localizeList(config.itemList);
+  const recipeList = localizeList(config.recipeList);
+  const buildingList = localizeList(config.buildingList);
+  const questList = localizeList(config.questList);
+  const achievementList = localizeList(config.achievementList);
+  const eventList = localizeList(config.eventList);
+
+  return {
+    ...config,
+    crops: indexBy(cropList),
+    cropList,
+    animals: indexBy(animalList),
+    animalList,
+    items: indexBy(itemList),
+    itemList,
+    recipes: indexBy(recipeList),
+    recipeList,
+    buildings: indexBy(buildingList),
+    buildingList,
+    quests: indexBy(questList),
+    questList,
+    achievements: indexBy(achievementList),
+    achievementList,
+    events: indexBy(eventList),
+    eventList,
+  };
+}
+
+let current: GameConfig | undefined;
+let currentEn: GameConfig | undefined;
+
+/**
+ * Configuration courante, dans la langue demandée.
+ *
+ * Sans argument, renvoie la version française — la référence. Les appels qui
+ * disposent d'une locale (commandes, composants, rendu) passent `context.locale`
+ * et obtiennent des noms de contenu déjà traduits.
+ */
+export function getConfig(locale?: string): GameConfig {
   if (!current) {
     current = build();
     log.info(
@@ -424,8 +504,12 @@ export function getConfig(): GameConfig {
         achievements: current.achievementList.length,
         events: current.eventList.length,
       },
-      'configuration de gameplay chargée',
+      'gameplay configuration loaded',
     );
+  }
+  if (locale?.startsWith('en')) {
+    currentEn ??= localizeConfig(current);
+    return currentEn;
   }
   return current;
 }
@@ -437,7 +521,11 @@ export function getConfig(): GameConfig {
 export function reloadConfig(): GameConfig {
   const next = build();
   current = next;
-  log.warn({ loadedAt: next.loadedAt }, 'configuration de gameplay rechargée à chaud');
+  // La variante anglaise est dérivée de la française : elle doit être invalidée
+  // en même temps, sinon un rechargement laisserait les anglophones sur
+  // l'ancien contenu.
+  currentEn = undefined;
+  log.warn({ loadedAt: next.loadedAt }, 'gameplay configuration hot-reloaded');
   return next;
 }
 

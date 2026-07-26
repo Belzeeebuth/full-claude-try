@@ -2,61 +2,167 @@
   {
     "key": "autumn_harvest",
     "name": "Moisson d'automne",
+    "nameEn": "Autumn Harvest",
     "description": "Le village fête les récoltes : les citrouilles doublent de valeur et chaque récolte rapporte des jetons citrouille.",
+    "descriptionEn": "The village celebrates the harvest: pumpkins double in value and every harvest yields pumpkin tokens.",
     "type": "seasonal",
     "recurringCron": "0 0 1 10 *",
     "banner": "event_autumn",
     "currencyItemKey": "pumpkin_token",
     "modifiers": {
-      "cropPriceMultipliers": { "pumpkin": 2.0, "pumpkin_pie": 2.0, "corn": 1.3 },
+      "cropPriceMultipliers": {
+        "pumpkin": 2.0,
+        "pumpkin_pie": 2.0,
+        "corn": 1.3
+      },
       "xpMultiplier": 1.25,
       "tokenPerHarvest": 1,
       "growthMultiplier": 1.1
     },
     "rewardTiers": [
-      { "points": 25, "rewards": { "coins": 5000, "items": [{ "itemKey": "fertilizer_quality", "quantity": 3 }] } },
-      { "points": 75, "rewards": { "coins": 20000, "gems": 5 } },
-      { "points": 150, "rewards": { "coins": 60000, "items": [{ "itemKey": "theme_autumn", "quantity": 1 }] } },
-      { "points": 300, "rewards": { "coins": 150000, "gems": 20, "title": "Roi de la Moisson" } }
+      {
+        "points": 25,
+        "rewards": {
+          "coins": 5000,
+          "items": [
+            {
+              "itemKey": "fertilizer_quality",
+              "quantity": 3
+            }
+          ]
+        }
+      },
+      {
+        "points": 75,
+        "rewards": {
+          "coins": 20000,
+          "gems": 5
+        }
+      },
+      {
+        "points": 150,
+        "rewards": {
+          "coins": 60000,
+          "items": [
+            {
+              "itemKey": "theme_autumn",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      {
+        "points": 300,
+        "rewards": {
+          "coins": 150000,
+          "gems": 20,
+          "title": "Roi de la Moisson"
+        }
+      }
     ],
     "shopItems": [
-      { "itemKey": "fertilizer_deluxe", "price": 8, "currencyItemKey": "pumpkin_token", "stock": 10 },
-      { "itemKey": "seed_pumpkin", "price": 2, "currencyItemKey": "pumpkin_token", "stock": 40 },
-      { "itemKey": "theme_autumn", "price": 60, "currencyItemKey": "pumpkin_token", "stock": 1 }
+      {
+        "itemKey": "fertilizer_deluxe",
+        "price": 8,
+        "currencyItemKey": "pumpkin_token",
+        "stock": 10
+      },
+      {
+        "itemKey": "seed_pumpkin",
+        "price": 2,
+        "currencyItemKey": "pumpkin_token",
+        "stock": 40
+      },
+      {
+        "itemKey": "theme_autumn",
+        "price": 60,
+        "currencyItemKey": "pumpkin_token",
+        "stock": 1
+      }
     ],
     "enabled": true
   },
   {
     "key": "christmas_market",
     "name": "Marché de Noël",
+    "nameEn": "Christmas Market",
     "description": "Chalets, vin chaud et flocons givrés : les produits transformés se vendent 40 % plus cher.",
+    "descriptionEn": "Chalets, mulled wine and frosted snowflakes: processed goods sell for 40% more.",
     "type": "seasonal",
     "recurringCron": "0 0 10 12 *",
     "banner": "event_winter",
     "currencyItemKey": "snowflake_token",
     "modifiers": {
-      "categoryPriceMultipliers": { "product": 1.4 },
+      "categoryPriceMultipliers": {
+        "product": 1.4
+      },
       "xpMultiplier": 1.25,
       "tokenPerCraft": 2,
       "dailyRewardMultiplier": 2
     },
     "rewardTiers": [
-      { "points": 30, "rewards": { "coins": 8000 } },
-      { "points": 90, "rewards": { "coins": 30000, "gems": 8 } },
-      { "points": 180, "rewards": { "coins": 90000, "items": [{ "itemKey": "theme_winter", "quantity": 1 }] } },
-      { "points": 360, "rewards": { "coins": 250000, "gems": 30, "title": "Esprit de Noël" } }
+      {
+        "points": 30,
+        "rewards": {
+          "coins": 8000
+        }
+      },
+      {
+        "points": 90,
+        "rewards": {
+          "coins": 30000,
+          "gems": 8
+        }
+      },
+      {
+        "points": 180,
+        "rewards": {
+          "coins": 90000,
+          "items": [
+            {
+              "itemKey": "theme_winter",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      {
+        "points": 360,
+        "rewards": {
+          "coins": 250000,
+          "gems": 30,
+          "title": "Esprit de Noël"
+        }
+      }
     ],
     "shopItems": [
-      { "itemKey": "growth_booster", "price": 6, "currencyItemKey": "snowflake_token", "stock": 15 },
-      { "itemKey": "xp_booster", "price": 5, "currencyItemKey": "snowflake_token", "stock": 15 },
-      { "itemKey": "banner_starry", "price": 90, "currencyItemKey": "snowflake_token", "stock": 1 }
+      {
+        "itemKey": "growth_booster",
+        "price": 6,
+        "currencyItemKey": "snowflake_token",
+        "stock": 15
+      },
+      {
+        "itemKey": "xp_booster",
+        "price": 5,
+        "currencyItemKey": "snowflake_token",
+        "stock": 15
+      },
+      {
+        "itemKey": "banner_starry",
+        "price": 90,
+        "currencyItemKey": "snowflake_token",
+        "stock": 1
+      }
     ],
     "enabled": true
   },
   {
     "key": "spring_festival",
     "name": "Fête du printemps",
+    "nameEn": "Spring Festival",
     "description": "Tout pousse 25 % plus vite et les mutations sont deux fois plus fréquentes.",
+    "descriptionEn": "Everything grows 25% faster and mutations are twice as frequent.",
     "type": "seasonal",
     "recurringCron": "0 0 20 3 *",
     "banner": "event_spring",
@@ -68,21 +174,62 @@
       "qualityBonus": 0.1
     },
     "rewardTiers": [
-      { "points": 20, "rewards": { "coins": 4000 } },
-      { "points": 60, "rewards": { "coins": 18000, "gems": 5 } },
-      { "points": 140, "rewards": { "coins": 55000, "items": [{ "itemKey": "banner_sunset", "quantity": 1 }] } },
-      { "points": 280, "rewards": { "coins": 140000, "gems": 18, "title": "Enfant du Printemps" } }
+      {
+        "points": 20,
+        "rewards": {
+          "coins": 4000
+        }
+      },
+      {
+        "points": 60,
+        "rewards": {
+          "coins": 18000,
+          "gems": 5
+        }
+      },
+      {
+        "points": 140,
+        "rewards": {
+          "coins": 55000,
+          "items": [
+            {
+              "itemKey": "banner_sunset",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      {
+        "points": 280,
+        "rewards": {
+          "coins": 140000,
+          "gems": 18,
+          "title": "Enfant du Printemps"
+        }
+      }
     ],
     "shopItems": [
-      { "itemKey": "luck_ticket", "price": 4, "currencyItemKey": "spring_petal", "stock": 20 },
-      { "itemKey": "fertilizer_deluxe", "price": 7, "currencyItemKey": "spring_petal", "stock": 12 }
+      {
+        "itemKey": "luck_ticket",
+        "price": 4,
+        "currencyItemKey": "spring_petal",
+        "stock": 20
+      },
+      {
+        "itemKey": "fertilizer_deluxe",
+        "price": 7,
+        "currencyItemKey": "spring_petal",
+        "stock": 12
+      }
     ],
     "enabled": true
   },
   {
     "key": "drought",
     "name": "Sécheresse",
+    "nameEn": "Drought",
     "description": "Trois jours sans pluie : les cultures ont besoin de deux fois plus d'eau, mais le marché s'affole et les prix grimpent.",
+    "descriptionEn": "Three days without rain: crops need twice as much water, but the market panics and prices climb.",
     "type": "disaster",
     "recurringCron": "0 0 5 7 *",
     "banner": "event_drought",
@@ -93,20 +240,48 @@
       "forcedWeather": "heatwave"
     },
     "rewardTiers": [
-      { "points": 40, "rewards": { "coins": 15000, "items": [{ "itemKey": "watering_can_magic", "quantity": 2 }] } },
-      { "points": 120, "rewards": { "coins": 60000, "gems": 10, "title": "Survivant de la Sécheresse" } }
+      {
+        "points": 40,
+        "rewards": {
+          "coins": 15000,
+          "items": [
+            {
+              "itemKey": "watering_can_magic",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      {
+        "points": 120,
+        "rewards": {
+          "coins": 60000,
+          "gems": 10,
+          "title": "Survivant de la Sécheresse"
+        }
+      }
     ],
-    "shopItems": [{ "itemKey": "watering_can_magic", "price": 450, "stock": 30 }],
+    "shopItems": [
+      {
+        "itemKey": "watering_can_magic",
+        "price": 450,
+        "stock": 30
+      }
+    ],
     "enabled": true
   },
   {
     "key": "double_weekend",
     "name": "Week-end doublé",
+    "nameEn": "Double Weekend",
     "description": "Toute l'XP est doublée du vendredi soir au dimanche minuit.",
+    "descriptionEn": "All XP is doubled from Friday evening to Sunday midnight.",
     "type": "weekend",
     "recurringCron": "0 18 * * 5",
     "banner": "event_weekend",
-    "modifiers": { "xpMultiplier": 2.0 },
+    "modifiers": {
+      "xpMultiplier": 2.0
+    },
     "rewardTiers": [],
     "shopItems": [],
     "enabled": true
@@ -114,7 +289,9 @@
   {
     "key": "dragon_awakening",
     "name": "Réveil du dragon",
+    "nameEn": "Dragon Awakening",
     "description": "Un œuf de dragon a été trouvé dans la montagne. Réunissez 10 fragments pour obtenir un dragonnet.",
+    "descriptionEn": "A dragon egg was found in the mountain. Gather 10 fragments to obtain a dragonet.",
     "type": "community",
     "banner": "event_dragon",
     "currencyItemKey": "dragon_egg_fragment",
@@ -123,8 +300,26 @@
       "xpMultiplier": 1.15
     },
     "rewardTiers": [
-      { "points": 10, "rewards": { "items": [{ "itemKey": "dragon_egg_fragment", "quantity": 1 }] } },
-      { "points": 100, "rewards": { "coins": 300000, "gems": 50, "animalKey": "dragonet", "title": "Dompteur de dragon" } }
+      {
+        "points": 10,
+        "rewards": {
+          "items": [
+            {
+              "itemKey": "dragon_egg_fragment",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      {
+        "points": 100,
+        "rewards": {
+          "coins": 300000,
+          "gems": 50,
+          "animalKey": "dragonet",
+          "title": "Dompteur de dragon"
+        }
+      }
     ],
     "shopItems": [],
     "enabled": false

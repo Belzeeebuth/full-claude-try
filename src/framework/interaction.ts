@@ -70,7 +70,7 @@ export async function buildContext(
   const locale = normalizeLocale(result.player.locale);
   return {
     player: result.player,
-    config: getConfig(),
+    config: getConfig(locale),
     balance: getBalance(),
     discordGuildId: interaction.guildId ?? undefined,
     locale,
@@ -102,7 +102,7 @@ function guestContext(interaction: Interaction): CommandContext {
   };
   return {
     player: guest,
-    config: getConfig(),
+    config: getConfig(locale),
     balance: getBalance(),
     discordGuildId: interaction.guildId ?? undefined,
     locale,

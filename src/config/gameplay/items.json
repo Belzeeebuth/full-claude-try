@@ -2,6 +2,7 @@
   {
     "key": "egg",
     "name": "Œuf",
+    "nameEn": "Egg",
     "emoji": "🥚",
     "category": "animal_product",
     "rarity": "common",
@@ -9,11 +10,13 @@
     "marketTracked": true,
     "sourceKey": "chicken",
     "description": "Produit par les poules. Ingrédient du pain et du gâteau.",
+    "descriptionEn": "Produced by hens. An ingredient of bread and cake.",
     "sortOrder": 1010
   },
   {
     "key": "duck_egg",
     "name": "Œuf de canard",
+    "nameEn": "Duck egg",
     "emoji": "🥚",
     "category": "animal_product",
     "rarity": "common",
@@ -21,11 +24,13 @@
     "marketTracked": true,
     "sourceKey": "duck",
     "description": "Plus gros, plus riche, plus cher.",
+    "descriptionEn": "Bigger, richer, pricier.",
     "sortOrder": 1020
   },
   {
     "key": "rabbit_wool",
     "name": "Angora",
+    "nameEn": "Angora",
     "emoji": "🧶",
     "category": "animal_product",
     "rarity": "common",
@@ -33,11 +38,13 @@
     "marketTracked": true,
     "sourceKey": "rabbit",
     "description": "Duvet de lapin, doux et léger.",
+    "descriptionEn": "Rabbit down, soft and light.",
     "sortOrder": 1030
   },
   {
     "key": "wool",
     "name": "Laine",
+    "nameEn": "Wool",
     "emoji": "🐏",
     "category": "animal_product",
     "rarity": "uncommon",
@@ -45,11 +52,13 @@
     "marketTracked": true,
     "sourceKey": "sheep",
     "description": "Se file à l'atelier pour doubler sa valeur.",
+    "descriptionEn": "Spun at the workshop to double its value.",
     "sortOrder": 1040
   },
   {
     "key": "goat_milk",
     "name": "Lait de chèvre",
+    "nameEn": "Goat milk",
     "emoji": "🥛",
     "category": "animal_product",
     "rarity": "uncommon",
@@ -57,11 +66,13 @@
     "marketTracked": true,
     "sourceKey": "goat",
     "description": "Base du fromage de chèvre.",
+    "descriptionEn": "The base of goat cheese.",
     "sortOrder": 1050
   },
   {
     "key": "honey",
     "name": "Miel",
+    "nameEn": "Honey",
     "emoji": "🍯",
     "category": "animal_product",
     "rarity": "uncommon",
@@ -69,11 +80,13 @@
     "marketTracked": true,
     "sourceKey": "bee",
     "description": "Indispensable aux confitures et à l'hydromel.",
+    "descriptionEn": "Essential to jams and mead.",
     "sortOrder": 1060
   },
   {
     "key": "milk",
     "name": "Lait",
+    "nameEn": "Milk",
     "emoji": "🥛",
     "category": "animal_product",
     "rarity": "uncommon",
@@ -81,11 +94,13 @@
     "marketTracked": true,
     "sourceKey": "cow",
     "description": "Le pilier de la fromagerie et de la confiserie.",
+    "descriptionEn": "The pillar of the creamery and the confectionery.",
     "sortOrder": 1070
   },
   {
     "key": "wild_truffle",
     "name": "Truffe sauvage",
+    "nameEn": "Wild truffle",
     "emoji": "🟤",
     "category": "animal_product",
     "rarity": "rare",
@@ -93,11 +108,13 @@
     "marketTracked": true,
     "sourceKey": "pig",
     "description": "Dénichée par les cochons, sans occuper une seule parcelle.",
+    "descriptionEn": "Dug up by pigs, without using a single plot.",
     "sortOrder": 1080
   },
   {
     "key": "fine_wool",
     "name": "Laine fine",
+    "nameEn": "Fine wool",
     "emoji": "🧵",
     "category": "animal_product",
     "rarity": "rare",
@@ -105,11 +122,13 @@
     "marketTracked": true,
     "sourceKey": "alpaca",
     "description": "Tissée en tissu fin, l'un des produits les plus stables du marché.",
+    "descriptionEn": "Woven into fine cloth, one of the steadiest products on the market.",
     "sortOrder": 1090
   },
   {
     "key": "giant_egg",
     "name": "Œuf géant",
+    "nameEn": "Giant egg",
     "emoji": "🥚",
     "category": "animal_product",
     "rarity": "epic",
@@ -117,11 +136,13 @@
     "marketTracked": true,
     "sourceKey": "ostrich",
     "description": "Un seul œuf vaut plus qu'une journée de blé.",
+    "descriptionEn": "A single egg is worth more than a day of wheat.",
     "sortOrder": 1100
   },
   {
     "key": "horse_hair",
     "name": "Crin de cheval",
+    "nameEn": "Horsehair",
     "emoji": "🎻",
     "category": "animal_product",
     "rarity": "epic",
@@ -129,11 +150,13 @@
     "marketTracked": true,
     "sourceKey": "horse",
     "description": "Recherché par les luthiers du village.",
+    "descriptionEn": "Sought after by the village luthiers.",
     "sortOrder": 1110
   },
   {
     "key": "peacock_feather",
     "name": "Plume de paon",
+    "nameEn": "Peacock feather",
     "emoji": "🪶",
     "category": "animal_product",
     "rarity": "legendary",
@@ -141,11 +164,13 @@
     "marketTracked": true,
     "sourceKey": "peacock",
     "description": "Iridescente. Les collectionneurs paient cher.",
+    "descriptionEn": "Iridescent. Collectors pay well.",
     "sortOrder": 1120
   },
   {
     "key": "dragon_scale",
     "name": "Écaille de dragon",
+    "nameEn": "Dragon scale",
     "emoji": "🐲",
     "category": "animal_product",
     "rarity": "mythic",
@@ -153,11 +178,13 @@
     "marketTracked": true,
     "sourceKey": "dragonet",
     "description": "Chaude au toucher. Composant unique de la potion de dragon.",
+    "descriptionEn": "Warm to the touch. The unique component of the dragon potion.",
     "sortOrder": 1130
   },
   {
     "key": "flour",
     "name": "Farine",
+    "nameEn": "Flour",
     "emoji": "🌾",
     "category": "product",
     "rarity": "common",
@@ -165,11 +192,13 @@
     "marketTracked": true,
     "sourceKey": "flour",
     "description": "Moulue au moulin. Point de départ de la boulangerie.",
+    "descriptionEn": "Ground at the mill. The starting point of the bakery.",
     "sortOrder": 2010
   },
   {
     "key": "bread",
     "name": "Pain",
+    "nameEn": "Bread",
     "emoji": "🍞",
     "category": "product",
     "rarity": "common",
@@ -177,11 +206,13 @@
     "marketTracked": true,
     "sourceKey": "bread",
     "description": "Farine et œuf : la première vraie plus-value du jeu.",
+    "descriptionEn": "Flour and egg: the first real added value in the game.",
     "sortOrder": 2020
   },
   {
     "key": "vegetable_soup",
     "name": "Soupe de légumes",
+    "nameEn": "Vegetable soup",
     "emoji": "🥣",
     "category": "product",
     "rarity": "common",
@@ -189,11 +220,13 @@
     "marketTracked": true,
     "sourceKey": "vegetable_soup",
     "description": "Recycle les légumes de base en produit vendable.",
+    "descriptionEn": "Turns basic vegetables into a sellable product.",
     "sortOrder": 2030
   },
   {
     "key": "ketchup",
     "name": "Ketchup",
+    "nameEn": "Ketchup",
     "emoji": "🧴",
     "category": "product",
     "rarity": "common",
@@ -201,11 +234,13 @@
     "marketTracked": true,
     "sourceKey": "ketchup",
     "description": "Quatre tomates, un bocal, une marge doublée.",
+    "descriptionEn": "Four tomatoes, one jar, double the margin.",
     "sortOrder": 2040
   },
   {
     "key": "hot_sauce",
     "name": "Sauce piquante",
+    "nameEn": "Hot sauce",
     "emoji": "🌶️",
     "category": "product",
     "rarity": "uncommon",
@@ -213,11 +248,13 @@
     "marketTracked": true,
     "sourceKey": "hot_sauce",
     "description": "Le village en raffole ; les contrats en demandent souvent.",
+    "descriptionEn": "The village loves it; contracts often ask for it.",
     "sortOrder": 2050
   },
   {
     "key": "melon_nectar",
     "name": "Nectar de melon",
+    "nameEn": "Melon nectar",
     "emoji": "🧃",
     "category": "product",
     "rarity": "uncommon",
@@ -225,11 +262,13 @@
     "marketTracked": true,
     "sourceKey": "melon_nectar",
     "description": "Sucré, frais, rentable.",
+    "descriptionEn": "Sweet, fresh, profitable.",
     "sortOrder": 2060
   },
   {
     "key": "jam_strawberry",
     "name": "Confiture de fraises",
+    "nameEn": "Strawberry jam",
     "emoji": "🍓",
     "category": "product",
     "rarity": "uncommon",
@@ -237,11 +276,13 @@
     "marketTracked": true,
     "sourceKey": "jam_strawberry",
     "description": "Le classique de la confiturerie.",
+    "descriptionEn": "The jam kitchen classic.",
     "sortOrder": 2070
   },
   {
     "key": "grape_juice",
     "name": "Jus de raisin",
+    "nameEn": "Grape juice",
     "emoji": "🧃",
     "category": "product",
     "rarity": "uncommon",
@@ -249,11 +290,13 @@
     "marketTracked": true,
     "sourceKey": "grape_juice",
     "description": "Pour ceux qui n'ont pas encore la brasserie.",
+    "descriptionEn": "For those who do not have the brewery yet.",
     "sortOrder": 2080
   },
   {
     "key": "jam_grape",
     "name": "Confiture de raisin",
+    "nameEn": "Grape jam",
     "emoji": "🍇",
     "category": "product",
     "rarity": "rare",
@@ -261,11 +304,13 @@
     "marketTracked": true,
     "sourceKey": "jam_grape",
     "description": "Plus chère que la fraise, et tout aussi facile à produire en série.",
+    "descriptionEn": "Pricier than strawberry, and just as easy to mass-produce.",
     "sortOrder": 2090
   },
   {
     "key": "goat_cheese",
     "name": "Fromage de chèvre",
+    "nameEn": "Goat cheese",
     "emoji": "🧀",
     "category": "product",
     "rarity": "uncommon",
@@ -273,11 +318,13 @@
     "marketTracked": true,
     "sourceKey": "goat_cheese",
     "description": "Affiné en fromagerie.",
+    "descriptionEn": "Matured at the creamery.",
     "sortOrder": 2100
   },
   {
     "key": "cheese",
     "name": "Fromage",
+    "nameEn": "Cheese",
     "emoji": "🧀",
     "category": "product",
     "rarity": "uncommon",
@@ -285,11 +332,13 @@
     "marketTracked": true,
     "sourceKey": "cheese",
     "description": "Deux laits, deux fois la valeur.",
+    "descriptionEn": "Two milks, twice the value.",
     "sortOrder": 2110
   },
   {
     "key": "butter",
     "name": "Beurre",
+    "nameEn": "Butter",
     "emoji": "🧈",
     "category": "product",
     "rarity": "rare",
@@ -297,11 +346,13 @@
     "marketTracked": true,
     "sourceKey": "butter",
     "description": "Ingrédient de la pâtisserie de luxe.",
+    "descriptionEn": "An ingredient of luxury pastry.",
     "sortOrder": 2120
   },
   {
     "key": "strawberry_yogurt",
     "name": "Yaourt à la fraise",
+    "nameEn": "Strawberry yoghurt",
     "emoji": "🍨",
     "category": "product",
     "rarity": "rare",
@@ -309,11 +360,13 @@
     "marketTracked": true,
     "sourceKey": "strawberry_yogurt",
     "description": "Combine élevage et culture : un bon test de logistique.",
+    "descriptionEn": "Combines livestock and crops: a good logistics test.",
     "sortOrder": 2130
   },
   {
     "key": "spun_wool",
     "name": "Laine filée",
+    "nameEn": "Spun wool",
     "emoji": "🧶",
     "category": "product",
     "rarity": "uncommon",
@@ -321,11 +374,13 @@
     "marketTracked": true,
     "sourceKey": "spun_wool",
     "description": "Filée à l'atelier.",
+    "descriptionEn": "Spun at the workshop.",
     "sortOrder": 2140
   },
   {
     "key": "fine_cloth",
     "name": "Tissu fin",
+    "nameEn": "Fine cloth",
     "emoji": "🪡",
     "category": "product",
     "rarity": "epic",
@@ -333,11 +388,13 @@
     "marketTracked": true,
     "sourceKey": "fine_cloth",
     "description": "Trois laines fines. Très recherché à l'hôtel des ventes.",
+    "descriptionEn": "Three fine wools. Highly sought after at the auction house.",
     "sortOrder": 2150
   },
   {
     "key": "beer",
     "name": "Bière",
+    "nameEn": "Beer",
     "emoji": "🍺",
     "category": "product",
     "rarity": "uncommon",
@@ -345,11 +402,13 @@
     "marketTracked": true,
     "sourceKey": "beer",
     "description": "Houblon et blé, fermentés deux heures.",
+    "descriptionEn": "Hops and wheat, fermented for two hours.",
     "sortOrder": 2160
   },
   {
     "key": "wine",
     "name": "Vin",
+    "nameEn": "Wine",
     "emoji": "🍷",
     "category": "product",
     "rarity": "rare",
@@ -357,11 +416,13 @@
     "marketTracked": true,
     "sourceKey": "wine",
     "description": "Quatre heures de patience pour six raisins.",
+    "descriptionEn": "Four hours of patience for six grapes.",
     "sortOrder": 2170
   },
   {
     "key": "mead",
     "name": "Hydromel",
+    "nameEn": "Mead",
     "emoji": "🍯",
     "category": "product",
     "rarity": "rare",
@@ -369,11 +430,13 @@
     "marketTracked": true,
     "sourceKey": "mead",
     "description": "Miel et houblon : la boisson des coopératives victorieuses.",
+    "descriptionEn": "Honey and hops: the drink of victorious co-ops.",
     "sortOrder": 2180
   },
   {
     "key": "roasted_coffee",
     "name": "Café torréfié",
+    "nameEn": "Roasted coffee",
     "emoji": "☕",
     "category": "product",
     "rarity": "rare",
@@ -381,11 +444,13 @@
     "marketTracked": true,
     "sourceKey": "roasted_coffee",
     "description": "Torréfié au fumoir.",
+    "descriptionEn": "Roasted at the smokehouse.",
     "sortOrder": 2190
   },
   {
     "key": "smoked_cheese",
     "name": "Fromage fumé",
+    "nameEn": "Smoked cheese",
     "emoji": "🧀",
     "category": "product",
     "rarity": "epic",
@@ -393,11 +458,13 @@
     "marketTracked": true,
     "sourceKey": "smoked_cheese",
     "description": "Deux fromages, six heures de fumée.",
+    "descriptionEn": "Two cheeses, six hours of smoke.",
     "sortOrder": 2200
   },
   {
     "key": "smoked_truffle",
     "name": "Truffe fumée",
+    "nameEn": "Smoked truffle",
     "emoji": "🍖",
     "category": "product",
     "rarity": "epic",
@@ -405,11 +472,13 @@
     "marketTracked": true,
     "sourceKey": "smoked_truffle",
     "description": "Transforme les truffes de vos cochons en produit de luxe.",
+    "descriptionEn": "Turns your pigs’ truffles into a luxury product.",
     "sortOrder": 2210
   },
   {
     "key": "sunflower_oil",
     "name": "Huile de tournesol",
+    "nameEn": "Sunflower oil",
     "emoji": "🫙",
     "category": "product",
     "rarity": "uncommon",
@@ -417,11 +486,13 @@
     "marketTracked": true,
     "sourceKey": "sunflower_oil",
     "description": "Entre dans la moitié des recettes de la presse à huile.",
+    "descriptionEn": "Goes into half the oil press recipes.",
     "sortOrder": 2220
   },
   {
     "key": "lavender_soap",
     "name": "Savon de lavande",
+    "nameEn": "Lavender soap",
     "emoji": "🧼",
     "category": "product",
     "rarity": "epic",
@@ -429,11 +500,13 @@
     "marketTracked": true,
     "sourceKey": "lavender_soap",
     "description": "Le produit cosmétique du village.",
+    "descriptionEn": "The village cosmetic product.",
     "sortOrder": 2230
   },
   {
     "key": "truffle_oil",
     "name": "Huile de truffe",
+    "nameEn": "Truffle oil",
     "emoji": "🫗",
     "category": "product",
     "rarity": "legendary",
@@ -441,11 +514,13 @@
     "marketTracked": true,
     "sourceKey": "truffle_oil",
     "description": "Trois heures de pressage pour un produit d'exception.",
+    "descriptionEn": "Three hours of pressing for an exceptional product.",
     "sortOrder": 2240
   },
   {
     "key": "saffron_essence",
     "name": "Essence de safran",
+    "nameEn": "Saffron essence",
     "emoji": "🧪",
     "category": "product",
     "rarity": "legendary",
@@ -453,11 +528,13 @@
     "marketTracked": true,
     "sourceKey": "saffron_essence",
     "description": "Six heures de distillation. Le sommet de la presse à huile.",
+    "descriptionEn": "Six hours of distillation. The peak of the oil press.",
     "sortOrder": 2250
   },
   {
     "key": "chocolate",
     "name": "Chocolat",
+    "nameEn": "Chocolate",
     "emoji": "🍫",
     "category": "product",
     "rarity": "epic",
@@ -465,11 +542,13 @@
     "marketTracked": true,
     "sourceKey": "chocolate",
     "description": "Cacao et lait : l'entrée dans la confiserie.",
+    "descriptionEn": "Cacao and milk: your way into the confectionery.",
     "sortOrder": 2260
   },
   {
     "key": "cake",
     "name": "Gâteau",
+    "nameEn": "Cake",
     "emoji": "🍰",
     "category": "product",
     "rarity": "epic",
@@ -477,11 +556,13 @@
     "marketTracked": true,
     "sourceKey": "cake",
     "description": "Farine, œufs, beurre. Demandé à chaque anniversaire du village.",
+    "descriptionEn": "Flour, eggs, butter. Requested at every village birthday.",
     "sortOrder": 2270
   },
   {
     "key": "pumpkin_pie",
     "name": "Tarte à la citrouille",
+    "nameEn": "Pumpkin pie",
     "emoji": "🥧",
     "category": "product",
     "rarity": "epic",
@@ -489,11 +570,13 @@
     "marketTracked": true,
     "sourceKey": "pumpkin_pie",
     "description": "Le prix double pendant la Moisson d'Automne.",
+    "descriptionEn": "The price doubles during the Autumn Harvest.",
     "sortOrder": 2280
   },
   {
     "key": "vanilla_praline",
     "name": "Praline de vanille",
+    "nameEn": "Vanilla praline",
     "emoji": "🍬",
     "category": "product",
     "rarity": "legendary",
@@ -501,11 +584,13 @@
     "marketTracked": true,
     "sourceKey": "vanilla_praline",
     "description": "Vanille et chocolat. Le produit le plus rentable avant la fin de partie.",
+    "descriptionEn": "Vanilla and chocolate. The most profitable product before the endgame.",
     "sortOrder": 2290
   },
   {
     "key": "ginseng_elixir",
     "name": "Élixir de ginseng",
+    "nameEn": "Ginseng elixir",
     "emoji": "⚗️",
     "category": "product",
     "rarity": "legendary",
@@ -513,11 +598,13 @@
     "marketTracked": true,
     "sourceKey": "ginseng_elixir",
     "description": "Composant de la potion de dragon.",
+    "descriptionEn": "A component of the dragon potion.",
     "sortOrder": 2300
   },
   {
     "key": "dragon_potion",
     "name": "Potion de dragon",
+    "nameEn": "Dragon potion",
     "emoji": "🧫",
     "category": "product",
     "rarity": "mythic",
@@ -525,33 +612,39 @@
     "marketTracked": true,
     "sourceKey": "dragon_potion",
     "description": "L'objet artisanal le plus précieux du jeu.",
+    "descriptionEn": "The most valuable crafted item in the game.",
     "sortOrder": 2310
   },
   {
     "key": "feed_grain",
     "name": "Grain",
+    "nameEn": "Grain",
     "emoji": "🌰",
     "category": "material",
     "rarity": "common",
     "basePrice": 8,
     "sellPrice": 3,
     "description": "Nourriture des volailles.",
+    "descriptionEn": "Feed for poultry.",
     "sortOrder": 3010
   },
   {
     "key": "feed_hay",
     "name": "Foin",
+    "nameEn": "Hay",
     "emoji": "🌾",
     "category": "material",
     "rarity": "common",
     "basePrice": 14,
     "sellPrice": 5,
     "description": "Nourriture des herbivores.",
+    "descriptionEn": "Feed for herbivores.",
     "sortOrder": 3020
   },
   {
     "key": "feed_premium",
     "name": "Fourrage enrichi",
+    "nameEn": "Enriched fodder",
     "emoji": "🥫",
     "category": "material",
     "rarity": "uncommon",
@@ -559,11 +652,13 @@
     "sellPrice": 15,
     "requiredLevel": 15,
     "description": "Indispensable aux animaux exotiques.",
+    "descriptionEn": "Essential for exotic animals.",
     "sortOrder": 3030
   },
   {
     "key": "flower_pollen",
     "name": "Pollen",
+    "nameEn": "Pollen",
     "emoji": "🌸",
     "category": "material",
     "rarity": "common",
@@ -571,44 +666,52 @@
     "sellPrice": 7,
     "requiredLevel": 13,
     "description": "Complément alimentaire des ruches.",
+    "descriptionEn": "A dietary supplement for hives.",
     "sortOrder": 3040
   },
   {
     "key": "weeds",
     "name": "Mauvaises herbes",
+    "nameEn": "Weeds",
     "emoji": "🌱",
     "category": "material",
     "rarity": "common",
     "basePrice": 0,
     "sellPrice": 3,
     "description": "Obtenu en désherbant. Se compostait en engrais.",
+    "descriptionEn": "Obtained by weeding. Composts into fertilizer.",
     "sortOrder": 3050
   },
   {
     "key": "wood",
     "name": "Bois",
+    "nameEn": "Wood",
     "emoji": "🪵",
     "category": "material",
     "rarity": "common",
     "basePrice": 40,
     "sellPrice": 15,
     "description": "Matériau de construction de base.",
+    "descriptionEn": "A basic building material.",
     "sortOrder": 3060
   },
   {
     "key": "stone",
     "name": "Pierre",
+    "nameEn": "Stone",
     "emoji": "🪨",
     "category": "material",
     "rarity": "common",
     "basePrice": 35,
     "sellPrice": 13,
     "description": "Matériau de construction de base.",
+    "descriptionEn": "A basic building material.",
     "sortOrder": 3070
   },
   {
     "key": "clay",
     "name": "Argile",
+    "nameEn": "Clay",
     "emoji": "🧱",
     "category": "material",
     "rarity": "uncommon",
@@ -616,11 +719,13 @@
     "sellPrice": 22,
     "requiredLevel": 10,
     "description": "Nécessaire aux bâtiments de transformation.",
+    "descriptionEn": "Required by processing buildings.",
     "sortOrder": 3080
   },
   {
     "key": "iron_bar",
     "name": "Barre de fer",
+    "nameEn": "Iron bar",
     "emoji": "⛓️",
     "category": "material",
     "rarity": "rare",
@@ -628,11 +733,13 @@
     "sellPrice": 70,
     "requiredLevel": 18,
     "description": "Améliorations lourdes et outils.",
+    "descriptionEn": "Heavy upgrades and tools.",
     "sortOrder": 3090
   },
   {
     "key": "fertilizer_basic",
     "name": "Engrais simple",
+    "nameEn": "Basic fertilizer",
     "emoji": "💩",
     "category": "consumable",
     "rarity": "common",
@@ -644,11 +751,13 @@
       "yieldBoost": 0.1
     },
     "description": "+15 de fertilité et +10 % de rendement sur une parcelle.",
+    "descriptionEn": "+15 fertility and +10% yield on one plot.",
     "sortOrder": 4010
   },
   {
     "key": "fertilizer_quality",
     "name": "Engrais de qualité",
+    "nameEn": "Quality fertilizer",
     "emoji": "🧪",
     "category": "consumable",
     "rarity": "uncommon",
@@ -662,11 +771,13 @@
       "qualityBoost": 0.15
     },
     "description": "Privilégie la qualité : plus de récoltes argent et or.",
+    "descriptionEn": "Favours quality: more silver and gold harvests.",
     "sortOrder": 4020
   },
   {
     "key": "fertilizer_deluxe",
     "name": "Engrais suprême",
+    "nameEn": "Deluxe fertilizer",
     "emoji": "✨",
     "category": "consumable",
     "rarity": "rare",
@@ -680,11 +791,13 @@
       "qualityBoost": 0.25
     },
     "description": "Le meilleur des deux mondes, au prix qui va avec.",
+    "descriptionEn": "The best of both worlds, at the matching price.",
     "sortOrder": 4030
   },
   {
     "key": "watering_can_magic",
     "name": "Arrosoir magique",
+    "nameEn": "Magic watering can",
     "emoji": "🚿",
     "category": "consumable",
     "rarity": "uncommon",
@@ -694,11 +807,13 @@
       "type": "water_all"
     },
     "description": "Arrose instantanément toutes vos parcelles, sans coût d'énergie.",
+    "descriptionEn": "Instantly waters every plot, at no energy cost.",
     "sortOrder": 4040
   },
   {
     "key": "xp_booster",
     "name": "Parchemin d'expérience",
+    "nameEn": "Experience scroll",
     "emoji": "📜",
     "category": "consumable",
     "rarity": "uncommon",
@@ -710,11 +825,13 @@
       "durationSeconds": 3600
     },
     "description": "+50 % d'XP pendant une heure.",
+    "descriptionEn": "+50% XP for one hour.",
     "sortOrder": 4050
   },
   {
     "key": "growth_booster",
     "name": "Potion de croissance",
+    "nameEn": "Growth potion",
     "emoji": "🧴",
     "category": "consumable",
     "rarity": "rare",
@@ -727,11 +844,13 @@
       "durationSeconds": 1800
     },
     "description": "Double la vitesse de pousse pendant 30 minutes.",
+    "descriptionEn": "Doubles growth speed for 30 minutes.",
     "sortOrder": 4060
   },
   {
     "key": "luck_ticket",
     "name": "Ticket de chance",
+    "nameEn": "Luck ticket",
     "emoji": "🎟️",
     "category": "consumable",
     "rarity": "uncommon",
@@ -743,11 +862,13 @@
       "durationSeconds": 3600
     },
     "description": "+15 % de chance de qualité et de mutation pendant une heure.",
+    "descriptionEn": "+15% quality and mutation chance for one hour.",
     "sortOrder": 4070
   },
   {
     "key": "pest_bait",
     "name": "Appât répulsif",
+    "nameEn": "Repellent bait",
     "emoji": "🪤",
     "category": "consumable",
     "rarity": "common",
@@ -758,11 +879,13 @@
       "durationSeconds": 43200
     },
     "description": "Aucun nuisible sur votre ferme pendant 12 heures.",
+    "descriptionEn": "No pests on your farm for 12 hours.",
     "sortOrder": 4080
   },
   {
     "key": "pesticide",
     "name": "Traitement bio",
+    "nameEn": "Organic treatment",
     "emoji": "🧯",
     "category": "consumable",
     "rarity": "common",
@@ -772,11 +895,13 @@
       "type": "pest_cure"
     },
     "description": "Élimine immédiatement les nuisibles d'une parcelle.",
+    "descriptionEn": "Immediately clears the pests on one plot.",
     "sortOrder": 4090
   },
   {
     "key": "energy_drink",
     "name": "Jus d'énergie",
+    "nameEn": "Energy drink",
     "emoji": "🧃",
     "category": "consumable",
     "rarity": "common",
@@ -787,11 +912,13 @@
       "amount": 50
     },
     "description": "Restaure 50 points d'énergie.",
+    "descriptionEn": "Restores 50 energy points.",
     "sortOrder": 4100
   },
   {
     "key": "streak_freeze",
     "name": "Gel de série",
+    "nameEn": "Streak freeze",
     "emoji": "🧊",
     "category": "consumable",
     "rarity": "rare",
@@ -802,11 +929,13 @@
       "type": "streak_freeze"
     },
     "description": "Protège votre série quotidienne d'une journée d'absence.",
+    "descriptionEn": "Protects your daily streak from one missed day.",
     "sortOrder": 4110
   },
   {
     "key": "quest_reroll_token",
     "name": "Jeton de relance",
+    "nameEn": "Reroll token",
     "emoji": "🔄",
     "category": "consumable",
     "rarity": "uncommon",
@@ -817,11 +946,13 @@
       "type": "quest_reroll"
     },
     "description": "Relance une quête journalière sans payer de pièces.",
+    "descriptionEn": "Rerolls a daily quest without paying coins.",
     "sortOrder": 4120
   },
   {
     "key": "tool_wateringcan_wood",
     "name": "Arrosoir en bois",
+    "nameEn": "Wooden watering can",
     "emoji": "🪣",
     "category": "tool",
     "rarity": "common",
@@ -834,11 +965,13 @@
       "plots": 1
     },
     "description": "Votre premier outil. Arrose une parcelle à la fois.",
+    "descriptionEn": "Your first tool. Waters one plot at a time.",
     "sortOrder": 5010
   },
   {
     "key": "tool_wateringcan_copper",
     "name": "Arrosoir en cuivre",
+    "nameEn": "Copper watering can",
     "emoji": "🚰",
     "category": "tool",
     "rarity": "uncommon",
@@ -852,11 +985,13 @@
       "plots": 4
     },
     "description": "Arrose 4 parcelles par action.",
+    "descriptionEn": "Waters 4 plots per action.",
     "sortOrder": 5020
   },
   {
     "key": "tool_wateringcan_gold",
     "name": "Arrosoir doré",
+    "nameEn": "Golden watering can",
     "emoji": "🏺",
     "category": "tool",
     "rarity": "rare",
@@ -870,11 +1005,13 @@
       "plots": 64
     },
     "description": "Arrose toute la ferme d'un seul geste.",
+    "descriptionEn": "Waters the whole farm in one go.",
     "sortOrder": 5030
   },
   {
     "key": "tool_scythe_iron",
     "name": "Faux en fer",
+    "nameEn": "Iron scythe",
     "emoji": "🔨",
     "category": "tool",
     "rarity": "uncommon",
@@ -888,11 +1025,13 @@
       "flatYield": 1
     },
     "description": "+1 unité à chaque récolte.",
+    "descriptionEn": "+1 unit on every harvest.",
     "sortOrder": 5040
   },
   {
     "key": "tool_scythe_gold",
     "name": "Faux dorée",
+    "nameEn": "Golden scythe",
     "emoji": "⚒️",
     "category": "tool",
     "rarity": "epic",
@@ -907,11 +1046,13 @@
       "qualityBoost": 0.05
     },
     "description": "+2 unités par récolte et un léger bonus de qualité.",
+    "descriptionEn": "+2 units per harvest and a small quality bonus.",
     "sortOrder": 5050
   },
   {
     "key": "tool_gloves",
     "name": "Gants de récolte",
+    "nameEn": "Harvest gloves",
     "emoji": "🧤",
     "category": "tool",
     "rarity": "rare",
@@ -925,11 +1066,13 @@
       "costReduction": 0.2
     },
     "description": "-20 % de coût en énergie sur toutes les actions.",
+    "descriptionEn": "-20% energy cost on every action.",
     "sortOrder": 5060
   },
   {
     "key": "theme_autumn",
     "name": "Thème Automne",
+    "nameEn": "Autumn theme",
     "emoji": "🍂",
     "category": "cosmetic",
     "rarity": "uncommon",
@@ -943,11 +1086,13 @@
       "value": "autumn"
     },
     "description": "Habille votre ferme et votre profil de couleurs d'automne.",
+    "descriptionEn": "Dresses your farm and profile in autumn colours.",
     "sortOrder": 6010
   },
   {
     "key": "theme_winter",
     "name": "Thème Hiver",
+    "nameEn": "Winter theme",
     "emoji": "❄️",
     "category": "cosmetic",
     "rarity": "uncommon",
@@ -961,11 +1106,13 @@
       "value": "winter"
     },
     "description": "Neige permanente sur votre ferme.",
+    "descriptionEn": "Permanent snow on your farm.",
     "sortOrder": 6020
   },
   {
     "key": "theme_neon",
     "name": "Thème Néon",
+    "nameEn": "Neon theme",
     "emoji": "🌃",
     "category": "cosmetic",
     "rarity": "rare",
@@ -979,11 +1126,13 @@
       "value": "neon"
     },
     "description": "Ferme cyberpunk. Oui, ça existe.",
+    "descriptionEn": "A cyberpunk farm. Yes, that exists.",
     "sortOrder": 6030
   },
   {
     "key": "banner_sunset",
     "name": "Bannière Coucher de soleil",
+    "nameEn": "Sunset banner",
     "emoji": "🌅",
     "category": "cosmetic",
     "rarity": "uncommon",
@@ -997,11 +1146,13 @@
       "value": "sunset"
     },
     "description": "Fond de carte de profil.",
+    "descriptionEn": "A profile card background.",
     "sortOrder": 6040
   },
   {
     "key": "banner_starry",
     "name": "Bannière Nuit étoilée",
+    "nameEn": "Starry night banner",
     "emoji": "🌌",
     "category": "cosmetic",
     "rarity": "rare",
@@ -1015,94 +1166,111 @@
       "value": "starry"
     },
     "description": "Fond de carte de profil animé (dégradé nocturne).",
+    "descriptionEn": "An animated profile card background (night gradient).",
     "sortOrder": 6050
   },
   {
     "key": "pumpkin_token",
     "name": "Jeton citrouille",
+    "nameEn": "Pumpkin token",
     "emoji": "🎃",
     "category": "event",
     "rarity": "uncommon",
     "sellable": false,
     "tradable": false,
     "description": "Monnaie de la Moisson d'Automne.",
+    "descriptionEn": "Currency of the Autumn Harvest.",
     "sortOrder": 7010
   },
   {
     "key": "snowflake_token",
     "name": "Flocon givré",
+    "nameEn": "Frosted snowflake",
     "emoji": "❄️",
     "category": "event",
     "rarity": "uncommon",
     "sellable": false,
     "tradable": false,
     "description": "Monnaie du Marché de Noël.",
+    "descriptionEn": "Currency of the Christmas Market.",
     "sortOrder": 7020
   },
   {
     "key": "spring_petal",
     "name": "Pétale de printemps",
+    "nameEn": "Spring petal",
     "emoji": "🌸",
     "category": "event",
     "rarity": "uncommon",
     "sellable": false,
     "tradable": false,
     "description": "Monnaie de la Fête du Printemps.",
+    "descriptionEn": "Currency of the Spring Festival.",
     "sortOrder": 7030
   },
   {
     "key": "dragon_egg_fragment",
     "name": "Fragment d'œuf de dragon",
+    "nameEn": "Dragon egg fragment",
     "emoji": "🥚",
     "category": "event",
     "rarity": "legendary",
     "sellable": false,
     "tradable": false,
     "description": "Dix fragments donnent un dragonnet.",
+    "descriptionEn": "Ten fragments give you a dragonet.",
     "sortOrder": 7040
   },
   {
     "key": "ancient_coin",
     "name": "Pièce antique",
+    "nameEn": "Ancient coin",
     "emoji": "🪙",
     "category": "material",
     "rarity": "rare",
     "sellPrice": 0,
     "collectionKey": "museum",
     "description": "Collection du musée. Ne se vend pas.",
+    "descriptionEn": "Museum collection. Cannot be sold.",
     "sortOrder": 8010
   },
   {
     "key": "rusty_key",
     "name": "Clé rouillée",
+    "nameEn": "Rusty key",
     "emoji": "🗝️",
     "category": "material",
     "rarity": "rare",
     "sellPrice": 0,
     "collectionKey": "museum",
     "description": "Collection du musée. Personne ne sait ce qu'elle ouvre.",
+    "descriptionEn": "Museum collection. Nobody knows what it opens.",
     "sortOrder": 8020
   },
   {
     "key": "meteor_shard",
     "name": "Éclat de météore",
+    "nameEn": "Meteor shard",
     "emoji": "☄️",
     "category": "material",
     "rarity": "epic",
     "sellPrice": 0,
     "collectionKey": "museum",
     "description": "Collection du musée. Tombé pendant un orage.",
+    "descriptionEn": "Museum collection. Fell during a storm.",
     "sortOrder": 8030
   },
   {
     "key": "old_photo",
     "name": "Vieille photographie",
+    "nameEn": "Old photograph",
     "emoji": "🖼️",
     "category": "material",
     "rarity": "epic",
     "sellPrice": 0,
     "collectionKey": "museum",
     "description": "Collection du musée. On y voit la ferme il y a cent ans.",
+    "descriptionEn": "Museum collection. It shows the farm a hundred years ago.",
     "sortOrder": 8040
   }
 ]

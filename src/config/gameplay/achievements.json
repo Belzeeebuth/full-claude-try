@@ -2,7 +2,9 @@
   {
     "key": "first_harvest",
     "name": "Première moisson",
+    "nameEn": "First crop",
     "description": "Récoltez votre toute première culture.",
+    "descriptionEn": "Harvest your very first crop.",
     "category": "agriculture",
     "icon": "🌱",
     "tier": 1,
@@ -15,7 +17,9 @@
   {
     "key": "harvest_100",
     "name": "Apprenti fermier",
+    "nameEn": "Apprentice farmer",
     "description": "Récoltez 100 unités au total.",
+    "descriptionEn": "Harvest 100 units in total.",
     "category": "agriculture",
     "icon": "🌿",
     "tier": 2,
@@ -28,7 +32,9 @@
   {
     "key": "harvest_1000",
     "name": "Fermier confirmé",
+    "nameEn": "Seasoned farmer",
     "description": "Récoltez 1 000 unités au total.",
+    "descriptionEn": "Harvest 1,000 units in total.",
     "category": "agriculture",
     "icon": "🌾",
     "tier": 3,
@@ -42,7 +48,9 @@
   {
     "key": "harvest_10000",
     "name": "Maître des champs",
+    "nameEn": "Master of the fields",
     "description": "Récoltez 10 000 unités au total.",
+    "descriptionEn": "Harvest 10,000 units in total.",
     "category": "agriculture",
     "icon": "👑",
     "tier": 4,
@@ -57,7 +65,9 @@
   {
     "key": "harvest_100000",
     "name": "Légende agricole",
+    "nameEn": "Farming legend",
     "description": "Récoltez 100 000 unités au total.",
+    "descriptionEn": "Harvest 100,000 units in total.",
     "category": "agriculture",
     "icon": "🏆",
     "tier": 5,
@@ -72,7 +82,9 @@
   {
     "key": "planter_500",
     "name": "Semeur infatigable",
+    "nameEn": "Tireless sower",
     "description": "Plantez 500 graines.",
+    "descriptionEn": "Plant 500 seeds.",
     "category": "agriculture",
     "icon": "🫴",
     "tier": 2,
@@ -85,20 +97,29 @@
   {
     "key": "water_1000",
     "name": "Porteur d'eau",
+    "nameEn": "Water carrier",
     "description": "Arrosez 1 000 parcelles.",
+    "descriptionEn": "Water 1,000 plots.",
     "category": "agriculture",
     "icon": "💧",
     "tier": 3,
     "conditionType": "water_plot",
     "conditionAmount": 1000,
     "rewardCoins": 15000,
-    "rewardItems": [{ "itemKey": "fertilizer_deluxe", "quantity": 3 }],
+    "rewardItems": [
+      {
+        "itemKey": "fertilizer_deluxe",
+        "quantity": 3
+      }
+    ],
     "sortOrder": 70
   },
   {
     "key": "pest_100",
     "name": "Épouvantail vivant",
+    "nameEn": "Living scarecrow",
     "description": "Traitez 100 invasions de nuisibles.",
+    "descriptionEn": "Treat 100 pest invasions.",
     "category": "agriculture",
     "icon": "🪤",
     "tier": 3,
@@ -111,7 +132,9 @@
   {
     "key": "plots_25",
     "name": "Grand propriétaire",
+    "nameEn": "Landowner",
     "description": "Possédez 25 parcelles.",
+    "descriptionEn": "Own 25 plots.",
     "category": "domaine",
     "icon": "🗺️",
     "tier": 3,
@@ -125,7 +148,9 @@
   {
     "key": "plots_full",
     "name": "Maître du domaine",
+    "nameEn": "Master of the estate",
     "description": "Débloquez les 64 parcelles.",
+    "descriptionEn": "Unlock all 64 plots.",
     "category": "domaine",
     "icon": "🏰",
     "tier": 5,
@@ -140,7 +165,9 @@
   {
     "key": "collect_100",
     "name": "Éleveur du dimanche",
+    "nameEn": "Sunday breeder",
     "description": "Collectez 100 productions animales.",
+    "descriptionEn": "Collect 100 animal productions.",
     "category": "elevage",
     "icon": "🥚",
     "tier": 2,
@@ -153,7 +180,9 @@
   {
     "key": "collect_5000",
     "name": "Roi du cheptel",
+    "nameEn": "King of the herd",
     "description": "Collectez 5 000 productions animales.",
+    "descriptionEn": "Collect 5,000 animal productions.",
     "category": "elevage",
     "icon": "🐄",
     "tier": 4,
@@ -167,7 +196,9 @@
   {
     "key": "feed_1000",
     "name": "Bon berger",
+    "nameEn": "Good shepherd",
     "description": "Nourrissez vos animaux 1 000 fois.",
+    "descriptionEn": "Feed your animals 1,000 times.",
     "category": "elevage",
     "icon": "🌾",
     "tier": 3,
@@ -180,7 +211,9 @@
   {
     "key": "pet_500",
     "name": "Ami des bêtes",
+    "nameEn": "Friend of beasts",
     "description": "Caressez 500 fois vos animaux.",
+    "descriptionEn": "Pet your animals 500 times.",
     "category": "elevage",
     "icon": "🤍",
     "tier": 3,
@@ -193,7 +226,9 @@
   {
     "key": "craft_50",
     "name": "Artisan",
+    "nameEn": "Artisan",
     "description": "Fabriquez 50 produits transformés.",
+    "descriptionEn": "Craft 50 processed goods.",
     "category": "artisanat",
     "icon": "🛠️",
     "tier": 2,
@@ -206,7 +241,9 @@
   {
     "key": "craft_2000",
     "name": "Manufacture",
+    "nameEn": "Manufacture",
     "description": "Fabriquez 2 000 produits transformés.",
+    "descriptionEn": "Craft 2,000 processed goods.",
     "category": "artisanat",
     "icon": "🏭",
     "tier": 4,
@@ -220,7 +257,9 @@
   {
     "key": "earn_100k",
     "name": "Premier magot",
+    "nameEn": "First nest egg",
     "description": "Gagnez 100 000 pièces au total.",
+    "descriptionEn": "Earn 100,000 coins in total.",
     "category": "economie",
     "icon": "🪙",
     "tier": 2,
@@ -233,7 +272,9 @@
   {
     "key": "earn_10m",
     "name": "Millionnaire agricole",
+    "nameEn": "Farming millionaire",
     "description": "Gagnez 10 000 000 de pièces au total.",
+    "descriptionEn": "Earn 10,000,000 coins in total.",
     "category": "economie",
     "icon": "💰",
     "tier": 4,
@@ -248,7 +289,9 @@
   {
     "key": "sell_value_1m",
     "name": "Négociant aguerri",
+    "nameEn": "Skilled trader",
     "description": "Vendez pour 1 000 000 de pièces de marchandises.",
+    "descriptionEn": "Sell 1,000,000 coins worth of goods.",
     "category": "economie",
     "icon": "⚖️",
     "tier": 3,
@@ -261,7 +304,9 @@
   {
     "key": "auction_100",
     "name": "Roi de l'hôtel des ventes",
+    "nameEn": "King of the auction house",
     "description": "Concluez 100 ventes aux enchères.",
+    "descriptionEn": "Close 100 auction sales.",
     "category": "economie",
     "icon": "🔨",
     "tier": 4,
@@ -275,7 +320,9 @@
   {
     "key": "level_10",
     "name": "Fermier reconnu",
+    "nameEn": "Recognised farmer",
     "description": "Atteignez le niveau 10.",
+    "descriptionEn": "Reach level 10.",
     "category": "progression",
     "icon": "⭐",
     "tier": 1,
@@ -288,7 +335,9 @@
   {
     "key": "level_30",
     "name": "Vétéran des champs",
+    "nameEn": "Veteran of the fields",
     "description": "Atteignez le niveau 30.",
+    "descriptionEn": "Reach level 30.",
     "category": "progression",
     "icon": "🌟",
     "tier": 3,
@@ -302,7 +351,9 @@
   {
     "key": "level_60",
     "name": "Au sommet",
+    "nameEn": "At the top",
     "description": "Atteignez le niveau maximum.",
+    "descriptionEn": "Reach the maximum level.",
     "category": "progression",
     "icon": "🥇",
     "tier": 5,
@@ -317,7 +368,9 @@
   {
     "key": "streak_7",
     "name": "Une semaine sans faute",
+    "nameEn": "A flawless week",
     "description": "Atteignez 7 jours de série quotidienne.",
+    "descriptionEn": "Reach a 7-day daily streak.",
     "category": "fidelite",
     "icon": "📅",
     "tier": 2,
@@ -330,7 +383,9 @@
   {
     "key": "streak_100",
     "name": "Increvable",
+    "nameEn": "Unstoppable",
     "description": "Atteignez 100 jours de série quotidienne.",
+    "descriptionEn": "Reach a 100-day daily streak.",
     "category": "fidelite",
     "icon": "🔥",
     "tier": 5,
@@ -345,7 +400,9 @@
   {
     "key": "help_100",
     "name": "Pilier de la communauté",
+    "nameEn": "Pillar of the community",
     "description": "Aidez 100 fois d'autres fermiers.",
+    "descriptionEn": "Help other farmers 100 times.",
     "category": "social",
     "icon": "🤝",
     "tier": 3,
@@ -359,20 +416,29 @@
   {
     "key": "visit_250",
     "name": "Grand voyageur",
+    "nameEn": "Great traveller",
     "description": "Visitez 250 fermes.",
+    "descriptionEn": "Visit 250 farms.",
     "category": "social",
     "icon": "🧭",
     "tier": 3,
     "conditionType": "visit_farm",
     "conditionAmount": 250,
     "rewardCoins": 30000,
-    "rewardItems": [{ "itemKey": "luck_ticket", "quantity": 5 }],
+    "rewardItems": [
+      {
+        "itemKey": "luck_ticket",
+        "quantity": 5
+      }
+    ],
     "sortOrder": 270
   },
   {
     "key": "deliver_200",
     "name": "Fournisseur officiel",
+    "nameEn": "Official supplier",
     "description": "Livrez 200 objets au village.",
+    "descriptionEn": "Deliver 200 items to the village.",
     "category": "social",
     "icon": "📦",
     "tier": 3,

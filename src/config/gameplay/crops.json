@@ -2,6 +2,7 @@
   {
     "key": "wheat",
     "name": "Blé",
+    "nameEn": "Wheat",
     "emoji": "🌾",
     "rarity": "common",
     "seedPrice": 10,
@@ -9,7 +10,11 @@
     "baseYield": 3,
     "sellPrice": 6,
     "requiredLevel": 1,
-    "seasons": ["spring", "summer", "autumn"],
+    "seasons": [
+      "spring",
+      "summer",
+      "autumn"
+    ],
     "qualityMultiplier": 1.0,
     "waterRequired": 1,
     "fertilityCost": 2,
@@ -18,11 +23,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.012,
     "description": "La base de toute ferme. Pousse vite, rapporte peu, ne déçoit jamais.",
+    "descriptionEn": "The backbone of any farm. Grows fast, pays little, never disappoints.",
     "sortOrder": 10
   },
   {
     "key": "carrot",
     "name": "Carotte",
+    "nameEn": "Carrot",
     "emoji": "🥕",
     "rarity": "common",
     "seedPrice": 14,
@@ -30,7 +37,10 @@
     "baseYield": 3,
     "sellPrice": 9,
     "requiredLevel": 1,
-    "seasons": ["spring", "autumn"],
+    "seasons": [
+      "spring",
+      "autumn"
+    ],
     "qualityMultiplier": 1.0,
     "waterRequired": 1,
     "fertilityCost": 2,
@@ -39,11 +49,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.012,
     "description": "Bonne pour la vue, excellente pour le portefeuille débutant.",
+    "descriptionEn": "Good for the eyes, excellent for a beginner’s wallet.",
     "sortOrder": 20
   },
   {
     "key": "potato",
     "name": "Pomme de terre",
+    "nameEn": "Potato",
     "emoji": "🥔",
     "rarity": "common",
     "seedPrice": 20,
@@ -51,7 +63,11 @@
     "baseYield": 4,
     "sellPrice": 10,
     "requiredLevel": 2,
-    "seasons": ["spring", "autumn", "winter"],
+    "seasons": [
+      "spring",
+      "autumn",
+      "winter"
+    ],
     "qualityMultiplier": 1.0,
     "waterRequired": 1,
     "fertilityCost": 3,
@@ -60,11 +76,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.012,
     "description": "Résiste au froid : l'une des rares cultures d'hiver accessibles tôt.",
+    "descriptionEn": "Cold-resistant: one of the few winter crops available early.",
     "sortOrder": 30
   },
   {
     "key": "lettuce",
     "name": "Laitue",
+    "nameEn": "Lettuce",
     "emoji": "🥬",
     "rarity": "common",
     "seedPrice": 26,
@@ -72,7 +90,10 @@
     "baseYield": 4,
     "sellPrice": 13,
     "requiredLevel": 2,
-    "seasons": ["spring", "summer"],
+    "seasons": [
+      "spring",
+      "summer"
+    ],
     "qualityMultiplier": 1.0,
     "waterRequired": 2,
     "fertilityCost": 3,
@@ -81,11 +102,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.012,
     "description": "Exige deux arrosages : votre premier vrai apprentissage de la rigueur.",
+    "descriptionEn": "Needs two waterings: your first real lesson in discipline.",
     "sortOrder": 40
   },
   {
     "key": "corn",
     "name": "Maïs",
+    "nameEn": "Corn",
     "emoji": "🌽",
     "rarity": "common",
     "seedPrice": 40,
@@ -93,7 +116,10 @@
     "baseYield": 6,
     "sellPrice": 15,
     "requiredLevel": 3,
-    "seasons": ["summer", "autumn"],
+    "seasons": [
+      "summer",
+      "autumn"
+    ],
     "qualityMultiplier": 1.0,
     "waterRequired": 2,
     "fertilityCost": 4,
@@ -102,11 +128,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.012,
     "description": "Gros rendement à l'unité : idéal quand on n'a que quelques parcelles.",
+    "descriptionEn": "High yield per plot: ideal when you only have a few.",
     "sortOrder": 50
   },
   {
     "key": "tomato",
     "name": "Tomate",
+    "nameEn": "Tomato",
     "emoji": "🍅",
     "rarity": "uncommon",
     "seedPrice": 55,
@@ -114,7 +142,9 @@
     "baseYield": 5,
     "sellPrice": 22,
     "requiredLevel": 5,
-    "seasons": ["summer"],
+    "seasons": [
+      "summer"
+    ],
     "qualityMultiplier": 1.05,
     "waterRequired": 2,
     "fertilityCost": 4,
@@ -123,11 +153,13 @@
     "regrowSeconds": 1200,
     "mutationChance": 0.015,
     "description": "Repousse trois fois sans replanter : la première culture réellement rentable.",
+    "descriptionEn": "Regrows three times without replanting: the first truly profitable crop.",
     "sortOrder": 60
   },
   {
     "key": "cucumber",
     "name": "Concombre",
+    "nameEn": "Cucumber",
     "emoji": "🥒",
     "rarity": "uncommon",
     "seedPrice": 60,
@@ -135,7 +167,9 @@
     "baseYield": 6,
     "sellPrice": 26,
     "requiredLevel": 5,
-    "seasons": ["summer"],
+    "seasons": [
+      "summer"
+    ],
     "qualityMultiplier": 1.05,
     "waterRequired": 2,
     "fertilityCost": 4,
@@ -144,11 +178,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.015,
     "description": "Assoiffé mais généreux. Parfait pour les sessions de 35 minutes.",
+    "descriptionEn": "Thirsty but generous. Perfect for 35-minute sessions.",
     "sortOrder": 70
   },
   {
     "key": "strawberry",
     "name": "Fraise",
+    "nameEn": "Strawberry",
     "emoji": "🍓",
     "rarity": "uncommon",
     "seedPrice": 70,
@@ -156,7 +192,10 @@
     "baseYield": 4,
     "sellPrice": 32,
     "requiredLevel": 6,
-    "seasons": ["spring", "summer"],
+    "seasons": [
+      "spring",
+      "summer"
+    ],
     "qualityMultiplier": 1.08,
     "waterRequired": 3,
     "fertilityCost": 5,
@@ -165,11 +204,13 @@
     "regrowSeconds": 1500,
     "mutationChance": 0.015,
     "description": "Base de la confiturerie. Une mutation arc-en-ciel de fraise vaut une fortune.",
+    "descriptionEn": "The base of the jam kitchen. A rainbow strawberry is worth a fortune.",
     "sortOrder": 80
   },
   {
     "key": "eggplant",
     "name": "Aubergine",
+    "nameEn": "Eggplant",
     "emoji": "🍆",
     "rarity": "uncommon",
     "seedPrice": 85,
@@ -177,7 +218,10 @@
     "baseYield": 6,
     "sellPrice": 34,
     "requiredLevel": 7,
-    "seasons": ["summer", "autumn"],
+    "seasons": [
+      "summer",
+      "autumn"
+    ],
     "qualityMultiplier": 1.05,
     "waterRequired": 2,
     "fertilityCost": 5,
@@ -186,11 +230,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.015,
     "description": "Double saison : la culture la plus souple du milieu de partie.",
+    "descriptionEn": "Two seasons: the most flexible mid-game crop.",
     "sortOrder": 90
   },
   {
     "key": "pepper",
     "name": "Poivron",
+    "nameEn": "Pepper",
     "emoji": "🫑",
     "rarity": "uncommon",
     "seedPrice": 95,
@@ -198,7 +244,9 @@
     "baseYield": 6,
     "sellPrice": 36,
     "requiredLevel": 8,
-    "seasons": ["summer"],
+    "seasons": [
+      "summer"
+    ],
     "qualityMultiplier": 1.05,
     "waterRequired": 2,
     "fertilityCost": 5,
@@ -207,11 +255,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.015,
     "description": "Ingrédient unique de la sauce piquante, très demandée au marché.",
+    "descriptionEn": "The only ingredient of hot sauce, in high demand at the market.",
     "sortOrder": 100
   },
   {
     "key": "melon",
     "name": "Melon",
+    "nameEn": "Melon",
     "emoji": "🍈",
     "rarity": "rare",
     "seedPrice": 160,
@@ -219,7 +269,9 @@
     "baseYield": 5,
     "sellPrice": 90,
     "requiredLevel": 10,
-    "seasons": ["summer"],
+    "seasons": [
+      "summer"
+    ],
     "qualityMultiplier": 1.12,
     "waterRequired": 3,
     "fertilityCost": 6,
@@ -228,11 +280,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.02,
     "description": "Premier palier « une session le matin, une le soir ».",
+    "descriptionEn": "First tier of the \"one session in the morning, one at night\" rhythm.",
     "sortOrder": 110
   },
   {
     "key": "sunflower",
     "name": "Tournesol",
+    "nameEn": "Sunflower",
     "emoji": "🌻",
     "rarity": "rare",
     "seedPrice": 180,
@@ -240,7 +294,10 @@
     "baseYield": 6,
     "sellPrice": 85,
     "requiredLevel": 11,
-    "seasons": ["summer", "autumn"],
+    "seasons": [
+      "summer",
+      "autumn"
+    ],
     "qualityMultiplier": 1.12,
     "waterRequired": 3,
     "fertilityCost": 6,
@@ -249,11 +306,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.02,
     "description": "Indispensable à la presse à huile, donc à toute la chaîne de luxe.",
+    "descriptionEn": "Essential to the oil press, and therefore to the whole luxury chain.",
     "sortOrder": 120
   },
   {
     "key": "watermelon",
     "name": "Pastèque",
+    "nameEn": "Watermelon",
     "emoji": "🍉",
     "rarity": "rare",
     "seedPrice": 220,
@@ -261,7 +320,9 @@
     "baseYield": 5,
     "sellPrice": 130,
     "requiredLevel": 12,
-    "seasons": ["summer"],
+    "seasons": [
+      "summer"
+    ],
     "qualityMultiplier": 1.12,
     "waterRequired": 3,
     "fertilityCost": 7,
@@ -270,11 +331,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.02,
     "description": "Lourde, sucrée, chère. Les mutations géantes y sont spectaculaires.",
+    "descriptionEn": "Heavy, sweet, expensive. Giant mutations are spectacular here.",
     "sortOrder": 130
   },
   {
     "key": "hops",
     "name": "Houblon",
+    "nameEn": "Hops",
     "emoji": "🌿",
     "rarity": "rare",
     "seedPrice": 240,
@@ -282,7 +345,10 @@
     "baseYield": 6,
     "sellPrice": 65,
     "requiredLevel": 14,
-    "seasons": ["summer", "autumn"],
+    "seasons": [
+      "summer",
+      "autumn"
+    ],
     "qualityMultiplier": 1.1,
     "waterRequired": 3,
     "fertilityCost": 6,
@@ -291,11 +357,13 @@
     "regrowSeconds": 2700,
     "mutationChance": 0.02,
     "description": "Quatre repousses de 45 minutes : la culture des joueurs assidus.",
+    "descriptionEn": "Four 45-minute regrowths: the crop for dedicated players.",
     "sortOrder": 140
   },
   {
     "key": "pumpkin",
     "name": "Citrouille",
+    "nameEn": "Pumpkin",
     "emoji": "🎃",
     "rarity": "rare",
     "seedPrice": 260,
@@ -303,7 +371,9 @@
     "baseYield": 6,
     "sellPrice": 135,
     "requiredLevel": 13,
-    "seasons": ["autumn"],
+    "seasons": [
+      "autumn"
+    ],
     "qualityMultiplier": 1.15,
     "waterRequired": 3,
     "fertilityCost": 7,
@@ -312,11 +382,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.022,
     "description": "Reine de la Moisson d'Automne, où son prix double.",
+    "descriptionEn": "Queen of the Autumn Harvest, where its price doubles.",
     "sortOrder": 150
   },
   {
     "key": "grape",
     "name": "Raisin",
+    "nameEn": "Grape",
     "emoji": "🍇",
     "rarity": "rare",
     "seedPrice": 300,
@@ -324,7 +396,9 @@
     "baseYield": 8,
     "sellPrice": 90,
     "requiredLevel": 15,
-    "seasons": ["autumn"],
+    "seasons": [
+      "autumn"
+    ],
     "qualityMultiplier": 1.15,
     "waterRequired": 4,
     "fertilityCost": 7,
@@ -333,11 +407,13 @@
     "regrowSeconds": 5400,
     "mutationChance": 0.022,
     "description": "Vigne : trois repousses, et la matière première du vin.",
+    "descriptionEn": "A vine: three regrowths, and the raw material for wine.",
     "sortOrder": 160
   },
   {
     "key": "tea",
     "name": "Thé",
+    "nameEn": "Tea",
     "emoji": "🍵",
     "rarity": "epic",
     "seedPrice": 460,
@@ -345,7 +421,10 @@
     "baseYield": 8,
     "sellPrice": 130,
     "requiredLevel": 17,
-    "seasons": ["spring", "summer"],
+    "seasons": [
+      "spring",
+      "summer"
+    ],
     "qualityMultiplier": 1.2,
     "waterRequired": 4,
     "fertilityCost": 8,
@@ -354,11 +433,13 @@
     "regrowSeconds": 6300,
     "mutationChance": 0.025,
     "description": "Arbuste vivace : on le plante une fois, on récolte quatre fois.",
+    "descriptionEn": "A perennial shrub: plant once, harvest four times.",
     "sortOrder": 170
   },
   {
     "key": "coffee",
     "name": "Café",
+    "nameEn": "Coffee",
     "emoji": "☕",
     "rarity": "epic",
     "seedPrice": 520,
@@ -366,7 +447,10 @@
     "baseYield": 8,
     "sellPrice": 145,
     "requiredLevel": 18,
-    "seasons": ["spring", "summer"],
+    "seasons": [
+      "spring",
+      "summer"
+    ],
     "qualityMultiplier": 1.2,
     "waterRequired": 4,
     "fertilityCost": 8,
@@ -375,11 +459,13 @@
     "regrowSeconds": 7200,
     "mutationChance": 0.025,
     "description": "Torréfié, il alimente les meilleures marges du milieu de partie.",
+    "descriptionEn": "Roasted, it powers the best mid-game margins.",
     "sortOrder": 180
   },
   {
     "key": "cacao",
     "name": "Cacao",
+    "nameEn": "Cacao",
     "emoji": "🍫",
     "rarity": "epic",
     "seedPrice": 700,
@@ -387,7 +473,9 @@
     "baseYield": 9,
     "sellPrice": 360,
     "requiredLevel": 20,
-    "seasons": ["summer"],
+    "seasons": [
+      "summer"
+    ],
     "qualityMultiplier": 1.2,
     "waterRequired": 4,
     "fertilityCost": 9,
@@ -396,11 +484,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.025,
     "description": "Porte d'entrée de la confiserie, la branche la plus lucrative du jeu.",
+    "descriptionEn": "Gateway to the confectionery, the most lucrative branch of the game.",
     "sortOrder": 190
   },
   {
     "key": "lavender",
     "name": "Lavande",
+    "nameEn": "Lavender",
     "emoji": "🪻",
     "rarity": "epic",
     "seedPrice": 780,
@@ -408,7 +498,10 @@
     "baseYield": 10,
     "sellPrice": 300,
     "requiredLevel": 21,
-    "seasons": ["spring", "summer"],
+    "seasons": [
+      "spring",
+      "summer"
+    ],
     "qualityMultiplier": 1.22,
     "waterRequired": 4,
     "fertilityCost": 9,
@@ -417,11 +510,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.025,
     "description": "Gros rendement unitaire ; le savon de lavande se vend très bien.",
+    "descriptionEn": "High yield per plot; lavender soap sells very well.",
     "sortOrder": 200
   },
   {
     "key": "vanilla",
     "name": "Vanille",
+    "nameEn": "Vanilla",
     "emoji": "🌼",
     "rarity": "epic",
     "seedPrice": 900,
@@ -429,7 +524,9 @@
     "baseYield": 8,
     "sellPrice": 520,
     "requiredLevel": 23,
-    "seasons": ["summer"],
+    "seasons": [
+      "summer"
+    ],
     "qualityMultiplier": 1.25,
     "waterRequired": 5,
     "fertilityCost": 10,
@@ -438,11 +535,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.028,
     "description": "Exigeante en eau, mais la praline de vanille est un produit de luxe.",
+    "descriptionEn": "Thirsty, but vanilla praline is a luxury product.",
     "sortOrder": 210
   },
   {
     "key": "ginseng",
     "name": "Ginseng",
+    "nameEn": "Ginseng",
     "emoji": "🫚",
     "rarity": "legendary",
     "seedPrice": 1600,
@@ -450,7 +549,10 @@
     "baseYield": 8,
     "sellPrice": 1050,
     "requiredLevel": 28,
-    "seasons": ["autumn", "winter"],
+    "seasons": [
+      "autumn",
+      "winter"
+    ],
     "qualityMultiplier": 1.3,
     "waterRequired": 5,
     "fertilityCost": 12,
@@ -459,11 +561,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.03,
     "description": "Racine d'hiver : la culture qui rend la saison froide intéressante.",
+    "descriptionEn": "A winter root: the crop that makes the cold season interesting.",
     "sortOrder": 220
   },
   {
     "key": "truffle",
     "name": "Truffe",
+    "nameEn": "Truffle",
     "emoji": "🍄",
     "rarity": "legendary",
     "seedPrice": 2400,
@@ -471,7 +575,10 @@
     "baseYield": 7,
     "sellPrice": 1750,
     "requiredLevel": 32,
-    "seasons": ["autumn", "winter"],
+    "seasons": [
+      "autumn",
+      "winter"
+    ],
     "qualityMultiplier": 1.32,
     "waterRequired": 4,
     "fertilityCost": 14,
@@ -480,11 +587,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.03,
     "description": "Dix heures de patience, et l'huile de truffe au bout.",
+    "descriptionEn": "Ten hours of patience, and truffle oil at the end.",
     "sortOrder": 230
   },
   {
     "key": "saffron",
     "name": "Safran",
+    "nameEn": "Saffron",
     "emoji": "🌺",
     "rarity": "legendary",
     "seedPrice": 3200,
@@ -492,7 +601,9 @@
     "baseYield": 8,
     "sellPrice": 2400,
     "requiredLevel": 36,
-    "seasons": ["autumn"],
+    "seasons": [
+      "autumn"
+    ],
     "qualityMultiplier": 1.35,
     "waterRequired": 6,
     "fertilityCost": 15,
@@ -501,11 +612,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.032,
     "description": "L'épice la plus chère du monde, et ça se voit sur la facture de graines.",
+    "descriptionEn": "The most expensive spice in the world, and the seed price shows it.",
     "sortOrder": 240
   },
   {
     "key": "dragonfruit",
     "name": "Fruit du dragon",
+    "nameEn": "Dragon fruit",
     "emoji": "🐉",
     "rarity": "mythic",
     "seedPrice": 6000,
@@ -513,7 +626,9 @@
     "baseYield": 9,
     "sellPrice": 5200,
     "requiredLevel": 42,
-    "seasons": ["summer"],
+    "seasons": [
+      "summer"
+    ],
     "qualityMultiplier": 1.4,
     "waterRequired": 6,
     "fertilityCost": 18,
@@ -522,11 +637,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.04,
     "description": "18 heures de pousse : on plante le soir, on récolte le lendemain soir.",
+    "descriptionEn": "18 hours of growth: plant at night, harvest the next evening.",
     "sortOrder": 250
   },
   {
     "key": "star_lotus",
     "name": "Lotus étoilé",
+    "nameEn": "Star lotus",
     "emoji": "✨",
     "rarity": "mythic",
     "seedPrice": 9000,
@@ -534,7 +651,12 @@
     "baseYield": 10,
     "sellPrice": 8200,
     "requiredLevel": 48,
-    "seasons": ["spring", "summer", "autumn", "winter"],
+    "seasons": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+    ],
     "qualityMultiplier": 1.45,
     "waterRequired": 7,
     "fertilityCost": 20,
@@ -543,11 +665,13 @@
     "regrowSeconds": 0,
     "mutationChance": 0.045,
     "description": "Insensible aux saisons. Le pilier du revenu de fin de partie.",
+    "descriptionEn": "Immune to seasons. The pillar of late-game income.",
     "sortOrder": 260
   },
   {
     "key": "world_tree",
     "name": "Arbre-monde",
+    "nameEn": "World tree",
     "emoji": "🌳",
     "rarity": "mythic",
     "seedPrice": 15000,
@@ -555,7 +679,12 @@
     "baseYield": 12,
     "sellPrice": 12500,
     "requiredLevel": 55,
-    "seasons": ["spring", "summer", "autumn", "winter"],
+    "seasons": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+    ],
     "qualityMultiplier": 1.5,
     "waterRequired": 8,
     "fertilityCost": 22,
@@ -564,6 +693,7 @@
     "regrowSeconds": 0,
     "mutationChance": 0.05,
     "description": "36 heures. Le dernier objectif avant le prestige.",
+    "descriptionEn": "36 hours. The last goal before prestige.",
     "sortOrder": 270
   }
 ]

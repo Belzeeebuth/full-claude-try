@@ -2,6 +2,7 @@
   {
     "key": "chicken",
     "name": "Poule",
+    "nameEn": "Hen",
     "emoji": "🐔",
     "rarity": "common",
     "price": 400,
@@ -21,11 +22,13 @@
     "passiveBonus": {},
     "eventOnly": false,
     "description": "Deux œufs toutes les 45 minutes. Le premier animal de toute ferme.",
+    "descriptionEn": "Two eggs every 45 minutes. The first animal on any farm.",
     "sortOrder": 10
   },
   {
     "key": "duck",
     "name": "Canard",
+    "nameEn": "Duck",
     "emoji": "🦆",
     "rarity": "common",
     "price": 580,
@@ -45,11 +48,13 @@
     "passiveBonus": {},
     "eventOnly": false,
     "description": "Œufs plus chers que ceux de la poule, cycle un peu plus long.",
+    "descriptionEn": "Eggs worth more than a hen’s, with a slightly longer cycle.",
     "sortOrder": 20
   },
   {
     "key": "rabbit",
     "name": "Lapin",
+    "nameEn": "Rabbit",
     "emoji": "🐰",
     "rarity": "common",
     "price": 770,
@@ -66,14 +71,18 @@
     "breedingCooldownSeconds": 21600,
     "hungerRate": 5.5,
     "happinessRate": 3.5,
-    "passiveBonus": { "breedingSpeed": 0.25 },
+    "passiveBonus": {
+      "breedingSpeed": 0.25
+    },
     "eventOnly": false,
     "description": "Se reproduit deux fois plus vite que les autres. Évidemment.",
+    "descriptionEn": "Breeds twice as fast as the others. Obviously.",
     "sortOrder": 30
   },
   {
     "key": "sheep",
     "name": "Mouton",
+    "nameEn": "Sheep",
     "emoji": "🐑",
     "rarity": "uncommon",
     "price": 1400,
@@ -93,11 +102,13 @@
     "passiveBonus": {},
     "eventOnly": false,
     "description": "Trois toisons par cycle : la laine filée est un produit stable.",
+    "descriptionEn": "Three fleeces per cycle: spun wool is a stable product.",
     "sortOrder": 40
   },
   {
     "key": "goat",
     "name": "Chèvre",
+    "nameEn": "Goat",
     "emoji": "🐐",
     "rarity": "uncommon",
     "price": 1550,
@@ -117,11 +128,13 @@
     "passiveBonus": {},
     "eventOnly": false,
     "description": "Grimpe partout, mange tout, donne un lait qui fait un excellent fromage.",
+    "descriptionEn": "Climbs everywhere, eats anything, gives milk that makes excellent cheese.",
     "sortOrder": 50
   },
   {
     "key": "bee",
     "name": "Abeille",
+    "nameEn": "Bee",
     "emoji": "🐝",
     "rarity": "uncommon",
     "price": 1750,
@@ -138,14 +151,18 @@
     "breedingCooldownSeconds": 0,
     "hungerRate": 3.0,
     "happinessRate": 1.5,
-    "passiveBonus": { "cropYield": 0.02 },
+    "passiveBonus": {
+      "cropYield": 0.02
+    },
     "eventOnly": false,
     "description": "Chaque essaim pollinise vos cultures : +2 % de rendement par ruche.",
+    "descriptionEn": "Each swarm pollinates your crops: +2% yield per hive.",
     "sortOrder": 60
   },
   {
     "key": "cow",
     "name": "Vache",
+    "nameEn": "Cow",
     "emoji": "🐄",
     "rarity": "uncommon",
     "price": 2100,
@@ -165,11 +182,13 @@
     "passiveBonus": {},
     "eventOnly": false,
     "description": "Le lait alimente fromagerie, beurre et confiserie : investissement clé.",
+    "descriptionEn": "Milk feeds the creamery, butter and confectionery: a key investment.",
     "sortOrder": 70
   },
   {
     "key": "pig",
     "name": "Cochon",
+    "nameEn": "Pig",
     "emoji": "🐖",
     "rarity": "rare",
     "price": 3000,
@@ -189,11 +208,13 @@
     "passiveBonus": {},
     "eventOnly": false,
     "description": "Déniche une truffe sauvage toutes les 6 h — sans occuper de parcelle.",
+    "descriptionEn": "Digs up a wild truffle every 6 h — without using a plot.",
     "sortOrder": 80
   },
   {
     "key": "alpaca",
     "name": "Alpaga",
+    "nameEn": "Alpaca",
     "emoji": "🦙",
     "rarity": "rare",
     "price": 6000,
@@ -213,11 +234,13 @@
     "passiveBonus": {},
     "eventOnly": false,
     "description": "Laine fine : matière première du tissu fin, très recherché à l'hôtel des ventes.",
+    "descriptionEn": "Fine wool: the raw material of fine cloth, sought after at the auction house.",
     "sortOrder": 90
   },
   {
     "key": "ostrich",
     "name": "Autruche",
+    "nameEn": "Ostrich",
     "emoji": "🪶",
     "rarity": "epic",
     "price": 8000,
@@ -237,11 +260,13 @@
     "passiveBonus": {},
     "eventOnly": false,
     "description": "Un œuf géant toutes les 8 h. Peu d'entretien, gros revenu.",
+    "descriptionEn": "One giant egg every 8 h. Low upkeep, high income.",
     "sortOrder": 100
   },
   {
     "key": "horse",
     "name": "Cheval",
+    "nameEn": "Horse",
     "emoji": "🐴",
     "rarity": "epic",
     "price": 9500,
@@ -258,14 +283,18 @@
     "breedingCooldownSeconds": 259200,
     "hungerRate": 3.5,
     "happinessRate": 3.0,
-    "passiveBonus": { "marketSellBonus": 0.05 },
+    "passiveBonus": {
+      "marketSellBonus": 0.05
+    },
     "eventOnly": false,
     "description": "Transporte vos récoltes au marché : +5 % sur tous vos prix de vente.",
+    "descriptionEn": "Carries your harvest to market: +5% on all your sale prices.",
     "sortOrder": 110
   },
   {
     "key": "peacock",
     "name": "Paon",
+    "nameEn": "Peacock",
     "emoji": "🦚",
     "rarity": "legendary",
     "price": 12800,
@@ -282,14 +311,18 @@
     "breedingCooldownSeconds": 345600,
     "hungerRate": 2.5,
     "happinessRate": 4.0,
-    "passiveBonus": { "luck": 0.03 },
+    "passiveBonus": {
+      "luck": 0.03
+    },
     "eventOnly": false,
     "description": "Superbe et capricieux : +3 % de chance sur les qualités et mutations.",
+    "descriptionEn": "Splendid and temperamental: +3% chance on qualities and mutations.",
     "sortOrder": 120
   },
   {
     "key": "dragonet",
     "name": "Dragonnet",
+    "nameEn": "Dragonet",
     "emoji": "🐲",
     "rarity": "mythic",
     "price": 0,
@@ -306,9 +339,12 @@
     "breedingCooldownSeconds": 0,
     "hungerRate": 8.0,
     "happinessRate": 5.0,
-    "passiveBonus": { "xpBonus": 0.1 },
+    "passiveBonus": {
+      "xpBonus": 0.1
+    },
     "eventOnly": true,
     "description": "Récompense d'événement. Affamé, exigeant, et +10 % d'XP sur tout.",
+    "descriptionEn": "An event reward. Hungry, demanding, and +10% XP on everything.",
     "sortOrder": 130
   }
 ]

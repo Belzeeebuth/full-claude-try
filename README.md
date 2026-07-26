@@ -194,6 +194,12 @@ Tout le gameplay vit dans `src/config/gameplay/` :
 | `events.json` | 6 événements |
 | `season-pass.json` | 30 paliers |
 
+Le contenu est **bilingue** : chaque entrée porte `name`/`description` en français
+et `nameEn`/`descriptionEn` en anglais. Le chargeur dérive une variante complète de
+la configuration par langue, si bien que `getConfig(locale)` renvoie des entrées dont
+`name` est déjà traduit — aucun des ~140 points d'affichage n'a à s'en occuper. Un
+test échoue si une entrée n'a pas sa traduction.
+
 Ils sont validés par Zod **avec vérification croisée** : une recette référençant un
 ingrédient inexistant, un animal exigeant un bâtiment absent ou une quête ciblant une
 culture inconnue empêchent le démarrage, avec un message précis.

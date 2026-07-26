@@ -52,6 +52,7 @@ export type ItemStack = z.infer<typeof itemStackSchema>;
 export const cropSchema = z.object({
   key,
   name: z.string().min(1).max(64),
+  nameEn: z.string().min(1).max(64).optional(),
   emoji: z.string().min(1).max(32),
   rarity: z.enum(rarities).default('common'),
   seedPrice: nonNegativeInt,
@@ -69,6 +70,7 @@ export const cropSchema = z.object({
   mutationChance: z.number().min(0).max(1).default(0.01),
   sprite: z.string().max(64).optional(),
   description: z.string().max(512).optional(),
+  descriptionEn: z.string().max(512).optional(),
   sortOrder: nonNegativeInt.default(0),
   enabled: z.boolean().default(true),
 });
@@ -80,6 +82,7 @@ export type CropConfig = z.infer<typeof cropSchema>;
 export const animalSchema = z.object({
   key,
   name: z.string().min(1).max(64),
+  nameEn: z.string().min(1).max(64).optional(),
   emoji: z.string().min(1).max(32),
   rarity: z.enum(rarities).default('common'),
   price: nonNegativeInt,
@@ -108,6 +111,7 @@ export const animalSchema = z.object({
   eventOnly: z.boolean().default(false),
   sprite: z.string().max(64).optional(),
   description: z.string().max(512).optional(),
+  descriptionEn: z.string().max(512).optional(),
   sortOrder: nonNegativeInt.default(0),
   enabled: z.boolean().default(true),
 });
@@ -154,6 +158,7 @@ export const itemEffectSchema = z
 export const itemSchema = z.object({
   key,
   name: z.string().min(1).max(64),
+  nameEn: z.string().min(1).max(64).optional(),
   emoji: z.string().min(1).max(32),
   category: z.enum(itemCategories),
   rarity: z.enum(rarities).default('common'),
@@ -171,6 +176,7 @@ export const itemSchema = z.object({
   collectionKey: key.optional(),
   sprite: z.string().max(64).optional(),
   description: z.string().max(512).optional(),
+  descriptionEn: z.string().max(512).optional(),
   sortOrder: nonNegativeInt.default(0),
   enabled: z.boolean().default(true),
 });
@@ -182,6 +188,7 @@ export type ItemConfig = z.infer<typeof itemSchema>;
 export const recipeSchema = z.object({
   key,
   name: z.string().min(1).max(64),
+  nameEn: z.string().min(1).max(64).optional(),
   emoji: z.string().min(1).max(32),
   buildingKey: key,
   outputItemKey: key,
@@ -223,6 +230,7 @@ export const buildingSchema = z
   .object({
     key,
     name: z.string().min(1).max(64),
+    nameEn: z.string().min(1).max(64).optional(),
     emoji: z.string().min(1).max(32),
     category: z.enum(buildingCategories),
     maxTier: z.number().int().min(1).max(10),
@@ -231,6 +239,7 @@ export const buildingSchema = z
     unlocksRecipes: z.array(key).default([]),
     sprite: z.string().max(64).optional(),
     description: z.string().max(512).optional(),
+    descriptionEn: z.string().max(512).optional(),
     sortOrder: nonNegativeInt.default(0),
     enabled: z.boolean().default(true),
   })
@@ -288,7 +297,9 @@ export const questSchema = z.object({
   key: z.string().min(1).max(64).regex(/^[a-z0-9_]+$/),
   type: z.enum(['daily', 'weekly', 'story', 'contract']),
   title: z.string().min(1).max(128),
+  titleEn: z.string().min(1).max(128).optional(),
   description: z.string().min(1).max(512),
+  descriptionEn: z.string().min(1).max(512).optional(),
   objectiveType: z.enum(questObjectives),
   objectiveTarget: objectiveTargetSchema,
   requiredAmount: positiveInt,
@@ -308,7 +319,9 @@ export type QuestConfig = z.infer<typeof questSchema>;
 export const achievementSchema = z.object({
   key: z.string().min(1).max(64).regex(/^[a-z0-9_]+$/),
   name: z.string().min(1).max(128),
+  nameEn: z.string().min(1).max(128).optional(),
   description: z.string().min(1).max(512),
+  descriptionEn: z.string().min(1).max(512).optional(),
   category: z.string().min(1).max(32).default('general'),
   icon: z.string().min(1).max(32).default('🏆'),
   tier: z.number().int().min(1).max(5).default(1),
@@ -339,7 +352,9 @@ export const eventRewardSchema = z.object({
 export const eventSchema = z.object({
   key: z.string().min(1).max(64).regex(/^[a-z0-9_]+$/),
   name: z.string().min(1).max(128),
+  nameEn: z.string().min(1).max(128).optional(),
   description: z.string().min(1).max(1024),
+  descriptionEn: z.string().min(1).max(1024).optional(),
   type: z.enum(['seasonal', 'weekend', 'community', 'disaster', 'anniversary']).default('seasonal'),
   startsAt: z.string().optional(),
   endsAt: z.string().optional(),
@@ -384,7 +399,9 @@ export const seasonPassSchema = z.object({
   id: z.string().min(1).max(48),
   seasonKey: z.string().min(1).max(48),
   name: z.string().min(1).max(128),
+  nameEn: z.string().min(1).max(128).optional(),
   description: z.string().max(1024).optional(),
+  descriptionEn: z.string().max(1024).optional(),
   startsAt: z.string(),
   endsAt: z.string(),
   maxTier: positiveInt,

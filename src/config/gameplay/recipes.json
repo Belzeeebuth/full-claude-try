@@ -2,11 +2,17 @@
   {
     "key": "flour",
     "name": "Farine",
+    "nameEn": "Flour",
     "emoji": "🌾",
     "buildingKey": "mill",
     "outputItemKey": "flour",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "wheat", "quantity": 3 }],
+    "ingredients": [
+      {
+        "itemKey": "wheat",
+        "quantity": 3
+      }
+    ],
     "durationSeconds": 300,
     "requiredLevel": 4,
     "xpReward": 8,
@@ -16,13 +22,20 @@
   {
     "key": "bread",
     "name": "Pain",
+    "nameEn": "Bread",
     "emoji": "🍞",
     "buildingKey": "mill",
     "outputItemKey": "bread",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "flour", "quantity": 2 },
-      { "itemKey": "egg", "quantity": 1 }
+      {
+        "itemKey": "flour",
+        "quantity": 2
+      },
+      {
+        "itemKey": "egg",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 600,
     "requiredLevel": 6,
@@ -33,13 +46,20 @@
   {
     "key": "fertilizer_basic",
     "name": "Compost",
+    "nameEn": "Compost",
     "emoji": "💩",
     "buildingKey": "workshop",
     "outputItemKey": "fertilizer_basic",
     "outputQuantity": 2,
     "ingredients": [
-      { "itemKey": "weeds", "quantity": 8 },
-      { "itemKey": "wheat", "quantity": 2 }
+      {
+        "itemKey": "weeds",
+        "quantity": 8
+      },
+      {
+        "itemKey": "wheat",
+        "quantity": 2
+      }
     ],
     "durationSeconds": 1200,
     "requiredLevel": 5,
@@ -50,14 +70,24 @@
   {
     "key": "vegetable_soup",
     "name": "Soupe de légumes",
+    "nameEn": "Vegetable soup",
     "emoji": "🥣",
     "buildingKey": "jam_kitchen",
     "outputItemKey": "vegetable_soup",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "carrot", "quantity": 2 },
-      { "itemKey": "potato", "quantity": 2 },
-      { "itemKey": "lettuce", "quantity": 2 }
+      {
+        "itemKey": "carrot",
+        "quantity": 2
+      },
+      {
+        "itemKey": "potato",
+        "quantity": 2
+      },
+      {
+        "itemKey": "lettuce",
+        "quantity": 2
+      }
     ],
     "durationSeconds": 900,
     "requiredLevel": 9,
@@ -68,11 +98,17 @@
   {
     "key": "ketchup",
     "name": "Ketchup",
+    "nameEn": "Ketchup",
     "emoji": "🧴",
     "buildingKey": "jam_kitchen",
     "outputItemKey": "ketchup",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "tomato", "quantity": 4 }],
+    "ingredients": [
+      {
+        "itemKey": "tomato",
+        "quantity": 4
+      }
+    ],
     "durationSeconds": 1200,
     "requiredLevel": 9,
     "xpReward": 20,
@@ -82,11 +118,17 @@
   {
     "key": "hot_sauce",
     "name": "Sauce piquante",
+    "nameEn": "Hot sauce",
     "emoji": "🌶️",
     "buildingKey": "jam_kitchen",
     "outputItemKey": "hot_sauce",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "pepper", "quantity": 4 }],
+    "ingredients": [
+      {
+        "itemKey": "pepper",
+        "quantity": 4
+      }
+    ],
     "durationSeconds": 1500,
     "requiredLevel": 10,
     "xpReward": 26,
@@ -96,11 +138,17 @@
   {
     "key": "spun_wool",
     "name": "Laine filée",
+    "nameEn": "Spun wool",
     "emoji": "🧶",
     "buildingKey": "workshop",
     "outputItemKey": "spun_wool",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "wool", "quantity": 3 }],
+    "ingredients": [
+      {
+        "itemKey": "wool",
+        "quantity": 3
+      }
+    ],
     "durationSeconds": 1800,
     "requiredLevel": 10,
     "xpReward": 30,
@@ -110,11 +158,17 @@
   {
     "key": "melon_nectar",
     "name": "Nectar de melon",
+    "nameEn": "Melon nectar",
     "emoji": "🧃",
     "buildingKey": "jam_kitchen",
     "outputItemKey": "melon_nectar",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "melon", "quantity": 3 }],
+    "ingredients": [
+      {
+        "itemKey": "melon",
+        "quantity": 3
+      }
+    ],
     "durationSeconds": 2100,
     "requiredLevel": 12,
     "xpReward": 32,
@@ -124,11 +178,17 @@
   {
     "key": "goat_cheese",
     "name": "Fromage de chèvre",
+    "nameEn": "Goat cheese",
     "emoji": "🧀",
     "buildingKey": "creamery",
     "outputItemKey": "goat_cheese",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "goat_milk", "quantity": 2 }],
+    "ingredients": [
+      {
+        "itemKey": "goat_milk",
+        "quantity": 2
+      }
+    ],
     "durationSeconds": 2100,
     "requiredLevel": 12,
     "xpReward": 34,
@@ -138,11 +198,17 @@
   {
     "key": "cheese",
     "name": "Fromage",
+    "nameEn": "Cheese",
     "emoji": "🧀",
     "buildingKey": "creamery",
     "outputItemKey": "cheese",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "milk", "quantity": 2 }],
+    "ingredients": [
+      {
+        "itemKey": "milk",
+        "quantity": 2
+      }
+    ],
     "durationSeconds": 2400,
     "requiredLevel": 12,
     "xpReward": 40,
@@ -152,13 +218,20 @@
   {
     "key": "jam_strawberry",
     "name": "Confiture de fraises",
+    "nameEn": "Strawberry jam",
     "emoji": "🍓",
     "buildingKey": "jam_kitchen",
     "outputItemKey": "jam_strawberry",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "strawberry", "quantity": 5 },
-      { "itemKey": "honey", "quantity": 1 }
+      {
+        "itemKey": "strawberry",
+        "quantity": 5
+      },
+      {
+        "itemKey": "honey",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 1800,
     "requiredLevel": 13,
@@ -169,11 +242,17 @@
   {
     "key": "butter",
     "name": "Beurre",
+    "nameEn": "Butter",
     "emoji": "🧈",
     "buildingKey": "creamery",
     "outputItemKey": "butter",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "milk", "quantity": 3 }],
+    "ingredients": [
+      {
+        "itemKey": "milk",
+        "quantity": 3
+      }
+    ],
     "durationSeconds": 3600,
     "requiredLevel": 14,
     "xpReward": 55,
@@ -183,13 +262,20 @@
   {
     "key": "strawberry_yogurt",
     "name": "Yaourt à la fraise",
+    "nameEn": "Strawberry yoghurt",
     "emoji": "🍨",
     "buildingKey": "creamery",
     "outputItemKey": "strawberry_yogurt",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "milk", "quantity": 2 },
-      { "itemKey": "strawberry", "quantity": 3 }
+      {
+        "itemKey": "milk",
+        "quantity": 2
+      },
+      {
+        "itemKey": "strawberry",
+        "quantity": 3
+      }
     ],
     "durationSeconds": 3000,
     "requiredLevel": 15,
@@ -200,11 +286,17 @@
   {
     "key": "wine",
     "name": "Vin",
+    "nameEn": "Wine",
     "emoji": "🍷",
     "buildingKey": "brewery",
     "outputItemKey": "wine",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "grape", "quantity": 6 }],
+    "ingredients": [
+      {
+        "itemKey": "grape",
+        "quantity": 6
+      }
+    ],
     "durationSeconds": 14400,
     "requiredLevel": 15,
     "xpReward": 70,
@@ -214,13 +306,20 @@
   {
     "key": "beer",
     "name": "Bière",
+    "nameEn": "Beer",
     "emoji": "🍺",
     "buildingKey": "brewery",
     "outputItemKey": "beer",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "hops", "quantity": 5 },
-      { "itemKey": "wheat", "quantity": 2 }
+      {
+        "itemKey": "hops",
+        "quantity": 5
+      },
+      {
+        "itemKey": "wheat",
+        "quantity": 2
+      }
     ],
     "durationSeconds": 7200,
     "requiredLevel": 16,
@@ -231,11 +330,17 @@
   {
     "key": "grape_juice",
     "name": "Jus de raisin",
+    "nameEn": "Grape juice",
     "emoji": "🧃",
     "buildingKey": "jam_kitchen",
     "outputItemKey": "grape_juice",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "grape", "quantity": 4 }],
+    "ingredients": [
+      {
+        "itemKey": "grape",
+        "quantity": 4
+      }
+    ],
     "durationSeconds": 2400,
     "requiredLevel": 16,
     "xpReward": 42,
@@ -245,13 +350,20 @@
   {
     "key": "jam_grape",
     "name": "Confiture de raisin",
+    "nameEn": "Grape jam",
     "emoji": "🍇",
     "buildingKey": "jam_kitchen",
     "outputItemKey": "jam_grape",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "grape", "quantity": 5 },
-      { "itemKey": "honey", "quantity": 1 }
+      {
+        "itemKey": "grape",
+        "quantity": 5
+      },
+      {
+        "itemKey": "honey",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 2700,
     "requiredLevel": 17,
@@ -262,11 +374,17 @@
   {
     "key": "sunflower_oil",
     "name": "Huile de tournesol",
+    "nameEn": "Sunflower oil",
     "emoji": "🫙",
     "buildingKey": "oil_press",
     "outputItemKey": "sunflower_oil",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "sunflower", "quantity": 4 }],
+    "ingredients": [
+      {
+        "itemKey": "sunflower",
+        "quantity": 4
+      }
+    ],
     "durationSeconds": 3600,
     "requiredLevel": 18,
     "xpReward": 44,
@@ -276,13 +394,20 @@
   {
     "key": "mead",
     "name": "Hydromel",
+    "nameEn": "Mead",
     "emoji": "🍯",
     "buildingKey": "brewery",
     "outputItemKey": "mead",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "honey", "quantity": 4 },
-      { "itemKey": "hops", "quantity": 2 }
+      {
+        "itemKey": "honey",
+        "quantity": 4
+      },
+      {
+        "itemKey": "hops",
+        "quantity": 2
+      }
     ],
     "durationSeconds": 10800,
     "requiredLevel": 19,
@@ -293,11 +418,17 @@
   {
     "key": "roasted_coffee",
     "name": "Café torréfié",
+    "nameEn": "Roasted coffee",
     "emoji": "☕",
     "buildingKey": "smokehouse",
     "outputItemKey": "roasted_coffee",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "coffee", "quantity": 3 }],
+    "ingredients": [
+      {
+        "itemKey": "coffee",
+        "quantity": 3
+      }
+    ],
     "durationSeconds": 3600,
     "requiredLevel": 20,
     "xpReward": 52,
@@ -307,11 +438,17 @@
   {
     "key": "fine_cloth",
     "name": "Tissu fin",
+    "nameEn": "Fine cloth",
     "emoji": "🪡",
     "buildingKey": "workshop",
     "outputItemKey": "fine_cloth",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "fine_wool", "quantity": 3 }],
+    "ingredients": [
+      {
+        "itemKey": "fine_wool",
+        "quantity": 3
+      }
+    ],
     "durationSeconds": 5400,
     "requiredLevel": 22,
     "xpReward": 130,
@@ -321,13 +458,20 @@
   {
     "key": "lavender_soap",
     "name": "Savon de lavande",
+    "nameEn": "Lavender soap",
     "emoji": "🧼",
     "buildingKey": "oil_press",
     "outputItemKey": "lavender_soap",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "lavender", "quantity": 3 },
-      { "itemKey": "sunflower_oil", "quantity": 1 }
+      {
+        "itemKey": "lavender",
+        "quantity": 3
+      },
+      {
+        "itemKey": "sunflower_oil",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 7200,
     "requiredLevel": 22,
@@ -338,11 +482,17 @@
   {
     "key": "smoked_cheese",
     "name": "Fromage fumé",
+    "nameEn": "Smoked cheese",
     "emoji": "🧀",
     "buildingKey": "smokehouse",
     "outputItemKey": "smoked_cheese",
     "outputQuantity": 1,
-    "ingredients": [{ "itemKey": "cheese", "quantity": 2 }],
+    "ingredients": [
+      {
+        "itemKey": "cheese",
+        "quantity": 2
+      }
+    ],
     "durationSeconds": 5400,
     "requiredLevel": 23,
     "xpReward": 105,
@@ -352,13 +502,20 @@
   {
     "key": "chocolate",
     "name": "Chocolat",
+    "nameEn": "Chocolate",
     "emoji": "🍫",
     "buildingKey": "confectionery",
     "outputItemKey": "chocolate",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "cacao", "quantity": 3 },
-      { "itemKey": "milk", "quantity": 1 }
+      {
+        "itemKey": "cacao",
+        "quantity": 3
+      },
+      {
+        "itemKey": "milk",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 7200,
     "requiredLevel": 25,
@@ -369,13 +526,20 @@
   {
     "key": "smoked_truffle",
     "name": "Truffe fumée",
+    "nameEn": "Smoked truffle",
     "emoji": "🍖",
     "buildingKey": "smokehouse",
     "outputItemKey": "smoked_truffle",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "wild_truffle", "quantity": 1 },
-      { "itemKey": "sunflower_oil", "quantity": 1 }
+      {
+        "itemKey": "wild_truffle",
+        "quantity": 1
+      },
+      {
+        "itemKey": "sunflower_oil",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 7200,
     "requiredLevel": 25,
@@ -386,14 +550,24 @@
   {
     "key": "cake",
     "name": "Gâteau",
+    "nameEn": "Cake",
     "emoji": "🍰",
     "buildingKey": "confectionery",
     "outputItemKey": "cake",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "flour", "quantity": 2 },
-      { "itemKey": "egg", "quantity": 3 },
-      { "itemKey": "butter", "quantity": 1 }
+      {
+        "itemKey": "flour",
+        "quantity": 2
+      },
+      {
+        "itemKey": "egg",
+        "quantity": 3
+      },
+      {
+        "itemKey": "butter",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 5400,
     "requiredLevel": 26,
@@ -404,14 +578,24 @@
   {
     "key": "pumpkin_pie",
     "name": "Tarte à la citrouille",
+    "nameEn": "Pumpkin pie",
     "emoji": "🥧",
     "buildingKey": "confectionery",
     "outputItemKey": "pumpkin_pie",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "pumpkin", "quantity": 1 },
-      { "itemKey": "flour", "quantity": 2 },
-      { "itemKey": "butter", "quantity": 1 }
+      {
+        "itemKey": "pumpkin",
+        "quantity": 1
+      },
+      {
+        "itemKey": "flour",
+        "quantity": 2
+      },
+      {
+        "itemKey": "butter",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 6300,
     "requiredLevel": 26,
@@ -422,13 +606,20 @@
   {
     "key": "vanilla_praline",
     "name": "Praline de vanille",
+    "nameEn": "Vanilla praline",
     "emoji": "🍬",
     "buildingKey": "confectionery",
     "outputItemKey": "vanilla_praline",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "vanilla", "quantity": 2 },
-      { "itemKey": "chocolate", "quantity": 2 }
+      {
+        "itemKey": "vanilla",
+        "quantity": 2
+      },
+      {
+        "itemKey": "chocolate",
+        "quantity": 2
+      }
     ],
     "durationSeconds": 14400,
     "requiredLevel": 28,
@@ -439,13 +630,20 @@
   {
     "key": "ginseng_elixir",
     "name": "Élixir de ginseng",
+    "nameEn": "Ginseng elixir",
     "emoji": "⚗️",
     "buildingKey": "workshop",
     "outputItemKey": "ginseng_elixir",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "ginseng", "quantity": 2 },
-      { "itemKey": "honey", "quantity": 1 }
+      {
+        "itemKey": "ginseng",
+        "quantity": 2
+      },
+      {
+        "itemKey": "honey",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 14400,
     "requiredLevel": 30,
@@ -456,13 +654,20 @@
   {
     "key": "truffle_oil",
     "name": "Huile de truffe",
+    "nameEn": "Truffle oil",
     "emoji": "🫗",
     "buildingKey": "oil_press",
     "outputItemKey": "truffle_oil",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "truffle", "quantity": 1 },
-      { "itemKey": "sunflower_oil", "quantity": 2 }
+      {
+        "itemKey": "truffle",
+        "quantity": 1
+      },
+      {
+        "itemKey": "sunflower_oil",
+        "quantity": 2
+      }
     ],
     "durationSeconds": 10800,
     "requiredLevel": 32,
@@ -473,13 +678,20 @@
   {
     "key": "saffron_essence",
     "name": "Essence de safran",
+    "nameEn": "Saffron essence",
     "emoji": "🧪",
     "buildingKey": "oil_press",
     "outputItemKey": "saffron_essence",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "saffron", "quantity": 3 },
-      { "itemKey": "sunflower_oil", "quantity": 1 }
+      {
+        "itemKey": "saffron",
+        "quantity": 3
+      },
+      {
+        "itemKey": "sunflower_oil",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 21600,
     "requiredLevel": 36,
@@ -490,13 +702,20 @@
   {
     "key": "dragon_potion",
     "name": "Potion de dragon",
+    "nameEn": "Dragon potion",
     "emoji": "🧫",
     "buildingKey": "workshop",
     "outputItemKey": "dragon_potion",
     "outputQuantity": 1,
     "ingredients": [
-      { "itemKey": "dragon_scale", "quantity": 1 },
-      { "itemKey": "ginseng_elixir", "quantity": 1 }
+      {
+        "itemKey": "dragon_scale",
+        "quantity": 1
+      },
+      {
+        "itemKey": "ginseng_elixir",
+        "quantity": 1
+      }
     ],
     "durationSeconds": 28800,
     "requiredLevel": 42,

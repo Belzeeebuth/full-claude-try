@@ -2,11 +2,13 @@
   {
     "key": "coop",
     "name": "Poulailler",
+    "nameEn": "Coop",
     "emoji": "🏚️",
     "category": "livestock",
     "requiredLevel": 2,
     "maxTier": 4,
     "description": "Héberge poules et canards.",
+    "descriptionEn": "Houses hens and ducks.",
     "unlocksRecipes": [],
     "sortOrder": 10,
     "tiers": [
@@ -14,7 +16,12 @@
         "tier": 1,
         "requiredLevel": 2,
         "costCoins": 3000,
-        "costItems": [{ "itemKey": "wood", "quantity": 10 }],
+        "costItems": [
+          {
+            "itemKey": "wood",
+            "quantity": 10
+          }
+        ],
         "capacity": 4,
         "slots": 0,
         "speedMultiplier": 1.0
@@ -24,8 +31,14 @@
         "requiredLevel": 8,
         "costCoins": 12000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 25 },
-          { "itemKey": "stone", "quantity": 10 }
+          {
+            "itemKey": "wood",
+            "quantity": 25
+          },
+          {
+            "itemKey": "stone",
+            "quantity": 10
+          }
         ],
         "capacity": 8,
         "slots": 0,
@@ -36,8 +49,14 @@
         "requiredLevel": 16,
         "costCoins": 45000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 60 },
-          { "itemKey": "clay", "quantity": 20 }
+          {
+            "itemKey": "wood",
+            "quantity": 60
+          },
+          {
+            "itemKey": "clay",
+            "quantity": 20
+          }
         ],
         "capacity": 16,
         "slots": 0,
@@ -48,8 +67,14 @@
         "requiredLevel": 26,
         "costCoins": 160000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 120 },
-          { "itemKey": "iron_bar", "quantity": 20 }
+          {
+            "itemKey": "wood",
+            "quantity": 120
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 20
+          }
         ],
         "capacity": 32,
         "slots": 0,
@@ -60,11 +85,13 @@
   {
     "key": "pen",
     "name": "Enclos",
+    "nameEn": "Pen",
     "emoji": "🚧",
     "category": "livestock",
     "requiredLevel": 5,
     "maxTier": 3,
     "description": "Lapins, moutons, alpagas, autruches et paons.",
+    "descriptionEn": "Rabbits, sheep, alpacas, ostriches and peacocks.",
     "unlocksRecipes": [],
     "sortOrder": 20,
     "tiers": [
@@ -72,7 +99,12 @@
         "tier": 1,
         "requiredLevel": 5,
         "costCoins": 5000,
-        "costItems": [{ "itemKey": "wood", "quantity": 15 }],
+        "costItems": [
+          {
+            "itemKey": "wood",
+            "quantity": 15
+          }
+        ],
         "capacity": 4,
         "slots": 0,
         "speedMultiplier": 1.0
@@ -82,8 +114,14 @@
         "requiredLevel": 14,
         "costCoins": 22000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 40 },
-          { "itemKey": "stone", "quantity": 20 }
+          {
+            "itemKey": "wood",
+            "quantity": 40
+          },
+          {
+            "itemKey": "stone",
+            "quantity": 20
+          }
         ],
         "capacity": 10,
         "slots": 0,
@@ -94,8 +132,14 @@
         "requiredLevel": 22,
         "costCoins": 90000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 90 },
-          { "itemKey": "iron_bar", "quantity": 12 }
+          {
+            "itemKey": "wood",
+            "quantity": 90
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 12
+          }
         ],
         "capacity": 20,
         "slots": 0,
@@ -106,11 +150,13 @@
   {
     "key": "barn",
     "name": "Étable",
+    "nameEn": "Barn",
     "emoji": "🏡",
     "category": "livestock",
     "requiredLevel": 10,
     "maxTier": 4,
     "description": "Chèvres, vaches, cochons et chevaux.",
+    "descriptionEn": "Goats, cows, pigs and horses.",
     "unlocksRecipes": [],
     "sortOrder": 30,
     "tiers": [
@@ -119,8 +165,14 @@
         "requiredLevel": 10,
         "costCoins": 8000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 25 },
-          { "itemKey": "stone", "quantity": 15 }
+          {
+            "itemKey": "wood",
+            "quantity": 25
+          },
+          {
+            "itemKey": "stone",
+            "quantity": 15
+          }
         ],
         "capacity": 3,
         "slots": 0,
@@ -131,8 +183,14 @@
         "requiredLevel": 16,
         "costCoins": 30000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 55 },
-          { "itemKey": "clay", "quantity": 25 }
+          {
+            "itemKey": "wood",
+            "quantity": 55
+          },
+          {
+            "itemKey": "clay",
+            "quantity": 25
+          }
         ],
         "capacity": 6,
         "slots": 0,
@@ -143,8 +201,14 @@
         "requiredLevel": 24,
         "costCoins": 110000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 90 },
-          { "itemKey": "iron_bar", "quantity": 18 }
+          {
+            "itemKey": "stone",
+            "quantity": 90
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 18
+          }
         ],
         "capacity": 12,
         "slots": 0,
@@ -155,8 +219,14 @@
         "requiredLevel": 34,
         "costCoins": 400000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 180 },
-          { "itemKey": "iron_bar", "quantity": 45 }
+          {
+            "itemKey": "stone",
+            "quantity": 180
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 45
+          }
         ],
         "capacity": 24,
         "slots": 0,
@@ -167,11 +237,13 @@
   {
     "key": "apiary",
     "name": "Rucher",
+    "nameEn": "Apiary",
     "emoji": "🍯",
     "category": "livestock",
     "requiredLevel": 13,
     "maxTier": 3,
     "description": "Abrite les essaims d'abeilles. Chaque essaim pollinise vos cultures.",
+    "descriptionEn": "Shelters bee swarms. Each swarm pollinates your crops.",
     "unlocksRecipes": [],
     "sortOrder": 40,
     "tiers": [
@@ -179,7 +251,12 @@
         "tier": 1,
         "requiredLevel": 13,
         "costCoins": 6000,
-        "costItems": [{ "itemKey": "wood", "quantity": 20 }],
+        "costItems": [
+          {
+            "itemKey": "wood",
+            "quantity": 20
+          }
+        ],
         "capacity": 3,
         "slots": 0,
         "speedMultiplier": 1.0
@@ -189,8 +266,14 @@
         "requiredLevel": 20,
         "costCoins": 26000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 45 },
-          { "itemKey": "clay", "quantity": 15 }
+          {
+            "itemKey": "wood",
+            "quantity": 45
+          },
+          {
+            "itemKey": "clay",
+            "quantity": 15
+          }
         ],
         "capacity": 8,
         "slots": 0,
@@ -201,8 +284,14 @@
         "requiredLevel": 28,
         "costCoins": 95000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 100 },
-          { "itemKey": "iron_bar", "quantity": 10 }
+          {
+            "itemKey": "wood",
+            "quantity": 100
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 10
+          }
         ],
         "capacity": 16,
         "slots": 0,
@@ -213,11 +302,13 @@
   {
     "key": "mythic_pen",
     "name": "Antre",
+    "nameEn": "Lair",
     "emoji": "🌋",
     "category": "livestock",
     "requiredLevel": 40,
     "maxTier": 1,
     "description": "Construit uniquement pendant un événement. Abrite les créatures mythiques.",
+    "descriptionEn": "Built only during an event. Shelters mythical creatures.",
     "unlocksRecipes": [],
     "sortOrder": 50,
     "tiers": [
@@ -226,8 +317,14 @@
         "requiredLevel": 40,
         "costCoins": 500000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 250 },
-          { "itemKey": "iron_bar", "quantity": 60 }
+          {
+            "itemKey": "stone",
+            "quantity": 250
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 60
+          }
         ],
         "capacity": 3,
         "slots": 0,
@@ -238,11 +335,13 @@
   {
     "key": "warehouse",
     "name": "Entrepôt",
+    "nameEn": "Warehouse",
     "emoji": "📦",
     "category": "storage",
     "requiredLevel": 1,
     "maxTier": 5,
     "description": "Augmente la capacité totale de votre inventaire.",
+    "descriptionEn": "Increases your total inventory capacity.",
     "unlocksRecipes": [],
     "sortOrder": 60,
     "tiers": [
@@ -259,7 +358,12 @@
         "tier": 2,
         "requiredLevel": 6,
         "costCoins": 9000,
-        "costItems": [{ "itemKey": "wood", "quantity": 20 }],
+        "costItems": [
+          {
+            "itemKey": "wood",
+            "quantity": 20
+          }
+        ],
         "capacity": 600,
         "slots": 0,
         "speedMultiplier": 1.0
@@ -269,8 +373,14 @@
         "requiredLevel": 14,
         "costCoins": 32000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 50 },
-          { "itemKey": "stone", "quantity": 30 }
+          {
+            "itemKey": "wood",
+            "quantity": 50
+          },
+          {
+            "itemKey": "stone",
+            "quantity": 30
+          }
         ],
         "capacity": 1200,
         "slots": 0,
@@ -281,8 +391,14 @@
         "requiredLevel": 24,
         "costCoins": 120000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 100 },
-          { "itemKey": "iron_bar", "quantity": 20 }
+          {
+            "itemKey": "stone",
+            "quantity": 100
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 20
+          }
         ],
         "capacity": 2500,
         "slots": 0,
@@ -293,8 +409,14 @@
         "requiredLevel": 34,
         "costCoins": 450000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 220 },
-          { "itemKey": "iron_bar", "quantity": 55 }
+          {
+            "itemKey": "stone",
+            "quantity": 220
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 55
+          }
         ],
         "capacity": 5000,
         "slots": 0,
@@ -305,11 +427,13 @@
   {
     "key": "house",
     "name": "Maison",
+    "nameEn": "House",
     "emoji": "🏠",
     "category": "utility",
     "requiredLevel": 1,
     "maxTier": 4,
     "description": "Augmente votre énergie maximale.",
+    "descriptionEn": "Increases your maximum energy.",
     "unlocksRecipes": [],
     "sortOrder": 70,
     "tiers": [
@@ -321,54 +445,81 @@
         "capacity": 100,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "energyMax": 100 }
+        "effect": {
+          "energyMax": 100
+        }
       },
       {
         "tier": 2,
         "requiredLevel": 9,
         "costCoins": 25000,
-        "costItems": [{ "itemKey": "wood", "quantity": 40 }],
+        "costItems": [
+          {
+            "itemKey": "wood",
+            "quantity": 40
+          }
+        ],
         "capacity": 130,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "energyMax": 130 }
+        "effect": {
+          "energyMax": 130
+        }
       },
       {
         "tier": 3,
         "requiredLevel": 19,
         "costCoins": 90000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 90 },
-          { "itemKey": "stone", "quantity": 60 }
+          {
+            "itemKey": "wood",
+            "quantity": 90
+          },
+          {
+            "itemKey": "stone",
+            "quantity": 60
+          }
         ],
         "capacity": 170,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "energyMax": 170 }
+        "effect": {
+          "energyMax": 170
+        }
       },
       {
         "tier": 4,
         "requiredLevel": 30,
         "costCoins": 320000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 160 },
-          { "itemKey": "iron_bar", "quantity": 35 }
+          {
+            "itemKey": "stone",
+            "quantity": 160
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 35
+          }
         ],
         "capacity": 220,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "energyMax": 220 }
+        "effect": {
+          "energyMax": 220
+        }
       }
     ]
   },
   {
     "key": "well",
     "name": "Puits",
+    "nameEn": "Well",
     "emoji": "⛲",
     "category": "utility",
     "requiredLevel": 8,
     "maxTier": 3,
     "description": "Arrosage automatique partiel puis total de vos parcelles.",
+    "descriptionEn": "Partial then full automatic watering of your plots.",
     "unlocksRecipes": [],
     "sortOrder": 80,
     "tiers": [
@@ -376,48 +527,73 @@
         "tier": 1,
         "requiredLevel": 8,
         "costCoins": 12000,
-        "costItems": [{ "itemKey": "stone", "quantity": 25 }],
+        "costItems": [
+          {
+            "itemKey": "stone",
+            "quantity": 25
+          }
+        ],
         "capacity": 0,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "autoWaterRatio": 0.4 }
+        "effect": {
+          "autoWaterRatio": 0.4
+        }
       },
       {
         "tier": 2,
         "requiredLevel": 18,
         "costCoins": 50000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 70 },
-          { "itemKey": "clay", "quantity": 25 }
+          {
+            "itemKey": "stone",
+            "quantity": 70
+          },
+          {
+            "itemKey": "clay",
+            "quantity": 25
+          }
         ],
         "capacity": 0,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "autoWaterRatio": 0.7 }
+        "effect": {
+          "autoWaterRatio": 0.7
+        }
       },
       {
         "tier": 3,
         "requiredLevel": 28,
         "costCoins": 180000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 150 },
-          { "itemKey": "iron_bar", "quantity": 30 }
+          {
+            "itemKey": "stone",
+            "quantity": 150
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 30
+          }
         ],
         "capacity": 0,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "autoWaterRatio": 1.0 }
+        "effect": {
+          "autoWaterRatio": 1.0
+        }
       }
     ]
   },
   {
     "key": "seed_maker",
     "name": "Grainerie",
+    "nameEn": "Seed shed",
     "emoji": "🫧",
     "category": "utility",
     "requiredLevel": 14,
     "maxTier": 3,
     "description": "Récupère une partie de vos graines à chaque récolte.",
+    "descriptionEn": "Recovers part of your seeds on every harvest.",
     "unlocksRecipes": [],
     "sortOrder": 90,
     "tiers": [
@@ -425,48 +601,73 @@
         "tier": 1,
         "requiredLevel": 14,
         "costCoins": 18000,
-        "costItems": [{ "itemKey": "wood", "quantity": 35 }],
+        "costItems": [
+          {
+            "itemKey": "wood",
+            "quantity": 35
+          }
+        ],
         "capacity": 0,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "seedRecoveryChance": 0.25 }
+        "effect": {
+          "seedRecoveryChance": 0.25
+        }
       },
       {
         "tier": 2,
         "requiredLevel": 22,
         "costCoins": 70000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 80 },
-          { "itemKey": "clay", "quantity": 30 }
+          {
+            "itemKey": "wood",
+            "quantity": 80
+          },
+          {
+            "itemKey": "clay",
+            "quantity": 30
+          }
         ],
         "capacity": 0,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "seedRecoveryChance": 0.45 }
+        "effect": {
+          "seedRecoveryChance": 0.45
+        }
       },
       {
         "tier": 3,
         "requiredLevel": 30,
         "costCoins": 250000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 160 },
-          { "itemKey": "iron_bar", "quantity": 25 }
+          {
+            "itemKey": "wood",
+            "quantity": 160
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 25
+          }
         ],
         "capacity": 0,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "seedRecoveryChance": 0.7 }
+        "effect": {
+          "seedRecoveryChance": 0.7
+        }
       }
     ]
   },
   {
     "key": "greenhouse",
     "name": "Serre",
+    "nameEn": "Greenhouse",
     "emoji": "🏛️",
     "category": "utility",
     "requiredLevel": 24,
     "maxTier": 2,
     "description": "Annule les malus de saison et réduit les dégâts météo.",
+    "descriptionEn": "Cancels season penalties and reduces weather damage.",
     "unlocksRecipes": [],
     "sortOrder": 100,
     "tiers": [
@@ -475,45 +676,73 @@
         "requiredLevel": 24,
         "costCoins": 90000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 80 },
-          { "itemKey": "iron_bar", "quantity": 20 }
+          {
+            "itemKey": "stone",
+            "quantity": 80
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 20
+          }
         ],
         "capacity": 0,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "seasonImmunity": true, "weatherDamageReduction": 0.5 }
+        "effect": {
+          "seasonImmunity": true,
+          "weatherDamageReduction": 0.5
+        }
       },
       {
         "tier": 2,
         "requiredLevel": 34,
         "costCoins": 300000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 200 },
-          { "itemKey": "iron_bar", "quantity": 50 }
+          {
+            "itemKey": "stone",
+            "quantity": 200
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 50
+          }
         ],
         "capacity": 0,
         "slots": 0,
         "speedMultiplier": 1.0,
-        "effect": { "seasonImmunity": true, "weatherDamageReduction": 1.0 }
+        "effect": {
+          "seasonImmunity": true,
+          "weatherDamageReduction": 1.0
+        }
       }
     ]
   },
   {
     "key": "mill",
     "name": "Moulin",
+    "nameEn": "Mill",
     "emoji": "🌬️",
     "category": "production",
     "requiredLevel": 4,
     "maxTier": 3,
     "description": "Farine et pain.",
-    "unlocksRecipes": ["flour", "bread"],
+    "descriptionEn": "Flour and bread.",
+    "unlocksRecipes": [
+      "flour",
+      "bread"
+    ],
     "sortOrder": 110,
     "tiers": [
       {
         "tier": 1,
         "requiredLevel": 4,
         "costCoins": 4000,
-        "costItems": [{ "itemKey": "wood", "quantity": 12 }],
+        "costItems": [
+          {
+            "itemKey": "wood",
+            "quantity": 12
+          }
+        ],
         "capacity": 0,
         "slots": 1,
         "speedMultiplier": 1.0
@@ -523,8 +752,14 @@
         "requiredLevel": 12,
         "costCoins": 18000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 35 },
-          { "itemKey": "stone", "quantity": 15 }
+          {
+            "itemKey": "wood",
+            "quantity": 35
+          },
+          {
+            "itemKey": "stone",
+            "quantity": 15
+          }
         ],
         "capacity": 0,
         "slots": 2,
@@ -535,8 +770,14 @@
         "requiredLevel": 22,
         "costCoins": 70000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 70 },
-          { "itemKey": "iron_bar", "quantity": 12 }
+          {
+            "itemKey": "stone",
+            "quantity": 70
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 12
+          }
         ],
         "capacity": 0,
         "slots": 3,
@@ -547,11 +788,13 @@
   {
     "key": "workshop",
     "name": "Atelier",
+    "nameEn": "Workshop",
     "emoji": "🛠️",
     "category": "production",
     "requiredLevel": 5,
     "maxTier": 3,
     "description": "Compost, textile et alchimie.",
+    "descriptionEn": "Compost, textiles and alchemy.",
     "unlocksRecipes": [
       "fertilizer_basic",
       "spun_wool",
@@ -565,7 +808,12 @@
         "tier": 1,
         "requiredLevel": 5,
         "costCoins": 5000,
-        "costItems": [{ "itemKey": "wood", "quantity": 15 }],
+        "costItems": [
+          {
+            "itemKey": "wood",
+            "quantity": 15
+          }
+        ],
         "capacity": 0,
         "slots": 1,
         "speedMultiplier": 1.0
@@ -575,8 +823,14 @@
         "requiredLevel": 16,
         "costCoins": 34000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 50 },
-          { "itemKey": "clay", "quantity": 20 }
+          {
+            "itemKey": "wood",
+            "quantity": 50
+          },
+          {
+            "itemKey": "clay",
+            "quantity": 20
+          }
         ],
         "capacity": 0,
         "slots": 2,
@@ -587,8 +841,14 @@
         "requiredLevel": 30,
         "costCoins": 160000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 120 },
-          { "itemKey": "iron_bar", "quantity": 28 }
+          {
+            "itemKey": "stone",
+            "quantity": 120
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 28
+          }
         ],
         "capacity": 0,
         "slots": 3,
@@ -599,11 +859,13 @@
   {
     "key": "jam_kitchen",
     "name": "Confiturerie",
+    "nameEn": "Jam kitchen",
     "emoji": "🫙",
     "category": "production",
     "requiredLevel": 9,
     "maxTier": 3,
     "description": "Soupes, sauces, jus et confitures.",
+    "descriptionEn": "Soups, sauces, juices and jams.",
     "unlocksRecipes": [
       "vegetable_soup",
       "ketchup",
@@ -619,7 +881,12 @@
         "tier": 1,
         "requiredLevel": 9,
         "costCoins": 7000,
-        "costItems": [{ "itemKey": "wood", "quantity": 18 }],
+        "costItems": [
+          {
+            "itemKey": "wood",
+            "quantity": 18
+          }
+        ],
         "capacity": 0,
         "slots": 1,
         "speedMultiplier": 1.0
@@ -629,8 +896,14 @@
         "requiredLevel": 18,
         "costCoins": 28000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 45 },
-          { "itemKey": "clay", "quantity": 20 }
+          {
+            "itemKey": "wood",
+            "quantity": 45
+          },
+          {
+            "itemKey": "clay",
+            "quantity": 20
+          }
         ],
         "capacity": 0,
         "slots": 2,
@@ -641,8 +914,14 @@
         "requiredLevel": 27,
         "costCoins": 100000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 90 },
-          { "itemKey": "iron_bar", "quantity": 15 }
+          {
+            "itemKey": "stone",
+            "quantity": 90
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 15
+          }
         ],
         "capacity": 0,
         "slots": 3,
@@ -653,12 +932,19 @@
   {
     "key": "creamery",
     "name": "Fromagerie",
+    "nameEn": "Creamery",
     "emoji": "🧈",
     "category": "production",
     "requiredLevel": 12,
     "maxTier": 3,
     "description": "Fromages, beurre et yaourts.",
-    "unlocksRecipes": ["goat_cheese", "cheese", "butter", "strawberry_yogurt"],
+    "descriptionEn": "Cheeses, butter and yoghurts.",
+    "unlocksRecipes": [
+      "goat_cheese",
+      "cheese",
+      "butter",
+      "strawberry_yogurt"
+    ],
     "sortOrder": 140,
     "tiers": [
       {
@@ -666,8 +952,14 @@
         "requiredLevel": 12,
         "costCoins": 9000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 20 },
-          { "itemKey": "stone", "quantity": 10 }
+          {
+            "itemKey": "wood",
+            "quantity": 20
+          },
+          {
+            "itemKey": "stone",
+            "quantity": 10
+          }
         ],
         "capacity": 0,
         "slots": 1,
@@ -678,8 +970,14 @@
         "requiredLevel": 20,
         "costCoins": 35000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 45 },
-          { "itemKey": "clay", "quantity": 25 }
+          {
+            "itemKey": "stone",
+            "quantity": 45
+          },
+          {
+            "itemKey": "clay",
+            "quantity": 25
+          }
         ],
         "capacity": 0,
         "slots": 2,
@@ -690,8 +988,14 @@
         "requiredLevel": 30,
         "costCoins": 130000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 100 },
-          { "itemKey": "iron_bar", "quantity": 20 }
+          {
+            "itemKey": "stone",
+            "quantity": 100
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 20
+          }
         ],
         "capacity": 0,
         "slots": 3,
@@ -702,12 +1006,18 @@
   {
     "key": "brewery",
     "name": "Brasserie",
+    "nameEn": "Brewery",
     "emoji": "🍺",
     "category": "production",
     "requiredLevel": 15,
     "maxTier": 3,
     "description": "Vin, bière et hydromel.",
-    "unlocksRecipes": ["wine", "beer", "mead"],
+    "descriptionEn": "Wine, beer and mead.",
+    "unlocksRecipes": [
+      "wine",
+      "beer",
+      "mead"
+    ],
     "sortOrder": 150,
     "tiers": [
       {
@@ -715,8 +1025,14 @@
         "requiredLevel": 15,
         "costCoins": 15000,
         "costItems": [
-          { "itemKey": "wood", "quantity": 30 },
-          { "itemKey": "clay", "quantity": 12 }
+          {
+            "itemKey": "wood",
+            "quantity": 30
+          },
+          {
+            "itemKey": "clay",
+            "quantity": 12
+          }
         ],
         "capacity": 0,
         "slots": 1,
@@ -727,8 +1043,14 @@
         "requiredLevel": 24,
         "costCoins": 60000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 60 },
-          { "itemKey": "iron_bar", "quantity": 10 }
+          {
+            "itemKey": "stone",
+            "quantity": 60
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 10
+          }
         ],
         "capacity": 0,
         "slots": 2,
@@ -739,8 +1061,14 @@
         "requiredLevel": 32,
         "costCoins": 220000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 140 },
-          { "itemKey": "iron_bar", "quantity": 30 }
+          {
+            "itemKey": "stone",
+            "quantity": 140
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 30
+          }
         ],
         "capacity": 0,
         "slots": 3,
@@ -751,12 +1079,19 @@
   {
     "key": "oil_press",
     "name": "Presse à huile",
+    "nameEn": "Oil press",
     "emoji": "🫗",
     "category": "production",
     "requiredLevel": 18,
     "maxTier": 3,
     "description": "Huiles, savons et essences.",
-    "unlocksRecipes": ["sunflower_oil", "lavender_soap", "truffle_oil", "saffron_essence"],
+    "descriptionEn": "Oils, soaps and essences.",
+    "unlocksRecipes": [
+      "sunflower_oil",
+      "lavender_soap",
+      "truffle_oil",
+      "saffron_essence"
+    ],
     "sortOrder": 160,
     "tiers": [
       {
@@ -764,8 +1099,14 @@
         "requiredLevel": 18,
         "costCoins": 20000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 40 },
-          { "itemKey": "iron_bar", "quantity": 6 }
+          {
+            "itemKey": "stone",
+            "quantity": 40
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 6
+          }
         ],
         "capacity": 0,
         "slots": 1,
@@ -776,8 +1117,14 @@
         "requiredLevel": 26,
         "costCoins": 80000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 90 },
-          { "itemKey": "iron_bar", "quantity": 18 }
+          {
+            "itemKey": "stone",
+            "quantity": 90
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 18
+          }
         ],
         "capacity": 0,
         "slots": 2,
@@ -788,8 +1135,14 @@
         "requiredLevel": 34,
         "costCoins": 300000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 180 },
-          { "itemKey": "iron_bar", "quantity": 40 }
+          {
+            "itemKey": "stone",
+            "quantity": 180
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 40
+          }
         ],
         "capacity": 0,
         "slots": 3,
@@ -800,12 +1153,18 @@
   {
     "key": "smokehouse",
     "name": "Fumoir",
+    "nameEn": "Smokehouse",
     "emoji": "🔥",
     "category": "production",
     "requiredLevel": 20,
     "maxTier": 3,
     "description": "Torréfaction et fumage.",
-    "unlocksRecipes": ["roasted_coffee", "smoked_cheese", "smoked_truffle"],
+    "descriptionEn": "Roasting and smoking.",
+    "unlocksRecipes": [
+      "roasted_coffee",
+      "smoked_cheese",
+      "smoked_truffle"
+    ],
     "sortOrder": 170,
     "tiers": [
       {
@@ -813,8 +1172,14 @@
         "requiredLevel": 20,
         "costCoins": 26000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 50 },
-          { "itemKey": "clay", "quantity": 20 }
+          {
+            "itemKey": "stone",
+            "quantity": 50
+          },
+          {
+            "itemKey": "clay",
+            "quantity": 20
+          }
         ],
         "capacity": 0,
         "slots": 1,
@@ -825,8 +1190,14 @@
         "requiredLevel": 30,
         "costCoins": 95000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 110 },
-          { "itemKey": "iron_bar", "quantity": 20 }
+          {
+            "itemKey": "stone",
+            "quantity": 110
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 20
+          }
         ],
         "capacity": 0,
         "slots": 2,
@@ -837,8 +1208,14 @@
         "requiredLevel": 38,
         "costCoins": 350000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 200 },
-          { "itemKey": "iron_bar", "quantity": 45 }
+          {
+            "itemKey": "stone",
+            "quantity": 200
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 45
+          }
         ],
         "capacity": 0,
         "slots": 3,
@@ -849,12 +1226,19 @@
   {
     "key": "confectionery",
     "name": "Confiserie",
+    "nameEn": "Confectionery",
     "emoji": "🍬",
     "category": "production",
     "requiredLevel": 25,
     "maxTier": 3,
     "description": "Chocolat, pâtisserie et pralines.",
-    "unlocksRecipes": ["chocolate", "cake", "pumpkin_pie", "vanilla_praline"],
+    "descriptionEn": "Chocolate, pastry and pralines.",
+    "unlocksRecipes": [
+      "chocolate",
+      "cake",
+      "pumpkin_pie",
+      "vanilla_praline"
+    ],
     "sortOrder": 180,
     "tiers": [
       {
@@ -862,8 +1246,14 @@
         "requiredLevel": 25,
         "costCoins": 40000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 70 },
-          { "itemKey": "iron_bar", "quantity": 10 }
+          {
+            "itemKey": "stone",
+            "quantity": 70
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 10
+          }
         ],
         "capacity": 0,
         "slots": 1,
@@ -874,8 +1264,14 @@
         "requiredLevel": 33,
         "costCoins": 150000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 150 },
-          { "itemKey": "iron_bar", "quantity": 30 }
+          {
+            "itemKey": "stone",
+            "quantity": 150
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 30
+          }
         ],
         "capacity": 0,
         "slots": 2,
@@ -886,8 +1282,14 @@
         "requiredLevel": 40,
         "costCoins": 500000,
         "costItems": [
-          { "itemKey": "stone", "quantity": 280 },
-          { "itemKey": "iron_bar", "quantity": 70 }
+          {
+            "itemKey": "stone",
+            "quantity": 280
+          },
+          {
+            "itemKey": "iron_bar",
+            "quantity": 70
+          }
         ],
         "capacity": 0,
         "slots": 3,

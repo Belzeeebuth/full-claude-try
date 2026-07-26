@@ -466,3 +466,71 @@ describe('commandes Discord', () => {
     expect(names.length).toBeGreaterThanOrEqual(60);
   });
 });
+
+describe('contenu bilingue', () => {
+  /**
+   * Chaque entrée de contenu doit porter sa traduction anglaise.
+   *
+   * Le champ `*En` est OPTIONNEL au niveau du schéma — pour qu'ajouter du
+   * contenu ne bloque pas le démarrage sur une traduction manquante — mais il
+   * est OBLIGATOIRE ici : sans ce test, une entrée non traduite retomberait
+   * silencieusement en français chez un joueur anglophone, exactement le
+   * problème que la version bilingue est censée résoudre.
+   */
+  const localized = getConfig('en');
+
+  const groups: Array<[string, Array<Record<string, unknown>>, 'name' | 'title']> = [
+    ['crops', config.cropList as unknown as Array<Record<string, unknown>>, 'name'],
+    ['animals', config.animalList as unknown as Array<Record<string, unknown>>, 'name'],
+    ['items', config.itemList as unknown as Array<Record<string, unknown>>, 'name'],
+    ['recipes', config.recipeList as unknown as Array<Record<string, unknown>>, 'name'],
+    ['buildings', config.buildingList as unknown as Array<Record<string, unknown>>, 'name'],
+    ['quests', config.questList as unknown as Array<Record<string, unknown>>, 'title'],
+    ['achievements', config.achievementList as unknown as Array<Record<string, unknown>>, 'name'],
+    ['events', config.eventList as unknown as Array<Record<string, unknown>>, 'name'],
+  ];
+
+  it('traduit toutes les entrées de contenu', () => {
+    const missing: string[] = [];
+    for (const [group, list, field] of groups) {
+      for (const entry of list) {
+        if (typeof entry[`${field}En`] !== 'string' || !(entry[`${field}En`] as string)) {
+          missing.push(`${group}.${String(entry.key)}`);
+        }
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("n'expose plus de français dans la variante anglaise", () => {
+    const FRENCH = /[éèêàùôûçÉÈÀîï]/;
+    const problems: string[] = [];
+    const lists: Array<[string, Array<Record<string, unknown>>]> = [
+      ['crops', localized.cropList as unknown as Array<Record<string, unknown>>],
+      ['animals', localized.animalList as unknown as Array<Record<string, unknown>>],
+      ['items', localized.itemList as unknown as Array<Record<string, unknown>>],
+      ['recipes', localized.recipeList as unknown as Array<Record<string, unknown>>],
+      ['buildings', localized.buildingList as unknown as Array<Record<string, unknown>>],
+      ['quests', localized.questList as unknown as Array<Record<string, unknown>>],
+      ['achievements', localized.achievementList as unknown as Array<Record<string, unknown>>],
+      ['events', localized.eventList as unknown as Array<Record<string, unknown>>],
+    ];
+    for (const [group, list] of lists) {
+      for (const entry of list) {
+        for (const field of ['name', 'title', 'description'] as const) {
+          const value = entry[field];
+          if (typeof value === 'string' && FRENCH.test(value)) {
+            problems.push(`${group}.${String(entry.key)}.${field}: ${value}`);
+          }
+        }
+      }
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it('laisse la variante française intacte', () => {
+    expect(getConfig('fr').crops.get('wheat')?.name).toBe('Blé');
+    expect(getConfig().crops.get('wheat')?.name).toBe('Blé');
+    expect(localized.crops.get('wheat')?.name).toBe('Wheat');
+  });
+});
