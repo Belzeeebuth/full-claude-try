@@ -33,8 +33,8 @@ const tradeButtons: ButtonHandler = {
             action: 'coins_qty',
             ownerId: interaction.user.id,
             params: [tradeId],
-            title: 'Pièces à offrir',
-            label: 'Montant en pièces',
+            title: 'Coins to offer',
+            label: 'Amount in coins',
             placeholder: 'Ex. 2500',
           }),
         );
@@ -48,8 +48,8 @@ const tradeButtons: ButtonHandler = {
           await replyEphemeral(interaction, {
             embeds: [
               baseEmbed({
-                title: '📦 Rien à échanger',
-                description: 'Votre inventaire ne contient aucun objet échangeable.',
+                title: '📦 Nothing to trade',
+                description: 'Your inventory holds no tradable item.',
                 color: COLORS.warning,
               }),
             ],
@@ -66,7 +66,7 @@ const tradeButtons: ButtonHandler = {
                 action: 'pick_item',
                 ownerId: interaction.user.id,
                 params: [tradeId],
-                placeholder: 'Choisissez un objet',
+                placeholder: 'Pick an item',
                 choices: tradable.map((entry) => ({
                   label: truncate(`${entry.name}${qualityIcon(entry.quality)} ×${entry.quantity}`, 90),
                   value: entry.itemKey,
@@ -88,8 +88,8 @@ const tradeButtons: ButtonHandler = {
           await interaction.editReply({
             embeds: [
               successEmbed(
-                '🤝 Échange conclu',
-                'Les objets et les pièces ont été transférés. Une taxe de transfert a été prélevée sur les pièces échangées.',
+                '🤝 Trade completed',
+                'Items and coins have been transferred. A transfer tax was taken on the coins exchanged.',
               ),
             ],
             components: [],
@@ -106,7 +106,7 @@ const tradeButtons: ButtonHandler = {
           await tradeView(context, result.trade, partner?.username ?? 'votre partenaire'),
         );
         await interaction.followUp({
-          content: '✅ Votre validation est enregistrée. En attente de votre partenaire.',
+          content: '✅ Your confirmation is recorded. Waiting for your partner.',
           flags: MessageFlags.Ephemeral,
         });
         return;
@@ -118,8 +118,8 @@ const tradeButtons: ButtonHandler = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: '✖️ Échange annulé',
-              description: 'Aucun objet n\'a changé de main.',
+              title: '✖️ Trade cancelled',
+              description: 'No item changed hands.',
               color: COLORS.neutral,
             }),
           ],

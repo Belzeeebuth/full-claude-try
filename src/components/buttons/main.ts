@@ -92,11 +92,11 @@ const farmButtons: ButtonHandler = {
           embeds: [
             result.freeRain
               ? baseEmbed({
-                  title: '🌧️ Il pleut !',
-                  description: 'Vos parcelles sont arrosées gratuitement aujourd\'hui.',
+                  title: '🌧️ It is raining!',
+                  description: 'Your plots are watered for free today.',
                   color: COLORS.info,
                 })
-              : successEmbed('💧 Arrosage', `**${result.watered}** parcelle(s) arrosée(s).`),
+              : successEmbed('💧 Watering', `**${result.watered}** plot(s) watered.`),
           ],
           flags: MessageFlags.Ephemeral,
         });
@@ -110,8 +110,8 @@ const farmButtons: ButtonHandler = {
         await interaction.followUp({
           embeds: [
             successEmbed(
-              '🌿 Désherbage',
-              `**${result.slots.length}** parcelle(s) nettoyée(s), **${result.weedsCollected}** mauvaises herbes récupérées.`,
+              '🌿 Weeding',
+              `**${result.slots.length}** plot(s) cleared, **${result.weedsCollected}** weeds collected.`,
             ),
           ],
           flags: MessageFlags.Ephemeral,
@@ -126,8 +126,8 @@ const farmButtons: ButtonHandler = {
         await interaction.followUp({
           embeds: [
             successEmbed(
-              '🗺️ Parcelle débloquée',
-              `Parcelle **${result.slot}** pour ${formatCoins(result.cost)}.\nFerme : ${result.grid.width}×${result.grid.height}${result.nextCost > 0 ? `\nProchaine : ${formatCoins(result.nextCost)}` : ''}`,
+              '🗺️ Plot unlocked',
+              `Plot **${result.slot}** for ${formatCoins(result.cost)}.\nFarm: ${result.grid.width}×${result.grid.height}${result.nextCost > 0 ? `\nProchaine : ${formatCoins(result.nextCost)}` : ''}`,
             ),
           ],
           flags: MessageFlags.Ephemeral,
@@ -157,7 +157,7 @@ const farmButtons: ButtonHandler = {
           embeds: [
             baseEmbed({
               title: '🌱 Que voulez-vous planter ?',
-              description: 'La culture choisie sera plantée sur toutes vos parcelles vides.',
+              description: 'The chosen crop will be sown on every empty plot.',
               color: COLORS.primary,
             }),
           ],
@@ -167,12 +167,12 @@ const farmButtons: ButtonHandler = {
                 namespace: 'farm',
                 action: 'plant',
                 ownerId: interaction.user.id,
-                placeholder: 'Choisissez une culture',
+                placeholder: 'Pick a crop',
                 choices: seeds.map((entry) => ({
-                  label: `${entry.crop.name} — ${entry.owned} graine(s)`,
+                  label: `${entry.crop.name} — ${entry.owned} seed(s)`,
                   value: entry.crop.key,
                   emoji: entry.crop.emoji,
-                  description: `${Math.round(entry.crop.growthSeconds / 60)} min • ${entry.crop.baseYield}× ${entry.crop.sellPrice} pièces`,
+                  description: `${Math.round(entry.crop.growthSeconds / 60)} min • ${entry.crop.baseYield}× ${entry.crop.sellPrice} coins`,
                 })),
               }),
             ),
@@ -208,7 +208,7 @@ const inventoryButtons: ButtonHandler = {
 
       if (decision !== 'yes') {
         await interaction.update({
-          embeds: [baseEmbed({ title: '↩️ Annulé', description: 'Rien n\'a été jeté.', color: COLORS.neutral })],
+          embeds: [baseEmbed({ title: '↩️ Cancelled', description: 'Nothing was discarded.', color: COLORS.neutral })],
           components: [],
         });
         return;
@@ -220,7 +220,7 @@ const inventoryButtons: ButtonHandler = {
       });
       const item = inventoryService.requireItem(itemKey);
       await interaction.update({
-        embeds: [successEmbed('🗑️ Objets jetés', `${quantity}× ${item.emoji} ${item.name} ont été jetés.`)],
+        embeds: [successEmbed('🗑️ Items discarded', `${quantity}× ${item.emoji} ${item.name} discarded.`)],
         components: [],
       });
       return;
@@ -232,8 +232,8 @@ const inventoryButtons: ButtonHandler = {
           baseEmbed({
             title: '💰 Vendre',
             description:
-              'Utilisez `/sell objet:… quantité:tout` pour vendre au village,\n' +
-              'ou `/auction sell` pour proposer votre lot aux autres joueurs (prix plein, commission de 5 %).',
+              'Use `/sell item:… quantity:all` to sell to the village,\n' +
+              'or `/auction sell` to offer your stack to other players (full price, 5% commission).',
             color: COLORS.gold,
           }),
         ],
@@ -315,8 +315,8 @@ const animalButtons: ButtonHandler = {
           await replyEphemeral(interaction, {
             embeds: [
               baseEmbed({
-                title: '🤍 Personne à câliner',
-                description: 'Tous vos animaux ont déjà eu leur dose de tendresse récemment.',
+                title: '🤍 Nobody to pet',
+                description: 'All your animals have had their share of affection recently.',
                 color: COLORS.info,
               }),
             ],
@@ -332,9 +332,9 @@ const animalButtons: ButtonHandler = {
                 namespace: 'animal',
                 action: 'pet',
                 ownerId: interaction.user.id,
-                placeholder: 'Choisissez un animal',
+                placeholder: 'Pick an animal',
                 choices: petable.slice(0, 25).map((animal) => ({
-                  label: `${animal.nickname ?? animal.name} — bonheur ${animal.status.happiness}%`,
+                  label: `${animal.nickname ?? animal.name} — happiness ${animal.status.happiness}%`,
                   value: animal.id,
                   emoji: animal.emoji,
                 })),
@@ -377,7 +377,7 @@ const questButtons: ButtonHandler = {
       await interaction.followUp({
         embeds: [
           successEmbed(
-            `🎁 ${results.length} récompense(s) perçue(s)`,
+            `🎁 ${results.length} reward(s) claimed`,
             `${formatCoins(totals.coins)} • ${totals.gems} 💎 • ${formatNumber(totals.xp)} ✨\n\n${results.map((result) => `• ${result.title}`).join('\n')}`,
           ),
         ],
@@ -421,10 +421,10 @@ const achievementButtons: ButtonHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `🏆 ${names.length} succès réclamé(s)`,
+          `🏆 ${names.length} achievement(s) claimed`,
           names.length > 0
             ? `${formatCoins(coins)} • ${gems} 💎\n\n${names.map((name) => `• ${name}`).join('\n')}`
-            : 'Aucune récompense en attente.',
+            : 'No reward pending.',
         ),
       ],
     });
@@ -461,7 +461,7 @@ const passButtons: ButtonHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `🎟️ ${claimed} palier(s) réclamé(s)`,
+          `🎟️ ${claimed} tier(s) claimed`,
           claimed > 0 ? `${formatCoins(coins)} • ${gems} 💎` : 'Aucun palier disponible.',
         ),
       ],
@@ -483,7 +483,7 @@ const craftButtons: ButtonHandler = {
       await interaction.deferUpdate();
       const result = await craftService.collectProduction(context.player, { all: true });
       const embed = successEmbed(
-        '📦 Production collectée',
+        '📦 Production collected',
         result.lines.map((line) => `${line.emoji} **${line.quantity}× ${line.itemName}**`).join('\n'),
       );
       appendTracking(embed, result.tracking);
@@ -494,7 +494,7 @@ const craftButtons: ButtonHandler = {
 
     if (parsed.action === 'recipes') {
       await replyEphemeral(interaction, {
-        content: 'Utilisez `/recipes` pour la liste complète et `/craft` pour lancer une production.',
+        content: 'Use `/recipes` for the full list and `/craft` to start a production run.',
       });
       return;
     }
@@ -529,10 +529,10 @@ const coopButtons: ButtonHandler = {
           namespace: 'coop',
           action: 'create',
           ownerId: interaction.user.id,
-          title: 'Créer une coopérative',
+          title: 'Create a co-op',
           fieldId: 'name',
-          label: 'Nom de la coopérative',
-          placeholder: 'Les Amis du Blé',
+          label: 'Co-op name',
+          placeholder: 'The Wheat Friends',
           maxLength: 32,
         }),
       );
@@ -545,8 +545,8 @@ const coopButtons: ButtonHandler = {
           namespace: 'coop',
           action: 'contribute',
           ownerId: interaction.user.id,
-          title: 'Contribuer à la trésorerie',
-          label: 'Montant en pièces',
+          title: 'Contribute to the treasury',
+          label: 'Amount in coins',
           placeholder: 'Ex. 5000',
         }),
       );
@@ -588,7 +588,7 @@ const tutorialButtons: ButtonHandler = {
           title: `🎓 ${step.title}`,
           description: step.body,
           color: COLORS.info,
-          footer: 'Utilisez les boutons pour naviguer',
+          footer: 'Use the buttons to navigate',
         }),
       ],
       components: [
@@ -606,7 +606,7 @@ const tutorialButtons: ButtonHandler = {
             action: 'step',
             ownerId: interaction.user.id,
             params: [Math.min(TUTORIAL_STEPS.length, index + 1)],
-            label: 'Suivant',
+            label: 'Next',
             emoji: '▶️',
             disabled: index >= TUTORIAL_STEPS.length,
           }),
@@ -614,7 +614,7 @@ const tutorialButtons: ButtonHandler = {
             namespace: 'farm',
             action: 'refresh',
             ownerId: interaction.user.id,
-            label: 'Ma ferme',
+            label: 'My farm',
             emoji: '🌾',
           }),
         ),
@@ -631,7 +631,7 @@ const settingsButtons: ButtonHandler = {
     const field = paramString(parsed, 0);
     const allowed = ['notifyCrops', 'notifyAnimals', 'notifyEnergy', 'notifyMarket', 'dailyReminder', 'dmNotifications'];
     if (!allowed.includes(field)) {
-      await replyEphemeral(interaction, { content: 'Paramètre inconnu.' });
+      await replyEphemeral(interaction, { content: 'Unknown setting.' });
       return;
     }
 
@@ -642,8 +642,8 @@ const settingsButtons: ButtonHandler = {
     await replyEphemeral(interaction, {
       embeds: [
         successEmbed(
-          '⚙️ Paramètre mis à jour',
-          `\`${field}\` est désormais **${!current ? 'activé' : 'désactivé'}**.` +
+          '⚙️ Setting updated',
+          `\`${field}\` is now **${!current ? 'enabled' : 'disabled'}**.` +
             (!settings?.dmNotifications && !current
               ? "\n\n⚠️ Activez aussi les **notifications par message privé** pour recevoir les alertes."
               : ''),
@@ -663,7 +663,7 @@ const prestigeButtons: ButtonHandler = {
       await interaction.update({
         embeds: [
           baseEmbed({
-            title: '↩️ Renaissance annulée',
+            title: '↩️ Rebirth cancelled',
             description: 'Votre ferme reste intacte.',
             color: COLORS.neutral,
           }),
@@ -680,10 +680,10 @@ const prestigeButtons: ButtonHandler = {
         successEmbed(
           `🌟 Renaissance ${result.newPrestige}`,
           [
-            `Multiplicateur permanent : **×${result.multiplier.toFixed(2)}** sur le rendement et l'XP.`,
-            `Parcelles conservées : **${result.plotsKept}**`,
-            `Pièces conservées : **${formatCoins(result.coinsKept)}**`,
-            `Points de prestige gagnés : **${result.pointsGained}**`,
+            `Permanent multiplier: **×${result.multiplier.toFixed(2)}** on yield and XP.`,
+            `Plots kept: **${result.plotsKept}**`,
+            `Coins kept: **${formatCoins(result.coinsKept)}**`,
+            `Prestige points gained: **${result.pointsGained}**`,
             '',
             'Une nouvelle aventure commence. Bonne chance, fermier !',
           ].join('\n'),
@@ -737,7 +737,7 @@ const profileButtons: ButtonHandler = {
 
   async execute(interaction: ButtonInteraction, parsed): Promise<void> {
     await replyEphemeral(interaction, {
-      content: `Utilisez \`/stats utilisateur:<@${paramString(parsed, 0)}>\` pour le détail complet.`,
+      content: `Utilisez \`/stats utilisateur:<@${paramString(parsed, 0)}>\` for the full breakdown.`,
     });
   },
 };

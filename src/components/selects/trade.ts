@@ -22,7 +22,7 @@ const tradeItemSelect: SelectHandler = {
         action: 'item_qty',
         ownerId: interaction.user.id,
         params: [tradeId, itemKey],
-        title: 'Quantité à offrir',
+        title: 'Quantity to offer',
         label: 'Combien ?',
         placeholder: 'Ex. 5',
       }),

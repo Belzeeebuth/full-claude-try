@@ -51,7 +51,7 @@ const shopBuy: SelectHandler = {
         action: 'buy_qty',
         ownerId: interaction.user.id,
         params: [itemKey],
-        title: 'Quantité à acheter',
+        title: 'Quantity to buy',
         label: 'Combien en voulez-vous ?',
         placeholder: 'Ex. 10',
       }),
@@ -83,11 +83,11 @@ const plantSelect: SelectHandler = {
 
     const result = await farmService.plant(context.player, { cropKey, quantity: 64 });
     const embed = successEmbed(
-      `${result.emoji} ${result.cropName} planté`,
+      `${result.emoji} ${result.cropName} planted`,
       [
         `**${result.slots.length}** parcelle(s) : ${result.slots.map((slot) => `\`${slot}\``).join(' ')}`,
-        `Récolte ${discordTimestamp(result.readyAt, 'R')}`,
-        result.offSeason ? '⚠️ *Hors saison : rendement réduit.*' : '',
+        `Harvest ${discordTimestamp(result.readyAt, 'R')}`,
+        result.offSeason ? '⚠️ *Out of season: reduced yield.*' : '',
       ]
         .filter(Boolean)
         .join('\n'),
@@ -134,10 +134,10 @@ const buildingUpgrade: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          `${result.emoji} ${result.name} — ${result.built ? 'construit !' : `palier ${result.tier}`}`,
+          `${result.emoji} ${result.name} — ${result.built ? 'built!' : `palier ${result.tier}`}`,
           [
-            `Coût : ${formatCoins(result.costCoins)}`,
-            result.capacity > 0 ? `Capacité : **${formatNumber(result.capacity)}**` : '',
+            `Cost: ${formatCoins(result.costCoins)}`,
+            result.capacity > 0 ? `Capacity: **${formatNumber(result.capacity)}**` : '',
             result.slots > 0 ? `Emplacements : **${result.slots}**` : '',
           ]
             .filter(Boolean)
@@ -164,8 +164,8 @@ const questReroll: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          '🔄 Quête remplacée',
-          `${result.usedToken ? '🎫 Jeton utilisé.' : `Coût : ${formatCoins(result.cost)}`}\n\n**${result.newQuest.title}**\n${result.newQuest.description}`,
+          '🔄 Quest rerolled',
+          `${result.usedToken ? '🎫 Token used.' : `Coût : ${formatCoins(result.cost)}`}\n\n**${result.newQuest.title}**\n${result.newQuest.description}`,
         ),
       ],
       flags: MessageFlags.Ephemeral,
@@ -190,7 +190,7 @@ const coopJoin: SelectHandler = {
       embeds: [
         successEmbed(
           `Bienvenue chez ${info.emblem} ${info.name} !`,
-          `Vous bénéficiez immédiatement des bonus de niveau ${info.level}.`,
+          `You immediately benefit from the level ${info.level} bonuses.`,
         ),
       ],
       flags: MessageFlags.Ephemeral,

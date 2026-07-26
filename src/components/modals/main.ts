@@ -27,7 +27,7 @@ function parseQuantity(raw: string, max = 100_000): number {
   if (cleaned === 'tout' || cleaned === 'all' || cleaned === 'max') return max;
   const value = Number.parseInt(cleaned, 10);
   if (!Number.isFinite(value) || value <= 0) {
-    throw gameError('quantity_invalid', 'Quantité invalide : saisissez un nombre positif ou « tout ».');
+    throw gameError('quantity_invalid', 'Invalid quantity: enter a positive number or "all".');
   }
   return Math.min(value, max);
 }
@@ -51,7 +51,7 @@ const shopQuantity: ModalHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🛒 Achat effectué',
+          '🛒 Purchase complete',
           `${result.quantity}× ${result.emoji} **${result.name}** pour **${
             result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)
           }**.`,
@@ -79,8 +79,8 @@ const coopCreate: ModalHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `${info.emblem} ${info.name} [${info.tag}] fondée !`,
-          `Coût : ${formatCoins(context.balance.coop.creationCostCoins)}\nInvitez des amis avec \`/coop invite\`.`,
+          `${info.emblem} ${info.name} [${info.tag}] founded!`,
+          `Cost: ${formatCoins(context.balance.coop.creationCostCoins)}\nInvite friends with \`/coop invite\`.`,
         ),
       ],
     });
@@ -104,7 +104,7 @@ const coopContribute: ModalHandler = {
       embeds: [
         successEmbed(
           '💰 Contribution',
-          `${formatCoins(amount)} versés.\nTrésorerie : **${formatCoins(result.treasury)}**\n+${formatNumber(result.coopXp)} XP de coopérative${result.levelsGained > 0 ? ` — 🎉 niveau **${result.level}** !` : ''}`,
+          `${formatCoins(amount)} paid in.\nTreasury: **${formatCoins(result.treasury)}**\n+${formatNumber(result.coopXp)} co-op XP${result.levelsGained > 0 ? ` — 🎉 niveau **${result.level}** !` : ''}`,
         ),
       ],
     });
@@ -128,8 +128,8 @@ const tradeCoins: ModalHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🪙 Offre mise à jour',
-          `Vous proposez **${formatCoins(amount)}**.\n⚠️ Les confirmations ont été réinitialisées : les deux joueurs doivent revalider.`,
+          '🪙 Offer updated',
+          `You are offering **${formatCoins(amount)}**.\n⚠️ Both confirmations were reset: each player must validate again.`,
         ),
       ],
     });
@@ -151,8 +151,8 @@ const tradeItem: ModalHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '📦 Offre mise à jour',
-          `Objet ajouté à l'échange.\n⚠️ Les confirmations ont été réinitialisées.`,
+          '📦 Offer updated',
+          `Item added to the trade.\n⚠️ Both confirmations were reset.`,
         ),
       ],
     });
@@ -171,7 +171,7 @@ const adminAnnounce: ModalHandler = {
     if (!env.DISCORD_ANNOUNCE_CHANNEL_ID) {
       throw gameError(
         'invalid_state',
-        'Aucun salon d\'annonce configuré (`DISCORD_ANNOUNCE_CHANNEL_ID`).',
+        'No announcement channel configured (`DISCORD_ANNOUNCE_CHANNEL_ID`).',
       );
     }
 
@@ -186,13 +186,13 @@ const adminAnnounce: ModalHandler = {
           title: '📢 Annonce de Val-Verdoyant',
           description: message,
           color: COLORS.gold,
-          footer: `Publié par ${interaction.user.username}`,
+          footer: `Posted by ${interaction.user.username}`,
         }),
       ],
     });
 
     log.warn({ actor: interaction.user.id, length: message.length }, 'annonce globale publiée');
-    await interaction.editReply({ content: '✅ Annonce publiée.' });
+    await interaction.editReply({ content: '✅ Announcement posted.' });
   },
 };
 
