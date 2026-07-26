@@ -362,7 +362,9 @@ export async function sendLeaderboard(
         )
         .join('\n') || 'Aucun classement disponible.',
     color: COLORS.gold,
-    image: image.fileName ? `attachment://${image.fileName}` : undefined,
+    // Image laissée en pièce jointe libre, hors de l'embed : voir la note
+    // détaillée dans `farmView` (src/framework/views.ts). Un embed rend
+    // l'image à sa propre largeur (~400 px) ; celle-ci en fait 900 px.
     footer: viewerRank ? `Votre rang : #${viewerRank.rank} • ${scopeLabel}` : scopeLabel,
   });
 

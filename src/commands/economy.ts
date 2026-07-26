@@ -276,7 +276,9 @@ export async function sendMarketChart(
           `Prochaine mise à jour ${discordTimestamp(row.nextUpdateAt, 'R')}`,
         ].join('\n'),
         color: row.trend >= 0 ? COLORS.success : COLORS.danger,
-        image: image.fileName ? `attachment://${image.fileName}` : undefined,
+        // Image laissée en pièce jointe libre, hors de l'embed : voir la note
+        // détaillée dans `farmView` (src/framework/views.ts). Un embed rend
+        // l'image à sa propre largeur (~400 px) ; celle-ci en fait 900 px.
       }),
     ],
     files: image.attachment ? [image.attachment] : [],

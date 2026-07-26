@@ -30,7 +30,15 @@ const log = moduleLogger('render');
 
 export interface RenderOutcome {
   attachment: AttachmentBuilder | null;
-  /** Nom du fichier à référencer dans l'embed (`attachment://...`). */
+  /**
+   * Nom du fichier joint.
+   *
+   * Plus aucune vue ne le référence en `attachment://` : les images sont
+   * envoyées en pièces jointes libres, hors de l'embed, pour ne pas être
+   * réduites à la largeur de celui-ci (voir `farmView`). Le champ reste exposé
+   * parce qu'il identifie la pièce jointe — utile pour un embed qui voudrait
+   * délibérément l'intégrer, et pour le diagnostic.
+   */
   fileName: string | null;
   cached: boolean;
   durationMs: number;
