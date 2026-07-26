@@ -88,7 +88,17 @@ export async function farmView(
       .filter(Boolean)
       .join('\n'),
     color: counts.ready > 0 ? COLORS.success : COLORS.primary,
-    image: image.fileName ? `attachment://${image.fileName}` : undefined,
+    // L'image n'est VOLONTAIREMENT pas référencée par l'embed.
+    //
+    // Un `attachment://` dans un embed est rendu à la largeur de l'embed
+    // (~400 px) : notre vue de ferme, large de 760 px et plus, y perd la moitié
+    // de sa définition. Laissée en pièce jointe libre, Discord l'affiche à sa
+    // taille de prévisualisation normale, nettement plus grande.
+    //
+    // Elle reste dans le MÊME message plutôt que dans un second : le bouton
+    // « rafraîchir » passe par `editReply`, qui ne modifie que le message de la
+    // réponse. Une image envoyée en `followUp` se figerait sur l'état précédent
+    // à chaque rafraîchissement.
   });
 
   // Repli texte : si le rendu a échoué, on liste les parcelles.
