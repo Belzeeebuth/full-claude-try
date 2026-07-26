@@ -76,13 +76,13 @@ export async function farmView(
     title: `🌾 ${view.name}`,
     description: [
       `**${view.world.weather.emoji} ${view.world.weather.label}** — ${view.world.weather.description}`,
-      view.world.weather.freeWatering ? '💧 *Arrosage gratuit aujourd\'hui !*' : '',
+      view.world.weather.freeWatering ? '💧 *Free watering today!*' : '',
       '',
-      `✅ **${counts.ready}** prête(s) • 🌱 **${counts.growing}** en croissance • ⬜ **${counts.empty}** vide(s) • 🔒 **${counts.locked}** verrouillée(s)`,
-      counts.pests > 0 ? `🐛 **${counts.pests}** parcelle(s) infestée(s) — \`/treat\`` : '',
-      counts.withered > 0 ? `💀 **${counts.withered}** culture(s) fanée(s)` : '',
+      `✅ **${counts.ready}** ready • 🌱 **${counts.growing}** growing • ⬜ **${counts.empty}** empty • 🔒 **${counts.locked}** locked`,
+      counts.pests > 0 ? `🐛 **${counts.pests}** plot(s) infested — \`/treat\`` : '',
+      counts.withered > 0 ? `💀 **${counts.withered}** withered crop(s)` : '',
       view.nextReadyAt
-        ? `⏳ Prochaine récolte ${discordTimestamp(view.nextReadyAt, 'R')}`
+        ? `⏳ Next harvest ${discordTimestamp(view.nextReadyAt, 'R')}`
         : '',
     ]
       .filter(Boolean)
@@ -104,21 +104,21 @@ export async function farmView(
   // Repli texte : si le rendu a échoué, on liste les parcelles.
   if (!image.attachment) {
     embed.addFields({
-      name: 'Parcelles',
+      name: 'Plots',
       value:
         view.plots
           .filter((plot) => plot.state !== 'locked')
           .slice(0, 20)
           .map((plot) => {
-            if (!plot.crop) return `\`${String(plot.slot).padStart(2, ' ')}\` ⬜ vide`;
+            if (!plot.crop) return `\`${String(plot.slot).padStart(2, ' ')}\` ⬜ empty`;
             const status = plot.crop.growth.withered
-              ? '💀 fanée'
+              ? '💀 withered'
               : plot.crop.growth.ready
-                ? '✅ prête'
+                ? '✅ ready'
                 : `⏳ ${formatDuration(plot.crop.growth.msRemaining)}`;
             return `\`${String(plot.slot).padStart(2, ' ')}\` ${plot.crop.emoji} ${plot.crop.name} — ${status}${plot.crop.growth.needsWater ? ' 💧' : ''}`;
           })
-          .join('\n') || 'Aucune parcelle débloquée.',
+          .join('\n') || 'No plot unlocked yet.',
     });
   }
 
@@ -140,28 +140,28 @@ export async function farmView(
           namespace: 'farm',
           action: 'plots',
           ownerId: player.discordId,
-          label: 'Parcelles',
+          label: 'Plots',
           emoji: '🗺️',
         }),
         button({
           namespace: 'animal',
           action: 'open',
           ownerId: player.discordId,
-          label: 'Animaux',
+          label: 'Animals',
           emoji: '🐄',
         }),
         button({
           namespace: 'inv',
           action: 'open',
           ownerId: player.discordId,
-          label: 'Inventaire',
+          label: 'Inventory',
           emoji: '🎒',
         }),
         button({
           namespace: 'quest',
           action: 'open',
           ownerId: player.discordId,
-          label: 'Quêtes',
+          label: 'Quests',
           emoji: '📋',
         }),
       ),
@@ -183,20 +183,20 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
 
   const lines = slice.map((plot) => {
     if (plot.state === 'locked') {
-      return `\`${String(plot.slot).padStart(2, ' ')}\` 🔒 Verrouillée — ${formatCoins(plot.unlockCost)}`;
+      return `\`${String(plot.slot).padStart(2, ' ')}\` 🔒 Locked — ${formatCoins(plot.unlockCost)}`;
     }
-    const soil = `sol ${plot.fertility}% (${plot.fertilityLabel})`;
+    const soil = `soil ${plot.fertility}% (${plot.fertilityLabel})`;
     if (!plot.crop) {
-      return `\`${String(plot.slot).padStart(2, ' ')}\` ⬜ Vide — ${soil}${plot.weedLevel > 30 ? ` • 🌿 herbes ${plot.weedLevel}%` : ''}`;
+      return `\`${String(plot.slot).padStart(2, ' ')}\` ⬜ Empty — ${soil}${plot.weedLevel > 30 ? ` • 🌿 weeds ${plot.weedLevel}%` : ''}`;
     }
     const status = plot.crop.growth.withered
-      ? '💀 fanée'
+      ? '💀 withered'
       : plot.crop.growth.ready
-        ? '✅ **prête**'
+        ? '✅ **ready**'
         : `⏳ ${discordTimestamp(plot.crop.growth.readyAt, 'R')}`;
     return [
       `\`${String(plot.slot).padStart(2, ' ')}\` ${plot.crop.emoji} **${plot.crop.name}** — ${status}`,
-      `      ${soil} • 💧 ${plot.crop.waterGiven}/${plot.crop.waterNeeded}${plot.pestType ? ' • 🐛 nuisibles !' : ''}${plot.crop.regrowRemaining > 0 ? ` • 🔁 ${plot.crop.regrowRemaining} repousse(s)` : ''}`,
+      `      ${soil} • 💧 ${plot.crop.waterGiven}/${plot.crop.waterNeeded}${plot.pestType ? ' • 🐛 pests!' : ''}${plot.crop.regrowRemaining > 0 ? ` • 🔁 ${plot.crop.regrowRemaining} regrow(s)` : ''}`,
     ].join('\n');
   });
 
@@ -206,11 +206,11 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
     color: COLORS.primary,
     fields: [
       {
-        name: 'Extension',
+        name: 'Expansion',
         value:
           view.nextPlotCost > 0
             ? `Prochaine parcelle : **${formatCoins(view.nextPlotCost)}** (${view.unlockedPlots}/${context.balance.plots.maxPlots} débloquées)`
-            : `Toutes les parcelles sont débloquées (${view.unlockedPlots}) 🏆`,
+            : `All plots unlocked (${view.unlockedPlots}) 🏆`,
       },
     ],
   });
@@ -229,7 +229,7 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
           namespace: 'farm',
           action: 'buy_plot',
           ownerId: player.discordId,
-          label: view.nextPlotCost > 0 ? `Acheter (${formatCompact(view.nextPlotCost)} 🪙)` : 'Complet',
+          label: view.nextPlotCost > 0 ? `Buy (${formatCompact(view.nextPlotCost)} 🪙)` : 'Complete',
           emoji: '🛒',
           style: ButtonStyle.Success,
           disabled: view.nextPlotCost === 0,
@@ -238,7 +238,7 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
           namespace: 'farm',
           action: 'weed_all',
           ownerId: player.discordId,
-          label: 'Désherber',
+          label: 'Weed',
           emoji: '🌿',
         }),
         button({ namespace: 'farm', action: 'refresh', ownerId: player.discordId, emoji: '🔄' }),
@@ -252,15 +252,15 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
 // ---------------------------------------------------------------------------
 
 const CATEGORY_LABELS: Record<string, { label: string; emoji: string }> = {
-  seed: { label: 'Graines', emoji: '🌱' },
-  harvest: { label: 'Récoltes', emoji: '🌾' },
-  animal_product: { label: 'Produits animaux', emoji: '🥚' },
-  product: { label: 'Produits transformés', emoji: '🧀' },
-  tool: { label: 'Outils', emoji: '🛠️' },
-  consumable: { label: 'Consommables', emoji: '🧪' },
-  material: { label: 'Matériaux', emoji: '🪵' },
-  cosmetic: { label: 'Cosmétiques', emoji: '🎨' },
-  event: { label: 'Événement', emoji: '🎉' },
+  seed: { label: 'Seeds', emoji: '🌱' },
+  harvest: { label: 'Harvests', emoji: '🌾' },
+  animal_product: { label: 'Animal products', emoji: '🥚' },
+  product: { label: 'Processed goods', emoji: '🧀' },
+  tool: { label: 'Tools', emoji: '🛠️' },
+  consumable: { label: 'Consumables', emoji: '🧪' },
+  material: { label: 'Materials', emoji: '🪵' },
+  cosmetic: { label: 'Cosmetics', emoji: '🎨' },
+  event: { label: 'Event', emoji: '🎉' },
 };
 
 export async function inventoryView(
@@ -281,16 +281,16 @@ export async function inventoryView(
 
   const embed = baseEmbed({
     title: `🎒 Inventaire de ${player.username}`,
-    description: lines.join('\n') || '*Aucun objet dans cette catégorie.*',
+    description: lines.join('\n') || '*No item in this category.*',
     color: COLORS.info,
     fields: [
       {
-        name: 'Entrepôt',
+        name: 'Warehouse',
         value: `${progressBar(page.used, page.capacity, 12)} ${formatNumber(page.used)}/${formatNumber(page.capacity)}`,
         inline: true,
       },
       {
-        name: 'Valeur estimée',
+        name: 'Estimated value',
         value: formatCoins(page.totalValue, true),
         inline: true,
       },
@@ -305,9 +305,9 @@ export async function inventoryView(
           namespace: 'inv',
           action: 'category',
           ownerId: player.discordId,
-          placeholder: 'Filtrer par catégorie',
+          placeholder: 'Filter by category',
           choices: [
-            { label: 'Tout', value: 'all', emoji: '📦', default: !options.category },
+            { label: 'All', value: 'all', emoji: '📦', default: !options.category },
             ...Object.entries(CATEGORY_LABELS).map(([value, meta]) => ({
               label: meta.label,
               value,
@@ -329,7 +329,7 @@ export async function inventoryView(
           namespace: 'inv',
           action: 'sell_menu',
           ownerId: player.discordId,
-          label: 'Vendre',
+          label: 'Sell',
           emoji: '💰',
           style: ButtonStyle.Success,
         }),
@@ -337,7 +337,7 @@ export async function inventoryView(
           namespace: 'farm',
           action: 'refresh',
           ownerId: player.discordId,
-          label: 'Ma ferme',
+          label: 'My farm',
           emoji: '🌾',
         }),
       ),
@@ -362,7 +362,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
   }
 
   const CATEGORY_TITLES: Record<string, string> = {
-    daily: '✨ Offres du jour',
+    daily: "✨ Today's deals",
     seeds: '🌱 Graines',
     supplies: '📦 Fournitures',
   };
@@ -378,8 +378,8 @@ export async function shopView(context: CommandContext, category?: string): Prom
           entry.stockRemaining >= 999
             ? ''
             : entry.stockRemaining <= 0
-              ? ' — **épuisé**'
-              : ` — ${entry.stockRemaining} en stock`;
+              ? ' — **sold out**'
+              : ` — ${entry.stockRemaining} in stock`;
         const level = entry.requiredLevel > player.level ? ` 🔒 niv. ${entry.requiredLevel}` : '';
         return `${entry.emoji} **${entry.name}** — ${price}${discount}${stock}${level}`;
       })
@@ -388,9 +388,9 @@ export async function shopView(context: CommandContext, category?: string): Prom
 
   const first = entries[0];
   const embed = baseEmbed({
-    title: '🏪 Boutique du village',
+    title: '🏪 Village shop',
     description: first
-      ? `Stock renouvelé ${discordTimestamp(first.expiresAt, 'R')}.\nUtilisez \`/buy\` ou le menu ci-dessous.`
+      ? `Stock refreshed ${discordTimestamp(first.expiresAt, 'R')}.\nUse \`/buy\` or the menu below.`
       : 'La boutique est vide pour le moment.',
     color: COLORS.gold,
     fields,
@@ -408,9 +408,9 @@ export async function shopView(context: CommandContext, category?: string): Prom
           namespace: 'shop',
           action: 'buy',
           ownerId: player.discordId,
-          placeholder: 'Acheter un article',
+          placeholder: 'Buy an item',
           choices: buyable.slice(0, 25).map((entry) => ({
-            label: `${entry.name} — ${entry.price} ${entry.currency === 'gems' ? 'gemmes' : 'pièces'}`,
+            label: `${entry.name} — ${entry.price} ${entry.currency === 'gems' ? 'gems' : 'coins'}`,
             value: entry.itemKey,
             emoji: entry.emoji,
             description: truncate(entry.description ?? '', 100),
@@ -424,7 +424,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
           action: 'filter',
           ownerId: player.discordId,
           params: ['all'],
-          label: 'Tout',
+          label: 'All',
           emoji: '📦',
         }),
         button({
@@ -432,7 +432,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
           action: 'filter',
           ownerId: player.discordId,
           params: ['daily'],
-          label: 'Offres du jour',
+          label: "Today's deals",
           emoji: '✨',
         }),
         button({
@@ -440,7 +440,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
           action: 'filter',
           ownerId: player.discordId,
           params: ['seeds'],
-          label: 'Graines',
+          label: 'Seeds',
           emoji: '🌱',
         }),
         button({ namespace: 'shop', action: 'open', ownerId: player.discordId, emoji: '🔄' }),
@@ -463,24 +463,24 @@ export async function marketView(context: CommandContext, category?: string): Pr
     `${entry.trendEmoji} ${entry.emoji} **${entry.name}** — ${formatNumber(entry.price)} ${COIN} (${formatPercent(entry.trend)})`;
 
   const embed = baseEmbed({
-    title: '📊 Marché de Val-Verdoyant',
+    title: '📊 Greenvale market',
     description: [
-      'Les prix évoluent chaque heure selon ce que les fermiers vendent.',
-      rows[0] ? `Prochaine mise à jour ${discordTimestamp(rows[0].nextUpdateAt, 'R')}.` : '',
+      'Prices move every hour with what farmers sell.',
+      rows[0] ? `Next update ${discordTimestamp(rows[0].nextUpdateAt, 'R')}.` : '',
     ]
       .filter(Boolean)
       .join('\n'),
     color: COLORS.info,
     fields: [
-      { name: '📈 En hausse', value: top.map(format).join('\n') || '—', inline: false },
-      { name: '📉 En baisse', value: bottom.map(format).join('\n') || '—', inline: false },
+      { name: '📈 Rising', value: top.map(format).join('\n') || '—', inline: false },
+      { name: '📉 Falling', value: bottom.map(format).join('\n') || '—', inline: false },
     ],
   });
 
   const featured = rows.filter((entry) => entry.featured);
   if (featured.length > 0) {
     embed.addFields({
-      name: '⭐ Produits vedettes (prix majoré)',
+      name: '⭐ Featured products (boosted price)',
       value: featured.map((entry) => `${entry.emoji} ${entry.name}`).join(' • '),
     });
   }
@@ -508,7 +508,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
           action: 'filter',
           ownerId: context.player.discordId,
           params: ['harvest'],
-          label: 'Récoltes',
+          label: 'Harvests',
           emoji: '🌾',
         }),
         button({
@@ -516,7 +516,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
           action: 'filter',
           ownerId: context.player.discordId,
           params: ['product'],
-          label: 'Produits',
+          label: 'Products',
           emoji: '🧀',
         }),
         button({
@@ -524,7 +524,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
           action: 'filter',
           ownerId: context.player.discordId,
           params: ['animal_product'],
-          label: 'Élevage',
+          label: 'Livestock',
           emoji: '🥚',
         }),
         button({
@@ -559,7 +559,7 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
     return [
       `${animal.emoji} **${animal.nickname ?? animal.name}** — ${animal.status.mood}`,
       `   🍽️ ${gaugeBar(animal.status.hunger, 5)} ${animal.status.hunger}%  💛 ${gaugeBar(animal.status.happiness, 5)} ${animal.status.happiness}%  ❤️ ${animal.status.health}%`,
-      `   ${production}${animal.generation > 1 ? ` • gén. ${animal.generation}` : ''}${animal.qualityMultiplier !== 1 ? ` • ×${animal.qualityMultiplier.toFixed(2)}` : ''}`,
+      `   ${production}${animal.generation > 1 ? ` • gen. ${animal.generation}` : ''}${animal.qualityMultiplier !== 1 ? ` • ×${animal.qualityMultiplier.toFixed(2)}` : ''}`,
     ].join('\n');
   });
 
@@ -571,16 +571,16 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
     color: herd.totals.readyToCollect > 0 ? COLORS.success : COLORS.primary,
     fields: [
       {
-        name: 'Bâtiments',
+        name: 'Buildings',
         value:
           herd.capacityByBuilding
-            .map((entry) => `${entry.emoji} ${entry.name} — ${entry.used}/${entry.capacity} (palier ${entry.tier})`)
-            .join('\n') || 'Aucun bâtiment d\'élevage.',
+            .map((entry) => `${entry.emoji} ${entry.name} — ${entry.used}/${entry.capacity} (tier ${entry.tier})`)
+            .join('\n') || 'No livestock building.',
         inline: false,
       },
       {
-        name: 'Résumé',
-        value: `🐾 ${herd.totals.alive} animal(aux) • 🍽️ ${herd.totals.hungry} affamé(s) • 🤒 ${herd.totals.sick} malade(s) • ✅ ${herd.totals.readyToCollect} à collecter`,
+        name: 'Summary',
+        value: `🐾 ${herd.totals.alive} animal(s) • 🍽️ ${herd.totals.hungry} hungry • 🤒 ${herd.totals.sick} sick • ✅ ${herd.totals.readyToCollect} to collect`,
         inline: false,
       },
     ],
@@ -594,7 +594,7 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
           namespace: 'animal',
           action: 'collect_all',
           ownerId: player.discordId,
-          label: 'Tout collecter',
+          label: 'Collect all',
           emoji: '🥚',
           style: ButtonStyle.Success,
           disabled: herd.totals.readyToCollect === 0,
@@ -603,7 +603,7 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
           namespace: 'animal',
           action: 'feed_all',
           ownerId: player.discordId,
-          label: 'Tout nourrir',
+          label: 'Feed all',
           emoji: '🌾',
           style: ButtonStyle.Primary,
           disabled: herd.totals.alive === 0,
@@ -612,7 +612,7 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
           namespace: 'animal',
           action: 'pet_menu',
           ownerId: player.discordId,
-          label: 'Caresser',
+          label: 'Pet',
           emoji: '🤍',
           disabled: herd.totals.alive === 0,
         }),
@@ -638,8 +638,8 @@ export async function questsView(
   const resets = progressionService.questResetTimes();
 
   const allSections: Array<{ key: 'daily' | 'weekly' | 'story' | 'contract'; title: string }> = [
-    { key: 'daily', title: `📅 Journalières — renouvelées ${discordTimestamp(resets.daily, 'R')}` },
-    { key: 'weekly', title: `🗓️ Hebdomadaires — renouvelées ${discordTimestamp(resets.weekly, 'R')}` },
+    { key: 'daily', title: `📅 Daily — resets ${discordTimestamp(resets.daily, 'R')}` },
+    { key: 'weekly', title: `🗓️ Weekly — resets ${discordTimestamp(resets.weekly, 'R')}` },
     { key: 'story', title: '📖 Histoire du village' },
     { key: 'contract', title: '📦 Contrats de livraison' },
   ];
@@ -655,9 +655,9 @@ export async function questsView(
           .map((quest) => {
             const status =
               quest.status === 'claimed'
-                ? '✅ perçue'
+                ? '✅ claimed'
                 : quest.status === 'completed'
-                  ? '🎁 **à réclamer**'
+                  ? '🎁 **to claim**'
                   : `${progressBar(quest.progress, quest.required, 8)} ${quest.progress}/${quest.required}`;
             const rewards = [
               quest.rewards.coins ? `${formatCompact(quest.rewards.coins)} 🪙` : '',
@@ -676,11 +676,11 @@ export async function questsView(
   const claimable = quests.filter((quest) => quest.status === 'completed');
 
   const embed = baseEmbed({
-    title: `📋 Quêtes de ${player.username}`,
+    title: `📋 ${player.username}'s quests`,
     description:
       claimable.length > 0
-        ? `🎁 **${claimable.length} récompense(s)** vous attendent !`
-        : 'Terminez vos quêtes pour gagner pièces, XP et progression du passe.',
+        ? `🎁 **${claimable.length} reward(s)** waiting for you!`
+        : 'Complete quests to earn coins, XP and season pass progress.',
     color: claimable.length > 0 ? COLORS.gold : COLORS.primary,
     fields,
   });
@@ -695,7 +695,7 @@ export async function questsView(
           namespace: 'quest',
           action: 'claim_all',
           ownerId: player.discordId,
-          label: `Tout réclamer (${claimable.length})`,
+          label: `Claim all (${claimable.length})`,
           emoji: '🎁',
           style: ButtonStyle.Success,
           disabled: claimable.length === 0,
@@ -705,7 +705,7 @@ export async function questsView(
           action: 'filter',
           ownerId: player.discordId,
           params: ['daily'],
-          label: 'Journalières',
+          label: 'Daily',
           emoji: '📅',
         }),
         button({
@@ -713,7 +713,7 @@ export async function questsView(
           action: 'filter',
           ownerId: player.discordId,
           params: ['weekly'],
-          label: 'Hebdo',
+          label: 'Weekly',
           emoji: '🗓️',
         }),
         button({
@@ -730,7 +730,7 @@ export async function questsView(
                 namespace: 'quest',
                 action: 'reroll',
                 ownerId: player.discordId,
-                placeholder: 'Relancer une quête journalière',
+                placeholder: 'Reroll a daily quest',
                 choices: rerollable.slice(0, 25).map((quest) => ({
                   label: truncate(quest.title, 90),
                   value: quest.id,
@@ -756,21 +756,21 @@ export async function coopView(context: CommandContext): Promise<View> {
     return {
       embeds: [
         baseEmbed({
-          title: '🤝 Coopératives',
+          title: '🤝 Co-ops',
           description:
-            "Vous n'êtes dans aucune coopérative.\n" +
-            'Rejoignez-en une pour bénéficier de bonus collectifs, d\'objectifs hebdomadaires et d\'une trésorerie commune.',
+            "You are not in a co-op.\n" +
+            'Join one for collective bonuses, weekly objectives and a shared treasury.',
           color: COLORS.info,
           fields: [
             {
-              name: 'Coopératives ouvertes',
+              name: 'Open co-ops',
               value:
                 publics
                   .map(
                     (coop) =>
-                      `${coop.emblem} **${coop.name}** \`[${coop.tag}]\` — niv. ${coop.level} • ${coop.memberCount}/${coop.memberLimit} membres`,
+                      `${coop.emblem} **${coop.name}** \`[${coop.tag}]\` — lvl ${coop.level} • ${coop.memberCount}/${coop.memberLimit} members`,
                   )
-                  .join('\n') || 'Aucune coopérative publique pour le moment.',
+                  .join('\n') || 'No public co-op right now.',
             },
           ],
         }),
@@ -781,7 +781,7 @@ export async function coopView(context: CommandContext): Promise<View> {
             namespace: 'coop',
             action: 'create',
             ownerId: player.discordId,
-            label: 'Créer une coopérative',
+            label: 'Create a co-op',
             emoji: '➕',
             style: ButtonStyle.Success,
           }),
@@ -793,13 +793,13 @@ export async function coopView(context: CommandContext): Promise<View> {
                   namespace: 'coop',
                   action: 'join',
                   ownerId: player.discordId,
-                  placeholder: 'Rejoindre une coopérative',
+                  placeholder: 'Join a co-op',
                   choices: publics.map((coop) => ({
                     label: `${coop.name} [${coop.tag}]`,
                     value: coop.tag,
                     emoji: coop.emblem,
                     description: truncate(
-                      coop.description ?? `Niveau ${coop.level} • ${coop.memberCount} membres`,
+                      coop.description ?? `Level ${coop.level} • ${coop.memberCount} members`,
                       100,
                     ),
                   })),
@@ -826,12 +826,12 @@ export async function coopView(context: CommandContext): Promise<View> {
         inline: true,
       },
       {
-        name: 'Trésorerie',
+        name: 'Treasury',
         value: formatCoins(info.treasury, true),
         inline: true,
       },
       {
-        name: 'Membres',
+        name: 'Members',
         value: `${info.memberCount}/${info.memberLimit}`,
         inline: true,
       },
@@ -840,8 +840,8 @@ export async function coopView(context: CommandContext): Promise<View> {
         value: [
           `🌱 Vitesse de pousse **+${(info.bonuses.growthSpeed * 100).toFixed(1)} %**`,
           `💰 Prix de vente **+${(info.bonuses.sellBonus * 100).toFixed(1)} %**`,
-          `✨ XP **+${(info.bonuses.xpBonus * 100).toFixed(1)} %**`,
-          `🥇 Qualité **+${(info.bonuses.qualityBonus * 100).toFixed(1)} %**`,
+          `✨ XP **+${(info.bonuses.xpBonus * 100).toFixed(1)}%**`,
+          `🥇 Quality **+${(info.bonuses.qualityBonus * 100).toFixed(1)}%**`,
         ].join('\n'),
         inline: false,
       },
@@ -879,7 +879,7 @@ export async function coopView(context: CommandContext): Promise<View> {
           namespace: 'coop',
           action: 'contribute',
           ownerId: player.discordId,
-          label: 'Contribuer',
+          label: 'Contribute',
           emoji: '💰',
           style: ButtonStyle.Success,
         }),
@@ -887,14 +887,14 @@ export async function coopView(context: CommandContext): Promise<View> {
           namespace: 'coop',
           action: 'members',
           ownerId: player.discordId,
-          label: 'Membres',
+          label: 'Members',
           emoji: '👥',
         }),
         button({
           namespace: 'coop',
           action: 'objectives',
           ownerId: player.discordId,
-          label: 'Objectifs',
+          label: 'Objectives',
           emoji: '🎯',
         }),
         button({ namespace: 'coop', action: 'open', ownerId: player.discordId, emoji: '🔄' }),
@@ -913,13 +913,13 @@ export async function productionView(context: CommandContext): Promise<View> {
   const ready = lines.filter((line) => line.ready);
 
   const embed = baseEmbed({
-    title: '🛠️ File de production',
+    title: '🛠️ Production queue',
     description:
       lines
         .map(
           (line) =>
             `${line.buildingEmoji} **${line.recipeName}** ×${line.quantity} — ${
-              line.ready ? '✅ **prêt**' : `⏳ ${discordTimestamp(line.finishAt, 'R')}`
+              line.ready ? '✅ **ready**' : `⏳ ${discordTimestamp(line.finishAt, 'R')}`
             }\n   → ${line.outputQuantity}× ${line.outputName}`,
         )
         .join('\n') || '*Aucune production en cours.* Lancez-en une avec `/craft`.',
@@ -943,14 +943,14 @@ export async function productionView(context: CommandContext): Promise<View> {
           namespace: 'craft',
           action: 'recipes',
           ownerId: player.discordId,
-          label: 'Recettes',
+          label: 'Recipes',
           emoji: '📜',
         }),
         button({
           namespace: 'build',
           action: 'open',
           ownerId: player.discordId,
-          label: 'Bâtiments',
+          label: 'Buildings',
           emoji: '🏗️',
         }),
         button({ namespace: 'craft', action: 'queue', ownerId: player.discordId, emoji: '🔄' }),
@@ -971,15 +971,15 @@ export async function buildingsView(context: CommandContext): Promise<View> {
   }
 
   const CATEGORY_TITLES: Record<string, string> = {
-    livestock: '🐄 Élevage',
+    livestock: '🐄 Livestock',
     production: '🏭 Transformation',
     storage: '📦 Stockage',
-    utility: '🔧 Utilitaires',
+    utility: '🔧 Utilities',
   };
 
   const embed = baseEmbed({
-    title: '🏗️ Bâtiments de la ferme',
-    description: 'Améliorez vos bâtiments pour augmenter capacité, vitesse et emplacements.',
+    title: '🏗️ Farm buildings',
+    description: 'Upgrade your buildings to raise capacity, speed and slots.',
     color: COLORS.primary,
     fields: [...groups.entries()].map(([category, list]) => ({
       name: CATEGORY_TITLES[category] ?? category,
@@ -1013,12 +1013,12 @@ export async function buildingsView(context: CommandContext): Promise<View> {
           namespace: 'build',
           action: 'upgrade',
           ownerId: player.discordId,
-          placeholder: 'Construire ou améliorer',
+          placeholder: 'Build or upgrade',
           choices: upgradable.slice(0, 25).map((building) => ({
             label: `${building.name} → palier ${building.nextTier!.tier}`,
             value: building.key,
             emoji: building.emoji,
-            description: `${formatCompact(building.nextTier!.costCoins)} pièces`,
+            description: `${formatCompact(building.nextTier!.costCoins)} coins`,
           })),
           disabled: upgradable.length === 0,
         }),
