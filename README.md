@@ -165,7 +165,7 @@ malformée fait échouer le lancement immédiatement, avec le nom du champ fauti
 | `SEASON_LENGTH_DAYS` | `14` | Durée d'une saison en jours réels |
 | `GLOBAL_GROWTH_MULTIPLIER` | `1.0` | `< 1` accélère la pousse (événements) |
 | `GLOBAL_ECONOMY_MULTIPLIER` | `1.0` | Multiplie tous les gains |
-| `ENERGY_SYSTEM_ENABLED` | `false` | Active le système d'énergie |
+| `ENERGY_SYSTEM_ENABLED` | `true` | Système d'énergie ; `false` pour un rythme libre |
 | `MARKET_UPDATE_MINUTES` | `60` | Fréquence de recalcul des prix |
 | `RENDER_ENABLED` | `true` | `false` bascule tout en embeds texte |
 | `RENDER_CACHE_TTL` | `120` | Durée du cache d'images (s) |

@@ -335,8 +335,9 @@ création de coopérative.
   terminée, production collectée. Désactivées par défaut ; réglables par catégorie.
 - **Rappels programmés** : `scheduled_tasks` déclenche les notifications au bon
   moment plutôt que par sondage.
-- **Système d'énergie optionnel** (`ENERGY_SYSTEM_ENABLED`, désactivé par défaut) :
-  disponible pour les serveurs qui veulent limiter le rythme, jamais imposé.
+- **Système d'énergie** (`ENERGY_SYSTEM_ENABLED`, **activé par défaut**) : borne le
+  nombre d'actions par session pour éviter l'abattage en boucle. Se désactive
+  entièrement en passant la variable à `false`, sans autre changement.
 - **Récompenses de vote top.gg** : bonus quotidien, cumulable avec la série.
 
 ### 3.11 Administration
