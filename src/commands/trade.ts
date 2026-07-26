@@ -21,32 +21,32 @@ const hdv: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('auction')
-    .setDescription('Hôtel des ventes entre joueurs')
+    .setDescription('Player-to-player auction house')
     .addSubcommand((sub) =>
       sub
         .setName('list')
-        .setDescription('Parcourir les annonces')
+        .setDescription('Browse listings')
         .addStringOption((option) =>
-          option.setName('item').setDescription('Filtrer par objet').setAutocomplete(true),
+          option.setName('item').setDescription('Filter by item').setAutocomplete(true),
         ),
     )
     .addSubcommand((sub) =>
       sub
         .setName('sell')
-        .setDescription('Mettre un lot en vente')
+        .setDescription('List a stack for sale')
         .addStringOption((option) =>
-          option.setName('item').setDescription("L'objet").setRequired(true).setAutocomplete(true),
+          option.setName('item').setDescription("The item").setRequired(true).setAutocomplete(true),
         )
         .addIntegerOption((option) =>
-          option.setName('quantity').setDescription('Quantité').setRequired(true).setMinValue(1),
+          option.setName('quantity').setDescription('Quantity').setRequired(true).setMinValue(1),
         )
         .addIntegerOption((option) =>
-          option.setName('price').setDescription('Prix du lot entier').setRequired(true).setMinValue(1),
+          option.setName('price').setDescription('Price for the whole stack').setRequired(true).setMinValue(1),
         )
         .addIntegerOption((option) =>
           option
             .setName('duration')
-            .setDescription('Durée en heures')
+            .setDescription('Duration in hours')
             .addChoices(
               { name: '6 heures', value: 6 },
               { name: '12 heures', value: 12 },
@@ -58,18 +58,18 @@ const hdv: Command = {
     .addSubcommand((sub) =>
       sub
         .setName('buy')
-        .setDescription('Acheter une annonce')
+        .setDescription('Buy a listing')
         .addStringOption((option) =>
-          option.setName('listing').setDescription("Identifiant de l'annonce").setRequired(true),
+          option.setName('listing').setDescription("Listing ID").setRequired(true),
         ),
     )
-    .addSubcommand((sub) => sub.setName('my-listings').setDescription('Vos annonces et leur état'))
+    .addSubcommand((sub) => sub.setName('my-listings').setDescription('Your listings and their status'))
     .addSubcommand((sub) =>
       sub
         .setName('cancel')
-        .setDescription('Annuler une annonce sans enchère')
+        .setDescription('Cancel a listing that has no bids')
         .addStringOption((option) =>
-          option.setName('listing').setDescription("Identifiant de l'annonce").setRequired(true),
+          option.setName('listing').setDescription("Listing ID").setRequired(true),
         ),
     )
     .toJSON(),
@@ -257,9 +257,9 @@ const echange: Command = {
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
     .setName('trade')
-    .setDescription('Ouvre un échange sécurisé avec un autre joueur')
+    .setDescription('Open a secure trade with another player')
     .addUserOption((option) =>
-      option.setName('user').setDescription('Votre partenaire').setRequired(true),
+      option.setName('user').setDescription('Your trading partner').setRequired(true),
     )
     .toJSON(),
 

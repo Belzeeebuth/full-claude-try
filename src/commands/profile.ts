@@ -25,8 +25,8 @@ const profil: Command = {
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
     .setName('profile')
-    .setDescription('Carte de profil illustrée')
-    .addUserOption((option) => option.setName('user').setDescription('Le fermier à afficher'))
+    .setDescription('Illustrated profile card')
+    .addUserOption((option) => option.setName('user').setDescription('The farmer to show'))
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -123,8 +123,8 @@ const stats: Command = {
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
     .setName('stats')
-    .setDescription('Statistiques détaillées')
-    .addUserOption((option) => option.setName('user').setDescription('Le fermier à analyser'))
+    .setDescription('Detailed statistics')
+    .addUserOption((option) => option.setName('user').setDescription('The farmer to analyse'))
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -208,8 +208,8 @@ const solde: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('balance')
-    .setDescription('Affiche votre solde')
-    .addUserOption((option) => option.setName('user').setDescription('Le fermier à consulter'))
+    .setDescription('Show your balance')
+    .addUserOption((option) => option.setName('user').setDescription('The farmer to look up'))
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -241,9 +241,9 @@ const parametres: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('settings')
-    .setDescription('Vos préférences : notifications, langue, confidentialité')
+    .setDescription('Your preferences: notifications, language, privacy')
     .addBooleanOption((option) =>
-      option.setName('dm-notifications').setDescription('Recevoir des rappels en message privé'),
+      option.setName('dm-notifications').setDescription('Receive reminders by direct message'),
     )
     .addStringOption((option) =>
       option
@@ -254,7 +254,7 @@ const parametres: Command = {
     .addStringOption((option) =>
       option
         .setName('privacy')
-        .setDescription('Qui peut voir votre ferme ?')
+        .setDescription('Who can see your farm?')
         .addChoices(
           { name: 'Tout le monde', value: 'public' },
           { name: 'Ma coopérative', value: 'coop_only' },
@@ -262,10 +262,10 @@ const parametres: Command = {
         ),
     )
     .addStringOption((option) =>
-      option.setName('timezone').setDescription('Fuseau horaire (ex. Europe/Paris)').setMaxLength(48),
+      option.setName('timezone').setDescription('Time zone (e.g. Europe/Paris)').setMaxLength(48),
     )
     .addBooleanOption((option) =>
-      option.setName('compact-mode').setDescription('Désactiver les images générées'),
+      option.setName('compact-mode').setDescription('Disable generated images'),
     )
     .toJSON(),
 
@@ -371,7 +371,7 @@ const prestige: Command = {
   cooldown: { seconds: 30, bucket: 'prestige' },
   data: new SlashCommandBuilder()
     .setName('prestige')
-    .setDescription('Renaissance : repartez de zéro contre des bonus permanents')
+    .setDescription('Rebirth: start over for permanent bonuses')
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {

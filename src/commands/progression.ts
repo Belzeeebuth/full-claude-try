@@ -22,11 +22,11 @@ const quetes: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('quests')
-    .setDescription('Vos quêtes et contrats en cours')
+    .setDescription('Your active quests and contracts')
     .addStringOption((option) =>
       option
         .setName('type')
-        .setDescription('Filtrer')
+        .setDescription('Filter')
         .addChoices(
           { name: '📅 Journalières', value: 'daily' },
           { name: '🗓️ Hebdomadaires', value: 'weekly' },
@@ -53,9 +53,9 @@ const rerollQuete: Command = {
   cooldown: { seconds: 5, bucket: 'reroll' },
   data: new SlashCommandBuilder()
     .setName('reroll-quest')
-    .setDescription('Remplace une quête journalière par une autre')
+    .setDescription('Swap a daily quest for another one')
     .addStringOption((option) =>
-      option.setName('quest').setDescription('La quête à relancer').setRequired(true).setAutocomplete(true),
+      option.setName('quest').setDescription('The quest to reroll').setRequired(true).setAutocomplete(true),
     )
     .toJSON(),
 
@@ -110,11 +110,11 @@ const succes: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('achievements')
-    .setDescription('Vos succès et leur progression')
+    .setDescription('Your achievements and their progress')
     .addStringOption((option) =>
       option
         .setName('category')
-        .setDescription('Filtrer')
+        .setDescription('Filter')
         .addChoices(
           { name: '🌾 Agriculture', value: 'agriculture' },
           { name: '🐄 Élevage', value: 'elevage' },
@@ -180,7 +180,7 @@ const passe: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('pass')
-    .setDescription('Votre passe saisonnier gratuit')
+    .setDescription('Your free season pass')
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -268,7 +268,7 @@ const daily: Command = {
   cooldown: { seconds: 0, bucket: 'daily' },
   data: new SlashCommandBuilder()
     .setName('daily')
-    .setDescription('Réclamez votre récompense quotidienne')
+    .setDescription('Claim your daily reward')
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -321,7 +321,7 @@ const vote: Command = {
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
     .setName('vote')
-    .setDescription('Votez pour le bot et réclamez vos gemmes')
+    .setDescription('Vote for the bot and claim your gems')
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {

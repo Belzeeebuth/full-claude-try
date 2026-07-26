@@ -33,11 +33,11 @@ const boutique: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('shop')
-    .setDescription('Boutique du village (stock renouvelé chaque jour)')
+    .setDescription('Village shop — stock refreshes daily')
     .addStringOption((option) =>
       option
         .setName('category')
-        .setDescription('Filtrer la boutique')
+        .setDescription('Filter the shop')
         .addChoices(
           { name: '✨ Offres du jour', value: 'daily' },
           { name: '🌱 Graines', value: 'seeds' },
@@ -59,12 +59,12 @@ const acheter: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('buy')
-    .setDescription('Achète un article de la boutique')
+    .setDescription('Buy an item from the shop')
     .addStringOption((option) =>
-      option.setName('item').setDescription("L'article à acheter").setRequired(true).setAutocomplete(true),
+      option.setName('item').setDescription("The item to buy").setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
-      option.setName('quantity').setDescription('Combien ?').setMinValue(1).setMaxValue(999),
+      option.setName('quantity').setDescription('How many?').setMinValue(1).setMaxValue(999),
     )
     .toJSON(),
 
@@ -115,12 +115,12 @@ const vendre: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('sell')
-    .setDescription('Vend des objets au village')
+    .setDescription('Sell items to the village')
     .addStringOption((option) =>
-      option.setName('item').setDescription("L'objet à vendre").setRequired(true).setAutocomplete(true),
+      option.setName('item').setDescription("The item to sell").setRequired(true).setAutocomplete(true),
     )
     .addStringOption((option) =>
-      option.setName('quantity').setDescription('Un nombre, ou « tout »').setMaxLength(10),
+      option.setName('quantity').setDescription('A number, or \"all\"').setMaxLength(10),
     )
     .toJSON(),
 
@@ -189,11 +189,11 @@ const marche: Command = {
   cooldown: { seconds: 5, bucket: 'market' },
   data: new SlashCommandBuilder()
     .setName('market')
-    .setDescription('Prix du marché et tendances')
+    .setDescription('Market prices and trends')
     .addStringOption((option) =>
       option
         .setName('category')
-        .setDescription('Filtrer par type de produit')
+        .setDescription('Filter by product type')
         .addChoices(
           { name: '🌾 Récoltes', value: 'harvest' },
           { name: '🥚 Produits animaux', value: 'animal_product' },
@@ -215,9 +215,9 @@ const marcheHistorique: Command = {
   cooldown: { seconds: 5, bucket: 'market' },
   data: new SlashCommandBuilder()
     .setName('market-history')
-    .setDescription("Graphique d'évolution du prix d'un produit")
+    .setDescription("Price history chart for a product")
     .addStringOption((option) =>
-      option.setName('item').setDescription('Le produit à analyser').setRequired(true).setAutocomplete(true),
+      option.setName('item').setDescription('The product to analyse').setRequired(true).setAutocomplete(true),
     )
     .toJSON(),
 
@@ -292,11 +292,11 @@ const inventaire: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('inventory')
-    .setDescription('Votre inventaire, paginé par catégorie')
+    .setDescription('Your inventory, paged by category')
     .addStringOption((option) =>
       option
         .setName('category')
-        .setDescription('Filtrer')
+        .setDescription('Filter')
         .addChoices(
           { name: '🌱 Graines', value: 'seed' },
           { name: '🌾 Récoltes', value: 'harvest' },
@@ -329,9 +329,9 @@ const objet: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('item')
-    .setDescription("Fiche détaillée d'un objet")
+    .setDescription("Detailed item sheet")
     .addStringOption((option) =>
-      option.setName('name').setDescription("L'objet").setRequired(true).setAutocomplete(true),
+      option.setName('name').setDescription("The item").setRequired(true).setAutocomplete(true),
     )
     .toJSON(),
 
@@ -414,12 +414,12 @@ const utiliser: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('use')
-    .setDescription('Utilise un objet consommable')
+    .setDescription('Use a consumable item')
     .addStringOption((option) =>
-      option.setName('item').setDescription("L'objet à utiliser").setRequired(true).setAutocomplete(true),
+      option.setName('item').setDescription("The item to use").setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
-      option.setName('quantity').setDescription('Combien ?').setMinValue(1).setMaxValue(50),
+      option.setName('quantity').setDescription('How many?').setMinValue(1).setMaxValue(50),
     )
     .toJSON(),
 
@@ -465,12 +465,12 @@ const jeter: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('discard')
-    .setDescription('Jette définitivement des objets')
+    .setDescription('Permanently discard items')
     .addStringOption((option) =>
-      option.setName('item').setDescription("L'objet à jeter").setRequired(true).setAutocomplete(true),
+      option.setName('item').setDescription("The item to discard").setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
-      option.setName('quantity').setDescription('Combien ?').setRequired(true).setMinValue(1),
+      option.setName('quantity').setDescription('How many?').setRequired(true).setMinValue(1),
     )
     .toJSON(),
 
@@ -513,25 +513,25 @@ const banque: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('bank')
-    .setDescription('Votre compte en banque')
-    .addSubcommand((sub) => sub.setName('balance').setDescription('Consulter votre compte'))
+    .setDescription('Your bank account')
+    .addSubcommand((sub) => sub.setName('balance').setDescription('View your account'))
     .addSubcommand((sub) =>
       sub
         .setName('deposit')
-        .setDescription('Déposer des pièces')
+        .setDescription('Deposit coins')
         .addIntegerOption((option) =>
-          option.setName('amount').setDescription('Montant').setRequired(true).setMinValue(1),
+          option.setName('amount').setDescription('Amount').setRequired(true).setMinValue(1),
         ),
     )
     .addSubcommand((sub) =>
       sub
         .setName('withdraw')
-        .setDescription('Retirer des pièces')
+        .setDescription('Withdraw coins')
         .addIntegerOption((option) =>
-          option.setName('amount').setDescription('Montant').setRequired(true).setMinValue(1),
+          option.setName('amount').setDescription('Amount').setRequired(true).setMinValue(1),
         ),
     )
-    .addSubcommand((sub) => sub.setName('upgrade').setDescription('Améliorer votre coffre'))
+    .addSubcommand((sub) => sub.setName('upgrade').setDescription('Upgrade your vault'))
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -598,12 +598,12 @@ const donner: Command = {
   cooldown: { seconds: 10 },
   data: new SlashCommandBuilder()
     .setName('gift')
-    .setDescription('Offre des pièces à un autre fermier')
+    .setDescription('Send coins to another farmer')
     .addUserOption((option) =>
-      option.setName('user').setDescription('Le bénéficiaire').setRequired(true),
+      option.setName('user').setDescription('The recipient').setRequired(true),
     )
     .addIntegerOption((option) =>
-      option.setName('amount').setDescription('Montant en pièces').setRequired(true).setMinValue(1),
+      option.setName('amount').setDescription('Amount in coins').setRequired(true).setMinValue(1),
     )
     .toJSON(),
 

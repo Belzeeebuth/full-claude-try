@@ -29,53 +29,53 @@ const coop: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('coop')
-    .setDescription('Gestion de votre coopérative')
+    .setDescription('Manage your co-op')
     .addSubcommand((sub) =>
       sub
         .setName('create')
-        .setDescription('Créer une coopérative')
+        .setDescription('Create a co-op')
         .addStringOption((option) =>
-          option.setName('name').setDescription('Nom (3-32 caractères)').setRequired(true).setMaxLength(32),
+          option.setName('name').setDescription('Name (3-32 characters)').setRequired(true).setMaxLength(32),
         )
         .addStringOption((option) =>
-          option.setName('tag').setDescription('Étiquette (2-5 caractères)').setRequired(true).setMaxLength(5),
+          option.setName('tag').setDescription('Tag (2-5 characters)').setRequired(true).setMaxLength(5),
         )
         .addStringOption((option) =>
-          option.setName('description').setDescription('Présentation de la coopérative').setMaxLength(200),
+          option.setName('description').setDescription('Co-op description').setMaxLength(200),
         ),
     )
     .addSubcommand((sub) =>
       sub
         .setName('join')
-        .setDescription('Rejoindre une coopérative publique')
+        .setDescription('Join a public co-op')
         .addStringOption((option) =>
-          option.setName('name').setDescription('Nom ou étiquette').setRequired(true),
+          option.setName('name').setDescription('Name or tag').setRequired(true),
         ),
     )
-    .addSubcommand((sub) => sub.setName('leave').setDescription('Quitter votre coopérative'))
-    .addSubcommand((sub) => sub.setName('info').setDescription('Informations sur votre coopérative'))
-    .addSubcommand((sub) => sub.setName('members').setDescription('Liste des membres'))
+    .addSubcommand((sub) => sub.setName('leave').setDescription('Leave your co-op'))
+    .addSubcommand((sub) => sub.setName('info').setDescription('Your co-op at a glance'))
+    .addSubcommand((sub) => sub.setName('members').setDescription('Member list'))
     .addSubcommand((sub) =>
       sub
         .setName('invite')
-        .setDescription('Inviter un joueur')
-        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true)),
+        .setDescription('Invite a player')
+        .addUserOption((option) => option.setName('user').setDescription('The player').setRequired(true)),
     )
     .addSubcommand((sub) =>
       sub
         .setName('kick')
-        .setDescription('Expulser un membre')
-        .addUserOption((option) => option.setName('user').setDescription('Le membre').setRequired(true)),
+        .setDescription('Kick a member')
+        .addUserOption((option) => option.setName('user').setDescription('The member').setRequired(true)),
     )
     .addSubcommand((sub) =>
       sub
         .setName('promote')
-        .setDescription('Changer le rang d\'un membre')
-        .addUserOption((option) => option.setName('user').setDescription('Le membre').setRequired(true))
+        .setDescription("Change a member's rank")
+        .addUserOption((option) => option.setName('user').setDescription('The member').setRequired(true))
         .addStringOption((option) =>
           option
             .setName('rank')
-            .setDescription('Nouveau rang')
+            .setDescription('New rank')
             .setRequired(true)
             .addChoices(
               { name: 'Chef (transmet la direction)', value: 'owner' },
@@ -84,16 +84,16 @@ const coop: Command = {
             ),
         ),
     )
-    .addSubcommand((sub) => sub.setName('treasury').setDescription('État de la trésorerie'))
+    .addSubcommand((sub) => sub.setName('treasury').setDescription('Treasury status'))
     .addSubcommand((sub) =>
       sub
         .setName('contribute')
-        .setDescription('Verser des pièces à la trésorerie')
+        .setDescription('Pay coins into the treasury')
         .addIntegerOption((option) =>
-          option.setName('amount').setDescription('Montant en pièces').setRequired(true).setMinValue(1),
+          option.setName('amount').setDescription('Amount in coins').setRequired(true).setMinValue(1),
         ),
     )
-    .addSubcommand((sub) => sub.setName('objectives').setDescription('Objectifs hebdomadaires'))
+    .addSubcommand((sub) => sub.setName('objectives').setDescription('Weekly objectives'))
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -271,11 +271,11 @@ const classement: Command = {
   cooldown: { seconds: 10, bucket: 'classement' },
   data: new SlashCommandBuilder()
     .setName('leaderboard')
-    .setDescription('Classements des fermiers')
+    .setDescription('Farmer leaderboards')
     .addStringOption((option) =>
       option
         .setName('type')
-        .setDescription('Type de classement')
+        .setDescription('Leaderboard type')
         .addChoices(
           { name: '🪙 Richesse', value: 'wealth' },
           { name: '⭐ Expérience', value: 'level' },
@@ -289,7 +289,7 @@ const classement: Command = {
     .addStringOption((option) =>
       option
         .setName('scope')
-        .setDescription('Étendue du classement')
+        .setDescription('Leaderboard scope')
         .addChoices(
           { name: '🌍 Global', value: 'global' },
           { name: '🏠 Ce serveur', value: 'discord' },
@@ -381,9 +381,9 @@ const visiter: Command = {
   cooldown: { seconds: 30, bucket: 'visit' },
   data: new SlashCommandBuilder()
     .setName('visit')
-    .setDescription('Visite la ferme d\'un autre joueur')
+    .setDescription("Visit another player's farm")
     .addUserOption((option) =>
-      option.setName('user').setDescription('Le fermier à visiter').setRequired(true),
+      option.setName('user').setDescription('The farmer to visit').setRequired(true),
     )
     .toJSON(),
 
@@ -472,9 +472,9 @@ const aider: Command = {
   cooldown: { seconds: 60, bucket: 'help' },
   data: new SlashCommandBuilder()
     .setName('assist')
-    .setDescription('Aide un fermier en arrosant ses parcelles (vous gagnez tous les deux)')
+    .setDescription("Water another farmer's plots — you both gain")
     .addUserOption((option) =>
-      option.setName('user').setDescription('Le fermier à aider').setRequired(true),
+      option.setName('user').setDescription('The farmer to help').setRequired(true),
     )
     .toJSON(),
 
@@ -531,7 +531,7 @@ const parrainage: Command = {
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
     .setName('referral')
-    .setDescription('Votre code de parrainage et vos récompenses')
+    .setDescription('Your referral code and rewards')
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {

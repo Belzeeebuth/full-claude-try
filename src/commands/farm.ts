@@ -37,9 +37,9 @@ const ferme: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('farm')
-    .setDescription('Affiche votre ferme (ou celle d\'un autre fermier)')
+    .setDescription("Show your farm — or another farmer's")
     .addUserOption((option) =>
-      option.setName('user').setDescription('Le fermier à observer').setRequired(false),
+      option.setName('user').setDescription('The farmer to watch').setRequired(false),
     )
     .toJSON(),
 
@@ -72,18 +72,18 @@ const planter: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('plant')
-    .setDescription('Plante des graines sur vos parcelles')
+    .setDescription('Sow seeds on your plots')
     .addStringOption((option) =>
       option
         .setName('seed')
-        .setDescription('La culture à planter')
+        .setDescription('The crop to plant')
         .setRequired(true)
         .setAutocomplete(true),
     )
     .addIntegerOption((option) =>
       option
         .setName('plot')
-        .setDescription('Numéro de parcelle précis (sinon, remplit les parcelles vides)')
+        .setDescription('A specific plot (otherwise fills empty ones)')
         .setMinValue(1)
         .setMaxValue(64)
         .setRequired(false),
@@ -91,7 +91,7 @@ const planter: Command = {
     .addIntegerOption((option) =>
       option
         .setName('quantity')
-        .setDescription('Nombre de parcelles à planter (défaut : 1)')
+        .setDescription('How many plots to plant (default: 1)')
         .setMinValue(1)
         .setMaxValue(64)
         .setRequired(false),
@@ -157,11 +157,11 @@ const recolter: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('harvest')
-    .setDescription('Récolte vos cultures arrivées à maturité')
+    .setDescription('Harvest the crops that are ready')
     .addIntegerOption((option) =>
       option
         .setName('plot')
-        .setDescription('Une parcelle précise (sinon : tout ce qui est prêt)')
+        .setDescription('A specific plot (otherwise: everything ready)')
         .setMinValue(1)
         .setMaxValue(64)
         .setRequired(false),
@@ -232,11 +232,11 @@ const arroser: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('water')
-    .setDescription('Arrose vos cultures assoiffées')
+    .setDescription('Water your thirsty crops')
     .addIntegerOption((option) =>
       option
         .setName('plot')
-        .setDescription('Une parcelle précise (sinon : autant que possible)')
+        .setDescription('A specific plot (otherwise: as many as possible)')
         .setMinValue(1)
         .setMaxValue(64)
         .setRequired(false),
@@ -280,11 +280,11 @@ const fertiliser: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('fertilize')
-    .setDescription('Applique un engrais sur vos parcelles')
+    .setDescription('Apply fertilizer to your plots')
     .addStringOption((option) =>
       option
         .setName('fertilizer')
-        .setDescription("Le type d'engrais")
+        .setDescription("The fertilizer type")
         .setRequired(true)
         .addChoices(
           { name: '💩 Engrais simple (+15 fertilité, +10 % rendement)', value: 'fertilizer_basic' },
@@ -293,7 +293,7 @@ const fertiliser: Command = {
         ),
     )
     .addIntegerOption((option) =>
-      option.setName('plot').setDescription('Une parcelle précise').setMinValue(1).setMaxValue(64),
+      option.setName('plot').setDescription('A specific plot').setMinValue(1).setMaxValue(64),
     )
     .toJSON(),
 
@@ -317,9 +317,9 @@ const desherber: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('weed')
-    .setDescription('Arrache les mauvaises herbes (et récupère du compost)')
+    .setDescription('Pull weeds and collect compost material')
     .addIntegerOption((option) =>
-      option.setName('plot').setDescription('Une parcelle précise').setMinValue(1).setMaxValue(64),
+      option.setName('plot').setDescription('A specific plot').setMinValue(1).setMaxValue(64),
     )
     .toJSON(),
 
@@ -344,11 +344,11 @@ const traiter: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('treat')
-    .setDescription('Traite une parcelle infestée de nuisibles')
+    .setDescription('Treat a plot infested with pests')
     .addIntegerOption((option) =>
       option
         .setName('plot')
-        .setDescription('La parcelle à traiter')
+        .setDescription('The plot to treat')
         .setRequired(true)
         .setMinValue(1)
         .setMaxValue(64),
@@ -381,7 +381,7 @@ const parcelles: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('plots')
-    .setDescription('Vue détaillée de vos parcelles et de leur sol')
+    .setDescription('Detailed view of your plots and their soil')
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -395,7 +395,7 @@ const acheterParcelle: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('buy-plot')
-    .setDescription('Débloque la prochaine parcelle de votre ferme')
+    .setDescription('Unlock the next plot of your farm')
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -425,11 +425,11 @@ const cultures: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('crops')
-    .setDescription('Encyclopédie des cultures')
+    .setDescription('Crop encyclopedia')
     .addStringOption((option) =>
       option
         .setName('rarity')
-        .setDescription('Filtrer par rareté')
+        .setDescription('Filter by rarity')
         .addChoices(
           { name: 'Commune', value: 'common' },
           { name: 'Peu commune', value: 'uncommon' },
@@ -442,7 +442,7 @@ const cultures: Command = {
     .addStringOption((option) =>
       option
         .setName('season')
-        .setDescription('Filtrer par saison')
+        .setDescription('Filter by season')
         .addChoices(
           { name: 'Printemps', value: 'spring' },
           { name: 'Été', value: 'summer' },

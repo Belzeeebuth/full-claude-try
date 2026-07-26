@@ -22,17 +22,17 @@ const admin: Command = {
   cooldown: { seconds: 0 },
   data: new SlashCommandBuilder()
     .setName('admin')
-    .setDescription('Commandes d\'administration de Harvester')
+    .setDescription('Harvester administration commands')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand((sub) =>
       sub
         .setName('give')
-        .setDescription('Attribuer une ressource à un joueur')
-        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true))
+        .setDescription('Grant a resource to a player')
+        .addUserOption((option) => option.setName('user').setDescription('The player').setRequired(true))
         .addStringOption((option) =>
           option
             .setName('resource')
-            .setDescription('Type de ressource')
+            .setDescription('Resource type')
             .setRequired(true)
             .addChoices(
               { name: 'Pièces', value: 'coins' },
@@ -43,20 +43,20 @@ const admin: Command = {
             ),
         )
         .addIntegerOption((option) =>
-          option.setName('amount').setDescription('Quantité').setRequired(true).setMinValue(1),
+          option.setName('amount').setDescription('Quantity').setRequired(true).setMinValue(1),
         )
-        .addStringOption((option) => option.setName('item').setDescription("Clé de l'objet (si ressource = objet)"))
-        .addStringOption((option) => option.setName('reason').setDescription('Motif (journalisé)')),
+        .addStringOption((option) => option.setName('item').setDescription("Item key (when resource is an item)"))
+        .addStringOption((option) => option.setName('reason').setDescription('Reason (logged)')),
     )
     .addSubcommand((sub) =>
       sub
         .setName('take')
-        .setDescription('Retirer une ressource à un joueur')
-        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true))
+        .setDescription('Take a resource away from a player')
+        .addUserOption((option) => option.setName('user').setDescription('The player').setRequired(true))
         .addStringOption((option) =>
           option
             .setName('resource')
-            .setDescription('Type de ressource')
+            .setDescription('Resource type')
             .setRequired(true)
             .addChoices(
               { name: 'Pièces', value: 'coins' },
@@ -65,58 +65,58 @@ const admin: Command = {
             ),
         )
         .addIntegerOption((option) =>
-          option.setName('amount').setDescription('Quantité').setRequired(true).setMinValue(1),
+          option.setName('amount').setDescription('Quantity').setRequired(true).setMinValue(1),
         )
-        .addStringOption((option) => option.setName('item').setDescription("Clé de l'objet"))
-        .addStringOption((option) => option.setName('reason').setDescription('Motif (journalisé)')),
+        .addStringOption((option) => option.setName('item').setDescription("Item key"))
+        .addStringOption((option) => option.setName('reason').setDescription('Reason (logged)')),
     )
     .addSubcommand((sub) =>
       sub
         .setName('reset')
-        .setDescription('Réinitialiser un joueur (suppression douce)')
-        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true))
+        .setDescription('Reset a player (soft delete)')
+        .addUserOption((option) => option.setName('user').setDescription('The player').setRequired(true))
         .addStringOption((option) =>
-          option.setName('reason').setDescription('Motif (obligatoire)').setRequired(true),
+          option.setName('reason').setDescription('Reason (required)').setRequired(true),
         ),
     )
     .addSubcommand((sub) =>
       sub
         .setName('eco-ban')
-        .setDescription("Suspendre l'accès à l'économie")
-        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true))
+        .setDescription("Suspend access to the economy")
+        .addUserOption((option) => option.setName('user').setDescription('The player').setRequired(true))
         .addIntegerOption((option) =>
-          option.setName('duration').setDescription('Durée en heures').setRequired(true).setMinValue(1),
+          option.setName('duration').setDescription('Duration in hours').setRequired(true).setMinValue(1),
         )
         .addStringOption((option) =>
-          option.setName('reason').setDescription('Motif').setRequired(true),
+          option.setName('reason').setDescription('Reason').setRequired(true),
         ),
     )
     .addSubcommand((sub) =>
       sub
         .setName('maintenance')
-        .setDescription('Basculer le mode maintenance')
+        .setDescription('Toggle maintenance mode')
         .addStringOption((option) =>
           option
             .setName('enabled')
-            .setDescription('Activer ou désactiver')
+            .setDescription('Turn on or off')
             .setRequired(true)
             .addChoices({ name: 'Activer', value: 'on' }, { name: 'Désactiver', value: 'off' }),
         )
-        .addStringOption((option) => option.setName('message').setDescription('Message affiché aux joueurs')),
+        .addStringOption((option) => option.setName('message').setDescription('Message shown to players')),
     )
-    .addSubcommand((sub) => sub.setName('announce').setDescription('Publier une annonce globale'))
+    .addSubcommand((sub) => sub.setName('announce').setDescription('Post a global announcement'))
     .addSubcommand((sub) =>
-      sub.setName('reload-config').setDescription('Recharger la configuration de gameplay à chaud'),
+      sub.setName('reload-config').setDescription('Hot-reload the gameplay configuration'),
     )
-    .addSubcommand((sub) => sub.setName('stats').setDescription('Tableau de bord du bot'))
+    .addSubcommand((sub) => sub.setName('stats').setDescription('Bot dashboard'))
     .addSubcommand((sub) =>
       sub
         .setName('lookup')
-        .setDescription("Journal d'audit d'un joueur")
-        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true)),
+        .setDescription("Audit log for a player")
+        .addUserOption((option) => option.setName('user').setDescription('The player').setRequired(true)),
     )
     .addSubcommand((sub) =>
-      sub.setName('market-update').setDescription('Forcer une mise à jour du marché'),
+      sub.setName('market-update').setDescription('Force a market update'),
     )
     .toJSON(),
 

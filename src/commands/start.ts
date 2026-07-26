@@ -12,11 +12,11 @@ const start: Command = {
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
     .setName('start')
-    .setDescription('Créez votre ferme et commencez à jouer')
+    .setDescription('Create your farm and start playing')
     .addStringOption((option) =>
       option
         .setName('code')
-        .setDescription('Code de parrainage (bonus de départ)')
+        .setDescription('Referral code (starting bonus)')
         .setRequired(false)
         .setMaxLength(12),
     )
@@ -178,7 +178,7 @@ const tutoriel: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('tutorial')
-    .setDescription('Tutoriel pas à pas pour bien démarrer')
+    .setDescription('Step-by-step tutorial to get started')
     .toJSON(),
 
   async execute(interaction): Promise<void> {
@@ -281,11 +281,11 @@ const aide: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('help')
-    .setDescription("Menu d'aide interactif")
+    .setDescription("Interactive help menu")
     .addStringOption((option) =>
       option
         .setName('category')
-        .setDescription('Aller directement à une catégorie')
+        .setDescription('Jump straight to a category')
         .addChoices(
           ...Object.entries(CATEGORY_LABELS)
             .filter(([key]) => key !== 'admin')

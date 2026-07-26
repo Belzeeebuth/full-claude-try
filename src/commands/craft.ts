@@ -13,12 +13,12 @@ const crafter: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('craft')
-    .setDescription('Lance une production dans un de vos bâtiments')
+    .setDescription('Start a production run in one of your buildings')
     .addStringOption((option) =>
-      option.setName('recipe').setDescription('La recette').setRequired(true).setAutocomplete(true),
+      option.setName('recipe').setDescription('The recipe').setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
-      option.setName('quantity').setDescription('Nombre de lots').setMinValue(1).setMaxValue(20),
+      option.setName('quantity').setDescription('Number of batches').setMinValue(1).setMaxValue(20),
     )
     .toJSON(),
 
@@ -68,11 +68,11 @@ const recettes: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('recipes')
-    .setDescription('Toutes les recettes de transformation')
+    .setDescription('Every processing recipe')
     .addStringOption((option) =>
       option
         .setName('category')
-        .setDescription('Filtrer par atelier')
+        .setDescription('Filter by workshop')
         .addChoices(
           { name: '🌬️ Boulangerie', value: 'boulangerie' },
           { name: '🫙 Conserverie', value: 'conserverie' },
@@ -126,7 +126,7 @@ const production: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('production')
-    .setDescription('État de vos files de transformation')
+    .setDescription('Status of your production queues')
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -140,11 +140,11 @@ const batiments: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('buildings')
-    .setDescription('Construire et améliorer vos bâtiments')
+    .setDescription('Build and upgrade your buildings')
     .addStringOption((option) =>
       option
         .setName('build')
-        .setDescription('Construire ou améliorer directement un bâtiment')
+        .setDescription('Build or upgrade a building directly')
         .setAutocomplete(true)
         .setRequired(false),
     )

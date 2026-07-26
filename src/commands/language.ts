@@ -102,12 +102,12 @@ const lang: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('lang')
-    .setDescription("Changer la langue de l'interface · Change the interface language")
+    .setDescription("Change the interface language")
     .addStringOption((option) =>
       option
         .setName('language')
         .setNameLocalization('en-US', 'language')
-        .setDescription('Langue souhaitée · Desired language')
+        .setDescription('Desired language')
         .addChoices(
           ...SUPPORTED_LOCALES.map((locale) => ({
             name: `${LOCALE_META[locale].flag} ${LOCALE_META[locale].label}`,

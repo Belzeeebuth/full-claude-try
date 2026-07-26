@@ -50,7 +50,7 @@ const animaux: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('animals')
-    .setDescription('Votre cheptel : état, production, bâtiments')
+    .setDescription('Your livestock: status, output, buildings')
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -64,9 +64,9 @@ const acheterAnimal: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('buy-animal')
-    .setDescription('Achète un animal pour votre ferme')
+    .setDescription('Buy an animal for your farm')
     .addStringOption((option) =>
-      option.setName('species').setDescription("L'espèce à acheter").setRequired(true).setAutocomplete(true),
+      option.setName('species').setDescription("The species to buy").setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
       option.setName('quantity').setDescription('Nombre d\'animaux (max 10)').setMinValue(1).setMaxValue(10),
@@ -115,11 +115,11 @@ const nourrir: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('feed')
-    .setDescription('Nourrit vos animaux')
+    .setDescription('Feed your animals')
     .addStringOption((option) =>
       option
         .setName('animal')
-        .setDescription('Un animal précis (sinon : tous)')
+        .setDescription('A specific animal (otherwise: all)')
         .setAutocomplete(true)
         .setRequired(false),
     )
@@ -148,11 +148,11 @@ const collecter: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('collect')
-    .setDescription('Collecte la production de vos animaux')
+    .setDescription('Collect what your animals have produced')
     .addStringOption((option) =>
       option
         .setName('animal')
-        .setDescription('Un animal précis (sinon : tous)')
+        .setDescription('A specific animal (otherwise: all)')
         .setAutocomplete(true)
         .setRequired(false),
     )
@@ -187,9 +187,9 @@ const soigner: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('heal')
-    .setDescription('Fait soigner un animal malade par le vétérinaire')
+    .setDescription('Have the vet treat a sick animal')
     .addStringOption((option) =>
-      option.setName('animal').setDescription("L'animal à soigner").setRequired(true).setAutocomplete(true),
+      option.setName('animal').setDescription("The animal to treat").setRequired(true).setAutocomplete(true),
     )
     .toJSON(),
 
@@ -217,9 +217,9 @@ const caresser: Command = {
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
     .setName('pet')
-    .setDescription('Caresse un animal (bonheur = meilleure production)')
+    .setDescription('Pet an animal — happier means more output')
     .addStringOption((option) =>
-      option.setName('animal').setDescription("L'animal à câliner").setRequired(true).setAutocomplete(true),
+      option.setName('animal').setDescription("The animal to pet").setRequired(true).setAutocomplete(true),
     )
     .toJSON(),
 
@@ -245,9 +245,9 @@ const reproduire: Command = {
   cooldown: { seconds: 30, bucket: 'breed' },
   data: new SlashCommandBuilder()
     .setName('breed')
-    .setDescription('Fait se reproduire deux animaux de la même espèce')
+    .setDescription('Breed two animals of the same species')
     .addStringOption((option) =>
-      option.setName('parent1').setDescription('Premier parent').setRequired(true).setAutocomplete(true),
+      option.setName('parent1').setDescription('First parent').setRequired(true).setAutocomplete(true),
     )
     .addStringOption((option) =>
       option.setName('parent2').setDescription('Second parent').setRequired(true).setAutocomplete(true),
@@ -297,9 +297,9 @@ const vendreAnimal: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('sell-animal')
-    .setDescription('Vend un animal (60 % de son prix, modulé par sa santé)')
+    .setDescription('Sell an animal (60% of price, scaled by health)')
     .addStringOption((option) =>
-      option.setName('animal').setDescription("L'animal à vendre").setRequired(true).setAutocomplete(true),
+      option.setName('animal').setDescription("The animal to sell").setRequired(true).setAutocomplete(true),
     )
     .toJSON(),
 

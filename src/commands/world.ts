@@ -13,7 +13,7 @@ const meteo: Command = {
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
     .setName('weather')
-    .setDescription('Météo du jour et son effet sur vos cultures')
+    .setDescription("Today's weather and how it affects your crops")
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -60,7 +60,7 @@ const saison: Command = {
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
     .setName('season')
-    .setDescription('Saison en cours, cultures favorables et prochaine saison')
+    .setDescription("Current season, favoured crops and what's next")
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -116,7 +116,7 @@ const evenement: Command = {
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
     .setName('event')
-    .setDescription('Événement en cours et récompenses')
+    .setDescription('Active event and its rewards')
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -209,9 +209,9 @@ const encyclopedie: Command = {
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
     .setName('encyclopedia')
-    .setDescription('Recherche dans toute la base de données du jeu')
+    .setDescription('Search the entire game database')
     .addStringOption((option) =>
-      option.setName('term').setDescription('Culture, animal, objet, recette ou bâtiment').setRequired(true),
+      option.setName('term').setDescription('Crop, animal, item, recipe or building').setRequired(true),
     )
     .toJSON(),
 
