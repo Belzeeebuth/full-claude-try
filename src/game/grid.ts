@@ -12,7 +12,7 @@ import type { Balance } from '../config/gameplay/schemas';
  * Les parcelles sont numérotées de 1 à 64 en « spirale par anneaux » : la
  * parcelle 10 (la première achetée) tombe toujours au même endroit, et la grille
  * grandit vers la droite puis vers le bas. Ainsi le numéro affiché au joueur ne
- * change JAMAIS quand la ferme s'agrandit — imaginez le contraire : « /planter 5 »
+ * change JAMAIS quand la ferme s'agrandit — imaginez le contraire : « /plant 5 »
  * ne planterait pas au même endroit après un achat.
  */
 

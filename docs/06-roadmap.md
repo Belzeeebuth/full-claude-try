@@ -134,7 +134,7 @@ Indépendamment des fonctionnalités, à faire avant toute v2 significative :
 
 1. **Tests d'intégration sur base réelle.** Les 90 tests actuels couvrent la logique
    pure et la configuration. Il manque une suite Testcontainers vérifiant les
-   transactions concurrentes — notamment que deux `/recolter` simultanés sur la même
+   transactions concurrentes — notamment que deux `/harvest` simultanés sur la même
    parcelle n'en produisent qu'une. C'est le test le plus important qui manque.
 2. **Métriques Prometheus.** `/metrics` expose déjà des compteurs ; les passer au
    format Prometheus et brancher un Grafana rendrait la détection d'anomalies

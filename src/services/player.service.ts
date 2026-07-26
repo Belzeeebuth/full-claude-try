@@ -321,7 +321,7 @@ export async function consumeEnergy(
       {
         hint: `L'énergie remonte de ${balance.energy.regenPerMinute} point/minute. Un jus d'énergie en rend ${50}.`,
         context: { cost, current: projection.current },
-        suggestedCommand: 'boutique',
+        suggestedCommand: 'shop',
       },
     );
   }

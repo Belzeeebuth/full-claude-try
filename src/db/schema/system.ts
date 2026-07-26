@@ -28,7 +28,7 @@ import {
 
 /**
  * Météo du jour, tirée une fois par jour par le scheduler et partagée par tous
- * les joueurs (le monde est commun : c'est ce qui rend `/meteo` social et les
+ * les joueurs (le monde est commun : c'est ce qui rend `/weather` social et les
  * événements « sécheresse » collectifs). Une ligne par jour, jamais recalculée :
  * la météo passée est ainsi auditable et rejouable.
  */
@@ -66,7 +66,7 @@ export const weather = pgTable(
 /**
  * Calendrier des saisons. Une saison dure `SEASON_LENGTH_DAYS` jours réels
  * (14 par défaut) ; les lignes sont pré-générées par le scheduler sur un an,
- * ce qui permet à `/saison` d'annoncer la suivante et aux tests de figer le temps.
+ * ce qui permet à `/season` d'annoncer la suivante et aux tests de figer le temps.
  */
 export const seasons = pgTable(
   'seasons',

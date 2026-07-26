@@ -21,7 +21,7 @@ const quetes: Command = {
   category: 'progression',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('quetes')
+    .setName('quests')
     .setDescription('Vos quêtes et contrats en cours')
     .addStringOption((option) =>
       option
@@ -52,10 +52,10 @@ const rerollQuete: Command = {
   category: 'progression',
   cooldown: { seconds: 5, bucket: 'reroll' },
   data: new SlashCommandBuilder()
-    .setName('reroll-quete')
+    .setName('reroll-quest')
     .setDescription('Remplace une quête journalière par une autre')
     .addStringOption((option) =>
-      option.setName('quête').setDescription('La quête à relancer').setRequired(true).setAutocomplete(true),
+      option.setName('quest').setDescription('La quête à relancer').setRequired(true).setAutocomplete(true),
     )
     .toJSON(),
 
@@ -63,7 +63,7 @@ const rerollQuete: Command = {
     await interaction.deferReply();
     const result = await progressionService.rerollQuest(
       context.player,
-      interaction.options.getString('quête', true),
+      interaction.options.getString('quest', true),
     );
 
     await interaction.editReply({
@@ -109,11 +109,11 @@ const succes: Command = {
   category: 'progression',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('succes')
+    .setName('achievements')
     .setDescription('Vos succès et leur progression')
     .addStringOption((option) =>
       option
-        .setName('catégorie')
+        .setName('category')
         .setDescription('Filtrer')
         .addChoices(
           { name: '🌾 Agriculture', value: 'agriculture' },
@@ -130,7 +130,7 @@ const succes: Command = {
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const category = interaction.options.getString('catégorie') ?? undefined;
+    const category = interaction.options.getString('category') ?? undefined;
     const achievements = await progressionService.listAchievements(context.player.id, category);
 
     const unlocked = achievements.filter((entry) => entry.unlocked);
@@ -179,7 +179,7 @@ const passe: Command = {
   category: 'progression',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('passe')
+    .setName('pass')
     .setDescription('Votre passe saisonnier gratuit')
     .toJSON(),
 

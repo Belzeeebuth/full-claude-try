@@ -136,7 +136,7 @@ export async function craft(
       throw gameError(
         'building_required',
         `Il vous faut un ${buildingConfig?.emoji ?? ''} ${buildingConfig?.name ?? recipe.buildingKey}.`,
-        { hint: 'Construisez-le avec `/batiments`.', suggestedCommand: 'batiments' },
+        { hint: 'Construisez-le avec `/buildings`.', suggestedCommand: 'buildings' },
       );
     }
 

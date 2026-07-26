@@ -107,7 +107,7 @@ export function mutationEffects(
 
 /**
  * Probabilités exactes d'une distribution de qualité pour un score donné.
- * Sert à la documentation d'équilibrage et aux tests (`/cultures` affiche la
+ * Sert à la documentation d'équilibrage et aux tests (`/crops` affiche la
  * chance d'iridium au joueur, il faut donc que ce soit calculable sans tirage).
  */
 export function qualityDistribution(score: number, balance: Balance): Record<Quality, number> {

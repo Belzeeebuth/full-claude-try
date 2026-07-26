@@ -61,7 +61,7 @@ export async function buildContext(
 
   if (!result) {
     if (options.requiresAccount === false) {
-      // Contexte « invité » : suffisant pour /aide, /cultures, /encyclopedie.
+      // Contexte « invité » : suffisant pour /help, /crops, /encyclopedia.
       return guestContext(interaction);
     }
     return null;

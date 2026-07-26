@@ -20,32 +20,32 @@ const hdv: Command = {
   category: 'economie',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('hdv')
+    .setName('auction')
     .setDescription('Hôtel des ventes entre joueurs')
     .addSubcommand((sub) =>
       sub
-        .setName('liste')
+        .setName('list')
         .setDescription('Parcourir les annonces')
         .addStringOption((option) =>
-          option.setName('objet').setDescription('Filtrer par objet').setAutocomplete(true),
+          option.setName('item').setDescription('Filtrer par objet').setAutocomplete(true),
         ),
     )
     .addSubcommand((sub) =>
       sub
-        .setName('vendre')
+        .setName('sell')
         .setDescription('Mettre un lot en vente')
         .addStringOption((option) =>
-          option.setName('objet').setDescription("L'objet").setRequired(true).setAutocomplete(true),
+          option.setName('item').setDescription("L'objet").setRequired(true).setAutocomplete(true),
         )
         .addIntegerOption((option) =>
-          option.setName('quantité').setDescription('Quantité').setRequired(true).setMinValue(1),
+          option.setName('quantity').setDescription('Quantité').setRequired(true).setMinValue(1),
         )
         .addIntegerOption((option) =>
-          option.setName('prix').setDescription('Prix du lot entier').setRequired(true).setMinValue(1),
+          option.setName('price').setDescription('Prix du lot entier').setRequired(true).setMinValue(1),
         )
         .addIntegerOption((option) =>
           option
-            .setName('durée')
+            .setName('duration')
             .setDescription('Durée en heures')
             .addChoices(
               { name: '6 heures', value: 6 },
@@ -57,19 +57,19 @@ const hdv: Command = {
     )
     .addSubcommand((sub) =>
       sub
-        .setName('acheter')
+        .setName('buy')
         .setDescription('Acheter une annonce')
         .addStringOption((option) =>
-          option.setName('annonce').setDescription("Identifiant de l'annonce").setRequired(true),
+          option.setName('listing').setDescription("Identifiant de l'annonce").setRequired(true),
         ),
     )
-    .addSubcommand((sub) => sub.setName('mes-ventes').setDescription('Vos annonces et leur état'))
+    .addSubcommand((sub) => sub.setName('my-listings').setDescription('Vos annonces et leur état'))
     .addSubcommand((sub) =>
       sub
-        .setName('annuler')
+        .setName('cancel')
         .setDescription('Annuler une annonce sans enchère')
         .addStringOption((option) =>
-          option.setName('annonce').setDescription("Identifiant de l'annonce").setRequired(true),
+          option.setName('listing').setDescription("Identifiant de l'annonce").setRequired(true),
         ),
     )
     .toJSON(),
@@ -79,12 +79,12 @@ const hdv: Command = {
     const sub = interaction.options.getSubcommand();
 
     switch (sub) {
-      case 'vendre': {
+      case 'sell': {
         const result = await tradeService.createListing(context.player, {
-          itemKey: interaction.options.getString('objet', true),
-          quantity: interaction.options.getInteger('quantité', true),
-          price: interaction.options.getInteger('prix', true),
-          durationHours: interaction.options.getInteger('durée') ?? undefined,
+          itemKey: interaction.options.getString('item', true),
+          quantity: interaction.options.getInteger('quantity', true),
+          price: interaction.options.getInteger('price', true),
+          durationHours: interaction.options.getInteger('duration') ?? undefined,
         });
         await interaction.editReply({
           embeds: [
@@ -103,10 +103,10 @@ const hdv: Command = {
         });
         break;
       }
-      case 'acheter': {
+      case 'buy': {
         const result = await tradeService.buyout(
           context.player,
-          interaction.options.getString('annonce', true),
+          interaction.options.getString('listing', true),
         );
         await interaction.editReply({
           embeds: [
@@ -118,10 +118,10 @@ const hdv: Command = {
         });
         break;
       }
-      case 'annuler': {
+      case 'cancel': {
         const result = await tradeService.cancelListing(
           context.player,
-          interaction.options.getString('annonce', true),
+          interaction.options.getString('listing', true),
         );
         await interaction.editReply({
           embeds: [
@@ -133,7 +133,7 @@ const hdv: Command = {
         });
         break;
       }
-      case 'mes-ventes': {
+      case 'my-listings': {
         const listings = await tradeService.myListings(context.player.id, 10);
         await interaction.editReply({
           embeds: [
@@ -161,7 +161,7 @@ const hdv: Command = {
       }
       default: {
         await interaction.editReply(
-          await auctionListView(context, interaction.options.getString('objet') ?? undefined, 1),
+          await auctionListView(context, interaction.options.getString('item') ?? undefined, 1),
         );
       }
     }
@@ -209,7 +209,7 @@ export async function auctionListView(
             `   \`${listing.id}\``,
           ].join('\n');
         })
-        .join('\n\n') || 'Aucune annonce en cours. Soyez le premier avec `/hdv vendre` !',
+        .join('\n\n') || 'Aucune annonce en cours. Soyez le premier avec `/auction sell` !',
     color: COLORS.gold,
     footer: `${result.total} annonce(s) • page ${result.page}/${result.totalPages}`,
   });
@@ -249,23 +249,23 @@ export async function auctionListView(
 }
 
 // ---------------------------------------------------------------------------
-// /echange
+// /trade
 // ---------------------------------------------------------------------------
 
 const echange: Command = {
   category: 'economie',
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
-    .setName('echange')
+    .setName('trade')
     .setDescription('Ouvre un échange sécurisé avec un autre joueur')
     .addUserOption((option) =>
-      option.setName('utilisateur').setDescription('Votre partenaire').setRequired(true),
+      option.setName('user').setDescription('Votre partenaire').setRequired(true),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const target = interaction.options.getUser('utilisateur', true);
+    const target = interaction.options.getUser('user', true);
     if (target.bot) throw gameError('target_invalid', 'Les robots ne troquent pas.');
 
     const targetUser = await playerRepo.findUserByDiscordId(target.id);

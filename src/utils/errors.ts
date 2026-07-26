@@ -73,7 +73,7 @@ export interface GameErrorOptions {
   hint?: string;
   /** Données structurées pour les logs et les métriques. */
   context?: Record<string, unknown>;
-  /** Commande à suggérer au joueur (`/boutique`). */
+  /** Commande à suggérer au joueur (`/shop`). */
   suggestedCommand?: string;
 }
 

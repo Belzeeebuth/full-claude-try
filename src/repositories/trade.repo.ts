@@ -367,7 +367,7 @@ export async function findExpiredTrades(now: Date, limit: number, executor: Exec
     .limit(limit);
 }
 
-/** Historique de ventes d'un joueur, pour `/hdv mes-ventes`. */
+/** Historique de ventes d'un joueur, pour `/auction my-listings`. */
 export async function listSellerHistory(
   sellerId: string,
   limit: number,

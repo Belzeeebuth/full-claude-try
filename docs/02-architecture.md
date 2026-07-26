@@ -214,7 +214,7 @@ components ─┘     │
 ```
 
 **Point clé** : `framework/views.ts` est appelé **aussi bien** par la commande
-`/ferme` que par le bouton « rafraîchir ». Une vue n'existe qu'une fois. C'est ce
+`/farm` que par le bouton « rafraîchir ». Une vue n'existe qu'une fois. C'est ce
 qui garantit qu'un bouton ne peut pas dériver de la commande qu'il prolonge.
 
 ---

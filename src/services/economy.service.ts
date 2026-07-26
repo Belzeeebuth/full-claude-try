@@ -150,7 +150,7 @@ export async function deposit(userId: string, amount: number): Promise<BankResul
       throw gameError(
         'bank_capacity',
         `Votre coffre ne peut contenir que ${account.capacity.toLocaleString('fr-FR')} 🪙.`,
-        { hint: 'Améliorez votre banque avec `/banque ameliorer`.' },
+        { hint: 'Améliorez votre banque avec `/bank upgrade`.' },
       );
     }
 

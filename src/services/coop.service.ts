@@ -96,7 +96,7 @@ export async function requireMembership(userId: string) {
   const membership = await socialRepo.getMembership(userId);
   if (!membership) {
     throw gameError('coop_not_member', "Vous n'êtes dans aucune coopérative.", {
-      hint: 'Créez-en une avec `/coop creer` ou rejoignez-en une avec `/coop rejoindre`.',
+      hint: 'Créez-en une avec `/coop create` ou rejoignez-en une avec `/coop join`.',
       suggestedCommand: 'coop',
     });
   }
@@ -132,7 +132,7 @@ export async function createCoop(
     const existing = await socialRepo.getMembership(player.id, tx);
     if (existing) {
       throw gameError('coop_already_member', 'Vous êtes déjà dans une coopérative.', {
-        hint: 'Quittez-la avec `/coop quitter` avant d\'en créer une.',
+        hint: 'Quittez-la avec `/coop leave` avant d\'en créer une.',
       });
     }
 
@@ -234,7 +234,7 @@ export async function leaveCoop(player: PlayerContext): Promise<{ coopName: stri
     if (membership.member.role === 'owner' && coop.memberCount > 1) {
       throw gameError(
         'coop_forbidden',
-        'En tant que chef, transmettez d\'abord la direction avec `/coop promouvoir`.',
+        'En tant que chef, transmettez d\'abord la direction avec `/coop promote`.',
       );
     }
 
@@ -254,7 +254,7 @@ export async function kickMember(
     throw gameError('coop_forbidden', 'Seuls les officiers et le chef peuvent expulser.');
   }
   if (targetUserId === player.id) {
-    throw gameError('target_invalid', 'Utilisez `/coop quitter` pour partir.');
+    throw gameError('target_invalid', 'Utilisez `/coop leave` pour partir.');
   }
 
   return withTransaction(async (tx) => {
@@ -413,7 +413,7 @@ export async function withdrawTreasury(
 /**
  * Génère les objectifs de la semaine s'ils n'existent pas encore.
  * Tirage déterministe par (coopérative, semaine) : deux membres qui ouvrent
- * `/coop objectifs` en même temps obtiennent la même liste.
+ * `/coop objectives` en même temps obtiennent la même liste.
  */
 export async function ensureObjectives(coopId: string, now: Date = new Date()): Promise<void> {
   const balance = getBalance();

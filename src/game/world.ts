@@ -5,7 +5,7 @@ import { dailyRng } from './rng';
  * Saisons et météo : l'état « monde », commun à tous les joueurs.
  *
  * Choix de conception : la météo est GLOBALE et non par joueur. C'est ce qui rend
- * `/meteo` social (« il pleut, allez arroser gratuitement »), permet des
+ * `/weather` social (« il pleut, allez arroser gratuitement »), permet des
  * événements collectifs (sécheresse) et empêche le reroll — un joueur ne peut pas
  * relancer sa météo en changeant de serveur.
  *
@@ -41,7 +41,7 @@ export const GAME_EPOCH = new Date('2026-01-01T00:00:00.000Z');
 /**
  * Saison à un instant donné, déduite du nombre de jours écoulés depuis l'époque.
  * Aucun état stocké : on peut connaître la saison de n'importe quelle date,
- * passée ou future, ce qui permet à `/saison` d'annoncer la suivante et aux
+ * passée ou future, ce qui permet à `/season` d'annoncer la suivante et aux
  * tests de figer le temps.
  */
 export function seasonAt(now: Date, balance: Balance, epoch: Date = GAME_EPOCH): SeasonState {

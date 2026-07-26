@@ -177,8 +177,8 @@ export async function sell(
 
     if (targets.length === 0) {
       throw gameError('insufficient_items', "Vous n'avez rien à vendre qui corresponde.", {
-        hint: 'Consultez `/inventaire` pour voir ce que vous possédez.',
-        suggestedCommand: 'inventaire',
+        hint: 'Consultez `/inventory` pour voir ce que vous possédez.',
+        suggestedCommand: 'inventory',
       });
     }
 
@@ -492,8 +492,8 @@ export async function buy(
 
     if (!stock) {
       throw gameError('not_found', `${item.emoji} ${item.name} n'est pas en vente aujourd'hui.`, {
-        hint: 'La boutique change tous les jours à minuit UTC. Consultez `/boutique`.',
-        suggestedCommand: 'boutique',
+        hint: 'La boutique change tous les jours à minuit UTC. Consultez `/shop`.',
+        suggestedCommand: 'shop',
       });
     }
     if (player.level < stock.requiredLevel) {

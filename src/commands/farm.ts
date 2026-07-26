@@ -29,26 +29,26 @@ import type { AutocompleteContext, Command, CommandContext } from '../types';
  */
 
 // ---------------------------------------------------------------------------
-// /ferme
+// /farm
 // ---------------------------------------------------------------------------
 
 const ferme: Command = {
   category: 'agriculture',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('ferme')
+    .setName('farm')
     .setDescription('Affiche votre ferme (ou celle d\'un autre fermier)')
     .addUserOption((option) =>
-      option.setName('utilisateur').setDescription('Le fermier à observer').setRequired(false),
+      option.setName('user').setDescription('Le fermier à observer').setRequired(false),
     )
     .toJSON(),
 
   async execute(interaction: ChatInputCommandInteraction, context: CommandContext): Promise<void> {
     await interaction.deferReply();
-    const target = interaction.options.getUser('utilisateur');
+    const target = interaction.options.getUser('user');
 
     if (target && target.id !== interaction.user.id) {
-      // Consultation de la ferme d'un autre : on délègue à /visiter, qui gère
+      // Consultation de la ferme d'un autre : on délègue à /visit, qui gère
       // la confidentialité et la récompense de visite.
       const { visitFarm } = await import('./social');
       await visitFarm(interaction, context, target);
@@ -64,25 +64,25 @@ const ferme: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /planter
+// /plant
 // ---------------------------------------------------------------------------
 
 const planter: Command = {
   category: 'agriculture',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('planter')
+    .setName('plant')
     .setDescription('Plante des graines sur vos parcelles')
     .addStringOption((option) =>
       option
-        .setName('graine')
+        .setName('seed')
         .setDescription('La culture à planter')
         .setRequired(true)
         .setAutocomplete(true),
     )
     .addIntegerOption((option) =>
       option
-        .setName('parcelle')
+        .setName('plot')
         .setDescription('Numéro de parcelle précis (sinon, remplit les parcelles vides)')
         .setMinValue(1)
         .setMaxValue(64)
@@ -90,7 +90,7 @@ const planter: Command = {
     )
     .addIntegerOption((option) =>
       option
-        .setName('quantité')
+        .setName('quantity')
         .setDescription('Nombre de parcelles à planter (défaut : 1)')
         .setMinValue(1)
         .setMaxValue(64)
@@ -100,9 +100,9 @@ const planter: Command = {
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const cropKey = interaction.options.getString('graine', true);
-    const slot = interaction.options.getInteger('parcelle') ?? undefined;
-    const quantity = interaction.options.getInteger('quantité') ?? 1;
+    const cropKey = interaction.options.getString('seed', true);
+    const slot = interaction.options.getInteger('plot') ?? undefined;
+    const quantity = interaction.options.getInteger('quantity') ?? 1;
 
     const result = await farmService.plant(context.player, {
       cropKey,
@@ -149,18 +149,18 @@ const planter: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /recolter
+// /harvest
 // ---------------------------------------------------------------------------
 
 const recolter: Command = {
   category: 'agriculture',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('recolter')
+    .setName('harvest')
     .setDescription('Récolte vos cultures arrivées à maturité')
     .addIntegerOption((option) =>
       option
-        .setName('parcelle')
+        .setName('plot')
         .setDescription('Une parcelle précise (sinon : tout ce qui est prêt)')
         .setMinValue(1)
         .setMaxValue(64)
@@ -170,7 +170,7 @@ const recolter: Command = {
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const slot = interaction.options.getInteger('parcelle') ?? undefined;
+    const slot = interaction.options.getInteger('plot') ?? undefined;
 
     const summary = await farmService.harvest(context.player, { slot, all: slot === undefined });
     await interaction.editReply({ embeds: [buildHarvestEmbed(summary)] });
@@ -224,18 +224,18 @@ export function buildHarvestEmbed(summary: farmService.HarvestSummary) {
 }
 
 // ---------------------------------------------------------------------------
-// /arroser
+// /water
 // ---------------------------------------------------------------------------
 
 const arroser: Command = {
   category: 'agriculture',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('arroser')
+    .setName('water')
     .setDescription('Arrose vos cultures assoiffées')
     .addIntegerOption((option) =>
       option
-        .setName('parcelle')
+        .setName('plot')
         .setDescription('Une parcelle précise (sinon : autant que possible)')
         .setMinValue(1)
         .setMaxValue(64)
@@ -245,7 +245,7 @@ const arroser: Command = {
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const slot = interaction.options.getInteger('parcelle') ?? undefined;
+    const slot = interaction.options.getInteger('plot') ?? undefined;
     const result = await farmService.water(context.player, { slot, all: slot === undefined });
 
     if (result.freeRain) {
@@ -272,18 +272,18 @@ const arroser: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /fertiliser, /desherber, /traiter
+// /fertilize, /weed, /treat
 // ---------------------------------------------------------------------------
 
 const fertiliser: Command = {
   category: 'agriculture',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('fertiliser')
+    .setName('fertilize')
     .setDescription('Applique un engrais sur vos parcelles')
     .addStringOption((option) =>
       option
-        .setName('engrais')
+        .setName('fertilizer')
         .setDescription("Le type d'engrais")
         .setRequired(true)
         .addChoices(
@@ -293,14 +293,14 @@ const fertiliser: Command = {
         ),
     )
     .addIntegerOption((option) =>
-      option.setName('parcelle').setDescription('Une parcelle précise').setMinValue(1).setMaxValue(64),
+      option.setName('plot').setDescription('Une parcelle précise').setMinValue(1).setMaxValue(64),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const fertilizerKey = interaction.options.getString('engrais', true);
-    const slot = interaction.options.getInteger('parcelle') ?? undefined;
+    const fertilizerKey = interaction.options.getString('fertilizer', true);
+    const slot = interaction.options.getInteger('plot') ?? undefined;
 
     const result = await farmService.fertilize(context.player, { fertilizerKey, slot, all: !slot });
     const embed = successEmbed(
@@ -316,16 +316,16 @@ const desherber: Command = {
   category: 'agriculture',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('desherber')
+    .setName('weed')
     .setDescription('Arrache les mauvaises herbes (et récupère du compost)')
     .addIntegerOption((option) =>
-      option.setName('parcelle').setDescription('Une parcelle précise').setMinValue(1).setMaxValue(64),
+      option.setName('plot').setDescription('Une parcelle précise').setMinValue(1).setMaxValue(64),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const slot = interaction.options.getInteger('parcelle') ?? undefined;
+    const slot = interaction.options.getInteger('plot') ?? undefined;
     const result = await farmService.weed(context.player, { slot, all: !slot });
 
     await interaction.editReply({
@@ -343,11 +343,11 @@ const traiter: Command = {
   category: 'agriculture',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('traiter')
+    .setName('treat')
     .setDescription('Traite une parcelle infestée de nuisibles')
     .addIntegerOption((option) =>
       option
-        .setName('parcelle')
+        .setName('plot')
         .setDescription('La parcelle à traiter')
         .setRequired(true)
         .setMinValue(1)
@@ -357,7 +357,7 @@ const traiter: Command = {
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const slot = interaction.options.getInteger('parcelle', true);
+    const slot = interaction.options.getInteger('plot', true);
     const result = await farmService.treatPest(context.player, { slot });
 
     const { PEST_LABELS } = await import('../game/plot');
@@ -373,14 +373,14 @@ const traiter: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /parcelles, /acheter-parcelle
+// /plots, /buy-plot
 // ---------------------------------------------------------------------------
 
 const parcelles: Command = {
   category: 'agriculture',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('parcelles')
+    .setName('plots')
     .setDescription('Vue détaillée de vos parcelles et de leur sol')
     .toJSON(),
 
@@ -394,7 +394,7 @@ const acheterParcelle: Command = {
   category: 'agriculture',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('acheter-parcelle')
+    .setName('buy-plot')
     .setDescription('Débloque la prochaine parcelle de votre ferme')
     .toJSON(),
 
@@ -416,7 +416,7 @@ const acheterParcelle: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /cultures — encyclopédie
+// /crops — encyclopédie
 // ---------------------------------------------------------------------------
 
 const cultures: Command = {
@@ -424,11 +424,11 @@ const cultures: Command = {
   requiresAccount: false,
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('cultures')
+    .setName('crops')
     .setDescription('Encyclopédie des cultures')
     .addStringOption((option) =>
       option
-        .setName('rareté')
+        .setName('rarity')
         .setDescription('Filtrer par rareté')
         .addChoices(
           { name: 'Commune', value: 'common' },
@@ -441,7 +441,7 @@ const cultures: Command = {
     )
     .addStringOption((option) =>
       option
-        .setName('saison')
+        .setName('season')
         .setDescription('Filtrer par saison')
         .addChoices(
           { name: 'Printemps', value: 'spring' },
@@ -453,8 +453,8 @@ const cultures: Command = {
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
-    const rarity = interaction.options.getString('rareté');
-    const season = interaction.options.getString('saison');
+    const rarity = interaction.options.getString('rarity');
+    const season = interaction.options.getString('season');
 
     const crops = context.config.cropList.filter((crop) => {
       if (!crop.enabled) return false;
@@ -498,7 +498,7 @@ export function appendTracking(
   const parts: string[] = [];
   if (tracking.completedQuests.length > 0) {
     parts.push(
-      `📋 Quête(s) terminée(s) : ${tracking.completedQuests.map((quest) => `**${quest.title}**`).join(', ')} — \`/quetes\` pour réclamer`,
+      `📋 Quête(s) terminée(s) : ${tracking.completedQuests.map((quest) => `**${quest.title}**`).join(', ')} — \`/quests\` pour réclamer`,
     );
   }
   if (tracking.unlockedAchievements.length > 0) {

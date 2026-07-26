@@ -12,21 +12,21 @@ const crafter: Command = {
   category: 'inventaire',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('crafter')
+    .setName('craft')
     .setDescription('Lance une production dans un de vos bâtiments')
     .addStringOption((option) =>
-      option.setName('recette').setDescription('La recette').setRequired(true).setAutocomplete(true),
+      option.setName('recipe').setDescription('La recette').setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
-      option.setName('quantité').setDescription('Nombre de lots').setMinValue(1).setMaxValue(20),
+      option.setName('quantity').setDescription('Nombre de lots').setMinValue(1).setMaxValue(20),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     const result = await craftService.craft(context.player, {
-      recipeKey: interaction.options.getString('recette', true),
-      quantity: interaction.options.getInteger('quantité') ?? 1,
+      recipeKey: interaction.options.getString('recipe', true),
+      quantity: interaction.options.getInteger('quantity') ?? 1,
     });
 
     await interaction.editReply({
@@ -67,11 +67,11 @@ const recettes: Command = {
   category: 'inventaire',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('recettes')
+    .setName('recipes')
     .setDescription('Toutes les recettes de transformation')
     .addStringOption((option) =>
       option
-        .setName('catégorie')
+        .setName('category')
         .setDescription('Filtrer par atelier')
         .addChoices(
           { name: '🌬️ Boulangerie', value: 'boulangerie' },
@@ -88,7 +88,7 @@ const recettes: Command = {
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const category = interaction.options.getString('catégorie') ?? undefined;
+    const category = interaction.options.getString('category') ?? undefined;
     const recipes = await craftService.listRecipes(context.player, { category });
 
     const lines = recipes.slice(0, 20).map((entry) => {
@@ -139,11 +139,11 @@ const batiments: Command = {
   category: 'inventaire',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('batiments')
+    .setName('buildings')
     .setDescription('Construire et améliorer vos bâtiments')
     .addStringOption((option) =>
       option
-        .setName('construire')
+        .setName('build')
         .setDescription('Construire ou améliorer directement un bâtiment')
         .setAutocomplete(true)
         .setRequired(false),
@@ -152,7 +152,7 @@ const batiments: Command = {
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const buildingKey = interaction.options.getString('construire');
+    const buildingKey = interaction.options.getString('build');
 
     if (buildingKey) {
       const result = await craftService.buildOrUpgrade(context.player, buildingKey);

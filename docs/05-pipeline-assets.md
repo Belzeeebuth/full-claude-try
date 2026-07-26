@@ -83,7 +83,7 @@ la licence du pack précis** au moment du téléchargement.
 
 > ⚠️ **Attribution CC-BY.** Si vous utilisez des assets sous CC-BY, l'attribution
 > est obligatoire. Ajoutez un fichier `assets/CREDITS.md` et une mention dans
-> `/aide` — c'est une obligation légale, pas une politesse.
+> `/help` — c'est une obligation légale, pas une politesse.
 
 ## Pourquoi les indicateurs critiques sont vectoriels
 

@@ -25,18 +25,18 @@ import type { Command } from '../types';
 /** Boutique, marché, vente, banque, dons et inventaire. */
 
 // ---------------------------------------------------------------------------
-// /boutique et /acheter
+// /shop et /buy
 // ---------------------------------------------------------------------------
 
 const boutique: Command = {
   category: 'economie',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('boutique')
+    .setName('shop')
     .setDescription('Boutique du village (stock renouvelé chaque jour)')
     .addStringOption((option) =>
       option
-        .setName('catégorie')
+        .setName('category')
         .setDescription('Filtrer la boutique')
         .addChoices(
           { name: '✨ Offres du jour', value: 'daily' },
@@ -49,7 +49,7 @@ const boutique: Command = {
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     await interaction.editReply(
-      await shopView(context, interaction.options.getString('catégorie') ?? undefined),
+      await shopView(context, interaction.options.getString('category') ?? undefined),
     );
   },
 };
@@ -58,21 +58,21 @@ const acheter: Command = {
   category: 'economie',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('acheter')
+    .setName('buy')
     .setDescription('Achète un article de la boutique')
     .addStringOption((option) =>
-      option.setName('objet').setDescription("L'article à acheter").setRequired(true).setAutocomplete(true),
+      option.setName('item').setDescription("L'article à acheter").setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
-      option.setName('quantité').setDescription('Combien ?').setMinValue(1).setMaxValue(999),
+      option.setName('quantity').setDescription('Combien ?').setMinValue(1).setMaxValue(999),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     const result = await marketService.buy(context.player, {
-      itemKey: interaction.options.getString('objet', true),
-      quantity: interaction.options.getInteger('quantité') ?? 1,
+      itemKey: interaction.options.getString('item', true),
+      quantity: interaction.options.getInteger('quantity') ?? 1,
       discordGuildId: context.discordGuildId,
     });
 
@@ -107,27 +107,27 @@ const acheter: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /vendre
+// /sell
 // ---------------------------------------------------------------------------
 
 const vendre: Command = {
   category: 'economie',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('vendre')
+    .setName('sell')
     .setDescription('Vend des objets au village')
     .addStringOption((option) =>
-      option.setName('objet').setDescription("L'objet à vendre").setRequired(true).setAutocomplete(true),
+      option.setName('item').setDescription("L'objet à vendre").setRequired(true).setAutocomplete(true),
     )
     .addStringOption((option) =>
-      option.setName('quantité').setDescription('Un nombre, ou « tout »').setMaxLength(10),
+      option.setName('quantity').setDescription('Un nombre, ou « tout »').setMaxLength(10),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const itemKey = interaction.options.getString('objet', true);
-    const raw = (interaction.options.getString('quantité') ?? 'tout').toLowerCase();
+    const itemKey = interaction.options.getString('item', true);
+    const raw = (interaction.options.getString('quantity') ?? 'tout').toLowerCase();
     const quantity = raw === 'tout' || raw === 'all' ? ('all' as const) : Number.parseInt(raw, 10);
 
     if (quantity !== 'all' && (!Number.isFinite(quantity) || quantity <= 0)) {
@@ -181,18 +181,18 @@ const vendre: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /marche et /marche-historique
+// /market et /market-history
 // ---------------------------------------------------------------------------
 
 const marche: Command = {
   category: 'economie',
   cooldown: { seconds: 5, bucket: 'market' },
   data: new SlashCommandBuilder()
-    .setName('marche')
+    .setName('market')
     .setDescription('Prix du marché et tendances')
     .addStringOption((option) =>
       option
-        .setName('catégorie')
+        .setName('category')
         .setDescription('Filtrer par type de produit')
         .addChoices(
           { name: '🌾 Récoltes', value: 'harvest' },
@@ -205,7 +205,7 @@ const marche: Command = {
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     await interaction.editReply(
-      await marketView(context, interaction.options.getString('catégorie') ?? undefined),
+      await marketView(context, interaction.options.getString('category') ?? undefined),
     );
   },
 };
@@ -214,16 +214,16 @@ const marcheHistorique: Command = {
   category: 'economie',
   cooldown: { seconds: 5, bucket: 'market' },
   data: new SlashCommandBuilder()
-    .setName('marche-historique')
+    .setName('market-history')
     .setDescription("Graphique d'évolution du prix d'un produit")
     .addStringOption((option) =>
-      option.setName('objet').setDescription('Le produit à analyser').setRequired(true).setAutocomplete(true),
+      option.setName('item').setDescription('Le produit à analyser').setRequired(true).setAutocomplete(true),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    await sendMarketChart(interaction, context, interaction.options.getString('objet', true));
+    await sendMarketChart(interaction, context, interaction.options.getString('item', true));
   },
 
   async autocomplete(interaction): Promise<void> {
@@ -284,18 +284,18 @@ export async function sendMarketChart(
 }
 
 // ---------------------------------------------------------------------------
-// /inventaire, /objet, /utiliser, /jeter
+// /inventory, /item, /use, /discard
 // ---------------------------------------------------------------------------
 
 const inventaire: Command = {
   category: 'inventaire',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('inventaire')
+    .setName('inventory')
     .setDescription('Votre inventaire, paginé par catégorie')
     .addStringOption((option) =>
       option
-        .setName('catégorie')
+        .setName('category')
         .setDescription('Filtrer')
         .addChoices(
           { name: '🌱 Graines', value: 'seed' },
@@ -316,7 +316,7 @@ const inventaire: Command = {
     await interaction.deferReply();
     await interaction.editReply(
       await inventoryView(context, {
-        category: interaction.options.getString('catégorie') ?? undefined,
+        category: interaction.options.getString('category') ?? undefined,
         page: interaction.options.getInteger('page') ?? 1,
       }),
     );
@@ -328,15 +328,15 @@ const objet: Command = {
   requiresAccount: false,
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('objet')
+    .setName('item')
     .setDescription("Fiche détaillée d'un objet")
     .addStringOption((option) =>
-      option.setName('nom').setDescription("L'objet").setRequired(true).setAutocomplete(true),
+      option.setName('name').setDescription("L'objet").setRequired(true).setAutocomplete(true),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
-    const item = inventoryService.requireItem(interaction.options.getString('nom', true));
+    const item = inventoryService.requireItem(interaction.options.getString('name', true));
     const market = await marketService.getMarket({});
     const price = market.find((row) => row.itemKey === item.key);
     const owned = context.player.farmId
@@ -413,20 +413,20 @@ const utiliser: Command = {
   category: 'inventaire',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('utiliser')
+    .setName('use')
     .setDescription('Utilise un objet consommable')
     .addStringOption((option) =>
-      option.setName('objet').setDescription("L'objet à utiliser").setRequired(true).setAutocomplete(true),
+      option.setName('item').setDescription("L'objet à utiliser").setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
-      option.setName('quantité').setDescription('Combien ?').setMinValue(1).setMaxValue(50),
+      option.setName('quantity').setDescription('Combien ?').setMinValue(1).setMaxValue(50),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const itemKey = interaction.options.getString('objet', true);
-    const quantity = interaction.options.getInteger('quantité') ?? 1;
+    const itemKey = interaction.options.getString('item', true);
+    const quantity = interaction.options.getInteger('quantity') ?? 1;
     const item = inventoryService.requireItem(itemKey);
 
     if (!item.effect?.type) {
@@ -464,26 +464,26 @@ const jeter: Command = {
   category: 'inventaire',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('jeter')
+    .setName('discard')
     .setDescription('Jette définitivement des objets')
     .addStringOption((option) =>
-      option.setName('objet').setDescription("L'objet à jeter").setRequired(true).setAutocomplete(true),
+      option.setName('item').setDescription("L'objet à jeter").setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
-      option.setName('quantité').setDescription('Combien ?').setRequired(true).setMinValue(1),
+      option.setName('quantity').setDescription('Combien ?').setRequired(true).setMinValue(1),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
-    const itemKey = interaction.options.getString('objet', true);
-    const quantity = interaction.options.getInteger('quantité', true);
+    const itemKey = interaction.options.getString('item', true);
+    const quantity = interaction.options.getInteger('quantity', true);
     const item = inventoryService.requireItem(itemKey);
 
     await interaction.reply({
       embeds: [
         baseEmbed({
           title: '🗑️ Confirmation',
-          description: `Jeter **${quantity}× ${item.emoji} ${item.name}** ? Cette action est irréversible et ne rapporte rien.\n\n*Astuce : \`/vendre\` rapporte des pièces.*`,
+          description: `Jeter **${quantity}× ${item.emoji} ${item.name}** ? Cette action est irréversible et ne rapporte rien.\n\n*Astuce : \`/sell\` rapporte des pièces.*`,
           color: COLORS.warning,
         }),
       ],
@@ -505,50 +505,50 @@ const jeter: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /banque et /donner
+// /bank et /gift
 // ---------------------------------------------------------------------------
 
 const banque: Command = {
   category: 'economie',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('banque')
+    .setName('bank')
     .setDescription('Votre compte en banque')
-    .addSubcommand((sub) => sub.setName('solde').setDescription('Consulter votre compte'))
+    .addSubcommand((sub) => sub.setName('balance').setDescription('Consulter votre compte'))
     .addSubcommand((sub) =>
       sub
-        .setName('depot')
+        .setName('deposit')
         .setDescription('Déposer des pièces')
         .addIntegerOption((option) =>
-          option.setName('montant').setDescription('Montant').setRequired(true).setMinValue(1),
+          option.setName('amount').setDescription('Montant').setRequired(true).setMinValue(1),
         ),
     )
     .addSubcommand((sub) =>
       sub
-        .setName('retrait')
+        .setName('withdraw')
         .setDescription('Retirer des pièces')
         .addIntegerOption((option) =>
-          option.setName('montant').setDescription('Montant').setRequired(true).setMinValue(1),
+          option.setName('amount').setDescription('Montant').setRequired(true).setMinValue(1),
         ),
     )
-    .addSubcommand((sub) => sub.setName('ameliorer').setDescription('Améliorer votre coffre'))
+    .addSubcommand((sub) => sub.setName('upgrade').setDescription('Améliorer votre coffre'))
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const sub = interaction.options.getSubcommand();
 
-    if (sub === 'depot' || sub === 'retrait') {
-      const amount = interaction.options.getInteger('montant', true);
+    if (sub === 'deposit' || sub === 'withdraw') {
+      const amount = interaction.options.getInteger('amount', true);
       const result =
-        sub === 'depot'
+        sub === 'deposit'
           ? await economyService.deposit(context.player.id, amount)
           : await economyService.withdraw(context.player.id, amount);
 
       await interaction.editReply({
         embeds: [
           successEmbed(
-            sub === 'depot' ? '🏦 Dépôt effectué' : '🏦 Retrait effectué',
+            sub === 'deposit' ? '🏦 Dépôt effectué' : '🏦 Retrait effectué',
             `Compte : **${formatCoins(result.balance)}** / ${formatCompact(result.capacity)}\nEn poche : **${formatCoins(result.walletBalance)}**`,
           ),
         ],
@@ -556,7 +556,7 @@ const banque: Command = {
       return;
     }
 
-    if (sub === 'ameliorer') {
+    if (sub === 'upgrade') {
       const result = await economyService.upgradeBank(context.player.id, context.player.level);
       await interaction.editReply({
         embeds: [
@@ -597,20 +597,20 @@ const donner: Command = {
   category: 'economie',
   cooldown: { seconds: 10 },
   data: new SlashCommandBuilder()
-    .setName('donner')
+    .setName('gift')
     .setDescription('Offre des pièces à un autre fermier')
     .addUserOption((option) =>
-      option.setName('utilisateur').setDescription('Le bénéficiaire').setRequired(true),
+      option.setName('user').setDescription('Le bénéficiaire').setRequired(true),
     )
     .addIntegerOption((option) =>
-      option.setName('montant').setDescription('Montant en pièces').setRequired(true).setMinValue(1),
+      option.setName('amount').setDescription('Montant en pièces').setRequired(true).setMinValue(1),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const target = interaction.options.getUser('utilisateur', true);
-    const amount = interaction.options.getInteger('montant', true);
+    const target = interaction.options.getUser('user', true);
+    const amount = interaction.options.getInteger('amount', true);
 
     if (target.bot) throw gameError('target_invalid', 'Les robots n\'ont pas de portefeuille.');
     const targetUser = await playerRepo.findUserByDiscordId(target.id);

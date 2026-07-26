@@ -35,8 +35,8 @@
   },
   "start": {
     "welcome_title": "🌾 Welcome to Greendale!",
-    "welcome_body": "The mayor grants you a patch of fallow land, {coins} 🪙 and a bag of seeds.\n\nYour goal is simple: **grow, harvest, sell, reinvest**.\n\n**Three commands to get going:**\n• `/planter` — sow a seed\n• `/ferme` — view your farm\n• `/recolter` — cash in your work\n\nStuck? `/aide` answers everything and `/tutoriel` walks you through it.",
-    "already_registered": "You already have a farm! Use `/ferme` to view it.",
+    "welcome_body": "The mayor grants you a patch of fallow land, {coins} 🪙 and a bag of seeds.\n\nYour goal is simple: **grow, harvest, sell, reinvest**.\n\n**Three commands to get going:**\n• `/plant` — sow a seed\n• `/farm` — view your farm\n• `/harvest` — cash in your work\n\nStuck? `/help` answers everything and `/tutorial` walks you through it.",
+    "already_registered": "You already have a farm! Use `/farm` to view it.",
     "starter_kit": "Starter pack",
     "button_tutorial": "Start tutorial",
     "button_farm": "View my farm",
@@ -52,11 +52,11 @@
     "plot_pest": "Pests!",
     "needs_water": "Needs water",
     "summary": "{ready} ready • {growing} growing • {empty} empty • {locked} locked",
-    "nothing_planted": "Nothing planted. Use `/planter` to start.",
+    "nothing_planted": "Nothing planted. Use `/plant` to start.",
     "render_failed": "Image rendering failed, here is the text version."
   },
   "harvest": {
-    "nothing_ready": "Nothing is ready yet. Check `/ferme` for timers.",
+    "nothing_ready": "Nothing is ready yet. Check `/farm` for timers.",
     "success": "🧺 Harvested plot {slot}: **{quantity}× {emoji} {crop}** {quality}",
     "success_all": "🧺 **{plots} plot(s) harvested** — {quantity} units, estimated value {value} 🪙",
     "withered": "💀 The crop on plot {slot} withered. You get nothing.",
@@ -68,7 +68,7 @@
     "empty": "Your inventory is empty.",
     "capacity": "Capacity: {used}/{total}",
     "empty_category": "No items in this category.",
-    "full": "Your warehouse is full ({capacity}). Sell items or upgrade it with `/batiments`.",
+    "full": "Your warehouse is full ({capacity}). Sell items or upgrade it with `/buildings`.",
     "categories": {
       "seed": "Seeds",
       "harvest": "Harvests",
@@ -191,8 +191,8 @@
   "plant": {
     "success": "🌱 {emoji} **{crop}** planted on plot {slot}. Harvest {when}.",
     "success_many": "🌱 {count} plot(s) planted with **{crop}**. First harvest {when}.",
-    "no_seed": "You have no {crop} seeds. Buy some with `/boutique` or `/acheter`.",
-    "no_free_plot": "No free plot. Harvest one or buy another with `/acheter-parcelle`.",
+    "no_seed": "You have no {crop} seeds. Buy some with `/shop` or `/buy`.",
+    "no_free_plot": "No free plot. Harvest one or buy another with `/buy-plot`.",
     "plot_occupied": "Plot {slot} is already occupied.",
     "off_season": "⚠️ {crop} is out of season ({season}): slower growth and reduced yield.",
     "wrong_level": "{crop} requires level {level}."
@@ -221,7 +221,7 @@
   },
   "animals": {
     "title": "🐄 {name}'s livestock",
-    "empty": "No animals yet. Build a coop with `/batiments`, then buy a chicken with `/acheter-animal`.",
+    "empty": "No animals yet. Build a coop with `/buildings`, then buy a chicken with `/buy-animal`.",
     "fed": "🌾 {count} animal(s) fed.",
     "collected": "🥚 Collected: {summary}",
     "petted": "🤍 {name} is delighted! Happiness +{gain}.",
@@ -251,7 +251,7 @@
     "created": "🎉 Co-op **{name}** [{tag}] created for {cost} 🪙!",
     "joined": "You joined **{name}**.",
     "left": "You left **{name}**.",
-    "not_member": "You are not in a co-op. Try `/coop creer` or `/coop rejoindre`.",
+    "not_member": "You are not in a co-op. Try `/coop create` or `/coop join`.",
     "already_member": "You are already in a co-op. Leave it first.",
     "full": "This co-op is full ({limit} members).",
     "name_taken": "That name or tag is already taken.",
@@ -271,7 +271,7 @@
     "next_season": "{season} starts {when}"
   },
   "errors": {
-    "plot_locked": "Plot {slot} is locked. Unlock it with `/acheter-parcelle`.",
+    "plot_locked": "Plot {slot} is locked. Unlock it with `/buy-plot`.",
     "plot_not_found": "Plot {slot} does not exist.",
     "item_unknown": "Unknown item: {item}",
     "quantity_invalid": "Invalid quantity.",

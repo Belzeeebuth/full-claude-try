@@ -35,8 +35,8 @@
   },
   "start": {
     "welcome_title": "🌾 Bienvenue à Val-Verdoyant !",
-    "welcome_body": "Le maire vous confie une parcelle de terre en friche, {coins} 🪙 et un sac de graines.\n\nVotre objectif est simple : **faire pousser, récolter, vendre, réinvestir**.\n\n**Trois commandes pour commencer :**\n• `/planter` — mettre une graine en terre\n• `/ferme` — voir votre exploitation\n• `/recolter` — encaisser votre travail\n\nUne question ? `/aide` répond à tout, et `/tutoriel` vous prend par la main.",
-    "already_registered": "Vous avez déjà une ferme ! Utilisez `/ferme` pour la consulter.",
+    "welcome_body": "Le maire vous confie une parcelle de terre en friche, {coins} 🪙 et un sac de graines.\n\nVotre objectif est simple : **faire pousser, récolter, vendre, réinvestir**.\n\n**Trois commandes pour commencer :**\n• `/plant` — mettre une graine en terre\n• `/farm` — voir votre exploitation\n• `/harvest` — encaisser votre travail\n\nUne question ? `/help` répond à tout, et `/tutorial` vous prend par la main.",
+    "already_registered": "Vous avez déjà une ferme ! Utilisez `/farm` pour la consulter.",
     "starter_kit": "Sac de départ",
     "button_tutorial": "Lancer le tutoriel",
     "button_farm": "Voir ma ferme",
@@ -52,14 +52,14 @@
     "plot_pest": "Nuisibles !",
     "needs_water": "À arroser",
     "summary": "{ready} prête(s) • {growing} en croissance • {empty} vide(s) • {locked} verrouillée(s)",
-    "nothing_planted": "Aucune culture en terre. `/planter` pour démarrer.",
+    "nothing_planted": "Aucune culture en terre. `/plant` pour démarrer.",
     "render_failed": "Le rendu graphique a échoué, voici la version texte."
   },
   "plant": {
     "success": "🌱 {emoji} **{crop}** planté sur la parcelle {slot}. Récolte {when}.",
     "success_many": "🌱 {count} parcelle(s) plantée(s) en **{crop}**. Première récolte {when}.",
-    "no_seed": "Vous n'avez pas de graines de {crop}. Achetez-en avec `/boutique` ou `/acheter`.",
-    "no_free_plot": "Aucune parcelle libre. Récoltez ou achetez une parcelle avec `/acheter-parcelle`.",
+    "no_seed": "Vous n'avez pas de graines de {crop}. Achetez-en avec `/shop` ou `/buy`.",
+    "no_free_plot": "Aucune parcelle libre. Récoltez ou achetez une parcelle avec `/buy-plot`.",
     "plot_occupied": "La parcelle {slot} est déjà occupée.",
     "off_season": "⚠️ {crop} n'est pas de saison ({season}) : pousse plus lente et rendement réduit.",
     "wrong_level": "{crop} demande le niveau {level}."
@@ -67,7 +67,7 @@
   "harvest": {
     "success": "🧺 Récolte de la parcelle {slot} : **{quantity}× {emoji} {crop}** {quality}",
     "success_all": "🧺 **{plots} parcelle(s) récoltée(s)** — {quantity} unités, valeur estimée {value} 🪙",
-    "nothing_ready": "Rien n'est prêt. Consultez `/ferme` pour voir les échéances.",
+    "nothing_ready": "Rien n'est prêt. Consultez `/farm` pour voir les échéances.",
     "withered": "💀 La culture de la parcelle {slot} a fané. Vous ne récupérez rien.",
     "mutation": "✨ **Mutation {mutation}** sur la parcelle {slot} !",
     "seed_recovered": "🫧 La grainerie vous a rendu {count} graine(s)."
@@ -96,7 +96,7 @@
   },
   "animals": {
     "title": "🐄 Cheptel de {name}",
-    "empty": "Aucun animal. Construisez un poulailler avec `/batiments` puis achetez une poule avec `/acheter-animal`.",
+    "empty": "Aucun animal. Construisez un poulailler avec `/buildings` puis achetez une poule avec `/buy-animal`.",
     "fed": "🌾 {count} animal(aux) nourri(s).",
     "collected": "🥚 Collecte : {summary}",
     "petted": "🤍 {name} est ravi ! Bonheur +{gain}.",
@@ -112,7 +112,7 @@
     "empty": "Votre inventaire est vide.",
     "empty_category": "Aucun objet dans cette catégorie.",
     "capacity": "Capacité : {used}/{total}",
-    "full": "Votre entrepôt est plein ({capacity}). Vendez ou améliorez-le avec `/batiments`.",
+    "full": "Votre entrepôt est plein ({capacity}). Vendez ou améliorez-le avec `/buildings`.",
     "categories": {
       "seed": "Graines",
       "harvest": "Récoltes",
@@ -144,7 +144,7 @@
     "created": "🎉 Coopérative **{name}** [{tag}] créée pour {cost} 🪙 !",
     "joined": "Vous avez rejoint **{name}**.",
     "left": "Vous avez quitté **{name}**.",
-    "not_member": "Vous n'êtes dans aucune coopérative. `/coop creer` ou `/coop rejoindre`.",
+    "not_member": "Vous n'êtes dans aucune coopérative. `/coop create` ou `/coop join`.",
     "already_member": "Vous êtes déjà dans une coopérative. Quittez-la d'abord.",
     "full": "Cette coopérative est complète ({limit} membres).",
     "name_taken": "Ce nom ou cette étiquette est déjà pris.",
@@ -164,7 +164,7 @@
     "next_season": "{season} commence {when}"
   },
   "errors": {
-    "plot_locked": "La parcelle {slot} est verrouillée. Débloquez-la avec `/acheter-parcelle`.",
+    "plot_locked": "La parcelle {slot} est verrouillée. Débloquez-la avec `/buy-plot`.",
     "plot_not_found": "La parcelle {slot} n'existe pas.",
     "item_unknown": "Objet inconnu : {item}",
     "quantity_invalid": "Quantité invalide.",

@@ -160,7 +160,7 @@ export const coopTreasuryLog = pgTable(
   ],
 );
 
-/** Visites de ferme et coups de main entre joueurs (`/visiter`, `/aider`). */
+/** Visites de ferme et coups de main entre joueurs (`/visit`, `/assist`). */
 export const farmVisits = pgTable(
   'farm_visits',
   {

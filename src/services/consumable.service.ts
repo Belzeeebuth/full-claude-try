@@ -191,22 +191,22 @@ export async function useConsumable(
           );
         return {
           consumed: quantity,
-          message: `🎨 Apparence appliquée : **${effect.value}**. Consultez \`/profil\` !`,
+          message: `🎨 Apparence appliquée : **${effect.value}**. Consultez \`/profile\` !`,
         };
       }
 
       case 'fertilizer':
         throw gameError(
           'invalid_state',
-          `${item.emoji} ${item.name} s'applique avec \`/fertiliser\`, pas avec \`/utiliser\`.`,
-          { suggestedCommand: 'ferme' },
+          `${item.emoji} ${item.name} s'applique avec \`/fertilize\`, pas avec \`/use\`.`,
+          { suggestedCommand: 'farm' },
         );
 
       case 'quest_reroll':
         throw gameError(
           'invalid_state',
-          'Ce jeton est consommé automatiquement par `/reroll-quete`.',
-          { suggestedCommand: 'quetes' },
+          'Ce jeton est consommé automatiquement par `/reroll-quest`.',
+          { suggestedCommand: 'quests' },
         );
 
       default:

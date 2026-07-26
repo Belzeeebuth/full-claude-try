@@ -164,7 +164,7 @@ export async function buyAnimal(
     throw gameError(
       'forbidden',
       `${animalConfig.emoji} ${animalConfig.name} ne s'obtient que pendant un événement.`,
-      { suggestedCommand: 'evenement' },
+      { suggestedCommand: 'event' },
     );
   }
   if (player.level < animalConfig.requiredLevel) {
@@ -187,7 +187,7 @@ export async function buyAnimal(
       throw gameError(
         'building_required',
         `Il vous faut un ${buildingConfig?.emoji ?? ''} ${buildingConfig?.name ?? animalConfig.buildingKey} pour héberger cet animal.`,
-        { hint: 'Construisez-le avec `/batiments`.', suggestedCommand: 'batiments' },
+        { hint: 'Construisez-le avec `/buildings`.', suggestedCommand: 'buildings' },
       );
     }
 
@@ -200,7 +200,7 @@ export async function buyAnimal(
       throw gameError(
         'building_full',
         `Votre ${buildingConfig?.name ?? 'bâtiment'} est plein (${used}/${building.capacity}).`,
-        { hint: 'Améliorez-le avec `/batiments` ou vendez un animal.' },
+        { hint: 'Améliorez-le avec `/buildings` ou vendez un animal.' },
       );
     }
 
@@ -381,7 +381,7 @@ export async function collect(
     if (collectable.length === 0) {
       throw gameError('animal_not_ready', 'Aucune production disponible.', {
         hint: 'Nourrissez vos animaux et revenez plus tard — un animal affamé produit moitié moins.',
-        suggestedCommand: 'animaux',
+        suggestedCommand: 'animals',
       });
     }
 

@@ -80,7 +80,7 @@ const coopCreate: ModalHandler = {
       embeds: [
         successEmbed(
           `${info.emblem} ${info.name} [${info.tag}] fondée !`,
-          `Coût : ${formatCoins(context.balance.coop.creationCostCoins)}\nInvitez des amis avec \`/coop inviter\`.`,
+          `Coût : ${formatCoins(context.balance.coop.creationCostCoins)}\nInvitez des amis avec \`/coop invite\`.`,
         ),
       ],
     });

@@ -78,7 +78,7 @@ export const plantedCrops = pgTable(
     regrowRemaining: smallint('regrow_remaining').notNull().default(0),
     harvestCount: smallint('harvest_count').notNull().default(0),
     withered: boolean('withered').notNull().default(false),
-    /** Aide reçue d'autres joueurs (`/aider`) : bonus de rendement partagé. */
+    /** Aide reçue d'autres joueurs (`/assist`) : bonus de rendement partagé. */
     helpedBy: uuid('helped_by').array().notNull().default(sql`ARRAY[]::uuid[]`),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

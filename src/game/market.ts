@@ -102,7 +102,7 @@ export function updatePrice(state: MarketState, balance: Balance, rng: Rng): Mar
 }
 
 /**
- * Prix de vente immédiate au village (`/vendre`), inférieur au marché.
+ * Prix de vente immédiate au village (`/sell`), inférieur au marché.
  * La décote de 15 % est le prix de la commodité : vendre tout de suite sans
  * passer par l'hôtel des ventes. C'est aussi un puits monétaire discret.
  */

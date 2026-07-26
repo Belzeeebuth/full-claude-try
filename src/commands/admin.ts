@@ -26,12 +26,12 @@ const admin: Command = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand((sub) =>
       sub
-        .setName('donner')
+        .setName('give')
         .setDescription('Attribuer une ressource à un joueur')
-        .addUserOption((option) => option.setName('utilisateur').setDescription('Le joueur').setRequired(true))
+        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true))
         .addStringOption((option) =>
           option
-            .setName('ressource')
+            .setName('resource')
             .setDescription('Type de ressource')
             .setRequired(true)
             .addChoices(
@@ -43,19 +43,19 @@ const admin: Command = {
             ),
         )
         .addIntegerOption((option) =>
-          option.setName('montant').setDescription('Quantité').setRequired(true).setMinValue(1),
+          option.setName('amount').setDescription('Quantité').setRequired(true).setMinValue(1),
         )
-        .addStringOption((option) => option.setName('objet').setDescription("Clé de l'objet (si ressource = objet)"))
-        .addStringOption((option) => option.setName('raison').setDescription('Motif (journalisé)')),
+        .addStringOption((option) => option.setName('item').setDescription("Clé de l'objet (si ressource = objet)"))
+        .addStringOption((option) => option.setName('reason').setDescription('Motif (journalisé)')),
     )
     .addSubcommand((sub) =>
       sub
-        .setName('retirer')
+        .setName('take')
         .setDescription('Retirer une ressource à un joueur')
-        .addUserOption((option) => option.setName('utilisateur').setDescription('Le joueur').setRequired(true))
+        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true))
         .addStringOption((option) =>
           option
-            .setName('ressource')
+            .setName('resource')
             .setDescription('Type de ressource')
             .setRequired(true)
             .addChoices(
@@ -65,30 +65,30 @@ const admin: Command = {
             ),
         )
         .addIntegerOption((option) =>
-          option.setName('montant').setDescription('Quantité').setRequired(true).setMinValue(1),
+          option.setName('amount').setDescription('Quantité').setRequired(true).setMinValue(1),
         )
-        .addStringOption((option) => option.setName('objet').setDescription("Clé de l'objet"))
-        .addStringOption((option) => option.setName('raison').setDescription('Motif (journalisé)')),
+        .addStringOption((option) => option.setName('item').setDescription("Clé de l'objet"))
+        .addStringOption((option) => option.setName('reason').setDescription('Motif (journalisé)')),
     )
     .addSubcommand((sub) =>
       sub
         .setName('reset')
         .setDescription('Réinitialiser un joueur (suppression douce)')
-        .addUserOption((option) => option.setName('utilisateur').setDescription('Le joueur').setRequired(true))
+        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true))
         .addStringOption((option) =>
-          option.setName('raison').setDescription('Motif (obligatoire)').setRequired(true),
+          option.setName('reason').setDescription('Motif (obligatoire)').setRequired(true),
         ),
     )
     .addSubcommand((sub) =>
       sub
-        .setName('ban-eco')
+        .setName('eco-ban')
         .setDescription("Suspendre l'accès à l'économie")
-        .addUserOption((option) => option.setName('utilisateur').setDescription('Le joueur').setRequired(true))
+        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true))
         .addIntegerOption((option) =>
-          option.setName('durée').setDescription('Durée en heures').setRequired(true).setMinValue(1),
+          option.setName('duration').setDescription('Durée en heures').setRequired(true).setMinValue(1),
         )
         .addStringOption((option) =>
-          option.setName('raison').setDescription('Motif').setRequired(true),
+          option.setName('reason').setDescription('Motif').setRequired(true),
         ),
     )
     .addSubcommand((sub) =>
@@ -97,14 +97,14 @@ const admin: Command = {
         .setDescription('Basculer le mode maintenance')
         .addStringOption((option) =>
           option
-            .setName('état')
+            .setName('enabled')
             .setDescription('Activer ou désactiver')
             .setRequired(true)
             .addChoices({ name: 'Activer', value: 'on' }, { name: 'Désactiver', value: 'off' }),
         )
         .addStringOption((option) => option.setName('message').setDescription('Message affiché aux joueurs')),
     )
-    .addSubcommand((sub) => sub.setName('annonce').setDescription('Publier une annonce globale'))
+    .addSubcommand((sub) => sub.setName('announce').setDescription('Publier une annonce globale'))
     .addSubcommand((sub) =>
       sub.setName('reload-config').setDescription('Recharger la configuration de gameplay à chaud'),
     )
@@ -113,7 +113,7 @@ const admin: Command = {
       sub
         .setName('lookup')
         .setDescription("Journal d'audit d'un joueur")
-        .addUserOption((option) => option.setName('utilisateur').setDescription('Le joueur').setRequired(true)),
+        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true)),
     )
     .addSubcommand((sub) =>
       sub.setName('market-update').setDescription('Forcer une mise à jour du marché'),
@@ -123,7 +123,7 @@ const admin: Command = {
   async execute(interaction, context): Promise<void> {
     const sub = interaction.options.getSubcommand();
 
-    if (sub === 'annonce') {
+    if (sub === 'announce') {
       await interaction.showModal(
         textModal({
           namespace: 'admin',
@@ -143,30 +143,30 @@ const admin: Command = {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     switch (sub) {
-      case 'donner':
-      case 'retirer': {
-        const target = interaction.options.getUser('utilisateur', true);
+      case 'give':
+      case 'take': {
+        const target = interaction.options.getUser('user', true);
         const result = await miscService.adminGrant(
           {
             actor: context.player,
             targetDiscordId: target.id,
-            resource: interaction.options.getString('ressource', true) as
+            resource: interaction.options.getString('resource', true) as
               | 'coins'
               | 'gems'
               | 'xp'
               | 'item'
               | 'energy',
-            amount: interaction.options.getInteger('montant', true),
-            itemKey: interaction.options.getString('objet') ?? undefined,
-            reason: interaction.options.getString('raison') ?? undefined,
+            amount: interaction.options.getInteger('amount', true),
+            itemKey: interaction.options.getString('item') ?? undefined,
+            reason: interaction.options.getString('reason') ?? undefined,
           },
-          sub === 'retirer',
+          sub === 'take',
         );
         await interaction.editReply({
           embeds: [
             successEmbed(
-              sub === 'donner' ? '✅ Ressource attribuée' : '✅ Ressource retirée',
-              `${target} — **${formatNumber(result.applied)}** ${interaction.options.getString('ressource', true)}\nAction journalisée dans l'audit.`,
+              sub === 'give' ? '✅ Ressource attribuée' : '✅ Ressource retirée',
+              `${target} — **${formatNumber(result.applied)}** ${interaction.options.getString('resource', true)}\nAction journalisée dans l'audit.`,
             ),
           ],
         });
@@ -174,11 +174,11 @@ const admin: Command = {
       }
 
       case 'reset': {
-        const target = interaction.options.getUser('utilisateur', true);
+        const target = interaction.options.getUser('user', true);
         await miscService.adminResetPlayer(
           context.player,
           target.id,
-          interaction.options.getString('raison', true),
+          interaction.options.getString('reason', true),
         );
         await interaction.editReply({
           embeds: [
@@ -191,13 +191,13 @@ const admin: Command = {
         break;
       }
 
-      case 'ban-eco': {
-        const target = interaction.options.getUser('utilisateur', true);
+      case 'eco-ban': {
+        const target = interaction.options.getUser('user', true);
         const result = await miscService.adminEcoBan(
           context.player,
           target.id,
-          interaction.options.getInteger('durée', true),
-          interaction.options.getString('raison', true),
+          interaction.options.getInteger('duration', true),
+          interaction.options.getString('reason', true),
         );
         await interaction.editReply({
           embeds: [
@@ -211,7 +211,7 @@ const admin: Command = {
       }
 
       case 'maintenance': {
-        const enabled = interaction.options.getString('état', true) === 'on';
+        const enabled = interaction.options.getString('enabled', true) === 'on';
         await miscService.setMaintenance(
           context.player,
           enabled,
@@ -327,7 +327,7 @@ const admin: Command = {
       }
 
       case 'lookup': {
-        const target = interaction.options.getUser('utilisateur', true);
+        const target = interaction.options.getUser('user', true);
         const result = await miscService.adminLookup(target.id, 12);
         await interaction.editReply({
           embeds: [

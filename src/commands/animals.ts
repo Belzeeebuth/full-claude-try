@@ -49,7 +49,7 @@ const animaux: Command = {
   category: 'elevage',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('animaux')
+    .setName('animals')
     .setDescription('Votre cheptel : état, production, bâtiments')
     .toJSON(),
 
@@ -63,21 +63,21 @@ const acheterAnimal: Command = {
   category: 'elevage',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('acheter-animal')
+    .setName('buy-animal')
     .setDescription('Achète un animal pour votre ferme')
     .addStringOption((option) =>
-      option.setName('espèce').setDescription("L'espèce à acheter").setRequired(true).setAutocomplete(true),
+      option.setName('species').setDescription("L'espèce à acheter").setRequired(true).setAutocomplete(true),
     )
     .addIntegerOption((option) =>
-      option.setName('quantité').setDescription('Nombre d\'animaux (max 10)').setMinValue(1).setMaxValue(10),
+      option.setName('quantity').setDescription('Nombre d\'animaux (max 10)').setMinValue(1).setMaxValue(10),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     const result = await animalService.buyAnimal(context.player, {
-      animalKey: interaction.options.getString('espèce', true),
-      quantity: interaction.options.getInteger('quantité') ?? 1,
+      animalKey: interaction.options.getString('species', true),
+      quantity: interaction.options.getInteger('quantity') ?? 1,
       discordGuildId: context.discordGuildId,
     });
 
@@ -86,7 +86,7 @@ const acheterAnimal: Command = {
         successEmbed(
           `${result.emoji} ${result.quantity}× ${result.name}`,
           `Achat conclu pour **${result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)}**.\n` +
-            'Pensez à les nourrir régulièrement avec `/nourrir` : un animal affamé produit deux fois moins.',
+            'Pensez à les nourrir régulièrement avec `/feed` : un animal affamé produit deux fois moins.',
         ),
       ],
     });
@@ -114,7 +114,7 @@ const nourrir: Command = {
   category: 'elevage',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('nourrir')
+    .setName('feed')
     .setDescription('Nourrit vos animaux')
     .addStringOption((option) =>
       option
@@ -147,7 +147,7 @@ const collecter: Command = {
   category: 'elevage',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('collecter')
+    .setName('collect')
     .setDescription('Collecte la production de vos animaux')
     .addStringOption((option) =>
       option
@@ -186,7 +186,7 @@ const soigner: Command = {
   category: 'elevage',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('soigner')
+    .setName('heal')
     .setDescription('Fait soigner un animal malade par le vétérinaire')
     .addStringOption((option) =>
       option.setName('animal').setDescription("L'animal à soigner").setRequired(true).setAutocomplete(true),
@@ -216,7 +216,7 @@ const caresser: Command = {
   category: 'elevage',
   cooldown: { seconds: 2 },
   data: new SlashCommandBuilder()
-    .setName('caresser')
+    .setName('pet')
     .setDescription('Caresse un animal (bonheur = meilleure production)')
     .addStringOption((option) =>
       option.setName('animal').setDescription("L'animal à câliner").setRequired(true).setAutocomplete(true),
@@ -244,21 +244,21 @@ const reproduire: Command = {
   category: 'elevage',
   cooldown: { seconds: 30, bucket: 'breed' },
   data: new SlashCommandBuilder()
-    .setName('reproduire')
+    .setName('breed')
     .setDescription('Fait se reproduire deux animaux de la même espèce')
     .addStringOption((option) =>
-      option.setName('animal1').setDescription('Premier parent').setRequired(true).setAutocomplete(true),
+      option.setName('parent1').setDescription('Premier parent').setRequired(true).setAutocomplete(true),
     )
     .addStringOption((option) =>
-      option.setName('animal2').setDescription('Second parent').setRequired(true).setAutocomplete(true),
+      option.setName('parent2').setDescription('Second parent').setRequired(true).setAutocomplete(true),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     const result = await animalService.breed(context.player, {
-      animalAId: interaction.options.getString('animal1', true),
-      animalBId: interaction.options.getString('animal2', true),
+      animalAId: interaction.options.getString('parent1', true),
+      animalBId: interaction.options.getString('parent2', true),
     });
 
     if (!result.success) {
@@ -296,7 +296,7 @@ const vendreAnimal: Command = {
   category: 'elevage',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('vendre-animal')
+    .setName('sell-animal')
     .setDescription('Vend un animal (60 % de son prix, modulé par sa santé)')
     .addStringOption((option) =>
       option.setName('animal').setDescription("L'animal à vendre").setRequired(true).setAutocomplete(true),

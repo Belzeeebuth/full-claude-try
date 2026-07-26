@@ -12,7 +12,7 @@ const meteo: Command = {
   requiresAccount: false,
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
-    .setName('meteo')
+    .setName('weather')
     .setDescription('Météo du jour et son effet sur vos cultures')
     .toJSON(),
 
@@ -33,7 +33,7 @@ const meteo: Command = {
               value: [
                 `🌾 Rendement : **${formatPercent(weather.yieldModifier - 1)}**`,
                 `⏳ Vitesse de pousse : **${formatPercent(weather.growthModifier - 1)}**`,
-                weather.freeWatering ? '💧 **Arrosage gratuit** — inutile d\'utiliser `/arroser`' : '',
+                weather.freeWatering ? '💧 **Arrosage gratuit** — inutile d\'utiliser `/water`' : '',
                 weather.damageChance > 0
                   ? `⚠️ Risque de dégâts : **${(weather.damageChance * 100).toFixed(0)} %** par parcelle`
                   : '',
@@ -59,7 +59,7 @@ const saison: Command = {
   requiresAccount: false,
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
-    .setName('saison')
+    .setName('season')
     .setDescription('Saison en cours, cultures favorables et prochaine saison')
     .toJSON(),
 
@@ -115,7 +115,7 @@ const evenement: Command = {
   requiresAccount: false,
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
-    .setName('evenement')
+    .setName('event')
     .setDescription('Événement en cours et récompenses')
     .toJSON(),
 
@@ -208,15 +208,15 @@ const encyclopedie: Command = {
   requiresAccount: false,
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('encyclopedie')
+    .setName('encyclopedia')
     .setDescription('Recherche dans toute la base de données du jeu')
     .addStringOption((option) =>
-      option.setName('terme').setDescription('Culture, animal, objet, recette ou bâtiment').setRequired(true),
+      option.setName('term').setDescription('Culture, animal, objet, recette ou bâtiment').setRequired(true),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
-    const term = interaction.options.getString('terme', true).toLowerCase();
+    const term = interaction.options.getString('term', true).toLowerCase();
     const config = context.config;
 
     const crops = config.cropList.filter((entry) => entry.name.toLowerCase().includes(term));

@@ -162,7 +162,7 @@ export function deriveCropItems(crops: CropConfig[]): ItemConfig[] {
         marketTracked: false,
         requiredLevel: crop.requiredLevel,
         sourceKey: crop.key,
-        description: `Se plante avec /planter. Pousse en ${Math.round(crop.growthSeconds / 60)} min.`,
+        description: `Se plante avec /plant. Pousse en ${Math.round(crop.growthSeconds / 60)} min.`,
         sortOrder: 100_000 + crop.sortOrder,
         enabled: crop.enabled,
       }),

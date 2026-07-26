@@ -12,7 +12,7 @@ import type { Command, CommandContext } from '../types';
 /**
  * `/lang` — changer la langue de l'interface.
  *
- * Le réglage existe déjà dans `/parametres langue`, mais il y est noyé au milieu
+ * Le réglage existe déjà dans `/settings langue`, mais il y est noyé au milieu
  * de quatre autres options. Une commande dédiée est ce qu'un joueur cherche
  * réellement, et c'est aussi le seul point d'entrée qu'un anglophone perdu dans
  * une interface française a une chance de deviner.
@@ -105,7 +105,7 @@ const lang: Command = {
     .setDescription("Changer la langue de l'interface · Change the interface language")
     .addStringOption((option) =>
       option
-        .setName('langue')
+        .setName('language')
         .setNameLocalization('en-US', 'language')
         .setDescription('Langue souhaitée · Desired language')
         .addChoices(
@@ -118,7 +118,7 @@ const lang: Command = {
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
-    const requested = interaction.options.getString('langue');
+    const requested = interaction.options.getString('language');
 
     // Sans option : on montre l'état courant et on laisse choisir par bouton.
     if (!requested) {

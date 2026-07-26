@@ -31,7 +31,7 @@ import type { CommandContext } from '../types';
  *
  * Une commande et le bouton « Rafraîchir » du même message doivent produire
  * EXACTEMENT le même rendu. Les construire ici, une seule fois, garantit cette
- * cohérence : `/ferme` et le bouton appellent tous deux `farmView()`.
+ * cohérence : `/farm` et le bouton appellent tous deux `farmView()`.
  */
 
 export interface View extends BaseMessageOptions {
@@ -79,7 +79,7 @@ export async function farmView(
       view.world.weather.freeWatering ? '💧 *Arrosage gratuit aujourd\'hui !*' : '',
       '',
       `✅ **${counts.ready}** prête(s) • 🌱 **${counts.growing}** en croissance • ⬜ **${counts.empty}** vide(s) • 🔒 **${counts.locked}** verrouillée(s)`,
-      counts.pests > 0 ? `🐛 **${counts.pests}** parcelle(s) infestée(s) — \`/traiter\`` : '',
+      counts.pests > 0 ? `🐛 **${counts.pests}** parcelle(s) infestée(s) — \`/treat\`` : '',
       counts.withered > 0 ? `💀 **${counts.withered}** culture(s) fanée(s)` : '',
       view.nextReadyAt
         ? `⏳ Prochaine récolte ${discordTimestamp(view.nextReadyAt, 'R')}`
@@ -380,7 +380,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
   const embed = baseEmbed({
     title: '🏪 Boutique du village',
     description: first
-      ? `Stock renouvelé ${discordTimestamp(first.expiresAt, 'R')}.\nUtilisez \`/acheter\` ou le menu ci-dessous.`
+      ? `Stock renouvelé ${discordTimestamp(first.expiresAt, 'R')}.\nUtilisez \`/buy\` ou le menu ci-dessous.`
       : 'La boutique est vide pour le moment.',
     color: COLORS.gold,
     fields,
@@ -557,7 +557,7 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
     title: `🐄 Cheptel de ${player.username}`,
     description:
       lines.join('\n\n') ||
-      "*Aucun animal.*\nConstruisez un poulailler avec `/batiments`, puis achetez une poule avec `/acheter-animal`.",
+      "*Aucun animal.*\nConstruisez un poulailler avec `/buildings`, puis achetez une poule avec `/buy-animal`.",
     color: herd.totals.readyToCollect > 0 ? COLORS.success : COLORS.primary,
     fields: [
       {
@@ -912,7 +912,7 @@ export async function productionView(context: CommandContext): Promise<View> {
               line.ready ? '✅ **prêt**' : `⏳ ${discordTimestamp(line.finishAt, 'R')}`
             }\n   → ${line.outputQuantity}× ${line.outputName}`,
         )
-        .join('\n') || '*Aucune production en cours.* Lancez-en une avec `/crafter`.',
+        .join('\n') || '*Aucune production en cours.* Lancez-en une avec `/craft`.',
     color: ready.length > 0 ? COLORS.success : COLORS.primary,
   });
 

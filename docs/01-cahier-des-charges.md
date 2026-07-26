@@ -83,7 +83,7 @@ détermine la clé primaire de tout le modèle de données. Elle a été tranch�
 Le grief légitime de la ferme globale est social : « le classement mondial ne me
 parle pas ». On le traite sans casser le modèle :
 
-- **`/classement` a une option `portée`** : `serveur` (par défaut) filtre sur les
+- **`/leaderboard` a une option `portée`** : `serveur` (par défaut) filtre sur les
   membres présents dans le serveur courant ; `mondial` montre le classement global ;
   `coop` classe au sein de la coopérative.
 - **Les coopératives sont indépendantes des serveurs.** Un groupe d'amis répartis
@@ -159,7 +159,7 @@ biographie courte.
 - **Nuisibles aléatoires** avec **échéance** : un nuisible non traité avant sa
   date limite inflige des dégâts au rendement, jusqu'à la perte totale. Le job
   `pests` les fait apparaître ; le job `pest_damage` applique les conséquences.
-- **Mauvaises herbes** : apparition passive, réduisent le rendement, `/desherber`
+- **Mauvaises herbes** : apparition passive, réduisent le rendement, `/weed`
   les retire et produit des *herbes* utilisables en compost.
 
 ### 3.3 Cultures — 27 espèces
@@ -262,7 +262,7 @@ prix ← clamp(prix, plancher, plafond)   volume ← volume × décroissance
 Le plancher et le plafond (**55 %–180 %** du prix de base) sont **durs** :
 ils garantissent qu'aucune stratégie de manipulation ne peut ni effondrer un prix
 à zéro ni le faire exploser. L'historique est conservé et affiché en graphique par
-`/marche-historique`.
+`/market-history`.
 
 **Boutique du jour.** Rotation quotidienne déterministe (RNG *seedée* sur la date),
 donc identique sur tous les *shards* sans coordination. Remises aléatoires.
@@ -273,7 +273,7 @@ mise en vente **non remboursables** (2 %, minimum 25 🪙) et commission à la v
 toutes les 5 minutes. Les frais sont le puits ; les remboursements garantissent
 qu'enchérir n'est jamais un piège.
 
-**Échanges directs.** `/echange @joueur` ouvre une session : chaque partie ajoute
+**Échanges directs.** `/trade @joueur` ouvre une session : chaque partie ajoute
 objets et pièces via des menus déroulants, puis **les deux** doivent confirmer par
 bouton. Toute modification après confirmation **réinitialise les deux
 confirmations** — c'est la protection standard contre l'arnaque au dernier moment.
@@ -320,8 +320,8 @@ création de coopérative.
   distribuées automatiquement par le job `coop_objectives`.
 - **Classements** : pièces, niveau, récoltes, score de coopérative, série ;
   portées serveur / mondial / coop ; instantanés hebdomadaires figés.
-- **Visites** : `/visiter @joueur` affiche la ferme d'autrui (image générée).
-  `/aider @joueur` permet un nombre limité d'aides par jour — arroser, désherber —
+- **Visites** : `/visit @joueur` affiche la ferme d'autrui (image générée).
+  `/assist @joueur` permet un nombre limité d'aides par jour — arroser, désherber —
   qui **rapporte aux deux joueurs**.
 - **Parrainage** : code unique, récompenses aux deux parties à des paliers de
   progression du filleul (et non à l'inscription, ce qui empêche la ferme à
@@ -362,16 +362,16 @@ contextuels. Détail complet dans le [README](../README.md#commandes) et dans
 
 | Fichier | Commandes |
 |---|---|
-| `start.ts` | `/start`, `/tutoriel`, `/aide` |
-| `farm.ts` | `/ferme`, `/planter`, `/recolter`, `/arroser`, `/fertiliser`, `/desherber`, `/traiter`, `/parcelles`, `/acheter-parcelle`, `/cultures` |
-| `profile.ts` | `/profil`, `/stats`, `/solde`, `/parametres`, `/prestige` |
-| `animals.ts` | `/animaux`, `/acheter-animal`, `/nourrir`, `/collecter`, `/soigner`, `/caresser`, `/reproduire`, `/vendre-animal` |
-| `economy.ts` | `/boutique`, `/acheter`, `/vendre`, `/marche`, `/marche-historique`, `/inventaire`, `/objet`, `/utiliser`, `/jeter`, `/banque`, `/donner` |
-| `craft.ts` | `/crafter`, `/recettes`, `/production`, `/batiments`, `/construire` |
-| `progression.ts` | `/quetes`, `/reroll-quete`, `/succes`, `/passe`, `/daily`, `/vote` |
-| `social.ts` | `/coop`, `/classement`, `/visiter`, `/aider`, `/parrainage` |
-| `trade.ts` | `/hdv`, `/echange` |
-| `world.ts` | `/meteo`, `/saison`, `/evenement`, `/encyclopedie` |
+| `start.ts` | `/start`, `/tutorial`, `/help` |
+| `farm.ts` | `/farm`, `/plant`, `/harvest`, `/water`, `/fertilize`, `/weed`, `/treat`, `/plots`, `/buy-plot`, `/crops` |
+| `profile.ts` | `/profile`, `/stats`, `/balance`, `/settings`, `/prestige` |
+| `animals.ts` | `/animals`, `/buy-animal`, `/feed`, `/collect`, `/heal`, `/pet`, `/breed`, `/sell-animal` |
+| `economy.ts` | `/shop`, `/buy`, `/sell`, `/market`, `/market-history`, `/inventory`, `/item`, `/use`, `/discard`, `/bank`, `/gift` |
+| `craft.ts` | `/craft`, `/recipes`, `/production`, `/buildings`, `/build` |
+| `progression.ts` | `/quests`, `/reroll-quest`, `/achievements`, `/pass`, `/daily`, `/vote` |
+| `social.ts` | `/coop`, `/leaderboard`, `/visit`, `/assist`, `/referral` |
+| `trade.ts` | `/auction`, `/trade` |
+| `world.ts` | `/weather`, `/season`, `/event`, `/encyclopedia` |
 | `admin.ts` | `/admin` |
 | `context-menus.ts` | **Voir la ferme**, **Proposer un échange** |
 

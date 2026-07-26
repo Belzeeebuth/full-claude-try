@@ -245,7 +245,7 @@ Un index n'a pas été ajouté « au cas où » : chacun correspond à une requ�
 | Motif | Exemples |
 |---|---|
 | **Recherche par joueur** (le plus fréquent) | `plots(user_id)`, `inventory(user_id)`, `owned_animals(user_id)`, `user_quests(user_id)` |
-| **Tri de classement** | `users(coins DESC)`, `users(level DESC, xp DESC)`, `users(total_harvests DESC)` — servent `/classement` sans tri en mémoire |
+| **Tri de classement** | `users(coins DESC)`, `users(level DESC, xp DESC)`, `users(total_harvests DESC)` — servent `/leaderboard` sans tri en mémoire |
 | **Balayage temporel des jobs** | `planted_crops(ready_at)`, `auction_listings(expires_at)`, `scheduled_tasks(run_at)` — le job lit une plage, pas une table entière |
 | **Unicité métier** | `users(discord_id)`, `plots(user_id, slot)`, `inventory(user_id, item_key, quality, mutation)`, `guild_members(user_id)` |
 | **Index partiels** | `WHERE deleted_at IS NULL`, `WHERE status = 'active'`, `WHERE collected = false` — plus petits, plus rapides, et porteurs de la règle métier |

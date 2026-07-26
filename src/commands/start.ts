@@ -30,7 +30,7 @@ const start: Command = {
           baseEmbed({
             title: '🌾 Vous avez déjà une ferme !',
             description:
-              'Utilisez `/ferme` pour la consulter, `/quetes` pour vos objectifs du jour, ou `/aide` si vous êtes perdu.',
+              'Utilisez `/farm` pour la consulter, `/quests` pour vos objectifs du jour, ou `/help` si vous êtes perdu.',
             color: COLORS.info,
           }),
         ],
@@ -68,11 +68,11 @@ const start: Command = {
             'Votre objectif est simple : **faire pousser, récolter, vendre, réinvestir.**',
             '',
             '**Trois commandes pour commencer :**',
-            '🌱 `/planter graine:Blé` — mettre une graine en terre',
-            '🌾 `/ferme` — voir votre exploitation',
-            '🧺 `/recolter` — encaisser votre travail',
+            '🌱 `/plant graine:Blé` — mettre une graine en terre',
+            '🌾 `/farm` — voir votre exploitation',
+            '🧺 `/harvest` — encaisser votre travail',
             '',
-            "Une question ? `/aide` répond à tout, et `/tutoriel` vous prend par la main.",
+            "Une question ? `/help` répond à tout, et `/tutorial` vous prend par la main.",
           ].join('\n'),
           color: COLORS.success,
           fields: [
@@ -123,50 +123,50 @@ const start: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /tutoriel
+// /tutorial
 // ---------------------------------------------------------------------------
 
 export const TUTORIAL_STEPS = [
   {
     title: '1/6 — Planter',
     body:
-      'Tout commence par une graine.\n\n`/planter graine:Blé`\n\nSans numéro de parcelle, le bot remplit automatiquement vos parcelles vides. ' +
+      'Tout commence par une graine.\n\n`/plant graine:Blé`\n\nSans numéro de parcelle, le bot remplit automatiquement vos parcelles vides. ' +
       'Ajoutez `quantité:9` pour tout planter d\'un coup.',
   },
   {
     title: '2/6 — Arroser',
     body:
-      'Chaque culture attend un ou plusieurs arrosages pendant sa croissance.\n\n`/arroser`\n\n' +
+      'Chaque culture attend un ou plusieurs arrosages pendant sa croissance.\n\n`/water`\n\n' +
       'Un arrosage manqué coûte 8 % de rendement (jusqu\'à −40 %). Les jours de pluie, c\'est gratuit !',
   },
   {
     title: '3/6 — Récolter',
     body:
-      "Quand la culture est prête, encaissez :\n\n`/recolter`\n\n" +
+      "Quand la culture est prête, encaissez :\n\n`/harvest`\n\n" +
       'Votre récolte peut sortir en qualité **argent**, **or** ou **iridium** — jusqu\'à ×3 sur le prix. ' +
       'Un bon sol et un engrais de qualité augmentent vos chances.',
   },
   {
     title: '4/6 — Vendre',
     body:
-      'Le village achète tout :\n\n`/vendre objet:Blé quantité:tout`\n\n' +
-      'Les prix bougent chaque heure selon ce que vendent les autres joueurs : consultez `/marche` avant de brader.',
+      'Le village achète tout :\n\n`/sell objet:Blé quantité:tout`\n\n' +
+      'Les prix bougent chaque heure selon ce que vendent les autres joueurs : consultez `/market` avant de brader.',
   },
   {
     title: '5/6 — Réinvestir',
     body:
       'Vos pièces servent à grandir :\n\n' +
-      '• `/acheter-parcelle` — plus de terrain\n' +
-      '• `/boutique` — graines, engrais, outils\n' +
-      '• `/batiments` — poulailler, moulin, entrepôt\n' +
-      '• `/acheter-animal` — production passive',
+      '• `/buy-plot` — plus de terrain\n' +
+      '• `/shop` — graines, engrais, outils\n' +
+      '• `/buildings` — poulailler, moulin, entrepôt\n' +
+      '• `/buy-animal` — production passive',
   },
   {
     title: '6/6 — Progresser',
     body:
       'Chaque jour :\n\n' +
       '• `/daily` — récompense quotidienne et série\n' +
-      '• `/quetes` — 4 quêtes journalières + 3 hebdomadaires\n' +
+      '• `/quests` — 4 quêtes journalières + 3 hebdomadaires\n' +
       '• `/coop` — rejoignez une coopérative pour des bonus permanents\n\n' +
       'Bonne chance, fermier ! 🌾',
   },
@@ -177,7 +177,7 @@ const tutoriel: Command = {
   requiresAccount: false,
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('tutoriel')
+    .setName('tutorial')
     .setDescription('Tutoriel pas à pas pour bien démarrer')
     .toJSON(),
 
@@ -219,7 +219,7 @@ const tutoriel: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /aide
+// /help
 // ---------------------------------------------------------------------------
 
 export function helpEmbed(category?: CommandCategory) {
@@ -255,7 +255,7 @@ export function helpEmbed(category?: CommandCategory) {
     fields: [
       {
         name: '🚀 Pour bien démarrer',
-        value: '`/start` → `/planter` → `/arroser` → `/recolter` → `/vendre`',
+        value: '`/start` → `/plant` → `/water` → `/harvest` → `/sell`',
       },
       {
         name: '📚 Catégories',
@@ -280,11 +280,11 @@ const aide: Command = {
   requiresAccount: false,
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('aide')
+    .setName('help')
     .setDescription("Menu d'aide interactif")
     .addStringOption((option) =>
       option
-        .setName('catégorie')
+        .setName('category')
         .setDescription('Aller directement à une catégorie')
         .addChoices(
           ...Object.entries(CATEGORY_LABELS)
@@ -295,7 +295,7 @@ const aide: Command = {
     .toJSON(),
 
   async execute(interaction): Promise<void> {
-    const category = interaction.options.getString('catégorie') as CommandCategory | null;
+    const category = interaction.options.getString('category') as CommandCategory | null;
     await interaction.reply({
       embeds: [helpEmbed(category ?? undefined)],
       components: [

@@ -144,7 +144,7 @@ const farmButtons: ButtonHandler = {
             embeds: [
               baseEmbed({
                 title: '🌱 Aucune graine',
-                description: 'Achetez-en avec `/boutique` ou `/acheter objet:seed_wheat`.',
+                description: 'Achetez-en avec `/shop` ou `/buy objet:seed_wheat`.',
                 color: COLORS.warning,
               }),
             ],
@@ -232,8 +232,8 @@ const inventoryButtons: ButtonHandler = {
           baseEmbed({
             title: '💰 Vendre',
             description:
-              'Utilisez `/vendre objet:… quantité:tout` pour vendre au village,\n' +
-              'ou `/hdv vendre` pour proposer votre lot aux autres joueurs (prix plein, commission de 5 %).',
+              'Utilisez `/sell objet:… quantité:tout` pour vendre au village,\n' +
+              'ou `/auction sell` pour proposer votre lot aux autres joueurs (prix plein, commission de 5 %).',
             color: COLORS.gold,
           }),
         ],
@@ -494,7 +494,7 @@ const craftButtons: ButtonHandler = {
 
     if (parsed.action === 'recipes') {
       await replyEphemeral(interaction, {
-        content: 'Utilisez `/recettes` pour la liste complète et `/crafter` pour lancer une production.',
+        content: 'Utilisez `/recipes` pour la liste complète et `/craft` pour lancer une production.',
       });
       return;
     }

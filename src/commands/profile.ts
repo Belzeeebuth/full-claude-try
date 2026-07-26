@@ -24,14 +24,14 @@ const profil: Command = {
   category: 'demarrage',
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
-    .setName('profil')
+    .setName('profile')
     .setDescription('Carte de profil illustrée')
-    .addUserOption((option) => option.setName('utilisateur').setDescription('Le fermier à afficher'))
+    .addUserOption((option) => option.setName('user').setDescription('Le fermier à afficher'))
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const target = interaction.options.getUser('utilisateur') ?? interaction.user;
+    const target = interaction.options.getUser('user') ?? interaction.user;
     const profile = await getProfile(target.id);
     if (!profile) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
 
@@ -124,12 +124,12 @@ const stats: Command = {
   data: new SlashCommandBuilder()
     .setName('stats')
     .setDescription('Statistiques détaillées')
-    .addUserOption((option) => option.setName('utilisateur').setDescription('Le fermier à analyser'))
+    .addUserOption((option) => option.setName('user').setDescription('Le fermier à analyser'))
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const target = interaction.options.getUser('utilisateur') ?? interaction.user;
+    const target = interaction.options.getUser('user') ?? interaction.user;
     const data = await miscService.playerStats(target.id);
     if (!data) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
 
@@ -207,13 +207,13 @@ const solde: Command = {
   category: 'economie',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('solde')
+    .setName('balance')
     .setDescription('Affiche votre solde')
-    .addUserOption((option) => option.setName('utilisateur').setDescription('Le fermier à consulter'))
+    .addUserOption((option) => option.setName('user').setDescription('Le fermier à consulter'))
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
-    const target = interaction.options.getUser('utilisateur') ?? interaction.user;
+    const target = interaction.options.getUser('user') ?? interaction.user;
     const user = await playerRepo.findUserByDiscordId(target.id);
     if (!user) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
     const bank = await playerRepo.getBankAccount(user.id);
@@ -240,20 +240,20 @@ const parametres: Command = {
   category: 'demarrage',
   cooldown: { seconds: 3 },
   data: new SlashCommandBuilder()
-    .setName('parametres')
+    .setName('settings')
     .setDescription('Vos préférences : notifications, langue, confidentialité')
     .addBooleanOption((option) =>
-      option.setName('notifications-mp').setDescription('Recevoir des rappels en message privé'),
+      option.setName('dm-notifications').setDescription('Recevoir des rappels en message privé'),
     )
     .addStringOption((option) =>
       option
-        .setName('langue')
+        .setName('language')
         .setDescription('Langue de l\'interface')
         .addChoices({ name: 'Français', value: 'fr' }, { name: 'English', value: 'en' }),
     )
     .addStringOption((option) =>
       option
-        .setName('confidentialité')
+        .setName('privacy')
         .setDescription('Qui peut voir votre ferme ?')
         .addChoices(
           { name: 'Tout le monde', value: 'public' },
@@ -262,20 +262,20 @@ const parametres: Command = {
         ),
     )
     .addStringOption((option) =>
-      option.setName('fuseau').setDescription('Fuseau horaire (ex. Europe/Paris)').setMaxLength(48),
+      option.setName('timezone').setDescription('Fuseau horaire (ex. Europe/Paris)').setMaxLength(48),
     )
     .addBooleanOption((option) =>
-      option.setName('mode-compact').setDescription('Désactiver les images générées'),
+      option.setName('compact-mode').setDescription('Désactiver les images générées'),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     const patch: Record<string, unknown> = {};
-    const dm = interaction.options.getBoolean('notifications-mp');
-    const locale = interaction.options.getString('langue');
-    const privacy = interaction.options.getString('confidentialité');
-    const timezone = interaction.options.getString('fuseau');
-    const compact = interaction.options.getBoolean('mode-compact');
+    const dm = interaction.options.getBoolean('dm-notifications');
+    const locale = interaction.options.getString('language');
+    const privacy = interaction.options.getString('privacy');
+    const timezone = interaction.options.getString('timezone');
+    const compact = interaction.options.getBoolean('compact-mode');
 
     if (dm !== null) patch.dmNotifications = dm;
     if (locale) patch.locale = locale;

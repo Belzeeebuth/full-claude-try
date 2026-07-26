@@ -67,9 +67,9 @@ export interface CommandCooldown {
 export interface Command {
   /** Corps JSON prêt pour l'API Discord (produit par un SlashCommandBuilder). */
   data: RESTPostAPIApplicationCommandsJSONBody;
-  /** Catégorie utilisée par `/aide`. */
+  /** Catégorie utilisée par `/help`. */
   category: CommandCategory;
-  /** Le joueur doit-il avoir une ferme ? `false` pour `/start` et `/aide`. */
+  /** Le joueur doit-il avoir une ferme ? `false` pour `/start` et `/help`. */
   requiresAccount?: boolean;
   /** Réservé aux administrateurs du bot. */
   adminOnly?: boolean;

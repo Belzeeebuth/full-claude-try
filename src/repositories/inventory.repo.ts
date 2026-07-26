@@ -244,7 +244,7 @@ export async function listInventory(
   }));
 }
 
-/** Graines détenues, pour l'autocomplétion de `/planter`. */
+/** Graines détenues, pour l'autocomplétion de `/plant`. */
 export async function listSeeds(
   userId: string,
   executor: Executor = getDb(),

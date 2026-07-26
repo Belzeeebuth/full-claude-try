@@ -229,7 +229,7 @@ export interface PlantResult {
  *
  * `slot` non fourni ⇒ on remplit automatiquement les parcelles vides, dans
  * l'ordre. C'est le comportement attendu par les joueurs qui enchaînent
- * `/planter blé quantité:9` et ne veulent pas cliquer neuf fois.
+ * `/plant blé quantité:9` et ne veulent pas cliquer neuf fois.
  */
 export async function plant(
   player: PlayerContext,
@@ -268,8 +268,8 @@ export async function plant(
 
     if (targetSlots.length === 0) {
       throw gameError('plot_empty', 'Aucune parcelle libre.', {
-        hint: 'Récoltez vos cultures ou achetez une parcelle avec `/acheter-parcelle`.',
-        suggestedCommand: 'acheter-parcelle',
+        hint: 'Récoltez vos cultures ou achetez une parcelle avec `/buy-plot`.',
+        suggestedCommand: 'buy-plot',
       });
     }
 
@@ -281,12 +281,12 @@ export async function plant(
       if (!first) throw gameError('plot_not_found', `Parcelle ${targetSlots[0]} introuvable.`);
       if (first.state === 'locked') {
         throw gameError('plot_locked', `La parcelle ${first.slot} est verrouillée.`, {
-          hint: `Débloquez-la pour ${plotUnlockCost(first.slot, balance).toLocaleString('fr-FR')} 🪙 avec \`/acheter-parcelle\`.`,
-          suggestedCommand: 'acheter-parcelle',
+          hint: `Débloquez-la pour ${plotUnlockCost(first.slot, balance).toLocaleString('fr-FR')} 🪙 avec \`/buy-plot\`.`,
+          suggestedCommand: 'buy-plot',
         });
       }
       throw gameError('plot_occupied', `La parcelle ${first.slot} est déjà occupée.`, {
-        hint: 'Récoltez-la avec `/recolter` ou désherbez-la si elle a fané.',
+        hint: 'Récoltez-la avec `/harvest` ou désherbez-la si elle a fané.',
       });
     }
 
@@ -405,7 +405,7 @@ export async function water(
 
     if (candidates.length === 0) {
       throw gameError('no_water_needed', "Aucune parcelle n'a besoin d'eau pour le moment.", {
-        hint: 'Consultez `/ferme` pour voir les prochains arrosages.',
+        hint: 'Consultez `/farm` pour voir les prochains arrosages.',
       });
     }
 
@@ -496,8 +496,8 @@ export async function harvest(
 
     if (ready.length === 0) {
       throw gameError('crop_not_ready', "Rien n'est prêt à être récolté.", {
-        hint: 'Consultez `/ferme` pour voir les échéances.',
-        suggestedCommand: 'ferme',
+        hint: 'Consultez `/farm` pour voir les échéances.',
+        suggestedCommand: 'farm',
       });
     }
 
@@ -1027,7 +1027,7 @@ function emptyTracking(): TrackResult {
   };
 }
 
-/** Cultures plantables par un joueur, pour l'autocomplétion de `/planter`. */
+/** Cultures plantables par un joueur, pour l'autocomplétion de `/plant`. */
 export async function plantableCrops(
   userId: string,
   level: number,

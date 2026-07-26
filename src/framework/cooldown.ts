@@ -73,7 +73,7 @@ export async function checkAndSet(
   }
 }
 
-/** Consulte un cooldown sans le poser (affichage dans `/aide`, `/daily`). */
+/** Consulte un cooldown sans le poser (affichage dans `/help`, `/daily`). */
 export async function peek(userId: string, bucket: string): Promise<CooldownStatus> {
   const cacheKey = cooldownKey(userId, bucket);
   try {

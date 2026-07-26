@@ -155,7 +155,7 @@ malformée fait échouer le lancement immédiatement, avec le nom du champ fauti
 |---|---|---|
 | `DISCORD_DEV_GUILD_ID` | — | Publie les commandes sur **un** serveur : propagation **instantanée** au lieu d'une heure. Indispensable en développement, à retirer en production. |
 | `DISCORD_ERROR_CHANNEL_ID` | — | Salon privé recevant les erreurs et alertes économiques |
-| `DISCORD_ANNOUNCE_CHANNEL_ID` | — | Salon des annonces `/admin annonce` |
+| `DISCORD_ANNOUNCE_CHANNEL_ID` | — | Salon des annonces `/admin announce` |
 | `NODE_ENV` | `development` | `production` en exploitation |
 | `LOG_LEVEL` | `info` | `debug` pour diagnostiquer |
 | `LOG_PRETTY` | `false` | `true` en développement (sortie lisible) |
@@ -316,77 +316,77 @@ journalctl -u harvester -f
 | Commande | Rôle |
 |---|---|
 | `/start [code]` | Accueil et code de parrainage |
-| `/tutoriel` | Guide interactif paginé |
-| `/aide [catégorie]` | Aide complète |
-| `/lang [langue]` | Changer la langue de l'interface (français / anglais) |
+| `/tutorial` | Guide interactif paginé |
+| `/help [category]` | Aide complète |
+| `/lang [language]` | Changer la langue de l'interface (français / anglais) |
 
 ### Ferme
 
 | Commande | Rôle |
 |---|---|
-| `/ferme [@joueur]` | Vue de la ferme **(image)** |
-| `/planter <graine> [parcelle] [quantité]` | Semer |
-| `/recolter [parcelle]` | Récolter une parcelle ou tout |
-| `/arroser [parcelle]` | Arroser |
-| `/fertiliser <engrais> [parcelle]` | Fertiliser |
-| `/desherber [parcelle]` | Désherber |
-| `/traiter [parcelle]` | Traiter les nuisibles |
-| `/parcelles` | État détaillé, paginé |
-| `/acheter-parcelle` | Étendre la ferme |
-| `/cultures [rareté] [saison]` | Encyclopédie des cultures |
+| `/farm [@user]` | Vue de la ferme **(image)** |
+| `/plant <seed> [plot] [quantity]` | Semer |
+| `/harvest [plot]` | Récolter une parcelle ou tout |
+| `/water [plot]` | Arroser |
+| `/fertilize <fertilizer> [plot]` | Fertiliser |
+| `/weed [plot]` | Désherber |
+| `/treat [plot]` | Traiter les nuisibles |
+| `/plots` | État détaillé, paginé |
+| `/buy-plot` | Étendre la ferme |
+| `/crops [rarity] [season]` | Encyclopédie des cultures |
 
 ### Élevage
 
 | Commande | Rôle |
 |---|---|
-| `/animaux` | Vos animaux **(image)** |
-| `/acheter-animal <espèce> [quantité]` | Acheter |
-| `/nourrir [animal]` | Nourrir un animal ou tous |
-| `/collecter [animal]` | Collecter les produits |
-| `/soigner <animal>` | Soins vétérinaires |
-| `/caresser <animal>` | Augmenter le bonheur |
-| `/reproduire <animal1> <animal2>` | Reproduction |
-| `/vendre-animal <animal>` | Vendre |
+| `/animals` | Vos animaux **(image)** |
+| `/buy-animal <species> [quantity]` | Acheter |
+| `/feed [animal]` | Nourrir un animal ou tous |
+| `/collect [animal]` | Collecter les produits |
+| `/heal <animal>` | Soins vétérinaires |
+| `/pet <animal>` | Augmenter le bonheur |
+| `/breed <parent1> <parent2>` | Reproduction |
+| `/sell-animal <animal>` | Vendre |
 
 ### Économie
 
 | Commande | Rôle |
 |---|---|
-| `/boutique [catégorie]` | Boutique du jour |
-| `/acheter <objet> [quantité]` | Acheter |
-| `/vendre <objet> [quantité\|tout]` | Vendre |
-| `/marche [catégorie]` | Cours actuels |
-| `/marche-historique <objet>` | Graphique de prix **(image)** |
-| `/inventaire [catégorie] [page]` | Inventaire paginé |
-| `/objet <nom>` | Fiche détaillée |
-| `/utiliser <objet> [quantité]` | Consommer |
-| `/jeter <objet> <quantité>` | Jeter |
-| `/banque solde\|depot\|retrait\|ameliorer` | Banque |
-| `/donner <@joueur> <montant>` | Don (taxé) |
+| `/shop [category]` | Boutique du jour |
+| `/buy <item> [quantity]` | Acheter |
+| `/sell <item> [quantity\|all]` | Vendre |
+| `/market [category]` | Cours actuels |
+| `/market-history <item>` | Graphique de prix **(image)** |
+| `/inventory [category] [page]` | Inventaire paginé |
+| `/item <name>` | Fiche détaillée |
+| `/use <item> [quantity]` | Consommer |
+| `/discard <item> <quantity>` | Jeter |
+| `/bank balance\|deposit\|withdraw\|upgrade` | Banque |
+| `/gift <@user> <amount>` | Don (taxé) |
 
 ### Transformation
 
 | Commande | Rôle |
 |---|---|
-| `/crafter <recette> [quantité]` | Lancer une production |
-| `/recettes [catégorie]` | Recettes disponibles |
+| `/craft <recipe> [quantity]` | Lancer une production |
+| `/recipes [category]` | Recettes disponibles |
 | `/production` | Productions en cours et collecte |
-| `/batiments` | Vos bâtiments |
-| `/construire` | Construire ou améliorer |
+| `/buildings` | Vos bâtiments |
+| `/build` | Construire ou améliorer |
 
 ### Progression
 
 | Commande | Rôle |
 |---|---|
-| `/profil [@joueur]` | Carte de profil **(image)** |
-| `/stats [@joueur]` | Statistiques détaillées |
-| `/solde [@joueur]` | Monnaies |
-| `/parametres` | Langue, fuseau, notifications, confidentialité, mode compact |
+| `/profile [@user]` | Carte de profil **(image)** |
+| `/stats [@user]` | Statistiques détaillées |
+| `/balance [@user]` | Monnaies |
+| `/settings` | Langue, fuseau, notifications, confidentialité, mode compact |
 | `/prestige` | Renaissance (niveau 60) |
-| `/quetes [type]` | Quêtes en cours |
-| `/reroll-quete <quête>` | Relance payante |
-| `/succes [catégorie]` | Succès |
-| `/passe` | Passe saisonnier |
+| `/quests [type]` | Quêtes en cours |
+| `/reroll-quest <quest>` | Relance payante |
+| `/achievements [category]` | Succès |
+| `/pass` | Passe saisonnier |
 | `/daily` | Récompense quotidienne et série |
 | `/vote` | Récompense de vote top.gg |
 
@@ -394,35 +394,35 @@ journalctl -u harvester -f
 
 | Commande | Rôle |
 |---|---|
-| `/coop creer\|rejoindre\|quitter\|info\|membres\|inviter\|expulser\|promouvoir\|tresorerie\|contribuer\|objectifs` | Coopératives |
-| `/classement [type] [portée]` | Classements **(image)** |
-| `/visiter <@joueur>` | Visiter une ferme |
-| `/aider <@joueur>` | Aider (gain mutuel) |
-| `/parrainage` | Votre code et vos filleuls |
-| `/hdv liste\|vendre\|acheter\|mes-ventes\|annuler` | Hôtel des ventes |
-| `/echange <@joueur>` | Échange direct sécurisé |
+| `/coop create\|join\|leave\|info\|members\|invite\|kick\|promote\|treasury\|contribute\|objectives` | Coopératives |
+| `/leaderboard [type] [scope]` | Classements **(image)** |
+| `/visit <@user>` | Visiter une ferme |
+| `/assist <@user>` | Aider (gain mutuel) |
+| `/referral` | Votre code et vos filleuls |
+| `/auction list\|sell\|buy\|my-listings\|cancel` | Hôtel des ventes |
+| `/trade <@user>` | Échange direct sécurisé |
 
 ### Monde
 
 | Commande | Rôle |
 |---|---|
-| `/meteo` | Météo du jour et effets |
-| `/saison` | Saison en cours |
-| `/evenement` | Événement actif |
-| `/encyclopedie <terme>` | Recherche universelle |
+| `/weather` | Météo du jour et effets |
+| `/season` | Saison en cours |
+| `/event` | Événement actif |
+| `/encyclopedia <term>` | Recherche universelle |
 
 ### Administration — `BOT_OWNER_IDS` uniquement
 
 | Commande | Rôle |
 |---|---|
-| `/admin donner\|retirer` | Ajuster les ressources d'un joueur |
-| `/admin reset <@joueur> <raison>` | Réinitialiser un joueur |
-| `/admin ban-eco <@joueur> <durée> <raison>` | Bannissement économique |
-| `/admin maintenance <état> [message]` | Mode maintenance |
-| `/admin annonce` | Annonce globale (modal) |
+| `/admin give\|take` | Ajuster les ressources d'un joueur |
+| `/admin reset <@user> <reason>` | Réinitialiser un joueur |
+| `/admin eco-ban <@user> <duration> <reason>` | Bannissement économique |
+| `/admin maintenance <enabled> [message]` | Mode maintenance |
+| `/admin announce` | Annonce globale (modal) |
 | `/admin reload-config` | Recharger le gameplay à chaud |
 | `/admin stats` | Tableau de bord |
-| `/admin lookup <@joueur>` | Inspecter un joueur |
+| `/admin lookup <@user>` | Inspecter un joueur |
 | `/admin market-update` | Forcer une mise à jour du marché |
 
 ### Menus contextuels

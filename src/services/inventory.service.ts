@@ -95,9 +95,9 @@ export async function addItems(
         'inventory_full',
         `Votre entrepôt est plein (${capacity.used}/${capacity.capacity}).`,
         {
-          hint: 'Vendez des objets avec `/vendre` ou améliorez votre entrepôt avec `/batiments`.',
+          hint: 'Vendez des objets avec `/sell` ou améliorez votre entrepôt avec `/buildings`.',
           context: { needed: total, free: capacity.free },
-          suggestedCommand: 'batiments',
+          suggestedCommand: 'buildings',
         },
       );
     }

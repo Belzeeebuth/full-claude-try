@@ -20,7 +20,7 @@ import type { CommandContext, ContextMenuCommand } from '../types';
 
 const voirLaFerme: ContextMenuCommand = {
   data: new ContextMenuCommandBuilder()
-    .setName('Voir la ferme')
+    .setName('View farm')
     .setType(ApplicationCommandType.User)
     .toJSON(),
 
@@ -62,7 +62,7 @@ const voirLaFerme: ContextMenuCommand = {
 
 const proposerEchange: ContextMenuCommand = {
   data: new ContextMenuCommandBuilder()
-    .setName('Proposer un échange')
+    .setName('Propose a trade')
     .setType(ApplicationCommandType.User)
     .toJSON(),
 

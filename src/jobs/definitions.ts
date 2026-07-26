@@ -120,7 +120,7 @@ export const jobs: JobDefinition[] = [
             userId: candidate.userId,
             type: 'crop_withering',
             title: '🐛 Nuisibles !',
-            body: `Des nuisibles s'attaquent à votre parcelle ${candidate.slot}. Utilisez \`/traiter parcelle:${candidate.slot}\` avant ${balance.pests.deadlineHours} h.`,
+            body: `Des nuisibles s'attaquent à votre parcelle ${candidate.slot}. Utilisez \`/treat parcelle:${candidate.slot}\` avant ${balance.pests.deadlineHours} h.`,
             dedupeKey: `pest:${candidate.plotId}:${toSqlDate(new Date())}`,
           });
         }
@@ -244,7 +244,7 @@ export const jobs: JobDefinition[] = [
             userId: row.animal.userId,
             type: 'animal_sick',
             title: '🪦 Un animal est mort',
-            body: `Votre ${row.name} n'a pas survécu à la négligence. Nourrissez vos animaux avec \`/nourrir\`.`,
+            body: `Votre ${row.name} n'a pas survécu à la négligence. Nourrissez vos animaux avec \`/feed\`.`,
             dedupeKey: `death:${row.animal.id}`,
           });
           continue;
@@ -287,7 +287,7 @@ export const jobs: JobDefinition[] = [
           userId: crop.userId,
           type: 'crop_ready',
           title: '🌾 Récolte prête !',
-          body: `Votre parcelle ${crop.plotSlot} est prête. Utilisez \`/recolter\` avant qu'elle ne fane.`,
+          body: `Votre parcelle ${crop.plotSlot} est prête. Utilisez \`/harvest\` avant qu'elle ne fane.`,
           dedupeKey: `ready:${crop.userId}:${crop.plotSlot}:${crop.readyAt.toISOString()}`,
         });
         if (enqueued) queued += 1;

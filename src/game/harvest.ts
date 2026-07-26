@@ -250,7 +250,7 @@ export function computeHarvest(input: HarvestInput): HarvestResult {
 
 /**
  * Rendement moyen attendu, sans tirage aléatoire.
- * Utilisé par `/cultures` (affichage « rendement moyen ») et par le rapport
+ * Utilisé par `/crops` (affichage « rendement moyen ») et par le rapport
  * d'équilibrage : on veut comparer les cultures sans dépendre du hasard.
  */
 export function expectedYield(

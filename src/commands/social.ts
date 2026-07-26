@@ -32,10 +32,10 @@ const coop: Command = {
     .setDescription('Gestion de votre coopérative')
     .addSubcommand((sub) =>
       sub
-        .setName('creer')
+        .setName('create')
         .setDescription('Créer une coopérative')
         .addStringOption((option) =>
-          option.setName('nom').setDescription('Nom (3-32 caractères)').setRequired(true).setMaxLength(32),
+          option.setName('name').setDescription('Nom (3-32 caractères)').setRequired(true).setMaxLength(32),
         )
         .addStringOption((option) =>
           option.setName('tag').setDescription('Étiquette (2-5 caractères)').setRequired(true).setMaxLength(5),
@@ -46,35 +46,35 @@ const coop: Command = {
     )
     .addSubcommand((sub) =>
       sub
-        .setName('rejoindre')
+        .setName('join')
         .setDescription('Rejoindre une coopérative publique')
         .addStringOption((option) =>
-          option.setName('nom').setDescription('Nom ou étiquette').setRequired(true),
+          option.setName('name').setDescription('Nom ou étiquette').setRequired(true),
         ),
     )
-    .addSubcommand((sub) => sub.setName('quitter').setDescription('Quitter votre coopérative'))
+    .addSubcommand((sub) => sub.setName('leave').setDescription('Quitter votre coopérative'))
     .addSubcommand((sub) => sub.setName('info').setDescription('Informations sur votre coopérative'))
-    .addSubcommand((sub) => sub.setName('membres').setDescription('Liste des membres'))
+    .addSubcommand((sub) => sub.setName('members').setDescription('Liste des membres'))
     .addSubcommand((sub) =>
       sub
-        .setName('inviter')
+        .setName('invite')
         .setDescription('Inviter un joueur')
-        .addUserOption((option) => option.setName('utilisateur').setDescription('Le joueur').setRequired(true)),
+        .addUserOption((option) => option.setName('user').setDescription('Le joueur').setRequired(true)),
     )
     .addSubcommand((sub) =>
       sub
-        .setName('expulser')
+        .setName('kick')
         .setDescription('Expulser un membre')
-        .addUserOption((option) => option.setName('utilisateur').setDescription('Le membre').setRequired(true)),
+        .addUserOption((option) => option.setName('user').setDescription('Le membre').setRequired(true)),
     )
     .addSubcommand((sub) =>
       sub
-        .setName('promouvoir')
+        .setName('promote')
         .setDescription('Changer le rang d\'un membre')
-        .addUserOption((option) => option.setName('utilisateur').setDescription('Le membre').setRequired(true))
+        .addUserOption((option) => option.setName('user').setDescription('Le membre').setRequired(true))
         .addStringOption((option) =>
           option
-            .setName('rang')
+            .setName('rank')
             .setDescription('Nouveau rang')
             .setRequired(true)
             .addChoices(
@@ -84,16 +84,16 @@ const coop: Command = {
             ),
         ),
     )
-    .addSubcommand((sub) => sub.setName('tresorerie').setDescription('État de la trésorerie'))
+    .addSubcommand((sub) => sub.setName('treasury').setDescription('État de la trésorerie'))
     .addSubcommand((sub) =>
       sub
-        .setName('contribuer')
+        .setName('contribute')
         .setDescription('Verser des pièces à la trésorerie')
         .addIntegerOption((option) =>
-          option.setName('montant').setDescription('Montant en pièces').setRequired(true).setMinValue(1),
+          option.setName('amount').setDescription('Montant en pièces').setRequired(true).setMinValue(1),
         ),
     )
-    .addSubcommand((sub) => sub.setName('objectifs').setDescription('Objectifs hebdomadaires'))
+    .addSubcommand((sub) => sub.setName('objectives').setDescription('Objectifs hebdomadaires'))
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -101,9 +101,9 @@ const coop: Command = {
     await interaction.deferReply();
 
     switch (sub) {
-      case 'creer': {
+      case 'create': {
         const info = await coopService.createCoop(context.player, {
-          name: interaction.options.getString('nom', true),
+          name: interaction.options.getString('name', true),
           tag: interaction.options.getString('tag', true),
           description: interaction.options.getString('description') ?? undefined,
         });
@@ -112,14 +112,14 @@ const coop: Command = {
             successEmbed(
               `${info.emblem} ${info.name} [${info.tag}] fondée !`,
               `Coût : ${formatCoins(context.balance.coop.creationCostCoins)}\n` +
-                `Invitez vos amis avec \`/coop inviter\` et remplissez les objectifs hebdomadaires ensemble.`,
+                `Invitez vos amis avec \`/coop invite\` et remplissez les objectifs hebdomadaires ensemble.`,
             ),
           ],
         });
         break;
       }
-      case 'rejoindre': {
-        const info = await coopService.joinCoop(context.player, interaction.options.getString('nom', true));
+      case 'join': {
+        const info = await coopService.joinCoop(context.player, interaction.options.getString('name', true));
         await interaction.editReply({
           embeds: [
             successEmbed(
@@ -130,7 +130,7 @@ const coop: Command = {
         });
         break;
       }
-      case 'quitter': {
+      case 'leave': {
         const result = await coopService.leaveCoop(context.player);
         await interaction.editReply({
           embeds: [
@@ -144,7 +144,7 @@ const coop: Command = {
         });
         break;
       }
-      case 'membres': {
+      case 'members': {
         const membership = await coopService.requireMembership(context.player.id);
         const members = await coopService.listMembers(membership.coop.id);
         await interaction.editReply({
@@ -164,8 +164,8 @@ const coop: Command = {
         });
         break;
       }
-      case 'inviter': {
-        const target = interaction.options.getUser('utilisateur', true);
+      case 'invite': {
+        const target = interaction.options.getUser('user', true);
         const targetUser = await playerRepo.findUserByDiscordId(target.id);
         if (!targetUser) throw gameError('not_found', "Ce joueur n'a pas encore de ferme.");
         const result = await coopService.inviteMember(context.player, targetUser.id);
@@ -174,8 +174,8 @@ const coop: Command = {
         });
         break;
       }
-      case 'expulser': {
-        const target = interaction.options.getUser('utilisateur', true);
+      case 'kick': {
+        const target = interaction.options.getUser('user', true);
         const targetUser = await playerRepo.findUserByDiscordId(target.id);
         if (!targetUser) throw gameError('not_found', 'Joueur introuvable.');
         const result = await coopService.kickMember(context.player, targetUser.id);
@@ -184,9 +184,9 @@ const coop: Command = {
         });
         break;
       }
-      case 'promouvoir': {
-        const target = interaction.options.getUser('utilisateur', true);
-        const role = interaction.options.getString('rang', true) as 'owner' | 'officer' | 'member';
+      case 'promote': {
+        const target = interaction.options.getUser('user', true);
+        const role = interaction.options.getString('rank', true) as 'owner' | 'officer' | 'member';
         const targetUser = await playerRepo.findUserByDiscordId(target.id);
         if (!targetUser) throw gameError('not_found', 'Joueur introuvable.');
         const result = await coopService.promoteMember(context.player, targetUser.id, role);
@@ -195,8 +195,8 @@ const coop: Command = {
         });
         break;
       }
-      case 'contribuer': {
-        const amount = interaction.options.getInteger('montant', true);
+      case 'contribute': {
+        const amount = interaction.options.getInteger('amount', true);
         const result = await coopService.contribute(context.player, amount);
         await interaction.editReply({
           embeds: [
@@ -209,7 +209,7 @@ const coop: Command = {
         });
         break;
       }
-      case 'tresorerie': {
+      case 'treasury': {
         const membership = await coopService.requireMembership(context.player.id);
         const info = await coopService.getCoopInfo(membership.coop.id, context.player.id);
         await interaction.editReply({
@@ -235,7 +235,7 @@ const coop: Command = {
         });
         break;
       }
-      case 'objectifs': {
+      case 'objectives': {
         const membership = await coopService.requireMembership(context.player.id);
         const objectives = await coopService.listObjectives(membership.coop.id, context.now);
         await interaction.editReply({
@@ -263,14 +263,14 @@ const coop: Command = {
 };
 
 // ---------------------------------------------------------------------------
-// /classement
+// /leaderboard
 // ---------------------------------------------------------------------------
 
 const classement: Command = {
   category: 'social',
   cooldown: { seconds: 10, bucket: 'classement' },
   data: new SlashCommandBuilder()
-    .setName('classement')
+    .setName('leaderboard')
     .setDescription('Classements des fermiers')
     .addStringOption((option) =>
       option
@@ -288,7 +288,7 @@ const classement: Command = {
     )
     .addStringOption((option) =>
       option
-        .setName('portée')
+        .setName('scope')
         .setDescription('Étendue du classement')
         .addChoices(
           { name: '🌍 Global', value: 'global' },
@@ -301,7 +301,7 @@ const classement: Command = {
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     const type = (interaction.options.getString('type') ?? 'wealth') as miscService.LeaderboardType;
-    const scope = (interaction.options.getString('portée') ?? 'global') as 'global' | 'discord' | 'coop';
+    const scope = (interaction.options.getString('scope') ?? 'global') as 'global' | 'discord' | 'coop';
 
     await sendLeaderboard(interaction, context, type, scope);
   },
@@ -373,23 +373,23 @@ export async function sendLeaderboard(
 }
 
 // ---------------------------------------------------------------------------
-// /visiter, /aider
+// /visit, /assist
 // ---------------------------------------------------------------------------
 
 const visiter: Command = {
   category: 'social',
   cooldown: { seconds: 30, bucket: 'visit' },
   data: new SlashCommandBuilder()
-    .setName('visiter')
+    .setName('visit')
     .setDescription('Visite la ferme d\'un autre joueur')
     .addUserOption((option) =>
-      option.setName('utilisateur').setDescription('Le fermier à visiter').setRequired(true),
+      option.setName('user').setDescription('Le fermier à visiter').setRequired(true),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    await visitFarm(interaction, context, interaction.options.getUser('utilisateur', true));
+    await visitFarm(interaction, context, interaction.options.getUser('user', true));
   },
 };
 
@@ -471,16 +471,16 @@ const aider: Command = {
   category: 'social',
   cooldown: { seconds: 60, bucket: 'help' },
   data: new SlashCommandBuilder()
-    .setName('aider')
+    .setName('assist')
     .setDescription('Aide un fermier en arrosant ses parcelles (vous gagnez tous les deux)')
     .addUserOption((option) =>
-      option.setName('utilisateur').setDescription('Le fermier à aider').setRequired(true),
+      option.setName('user').setDescription('Le fermier à aider').setRequired(true),
     )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const target = interaction.options.getUser('utilisateur', true);
+    const target = interaction.options.getUser('user', true);
     await helpFarmer(interaction, context, target.id, target.displayName);
   },
 };
@@ -523,14 +523,14 @@ export async function helpFarmer(
 }
 
 // ---------------------------------------------------------------------------
-// /parrainage
+// /referral
 // ---------------------------------------------------------------------------
 
 const parrainage: Command = {
   category: 'social',
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
-    .setName('parrainage')
+    .setName('referral')
     .setDescription('Votre code de parrainage et vos récompenses')
     .toJSON(),
 

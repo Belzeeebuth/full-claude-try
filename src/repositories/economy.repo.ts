@@ -311,7 +311,7 @@ export async function getMarketPrices(
   return new Map(rows.map((row) => [row.itemKey, row]));
 }
 
-/** Marché complet enrichi (nom, emoji, rareté) pour `/marche`. */
+/** Marché complet enrichi (nom, emoji, rareté) pour `/market`. */
 export async function listMarket(
   options: { category?: string; limit?: number } = {},
   executor: Executor = getDb(),

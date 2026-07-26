@@ -216,7 +216,7 @@ export async function waterCrops(
   return result.rowCount ?? 0;
 }
 
-/** Ajoute un aidant à une culture (`/aider`), sans doublon. */
+/** Ajoute un aidant à une culture (`/assist`), sans doublon. */
 export async function addHelper(
   cropId: string,
   helperId: string,

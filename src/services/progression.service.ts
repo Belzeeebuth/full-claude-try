@@ -24,7 +24,7 @@ const log = moduleLogger('progression');
  * Quêtes, récompense quotidienne, succès et passe saisonnier.
  *
  * L'assignation des quêtes est PARESSEUSE : elle a lieu la première fois que le
- * joueur ouvre `/quetes` dans un nouveau cycle, pas via un job qui parcourrait
+ * joueur ouvre `/quests` dans un nouveau cycle, pas via un job qui parcourrait
  * 100 000 joueurs à minuit. Un joueur inactif ne coûte donc rien, et la charge
  * s'étale naturellement sur la journée.
  */
