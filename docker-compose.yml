@@ -39,7 +39,12 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
-      - '${POSTGRES_PORT:-5432}:5432'
+      # Lié à la boucle locale UNIQUEMENT. Le bot joint la base par le réseau
+      # Docker interne ; ce port n'existe que pour psql/pgAdmin depuis l'hôte.
+      # Sans le `127.0.0.1:`, Docker publierait sur 0.0.0.0 en insérant ses
+      # propres règles iptables AVANT celles d'ufw : la base serait joignable
+      # depuis Internet malgré un pare-feu actif.
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-harvest} -d ${POSTGRES_DB:-harvestbot}']
       interval: 10s
@@ -65,7 +70,8 @@ services:
     volumes:
       - redis-data:/data
     ports:
-      - '${REDIS_PORT:-6379}:6379'
+      # Boucle locale uniquement — Redis n'a pas d'authentification ici.
+      - '127.0.0.1:${REDIS_PORT:-6379}:6379'
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
@@ -90,7 +96,10 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - '${HTTP_PORT:-3001}:3001'
+      # /health et /metrics ne sont pas authentifiés : jamais exposés publiquement.
+      # Pour les consulter à distance, passez par un tunnel SSH :
+      #   ssh -L 3001:127.0.0.1:3001 user@vps
+      - '127.0.0.1:${HTTP_PORT:-3001}:3001'
     volumes:
       # Les sprites peuvent être remplacés sans reconstruire l'image.
       - ./assets:/app/assets:ro
