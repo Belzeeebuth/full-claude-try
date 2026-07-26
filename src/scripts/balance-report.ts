@@ -217,7 +217,7 @@ function formatDuration(seconds: number): string {
 }
 
 function main(): void {
-  console.log('\n🌾 HARVESTBOT — RAPPORT D\'ÉQUILIBRAGE');
+  console.log('\n🌾 HARVESTER — RAPPORT D\'ÉQUILIBRAGE');
   console.log(`Généré depuis src/config/gameplay/ • ${new Date().toISOString()}`);
   cropReport();
   animalReport();

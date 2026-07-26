@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🌾 HarvestBot
+<img src="assets/brand/harvester-avatar.png" alt="Harvester" width="132">
+
+# 🌾 Harvester
 
 **Jeu de ferme persistant pour Discord — prêt pour la production.**
 
@@ -75,7 +77,7 @@ L'image Docker le fait déjà.
 
 ```bash
 # 1. Récupérer le projet et installer
-git clone <votre-dépôt> harvestbot && cd harvestbot
+git clone <votre-dépôt> harvester && cd harvester
 npm install
 
 # 2. Configurer
@@ -114,7 +116,7 @@ Le bot est en ligne. Tapez `/start` dans un serveur où il est invité.
    *Ce jeton ne s'affiche qu'une fois.*
 3. Onglet **General Information** → copiez l'**Application ID** dans
    `DISCORD_CLIENT_ID`.
-4. **Aucun intent privilégié n'est nécessaire.** HarvestBot n'utilise que l'intent
+4. **Aucun intent privilégié n'est nécessaire.** Harvester n'utilise que l'intent
    `Guilds` : il ne lit aucun message et n'énumère aucun membre. Laissez *Message
    Content Intent* et *Server Members Intent* **désactivés**.
 5. Onglet **OAuth2 → URL Generator** :
@@ -143,7 +145,7 @@ malformée fait échouer le lancement immédiatement, avec le nom du champ fauti
 |---|---|
 | `DISCORD_TOKEN` | Jeton du bot |
 | `DISCORD_CLIENT_ID` | Identifiant de l'application |
-| `DATABASE_URL` | `postgresql://user:pass@host:5432/harvestbot` |
+| `DATABASE_URL` | `postgresql://user:pass@host:5432/harvester` |
 | `REDIS_URL` | `redis://host:6379` |
 | `BOT_OWNER_IDS` | Identifiants autorisés à `/admin`, séparés par des virgules |
 
@@ -262,29 +264,29 @@ npm run commands:deploy
 
 ```bash
 npm install -g pm2
-pm2 start dist/index.js --name harvestbot --time
+pm2 start dist/index.js --name harvester --time
 pm2 save && pm2 startup
 ```
 
 Au-delà de 2 500 serveurs, utilisez `dist/shard.js` :
 
 ```bash
-pm2 start dist/shard.js --name harvestbot-shards --time
+pm2 start dist/shard.js --name harvester-shards --time
 ```
 
 ### systemd
 
 ```ini
-# /etc/systemd/system/harvestbot.service
+# /etc/systemd/system/harvester.service
 [Unit]
-Description=HarvestBot
+Description=Harvester
 After=network.target postgresql.service redis.service
 
 [Service]
 Type=simple
-User=harvest
-WorkingDirectory=/opt/harvestbot
-EnvironmentFile=/opt/harvestbot/.env
+User=harvester
+WorkingDirectory=/opt/harvester
+EnvironmentFile=/opt/harvester/.env
 ExecStart=/usr/bin/node dist/index.js
 Restart=always
 RestartSec=10
@@ -297,8 +299,8 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now harvestbot
-journalctl -u harvestbot -f
+sudo systemctl enable --now harvester
+journalctl -u harvester -f
 ```
 
 > **Un seul processus doit exécuter les tâches planifiées.** Si vous lancez
@@ -442,10 +444,10 @@ Clic droit sur un membre → **Voir la ferme** · **Proposer un échange**.
 
 ```bash
 # Sauvegarde
-docker compose exec -T db pg_dump -U harvest harvestbot | gzip > backup-$(date +%F).sql.gz
+docker compose exec -T db pg_dump -U harvester harvester | gzip > backup-$(date +%F).sql.gz
 
 # Restauration
-gunzip -c backup-2026-07-26.sql.gz | docker compose exec -T db psql -U harvest harvestbot
+gunzip -c backup-2026-07-26.sql.gz | docker compose exec -T db psql -U harvester harvester
 ```
 
 Redis ne contient que du cache, des cooldowns et des files : sa perte est sans

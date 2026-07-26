@@ -81,7 +81,7 @@ export async function dispatchBatch(client: Client, limit: number): Promise<numb
         embeds: [
           new EmbedBuilder()
             .setColor(COLORS.primary)
-            .setTitle(notification.title ?? '🌾 HarvestBot')
+            .setTitle(notification.title ?? '🌾 Harvester')
             .setDescription(notification.body ?? '')
             .setFooter({ text: 'Gérez vos alertes avec /parametres' }),
         ],

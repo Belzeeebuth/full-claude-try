@@ -27,7 +27,7 @@ const log = moduleLogger('scheduler');
  * affiche la dernière exécution, sa durée et son éventuelle erreur.
  */
 
-const QUEUE_NAME = 'harvestbot:jobs';
+const QUEUE_NAME = 'harvester:jobs';
 
 let queue: Queue | undefined;
 let worker: Worker | undefined;

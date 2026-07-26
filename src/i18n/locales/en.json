@@ -23,7 +23,7 @@
     "not_your_button": "This button isn't yours. Run the command to get your own.",
     "action_in_progress": "An action is already running, hold on a second.",
     "unknown_error": "An unexpected error occurred. The incident has been logged.",
-    "maintenance": "🛠️ HarvestBot is under maintenance. {message}",
+    "maintenance": "🛠️ Harvester is under maintenance. {message}",
     "cooldown": "⏳ Easy! You can use this command again {when}.",
     "rate_limited": "🚦 You're going too fast. Try again in {seconds}s.",
     "eco_banned": "🚫 Your economy access is suspended until {when}. Reason: {reason}",

@@ -15,7 +15,7 @@ export default defineConfig({
   schema: './src/db/schema/index.ts',
   out: './drizzle',
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? 'postgresql://harvest:harvest@localhost:5432/harvestbot',
+    url: process.env.DATABASE_URL ?? 'postgresql://harvest:harvest@localhost:5432/harvester',
   },
   verbose: true,
   strict: true,

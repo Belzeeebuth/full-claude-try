@@ -21,7 +21,7 @@ function build(name: string, overrides: Record<string, unknown> = {}): RedisClie
     lazyConnect: false,
     enableReadyCheck: true,
     maxRetriesPerRequest: 3,
-    connectionName: `harvestbot:${name}`,
+    connectionName: `harvester:${name}`,
     retryStrategy(times) {
       // 200 ms, 400 ms, 800 ms… plafonné à 10 s : on ne bombarde pas un Redis
       // qui redémarre, et on ne renonce jamais définitivement.

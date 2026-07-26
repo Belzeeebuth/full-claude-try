@@ -77,7 +77,7 @@ const envSchema = z.object({
   DATABASE_STATEMENT_TIMEOUT_MS: intFromEnv(1_000, 120_000, 15_000),
   DATABASE_SSL: booleanish.default(false),
   REDIS_URL: z.string().min(1, 'REDIS_URL est obligatoire'),
-  REDIS_PREFIX: z.string().default('harvest'),
+  REDIS_PREFIX: z.string().default('harvester'),
   QUEUES_ENABLED: booleanish.default(true),
   SCHEDULER_ENABLED: booleanish.default(true),
 
@@ -89,7 +89,7 @@ const envSchema = z.object({
   MAINTENANCE_MODE: booleanish.default(false),
   MAINTENANCE_MESSAGE: z
     .string()
-    .default('HarvestBot est en maintenance, revenez dans quelques minutes.'),
+    .default('Harvester est en maintenance, revenez dans quelques minutes.'),
   SHARD_COUNT: z.string().default('auto'),
   SHARD_LIST: z.string().default('auto'),
 

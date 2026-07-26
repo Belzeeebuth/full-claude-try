@@ -41,7 +41,7 @@ export const logger: Logger = pino({
   // En test, on ne veut pas de bruit : seuls les avertissements remontent.
   level: isTest ? 'warn' : level,
   base: {
-    service: 'harvestbot',
+    service: 'harvester',
     shard: process.env.SHARDS ?? process.env.SHARD_ID ?? '0',
   },
   redact: {

@@ -1,5 +1,5 @@
 # =============================================================================
-#  HarvestBot — pile complète (bot + PostgreSQL + Redis)
+#  Harvester — pile complète (bot + PostgreSQL + Redis)
 #
 #    docker compose up -d db redis      # infrastructure seule (développement)
 #    docker compose run --rm bot npm run db:migrate
@@ -12,12 +12,12 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: harvest-db
+    container_name: harvester-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-harvest}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-harvest}
-      POSTGRES_DB: ${POSTGRES_DB:-harvestbot}
+      POSTGRES_USER: ${POSTGRES_USER:-harvester}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-harvester}
+      POSTGRES_DB: ${POSTGRES_DB:-harvester}
       # Le tri français : les classements par nom sortent dans le bon ordre.
       LANG: fr_FR.utf8
     command:
@@ -46,7 +46,7 @@ services:
       # depuis Internet malgré un pare-feu actif.
       - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-harvest} -d ${POSTGRES_DB:-harvestbot}']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-harvester} -d ${POSTGRES_DB:-harvester}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -54,7 +54,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: harvest-redis
+    container_name: harvester-redis
     restart: unless-stopped
     # `appendonly` : les cooldowns longs et les files BullMQ survivent à un
     # redémarrage. `maxmemory-policy noeviction` : on ne veut PAS que Redis
@@ -82,12 +82,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: harvest-bot
+    container_name: harvester-bot
     restart: unless-stopped
     env_file: .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-harvest}:${POSTGRES_PASSWORD:-harvest}@db:5432/${POSTGRES_DB:-harvestbot}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-harvester}:${POSTGRES_PASSWORD:-harvester}@db:5432/${POSTGRES_DB:-harvester}
       REDIS_URL: redis://redis:6379
       HTTP_PORT: 3001
     depends_on:

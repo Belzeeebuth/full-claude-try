@@ -1,13 +1,13 @@
 # 01 — Cahier des charges
 
-> Document de référence fonctionnel de **HarvestBot**. Il décrit *ce que* le bot
+> Document de référence fonctionnel de **Harvester**. Il décrit *ce que* le bot
 > fait et *pourquoi*. Le *comment* est dans [02 — Architecture](./02-architecture.md).
 
 ---
 
 ## 1. Positionnement
 
-HarvestBot est un jeu de gestion de ferme persistant joué **entièrement dans
+Harvester est un jeu de gestion de ferme persistant joué **entièrement dans
 Discord**, via commandes slash et composants interactifs. Il ne remplace pas
 Stardew Valley : il occupe une niche différente, celle du **jeu d'attente**
 (*idle / incremental*) sociable, où chaque session dure deux à cinq minutes et où

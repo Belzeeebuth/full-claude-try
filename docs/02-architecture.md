@@ -92,7 +92,7 @@ connus d'adaptation de version entre Chart.js et le backend canvas.
 ## 2. Arborescence et rôle de chaque module
 
 ```
-harvestbot/
+harvester/
 ├── src/
 │   ├── index.ts                 Point d'entrée : env → config → DB → Redis → jobs → HTTP → Discord
 │   ├── shard.ts                 ShardingManager, pour > 2 500 serveurs

@@ -18,7 +18,7 @@ import { moduleLogger } from './utils/logger';
 const log = moduleLogger('boot');
 
 /**
- * Point d'entrée d'un process HarvestBot (un shard, ou le bot entier en
+ * Point d'entrée d'un process Harvester (un shard, ou le bot entier en
  * mono-process). Séquence de démarrage, dans l'ordre :
  *
  *   1. Charger et VALIDER la configuration de gameplay (échec = pas de démarrage).
@@ -37,7 +37,7 @@ const log = moduleLogger('boot');
 async function main(): Promise<void> {
   log.info(
     { env: env.NODE_ENV, node: process.version, shard: process.env.SHARDS ?? 'mono' },
-    'démarrage de HarvestBot',
+    'démarrage de Harvester',
   );
 
   // 1. Configuration de gameplay
@@ -78,7 +78,7 @@ async function main(): Promise<void> {
         guilds: ready.guilds.cache.size,
         commands: registry.commands.size,
       },
-      '✅ HarvestBot est en ligne',
+      '✅ Harvester est en ligne',
     );
   });
 

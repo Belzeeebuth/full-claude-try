@@ -3,7 +3,7 @@
     "id": "pass_spring_y1",
     "seasonKey": "spring_y1",
     "name": "Passe du Printemps — An 1",
-    "description": "Le premier passe saisonnier de HarvestBot. 30 paliers, entièrement gratuit ; la piste premium se débloque en votant pour le bot ou en boostant un serveur — jamais avec de l'argent réel.",
+    "description": "Le premier passe saisonnier de Harvester. 30 paliers, entièrement gratuit ; la piste premium se débloque en votant pour le bot ou en boostant un serveur — jamais avec de l'argent réel.",
     "startsAt": "2026-03-20T00:00:00.000Z",
     "endsAt": "2026-06-20T23:59:59.000Z",
     "maxTier": 30,

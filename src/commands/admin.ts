@@ -22,7 +22,7 @@ const admin: Command = {
   cooldown: { seconds: 0 },
   data: new SlashCommandBuilder()
     .setName('admin')
-    .setDescription('Commandes d\'administration de HarvestBot')
+    .setDescription('Commandes d\'administration de Harvester')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addSubcommand((sub) =>
       sub
@@ -260,7 +260,7 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: '📊 Tableau de bord HarvestBot',
+              title: '📊 Tableau de bord Harvester',
               color: COLORS.info,
               fields: [
                 {

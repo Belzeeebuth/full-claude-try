@@ -1,8 +1,8 @@
 {
-  "name": "harvestbot",
+  "name": "harvester",
   "version": "1.0.0",
   "private": true,
-  "description": "HarvestBot — bot Discord de jeu de ferme (économie, progression, coopératives, événements saisonniers)",
+  "description": "Harvester — bot Discord de jeu de ferme (économie, progression, coopératives, événements saisonniers)",
   "license": "MIT",
   "engines": {
     "node": ">=20.11.0"

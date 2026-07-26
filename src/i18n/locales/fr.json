@@ -22,7 +22,7 @@
     "not_your_button": "Ce bouton n'est pas le vôtre. Lancez la commande pour avoir le vôtre.",
     "action_in_progress": "Une action est déjà en cours, patientez une seconde.",
     "unknown_error": "Une erreur inattendue est survenue. L'incident a été enregistré.",
-    "maintenance": "🛠️ HarvestBot est en maintenance. {message}",
+    "maintenance": "🛠️ Harvester est en maintenance. {message}",
     "cooldown": "⏳ Patience ! Vous pourrez réutiliser cette commande {when}.",
     "rate_limited": "🚦 Vous allez trop vite. Réessayez dans {seconds} s.",
     "eco_banned": "🚫 Votre accès à l'économie est suspendu jusqu'à {when}. Raison : {reason}",
@@ -153,8 +153,8 @@
     "bonuses": "Bonus collectifs"
   },
   "help": {
-    "title": "🌾 Aide de HarvestBot",
-    "intro": "HarvestBot est un jeu de ferme : plantez, élevez, transformez, vendez, progressez.\nChoisissez une catégorie dans le menu ci-dessous.",
+    "title": "🌾 Aide de Harvester",
+    "intro": "Harvester est un jeu de ferme : plantez, élevez, transformez, vendez, progressez.\nChoisissez une catégorie dans le menu ci-dessous.",
     "select_placeholder": "Choisissez une catégorie d'aide"
   },
   "weather": {

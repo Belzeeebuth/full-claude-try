@@ -247,9 +247,9 @@ export function helpEmbed(category?: CommandCategory) {
   }
 
   return baseEmbed({
-    title: '🌾 Aide de HarvestBot',
+    title: '🌾 Aide de Harvester',
     description:
-      'HarvestBot est un jeu de ferme : plantez, élevez, transformez, vendez, progressez.\n' +
+      'Harvester est un jeu de ferme : plantez, élevez, transformez, vendez, progressez.\n' +
       'Choisissez une catégorie ci-dessous pour voir les commandes détaillées.',
     color: COLORS.primary,
     fields: [

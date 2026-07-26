@@ -331,7 +331,7 @@ const vote: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '🗳️ Votez pour HarvestBot',
+          title: '🗳️ Votez pour Harvester',
           description: [
             `Chaque vote vous rapporte **${info.rewardGems} 💎** et **${formatCoins(info.rewardCoins)}**.`,
             `Le week-end, les récompenses sont **×${info.weekendMultiplier}**.`,

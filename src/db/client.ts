@@ -26,7 +26,7 @@ function createPool(): Pool {
     // verrou pris par un autre process) au lieu de saturer le pool.
     statement_timeout: env.DATABASE_STATEMENT_TIMEOUT_MS,
     query_timeout: env.DATABASE_STATEMENT_TIMEOUT_MS,
-    application_name: 'harvestbot',
+    application_name: 'harvester',
     ...(env.DATABASE_SSL ? { ssl: { rejectUnauthorized: false } } : {}),
   });
 

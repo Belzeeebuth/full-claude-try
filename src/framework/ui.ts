@@ -33,7 +33,7 @@ export const COLORS = {
   xp: 0x8e7cff,
 } as const;
 
-export const FOOTER = 'HarvestBot 🌾 Val-Verdoyant';
+export const FOOTER = 'Harvester 🌾 Val-Verdoyant';
 
 export function baseEmbed(options: {
   title?: string;

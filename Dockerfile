@@ -1,5 +1,5 @@
 # =============================================================================
-#  HarvestBot — image de production
+#  Harvester — image de production
 #  Build multi-étapes : l'image finale ne contient ni sources TypeScript ni
 #  dépendances de développement (~180 Mo au lieu de ~650 Mo).
 # =============================================================================
@@ -50,9 +50,9 @@ COPY package.json ./
 COPY assets ./assets
 
 # Le process ne tourne jamais en root.
-RUN useradd --system --create-home --uid 10001 harvest \
-    && chown -R harvest:harvest /app
-USER harvest
+RUN useradd --system --create-home --uid 10001 harvester \
+    && chown -R harvester:harvester /app
+USER harvester
 
 EXPOSE 3001
 
