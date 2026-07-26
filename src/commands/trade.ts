@@ -192,7 +192,7 @@ export async function auctionListView(
   itemKey: string | undefined,
   page: number,
 ) {
-  const result = await tradeService.browse(context.player.id, { itemKey, page });
+  const result = await tradeService.browse(context.player.id, { itemKey, page }, context.locale);
 
   const embed = baseEmbed({
     title: '🔨 Auction house',

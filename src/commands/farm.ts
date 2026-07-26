@@ -135,7 +135,7 @@ const planter: Command = {
       await interaction.respond([]);
       return;
     }
-    const crops = await farmService.plantableCrops(context.playerId, 60, query);
+    const crops = await farmService.plantableCrops(context.playerId, 60, query, context.locale);
     await interaction.respond(
       crops.map((entry) => ({
         name: truncate(

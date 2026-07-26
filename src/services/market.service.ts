@@ -53,7 +53,11 @@ export interface MarketRow {
   nextUpdateAt: Date;
 }
 
-export async function getMarket(options: { category?: string } = {}): Promise<MarketRow[]> {
+export async function getMarket(
+  options: { category?: string } = {},
+  locale?: string,
+): Promise<MarketRow[]> {
+  const config = getConfig(locale);
   const world = await getWorldState();
   const rows = await economyRepo.listMarket({ category: options.category });
 
@@ -63,7 +67,9 @@ export async function getMarket(options: { category?: string } = {}): Promise<Ma
     const described = describeTrend(trend);
     return {
       itemKey: row.itemKey,
-      name: row.name,
+      // Libellé pris dans la configuration en mémoire : la colonne jointe est
+      // peuplée par le seed en français, quelle que soit la locale du joueur.
+      name: config.items.get(row.itemKey)?.name ?? row.name,
       emoji: row.emoji,
       category: row.category,
       rarity: row.rarity,
@@ -153,7 +159,7 @@ export async function sell(
     discordGuildId?: string;
   },
 ): Promise<SellResult> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
   const world = await getWorldState();
 
@@ -315,7 +321,8 @@ export interface ShopEntry {
   expiresAt: Date;
 }
 
-export async function getShop(now: Date = new Date()): Promise<ShopEntry[]> {
+export async function getShop(now: Date = new Date(), locale?: string): Promise<ShopEntry[]> {
+  const config = getConfig(locale);
   const rotationDate = toSqlDate(now);
   let rows = await economyRepo.listShopStock(rotationDate);
 
@@ -330,7 +337,7 @@ export async function getShop(now: Date = new Date()): Promise<ShopEntry[]> {
   return rows.map((row) => ({
     id: row.id,
     itemKey: row.itemKey,
-    name: row.name,
+    name: config.items.get(row.itemKey)?.name ?? row.name,
     emoji: row.emoji,
     category: row.category,
     rarity: row.rarity,
@@ -341,7 +348,7 @@ export async function getShop(now: Date = new Date()): Promise<ShopEntry[]> {
     stockTotal: row.stockTotal,
     requiredLevel: row.requiredLevel,
     featured: row.featured,
-    description: row.description,
+    description: config.items.get(row.itemKey)?.description ?? row.description,
     expiresAt: row.expiresAt,
   }));
 }
@@ -479,7 +486,7 @@ export async function buy(
   player: PlayerContext,
   input: { itemKey: string; quantity: number; discordGuildId?: string },
 ): Promise<BuyResult> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const item = inventoryService.requireItem(input.itemKey);
   const quantity = Math.max(1, Math.floor(input.quantity));
   const rotationDate = toSqlDate(new Date());

@@ -112,8 +112,8 @@ async function resolveWeather(day: string, season: SeasonState, now: Date): Prom
 }
 
 /** Événements dont la fenêtre couvre l'instant donné. */
-export function getActiveEvents(now: Date = new Date()): EventConfig[] {
-  return getConfig().eventList.filter((event) => {
+export function getActiveEvents(now: Date = new Date(), locale?: string): EventConfig[] {
+  return getConfig(locale).eventList.filter((event) => {
     if (!event.enabled) return false;
     const starts = event.startsAt ? new Date(event.startsAt).getTime() : undefined;
     const ends = event.endsAt ? new Date(event.endsAt).getTime() : undefined;

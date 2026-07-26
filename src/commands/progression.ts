@@ -131,7 +131,7 @@ const succes: Command = {
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     const category = interaction.options.getString('category') ?? undefined;
-    const achievements = await progressionService.listAchievements(context.player.id, category);
+    const achievements = await progressionService.listAchievements(context.player.id, category, context.locale);
 
     const unlocked = achievements.filter((entry) => entry.unlocked);
     const claimable = unlocked.filter((entry) => !entry.claimed);
@@ -208,7 +208,7 @@ const passe: Command = {
         return `**Tier ${tier.tier}** — ${[
           free.coins ? `${formatCompact(free.coins)} 🪙` : '',
           free.gems ? `${free.gems} 💎` : '',
-          free.items ? describeItems(free.items) : '',
+          free.items ? describeItems(free.items, context.locale) : '',
         ]
           .filter(Boolean)
           .join(' • ')}`;
@@ -281,7 +281,7 @@ const daily: Command = {
           `📅 Daily reward — day ${result.streak}`,
           [
             `${formatCoins(result.coins)} • ${formatNumber(result.xp)} ✨${result.gems > 0 ? ` • ${result.gems} 💎` : ''}`,
-            result.items.length > 0 ? `🎁 Bonus : ${describeItems(result.items)}` : '',
+            result.items.length > 0 ? `🎁 Bonus: ${describeItems(result.items, context.locale)}` : '',
             '',
             result.streakBroken
               ? '💔 Your streak was reset. Come back every day to grow it!'

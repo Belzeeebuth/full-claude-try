@@ -88,9 +88,9 @@ const acheter: Command = {
     });
   },
 
-  async autocomplete(interaction): Promise<void> {
+  async autocomplete(interaction, context): Promise<void> {
     const query = interaction.options.getFocused().toString().toLowerCase();
-    const entries = await marketService.getShop();
+    const entries = await marketService.getShop(new Date(), context.locale);
     await interaction.respond(
       entries
         .filter((entry) => !query || entry.name.toLowerCase().includes(query))
@@ -226,9 +226,9 @@ const marcheHistorique: Command = {
     await sendMarketChart(interaction, context, interaction.options.getString('item', true));
   },
 
-  async autocomplete(interaction): Promise<void> {
+  async autocomplete(interaction, context): Promise<void> {
     const query = interaction.options.getFocused().toString().toLowerCase();
-    const rows = await marketService.getMarket({});
+    const rows = await marketService.getMarket({}, context.locale);
     await interaction.respond(
       rows
         .filter((row) => !query || row.name.toLowerCase().includes(query))
@@ -248,7 +248,7 @@ export async function sendMarketChart(
   itemKey: string,
 ): Promise<void> {
   const item = inventoryService.requireItem(itemKey);
-  const rows = await marketService.getMarket({});
+  const rows = await marketService.getMarket({}, context.locale);
   const row = rows.find((entry) => entry.itemKey === itemKey);
   if (!row) throw gameError('not_found', `${item.name} is not tracked by the market.`);
 
@@ -339,7 +339,7 @@ const objet: Command = {
 
   async execute(interaction, context): Promise<void> {
     const item = inventoryService.requireItem(interaction.options.getString('name', true));
-    const market = await marketService.getMarket({});
+    const market = await marketService.getMarket({}, context.locale);
     const price = market.find((row) => row.itemKey === item.key);
     const owned = context.player.farmId
       ? await inventoryService.count(context.player.id, item.key)

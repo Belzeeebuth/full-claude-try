@@ -49,7 +49,9 @@ export interface ListingView {
 export async function browse(
   viewerId: string,
   options: { itemKey?: string; page?: number; pageSize?: number } = {},
+  locale?: string,
 ): Promise<{ listings: ListingView[]; total: number; page: number; totalPages: number }> {
+  const config = getConfig(locale);
   const balance = getBalance();
   const pageSize = options.pageSize ?? 6;
   const page = Math.max(1, options.page ?? 1);
@@ -67,7 +69,7 @@ export async function browse(
     listings: rows.map((row) => ({
       id: row.listing.id,
       itemKey: row.listing.itemKey,
-      itemName: row.itemName,
+      itemName: config.items.get(row.listing.itemKey)?.name ?? row.itemName,
       itemEmoji: row.itemEmoji,
       quality: row.listing.quality as Quality,
       mutation: row.listing.mutation as Mutation,
@@ -190,7 +192,7 @@ export async function buyout(
   player: PlayerContext,
   listingId: string,
 ): Promise<{ itemName: string; emoji: string; quantity: number; price: number; commission: number; sellerId: string }> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
 
   return withTransaction(async (tx) => {
@@ -366,7 +368,7 @@ export async function cancelListing(
   player: PlayerContext,
   listingId: string,
 ): Promise<{ itemName: string; quantity: number }> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
 
   return withTransaction(async (tx) => {
     const listing = await tradeRepo.cancelListing(listingId, player.id, tx);
@@ -551,7 +553,8 @@ export async function openTrade(
   return getTrade(trade.id);
 }
 
-export async function getTrade(tradeId: string): Promise<TradeView> {
+export async function getTrade(tradeId: string, locale?: string): Promise<TradeView> {
+  const config = getConfig(locale);
   const trade = await tradeRepo.findTrade(tradeId);
   if (!trade) throw gameError('not_found', 'Trade not found.');
   const items = await tradeRepo.listTradeItems(tradeId);
@@ -570,7 +573,7 @@ export async function getTrade(tradeId: string): Promise<TradeView> {
     items: items.map((entry) => ({
       userId: entry.item.userId,
       itemKey: entry.item.itemKey,
-      name: entry.name,
+      name: config.items.get(entry.item.itemKey)?.name ?? entry.name,
       emoji: entry.emoji,
       quantity: entry.item.quantity,
       quality: entry.item.quality,

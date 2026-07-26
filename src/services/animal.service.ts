@@ -86,10 +86,10 @@ function toAnimalState(row: animalRepo.OwnedAnimalRow): AnimalState {
 }
 
 export async function getHerd(
-  player: Pick<PlayerContext, 'id' | 'farmId'>,
+  player: Pick<PlayerContext, 'id' | 'farmId' | 'locale'>,
   now: Date = new Date(),
 ): Promise<HerdView> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
   const [rows, buildings] = await Promise.all([
     animalRepo.listAnimals(player.farmId),
@@ -113,7 +113,8 @@ export async function getHerd(
     animals.push({
       id: row.animal.id,
       animalKey: row.animalKey,
-      name: row.name,
+      // `row.name` vient de la jointure SQL : le seed la peuple en français.
+      name: animalConfig.name,
       nickname: row.animal.nickname,
       emoji: row.emoji,
       status,
@@ -137,7 +138,7 @@ export async function getHerd(
     .filter((entry) => entry.category === 'livestock')
     .map((entry) => ({
       buildingKey: entry.buildingKey,
-      name: entry.name,
+      name: config.buildings.get(entry.buildingKey)?.name ?? entry.name,
       emoji: entry.emoji,
       used: animals.filter((animal) => animal.buildingKey === entry.buildingKey).length,
       capacity: entry.building.capacity,
@@ -155,7 +156,7 @@ export async function buyAnimal(
   player: PlayerContext,
   input: { animalKey: string; quantity?: number; discordGuildId?: string },
 ): Promise<{ animalKey: string; name: string; emoji: string; quantity: number; total: number; currency: 'coins' | 'gems' }> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const animalConfig = config.animals.get(input.animalKey);
   if (!animalConfig || !animalConfig.enabled) {
     throw gameError('animal_not_found', `Unknown species: \`${input.animalKey}\`.`);
@@ -271,7 +272,7 @@ export async function feed(
   player: PlayerContext,
   input: { animalId?: string; all?: boolean },
 ): Promise<{ fed: number; consumed: Array<{ itemKey: string; quantity: number }>; tracking: TrackResult }> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
   const now = new Date();
   const modifiers = await getFarmModifiers(player, { now });
@@ -361,7 +362,7 @@ export async function collect(
   player: PlayerContext,
   input: { animalId?: string; all?: boolean },
 ): Promise<CollectResult> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
   const now = new Date();
   const modifiers = await getFarmModifiers(player, { now });
@@ -445,7 +446,7 @@ export async function collect(
 
       lines.push({
         animalKey: row.animalKey,
-        name: row.animal.nickname ?? row.name,
+        name: row.animal.nickname ?? animalConfig.name,
         itemKey: animalConfig.productItemKey,
         itemName: product?.name ?? animalConfig.productItemKey,
         emoji: product?.emoji ?? '📦',
@@ -488,7 +489,7 @@ export async function pet(
   player: PlayerContext,
   animalId: string,
 ): Promise<{ name: string; emoji: string; happiness: number; gain: number; tracking: TrackResult }> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
   const now = new Date();
 
@@ -543,7 +544,7 @@ export async function heal(
   player: PlayerContext,
   animalId: string,
 ): Promise<{ name: string; emoji: string; cost: number }> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
   const now = new Date();
 
@@ -587,7 +588,7 @@ export async function sellAnimal(
   player: PlayerContext,
   animalId: string,
 ): Promise<{ name: string; emoji: string; price: number }> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
   const now = new Date();
 
@@ -617,7 +618,7 @@ export async function breed(
   player: PlayerContext,
   input: { animalAId: string; animalBId: string },
 ): Promise<{ success: boolean; reason?: string; childId?: string; qualityMultiplier?: number; generation?: number; cost: number }> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
   const now = new Date();
 
@@ -717,9 +718,9 @@ export async function breed(
 }
 
 /** Animaux achetables par un joueur, pour l'autocomplétion. */
-export function purchasableAnimals(level: number, query: string): AnimalConfig[] {
+export function purchasableAnimals(level: number, query: string, locale?: string): AnimalConfig[] {
   const needle = query.trim().toLowerCase();
-  return getConfig()
+  return getConfig(locale)
     .animalList.filter(
       (animal) => animal.enabled && !animal.eventOnly && animal.requiredLevel <= level,
     )

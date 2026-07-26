@@ -138,7 +138,7 @@ const farmButtons: ButtonHandler = {
 
       case 'plant_menu': {
         // Menu de sélection des graines disponibles.
-        const seeds = await farmService.plantableCrops(context.player.id, context.player.level, '');
+        const seeds = await farmService.plantableCrops(context.player.id, context.player.level, '', context.locale);
         if (seeds.length === 0) {
           await replyEphemeral(interaction, {
             embeds: [
@@ -401,7 +401,7 @@ const achievementButtons: ButtonHandler = {
 
   async execute(interaction: ButtonInteraction, _parsed, context): Promise<void> {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-    const achievements = await progressionService.listAchievements(context.player.id);
+    const achievements = await progressionService.listAchievements(context.player.id, undefined, context.locale);
     const claimable = achievements.filter((entry) => entry.unlocked && !entry.claimed);
 
     let coins = 0;

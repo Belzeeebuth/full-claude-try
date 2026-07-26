@@ -83,11 +83,11 @@ export interface FarmView {
 
 /** Vue complète de la ferme : une requête pour les parcelles, tout est dérivé. */
 export async function getFarmView(
-  player: Pick<PlayerContext, 'id' | 'farmId' | 'prestige' | 'coopId'>,
+  player: Pick<PlayerContext, 'id' | 'farmId' | 'prestige' | 'coopId' | 'locale'>,
   options: { coopLevel?: number; now?: Date } = {},
 ): Promise<FarmView> {
   const now = options.now ?? new Date();
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
 
   const [rows, farm, world, modifiers] = await Promise.all([
@@ -235,7 +235,7 @@ export async function plant(
   player: PlayerContext,
   input: { cropKey: string; slot?: number; quantity?: number; coopLevel?: number },
 ): Promise<PlantResult> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
   const crop = config.crops.get(input.cropKey);
   if (!crop || !crop.enabled) {
@@ -477,7 +477,7 @@ export async function harvest(
   player: PlayerContext,
   input: { slot?: number; all?: boolean; coopLevel?: number },
 ): Promise<HarvestSummary> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const balance = getBalance();
   const now = new Date();
   const world = await getWorldState(now);
@@ -1032,8 +1032,9 @@ export async function plantableCrops(
   userId: string,
   level: number,
   query: string,
+  locale?: string,
 ): Promise<Array<{ crop: CropConfig; owned: number }>> {
-  const config = getConfig();
+  const config = getConfig(locale);
   const seeds = await inventoryRepo.listSeeds(userId, getDb());
   const ownedBySeed = new Map(seeds.map((seed) => [seed.itemKey, seed.quantity]));
   const needle = query.trim().toLowerCase();

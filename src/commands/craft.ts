@@ -50,7 +50,7 @@ const crafter: Command = {
     const level = context.playerId
       ? ((await (await import('../repositories/player.repo')).findUserById(context.playerId))?.level ?? 1)
       : 1;
-    const recipes = craftService.craftableRecipes(level, query);
+    const recipes = craftService.craftableRecipes(level, query, context.locale);
     await interaction.respond(
       recipes.map((recipe) => ({
         name: truncate(

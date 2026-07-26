@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { balance as getBalance, getConfig, harvestKeyOf, seedKeyOf } from '../src/config';
+import { balance as getBalance, getConfig, harvestKeyOf, localizeRow, seedKeyOf } from '../src/config';
 import { cumulativePlotCost } from '../src/game/grid';
 import { xpTable } from '../src/game/xp';
 import {
@@ -489,6 +489,57 @@ describe('contenu bilingue', () => {
     ['achievements', config.achievementList as unknown as Array<Record<string, unknown>>, 'name'],
     ['events', config.eventList as unknown as Array<Record<string, unknown>>, 'name'],
   ];
+
+
+  /**
+   * Les dépôts joignent les tables `*_config` pour trier, et en profitent pour
+   * rapatrier `name`. Or ces colonnes sont peuplées par le seed depuis la
+   * version FRANÇAISE : sans `localizeRow`, une ligne lue en base affiche
+   * « Blé » à un joueur anglophone en contournant `getConfig(locale)`.
+   */
+  describe('localizeRow', () => {
+    it('traduit un libellé venant d\'une jointure SQL', () => {
+      const row = { itemKey: 'wheat', name: 'Blé', quantity: 3 };
+      expect(localizeRow(row, 'en').name).toBe('Wheat');
+      expect(localizeRow(row, 'en').quantity).toBe(3);
+    });
+
+    it('laisse le français intact hors locale anglaise', () => {
+      const row = { itemKey: 'wheat', name: 'Blé' };
+      expect(localizeRow(row, 'fr').name).toBe('Blé');
+    });
+
+    /**
+     * Une ligne de cheptel porte `animalKey` ET `buildingKey` : son `name` est
+     * celui de l'ANIMAL. Une boucle naïve sur les clés écraserait « Hen » par
+     * le nom du bâtiment, ce qui afficherait le poulailler à la place de la poule.
+     */
+    it('résout `name` sur l\'entité principale, pas sur la clé secondaire', () => {
+      const animal = localized.animalList[0];
+      if (!animal) throw new Error('configuration sans animal');
+      const row = {
+        animalKey: animal.key,
+        buildingKey: animal.buildingKey,
+        name: 'Poule',
+      };
+      expect(localizeRow(row, 'en').name).toBe(animal.name);
+      expect(localizeRow(row, 'en').name).not.toBe(
+        localized.buildings.get(animal.buildingKey)?.name,
+      );
+    });
+
+    it('rattache `buildingName` au bâtiment même si la ligne porte un itemKey', () => {
+      const building = localized.buildingList[0];
+      if (!building) throw new Error('configuration sans bâtiment');
+      const row = { itemKey: 'wheat', buildingKey: building.key, buildingName: 'Moulin' };
+      expect(localizeRow(row, 'en').buildingName).toBe(building.name);
+    });
+
+    it('ne touche pas une ligne sans clé de configuration', () => {
+      const row = { name: 'Ma coopérative' };
+      expect(localizeRow(row, 'en').name).toBe('Ma coopérative');
+    });
+  });
 
   it('traduit toutes les entrées de contenu', () => {
     const missing: string[] = [];

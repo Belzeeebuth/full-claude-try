@@ -36,10 +36,10 @@ export interface RecipeView {
 }
 
 export async function listRecipes(
-  player: Pick<PlayerContext, 'id' | 'farmId' | 'level'>,
+  player: Pick<PlayerContext, 'id' | 'farmId' | 'level' | 'locale'>,
   options: { category?: string } = {},
 ): Promise<RecipeView[]> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const [buildings, inventory] = await Promise.all([
     animalRepo.listBuildings(player.farmId),
     (await import('../repositories/inventory.repo')).listInventory(player.id, {}),
@@ -116,7 +116,7 @@ export async function craft(
   player: PlayerContext,
   input: { recipeKey: string; quantity?: number },
 ): Promise<CraftResult> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const recipe = config.recipes.get(input.recipeKey);
   if (!recipe || !recipe.enabled) {
     throw gameError('recipe_unknown', `Unknown recipe: \`${input.recipeKey}\`.`);
@@ -215,8 +215,8 @@ export interface ProductionLine {
   ready: boolean;
 }
 
-export async function listProduction(player: Pick<PlayerContext, 'id'>): Promise<ProductionLine[]> {
-  const config = getConfig();
+export async function listProduction(player: Pick<PlayerContext, 'id' | 'locale'>): Promise<ProductionLine[]> {
+  const config = getConfig(player.locale);
   const now = new Date();
   const jobs = await animalRepo.listCraftingQueue(player.id);
 
@@ -232,7 +232,7 @@ export async function listProduction(player: Pick<PlayerContext, 'id'>): Promise
       outputItemKey: recipe?.outputItemKey ?? '',
       outputName: output?.name ?? '',
       outputQuantity: (recipe?.outputQuantity ?? 1) * entry.job.quantity,
-      buildingName: entry.buildingName,
+      buildingName: config.buildings.get(entry.buildingKey)?.name ?? entry.buildingName,
       buildingEmoji: entry.buildingEmoji,
       slotIndex: entry.job.slotIndex,
       finishAt: entry.job.finishAt,
@@ -252,7 +252,7 @@ export async function collectProduction(
   player: PlayerContext,
   input: { jobId?: string; all?: boolean },
 ): Promise<CollectCraftResult> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const now = new Date();
   const world = await getWorldState(now);
 
@@ -396,9 +396,9 @@ export interface BuildingView {
 }
 
 export async function listBuildings(
-  player: Pick<PlayerContext, 'id' | 'farmId' | 'level'>,
+  player: Pick<PlayerContext, 'id' | 'farmId' | 'level' | 'locale'>,
 ): Promise<BuildingView[]> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const [owned, inventory] = await Promise.all([
     animalRepo.listBuildings(player.farmId),
     (await import('../repositories/inventory.repo')).listInventory(player.id, {}),
@@ -460,7 +460,7 @@ export async function buildOrUpgrade(
   player: PlayerContext,
   buildingKey: string,
 ): Promise<{ name: string; emoji: string; tier: number; costCoins: number; capacity: number; slots: number; built: boolean }> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const building = config.buildings.get(buildingKey);
   if (!building || !building.enabled) {
     throw gameError('not_found', `Unknown building: \`${buildingKey}\`.`);
@@ -555,9 +555,9 @@ export async function buildOrUpgrade(
 }
 
 /** Recettes disponibles pour l'autocomplétion. */
-export function craftableRecipes(level: number, query: string): RecipeConfig[] {
+export function craftableRecipes(level: number, query: string, locale?: string): RecipeConfig[] {
   const needle = query.trim().toLowerCase();
-  return getConfig()
+  return getConfig(locale)
     .recipeList.filter((recipe) => recipe.enabled && recipe.requiredLevel <= level)
     .filter((recipe) => !needle || recipe.name.toLowerCase().includes(needle) || recipe.key.includes(needle))
     .slice(0, 25);

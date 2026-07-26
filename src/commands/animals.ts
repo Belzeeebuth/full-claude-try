@@ -97,7 +97,7 @@ const acheterAnimal: Command = {
     const level = context.playerId
       ? ((await (await import('../repositories/player.repo')).findUserById(context.playerId))?.level ?? 1)
       : 1;
-    const animals = animalService.purchasableAnimals(level, query);
+    const animals = animalService.purchasableAnimals(level, query, context.locale);
     await interaction.respond(
       animals.map((animal) => ({
         name: truncate(

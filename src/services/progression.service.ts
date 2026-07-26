@@ -1,4 +1,4 @@
-import { balance as getBalance, getActiveSeasonPass, getConfig, type QuestConfig } from '../config';
+import { balance as getBalance, getActiveSeasonPass, getConfig, type QuestConfig, localizeRows} from '../config';
 import { lockUserRow, withTransaction, type Executor } from '../db/client';
 import { dailyRng, liveRng } from '../game/rng';
 import { gameError } from '../utils/errors';
@@ -618,15 +618,17 @@ export async function claimDaily(
 // SUCCÈS
 // ---------------------------------------------------------------------------
 
-export async function listAchievements(userId: string, category?: string) {
-  return progressionRepo.listAchievements(userId, category);
+export async function listAchievements(userId: string, category?: string, locale?: string) {
+  // Les libellés joints depuis `achievements_config` sont ceux du seed, donc
+  // français : on les repasse par la configuration localisée.
+  return localizeRows(await progressionRepo.listAchievements(userId, category), locale ?? '');
 }
 
 export async function claimAchievement(
   player: PlayerContext,
   achievementKey: string,
 ): Promise<{ name: string; coins: number; gems: number; title: string | null; items: Array<{ itemKey: string; quantity: number }> }> {
-  const config = getConfig();
+  const config = getConfig(player.locale);
   const achievement = config.achievements.get(achievementKey);
   if (!achievement) throw gameError('not_found', 'Unknown achievement.');
 

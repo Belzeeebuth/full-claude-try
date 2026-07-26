@@ -9,6 +9,7 @@ import {
 } from 'discord.js';
 import { balance as getBalance, getConfig } from '../config';
 import { env } from '../config/env';
+import { normalizeLocale } from '../i18n';
 import { checkAndSet, checkGlobalRate, cooldownSecondsFor } from '../framework/cooldown';
 import {
   buildContext,
@@ -274,11 +275,16 @@ async function handleAutocomplete(interaction: AutocompleteInteraction): Promise
 
   try {
     const user = await playerRepo.findUserByDiscordId(interaction.user.id);
+    // L'autocomplétion propose des noms de contenu : elle doit suivre la même
+    // locale que le reste, sinon un joueur anglophone cherche « Wheat » dans
+    // une liste restée française.
+    const locale = normalizeLocale(user?.locale ?? interaction.locale);
     await command.autocomplete(interaction, {
       playerId: user?.id ?? null,
       discordId: interaction.user.id,
-      config: getConfig(),
+      config: getConfig(locale),
       balance: getBalance(),
+      locale,
     });
   } catch (error) {
     log.debug({ err: error, command: interaction.commandName }, 'autocomplétion en échec');

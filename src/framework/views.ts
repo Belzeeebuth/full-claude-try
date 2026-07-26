@@ -268,10 +268,11 @@ export async function inventoryView(
   options: { category?: string; page?: number } = {},
 ): Promise<View> {
   const player = context.player;
-  const page = await inventoryService.getPage(player.id, {
-    category: options.category,
-    page: options.page,
-  });
+  const page = await inventoryService.getPage(
+    player.id,
+    { category: options.category, page: options.page },
+    context.locale,
+  );
 
   const lines = page.entries.map((entry) => {
     const icons = `${qualityIcon(entry.quality)}${mutationIcon(entry.mutation)}`;
@@ -351,7 +352,7 @@ export async function inventoryView(
 
 export async function shopView(context: CommandContext, category?: string): Promise<View> {
   const player = context.player;
-  const entries = await marketService.getShop(context.now);
+  const entries = await marketService.getShop(context.now, context.locale);
   const filtered = category ? entries.filter((entry) => entry.category === category) : entries;
 
   const grouped = new Map<string, typeof filtered>();
@@ -454,7 +455,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
 // ---------------------------------------------------------------------------
 
 export async function marketView(context: CommandContext, category?: string): Promise<View> {
-  const rows = await marketService.getMarket({ category });
+  const rows = await marketService.getMarket({ category }, context.locale);
   const sorted = [...rows].sort((a, b) => b.trend - a.trend);
   const top = sorted.slice(0, 8);
   const bottom = sorted.slice(-8).reverse();

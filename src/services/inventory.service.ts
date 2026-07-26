@@ -1,4 +1,4 @@
-import { getConfig, type ItemConfig } from '../config';
+import { getConfig, type ItemConfig, localizeRows} from '../config';
 import { getDb, type Executor } from '../db/client';
 import { gameError } from '../utils/errors';
 import * as inventoryRepo from '../repositories/inventory.repo';
@@ -24,8 +24,8 @@ export interface InventoryPage {
 
 const PAGE_SIZE = 10;
 
-export function requireItem(itemKey: string): ItemConfig {
-  const item = getConfig().items.get(itemKey);
+export function requireItem(itemKey: string, locale?: string): ItemConfig {
+  const item = getConfig(locale).items.get(itemKey);
   if (!item || !item.enabled) {
     throw gameError('item_unknown', `Unknown item: \`${itemKey}\`.`);
   }
@@ -35,11 +35,16 @@ export function requireItem(itemKey: string): ItemConfig {
 export async function getPage(
   userId: string,
   options: { category?: string; page?: number } = {},
+  locale?: string,
 ): Promise<InventoryPage> {
-  const [entries, capacityInfo] = await Promise.all([
+  const [rawEntries, capacityInfo] = await Promise.all([
     inventoryRepo.listInventory(userId, { category: options.category }),
     getCapacity(userId),
   ]);
+
+  // `listInventory` joint `items_config`, peuplée en français par le seed :
+  // le libellé doit repasser par la configuration localisée.
+  const entries = localizeRows(rawEntries, locale ?? '');
 
   const page = Math.max(1, options.page ?? 1);
   const totalPages = Math.max(1, Math.ceil(entries.length / PAGE_SIZE));
@@ -199,8 +204,9 @@ export async function bestTool(
 /** Résumé lisible d'une liste d'objets, pour les messages de récompense. */
 export function describeItems(
   entries: Array<{ itemKey: string; quantity: number; quality?: string }>,
+  locale?: string,
 ): string {
-  const config = getConfig();
+  const config = getConfig(locale);
   return entries
     .map((entry) => {
       const item = config.items.get(entry.itemKey);

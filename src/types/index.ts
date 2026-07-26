@@ -90,6 +90,7 @@ export interface AutocompleteContext {
   discordId: string;
   config: GameConfig;
   balance: Balance;
+  locale: string;
 }
 
 export type CommandCategory =

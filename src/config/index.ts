@@ -580,6 +580,92 @@ export function getBuildingTier(buildingKey: string, tier: number): BuildingTier
   return getConfig().buildings.get(buildingKey)?.tiers.find((entry) => entry.tier === tier);
 }
 
+// ---------------------------------------------------------------------------
+// Localisation des lignes venant de la base
+// ---------------------------------------------------------------------------
+
+/**
+ * Réécrit les libellés d'une ligne jointe à une table `*_config`.
+ *
+ * Les dépôts joignent `items_config`, `animals_config`… pour trier et filtrer,
+ * et en profitent pour rapatrier `name` et `description`. Or ces colonnes sont
+ * peuplées par le seed depuis la version FRANÇAISE de la configuration : une
+ * ligne d'inventaire lue en base affiche « Blé » même à un joueur anglophone,
+ * en contournant complètement `getConfig(locale)`.
+ *
+ * Plutôt que d'ajouter des colonnes traduites en base — qu'il faudrait
+ * resemer à chaque correction de traduction — on réécrit le libellé depuis la
+ * configuration en mémoire, qui est déjà la source de vérité et déjà localisée.
+ * La clé est toujours présente dans la ligne : c'est elle qui a servi à la
+ * jointure.
+ */
+export type LocalizableRow = Record<string, unknown>;
+
+/**
+ * Clés de configuration, de la plus spécifique à la moins spécifique.
+ *
+ * L'ordre compte : une ligne de cheptel porte `animalKey` ET `buildingKey`
+ * (le bâtiment qui l'héberge), mais son `name` est celui de l'ANIMAL. Résoudre
+ * `name` avec la première clé présente dans cet ordre donne le bon libellé,
+ * là où une simple boucle écraserait « Hen » par « Coop ».
+ */
+const PRIMARY_KEYS = [
+  ['itemKey', 'items'],
+  ['animalKey', 'animals'],
+  ['achievementKey', 'achievements'],
+  ['cropKey', 'crops'],
+  ['recipeKey', 'recipes'],
+  ['buildingKey', 'buildings'],
+] as const;
+
+/**
+ * Libellés explicitement rattachés à une clé : `buildingName` désigne toujours
+ * le bâtiment, même si la ligne porte aussi un `itemKey`.
+ */
+const QUALIFIED_LABELS = [
+  ['itemName', 'itemKey', 'items'],
+  ['buildingName', 'buildingKey', 'buildings'],
+] as const;
+
+/** Libellés génériques : ils décrivent l'entité principale de la ligne. */
+const GENERIC_LABELS = ['name', 'description'] as const;
+
+export function localizeRow<T extends object>(row: T, locale: string): T {
+  if (!locale.startsWith('en')) return row;
+  const config = getConfig(locale);
+  const source = row as LocalizableRow;
+  const out = { ...source } as LocalizableRow;
+  let changed = false;
+
+  const assign = (field: string, value: unknown): void => {
+    if (typeof out[field] !== 'string') return;
+    if (typeof value !== 'string' || value.length === 0) return;
+    out[field] = value;
+    changed = true;
+  };
+
+  for (const [label, keyField, indexName] of QUALIFIED_LABELS) {
+    const key = source[keyField];
+    if (typeof key !== 'string') continue;
+    const entry = config[indexName].get(key) as LocalizableRow | undefined;
+    if (entry) assign(label, entry.name);
+  }
+
+  const primary = PRIMARY_KEYS.find(([keyField]) => typeof source[keyField] === 'string');
+  if (primary) {
+    const [keyField, indexName] = primary;
+    const entry = config[indexName].get(source[keyField] as string) as LocalizableRow | undefined;
+    if (entry) for (const label of GENERIC_LABELS) assign(label, entry[label]);
+  }
+
+  return changed ? (out as T) : row;
+}
+
+export function localizeRows<T extends object>(rows: T[], locale: string): T[] {
+  if (!locale.startsWith('en')) return rows;
+  return rows.map((row) => localizeRow(row, locale));
+}
+
 /** Passe saisonnier actif à l'instant donné, s'il y en a un. */
 export function getActiveSeasonPass(now: Date = new Date()): SeasonPassConfig | undefined {
   return getConfig().seasonPasses.find(
