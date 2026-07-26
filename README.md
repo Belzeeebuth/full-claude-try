@@ -509,7 +509,7 @@ src/
 ├── repositories/  SQL uniquement. Ne connaît aucune règle de jeu.
 ├── game/          Moteur PUR : aucune E/S, entièrement testable
 ├── render/        Génération d'images canvas
-├── jobs/          14 tâches planifiées
+├── jobs/          15 tâches planifiées
 └── framework/     Registre, pipeline d'interaction, vues partagées, cooldowns
 ```
 

@@ -133,7 +133,7 @@ harvester/
 │   │   └── cooldown.ts          Cooldowns Redis (`SET NX PX`)
 │   │
 │   ├── render/                  canvas · sprites · farm · profile · chart · leaderboard · index
-│   ├── jobs/                    definitions (14 tâches cron) · scheduler · notifications
+│   ├── jobs/                    definitions (15 tâches cron) · scheduler · notifications
 │   ├── http/health.ts           /health et /metrics
 │   ├── i18n/                    fr.json (défaut) · en.json
 │   ├── utils/                   custom-id · lock · errors · format · time · logger · uuid
@@ -297,7 +297,7 @@ rafraîchir sans changement réutilise l'image, la moindre évolution invalide l
 
 ## 6. Planification
 
-### 6.1 Les 14 tâches
+### 6.1 Les 15 tâches
 
 | Tâche | Fréquence | Rôle |
 |---|---|---|

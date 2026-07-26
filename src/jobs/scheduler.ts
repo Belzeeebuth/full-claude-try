@@ -27,7 +27,19 @@ const log = moduleLogger('scheduler');
  * affiche la dernière exécution, sa durée et son éventuelle erreur.
  */
 
-const QUEUE_NAME = 'harvester:jobs';
+/**
+ * Nom de file BullMQ — SANS deux-points.
+ *
+ * BullMQ construit ses clés Redis en concaténant `<prefix>:<queue>:<suffixe>` ;
+ * un `:` dans le nom casserait cette structure, et la bibliothèque le refuse
+ * explicitement depuis la v5 (« Queue name cannot contain : »). Le
+ * cloisonnement par instance passe donc par l'option `prefix`, prévue pour ça,
+ * et non par un nom composé.
+ */
+const QUEUE_NAME = 'jobs';
+
+/** Préfixe de clés, aligné sur celui du reste de l'application. */
+const QUEUE_PREFIX = env.REDIS_PREFIX;
 
 let queue: Queue | undefined;
 let worker: Worker | undefined;
@@ -62,7 +74,7 @@ export async function startScheduler(client: Client): Promise<void> {
 
 async function startWithBullMq(): Promise<void> {
   const connection = getQueueConnection();
-  queue = new Queue(QUEUE_NAME, { connection });
+  queue = new Queue(QUEUE_NAME, { connection, prefix: QUEUE_PREFIX });
 
   // On repart d'une base propre : si un cron a changé dans le code, l'ancien
   // job répétable resterait sinon programmé indéfiniment.
@@ -93,7 +105,7 @@ async function startWithBullMq(): Promise<void> {
       if (!definition) throw new Error(`job inconnu : ${job.data.key}`);
       return runJob(definition);
     },
-    { connection, concurrency: 2 },
+    { connection, prefix: QUEUE_PREFIX, concurrency: 2 },
   );
 
   worker.on('failed', (job, error) => {
