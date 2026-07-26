@@ -28,9 +28,9 @@ const start: Command = {
       await interaction.reply({
         embeds: [
           baseEmbed({
-            title: '🌾 Vous avez déjà une ferme !',
+            title: '🌾 You already have a farm!',
             description:
-              'Utilisez `/farm` pour la consulter, `/quests` pour vos objectifs du jour, ou `/help` si vous êtes perdu.',
+              'Use `/farm` to check on it, `/quests` for today\'s goals, or `/help` if you are lost.',
             color: COLORS.info,
           }),
         ],
@@ -40,7 +40,7 @@ const start: Command = {
               namespace: 'farm',
               action: 'refresh',
               ownerId: interaction.user.id,
-              label: 'Voir ma ferme',
+              label: 'View my farm',
               emoji: '🌾',
               style: ButtonStyle.Success,
             }),
@@ -48,7 +48,7 @@ const start: Command = {
               namespace: 'quest',
               action: 'open',
               ownerId: interaction.user.id,
-              label: 'Mes quêtes',
+              label: 'My quests',
               emoji: '📋',
             }),
           ),
@@ -61,30 +61,30 @@ const start: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '🌾 Bienvenue à Val-Verdoyant !',
+          title: '🌾 Welcome to Greenvale!',
           description: [
-            `Le maire vous confie une parcelle de terre en friche et **${formatCoins(context.player.coins)}**.`,
+            `The mayor grants you a patch of fallow land and **${formatCoins(context.player.coins)}**.`,
             '',
-            'Votre objectif est simple : **faire pousser, récolter, vendre, réinvestir.**',
+            'Your goal is simple: **grow, harvest, sell, reinvest.**',
             '',
-            '**Trois commandes pour commencer :**',
-            '🌱 `/plant graine:Blé` — mettre une graine en terre',
-            '🌾 `/farm` — voir votre exploitation',
-            '🧺 `/harvest` — encaisser votre travail',
+            '**Three commands to get going:**',
+            '🌱 `/plant seed:Wheat` — sow a seed',
+            '🌾 `/farm` — view your holding',
+            '🧺 `/harvest` — cash in your work',
             '',
-            "Une question ? `/help` répond à tout, et `/tutorial` vous prend par la main.",
+            "Stuck? `/help` answers everything, and `/tutorial` walks you through it.",
           ].join('\n'),
           color: COLORS.success,
           fields: [
             {
-              name: '🎒 Sac de départ',
+              name: '🎒 Starter bag',
               value:
-                '• 10× 🌾 graines de blé\n• 5× 🥕 graines de carotte\n• 2× 💩 engrais simple\n• 1× 🪣 arrosoir en bois\n• 10× 🌰 grain (pour vos futurs animaux)',
+                '• 10× 🌾 wheat seeds\n• 5× 🥕 carrot seeds\n• 2× 💩 basic fertilizer\n• 1× 🪣 wooden watering can\n• 10× 🌰 grain (for your future animals)',
               inline: true,
             },
             {
-              name: '🗺️ Votre domaine',
-              value: `• ${context.balance.plots.startingUnlocked} parcelles (3×3)\n• 📦 Entrepôt niveau 1\n• 🏠 Maison niveau 1 (100 ⚡)`,
+              name: '🗺️ Your estate',
+              value: `• ${context.balance.plots.startingUnlocked} plots (3×3)\n• 📦 Warehouse level 1\n• 🏠 House level 1 (100 ⚡)`,
               inline: true,
             },
           ],
@@ -97,7 +97,7 @@ const start: Command = {
             action: 'step',
             ownerId: interaction.user.id,
             params: [1],
-            label: 'Lancer le tutoriel',
+            label: 'Start the tutorial',
             emoji: '🎓',
             style: ButtonStyle.Primary,
           }),
@@ -105,7 +105,7 @@ const start: Command = {
             namespace: 'farm',
             action: 'refresh',
             ownerId: interaction.user.id,
-            label: 'Voir ma ferme',
+            label: 'View my farm',
             emoji: '🌾',
             style: ButtonStyle.Success,
           }),
@@ -113,7 +113,7 @@ const start: Command = {
             namespace: 'farm',
             action: 'plant_menu',
             ownerId: interaction.user.id,
-            label: 'Planter maintenant',
+            label: 'Plant now',
             emoji: '🌱',
           }),
         ),
@@ -128,47 +128,47 @@ const start: Command = {
 
 export const TUTORIAL_STEPS = [
   {
-    title: '1/6 — Planter',
+    title: '1/6 — Planting',
     body:
-      'Tout commence par une graine.\n\n`/plant graine:Blé`\n\nSans numéro de parcelle, le bot remplit automatiquement vos parcelles vides. ' +
-      'Ajoutez `quantité:9` pour tout planter d\'un coup.',
+      'Everything starts with a seed.\n\n`/plant seed:Wheat`\n\nWithout a plot number, the bot fills your empty plots automatically. ' +
+      'Add `quantity:9` to sow them all at once.',
   },
   {
-    title: '2/6 — Arroser',
+    title: '2/6 — Watering',
     body:
-      'Chaque culture attend un ou plusieurs arrosages pendant sa croissance.\n\n`/water`\n\n' +
-      'Un arrosage manqué coûte 8 % de rendement (jusqu\'à −40 %). Les jours de pluie, c\'est gratuit !',
+      'Every crop expects one or more waterings while it grows.\n\n`/water`\n\n' +
+      'A missed watering costs 8% of the yield (up to −40%). On rainy days it is free!',
   },
   {
-    title: '3/6 — Récolter',
+    title: '3/6 — Harvesting',
     body:
-      "Quand la culture est prête, encaissez :\n\n`/harvest`\n\n" +
-      'Votre récolte peut sortir en qualité **argent**, **or** ou **iridium** — jusqu\'à ×3 sur le prix. ' +
-      'Un bon sol et un engrais de qualité augmentent vos chances.',
+      "When a crop is ready, cash it in:\n\n`/harvest`\n\n" +
+      'Your harvest can come out **silver**, **gold** or **iridium** — up to ×3 on the price. ' +
+      'Good soil and quality fertilizer improve your odds.',
   },
   {
-    title: '4/6 — Vendre',
+    title: '4/6 — Selling',
     body:
-      'Le village achète tout :\n\n`/sell objet:Blé quantité:tout`\n\n' +
-      'Les prix bougent chaque heure selon ce que vendent les autres joueurs : consultez `/market` avant de brader.',
+      'The village buys everything:\n\n`/sell item:Wheat quantity:all`\n\n' +
+      'Prices move every hour with what other players sell: check `/market` before dumping stock.',
   },
   {
-    title: '5/6 — Réinvestir',
+    title: '5/6 — Reinvesting',
     body:
-      'Vos pièces servent à grandir :\n\n' +
-      '• `/buy-plot` — plus de terrain\n' +
-      '• `/shop` — graines, engrais, outils\n' +
-      '• `/buildings` — poulailler, moulin, entrepôt\n' +
-      '• `/buy-animal` — production passive',
+      'Your coins are there to grow:\n\n' +
+      '• `/buy-plot` — more land\n' +
+      '• `/shop` — seeds, fertilizer, tools\n' +
+      '• `/buildings` — coop, mill, warehouse\n' +
+      '• `/buy-animal` — passive production',
   },
   {
-    title: '6/6 — Progresser',
+    title: '6/6 — Progressing',
     body:
-      'Chaque jour :\n\n' +
-      '• `/daily` — récompense quotidienne et série\n' +
-      '• `/quests` — 4 quêtes journalières + 3 hebdomadaires\n' +
-      '• `/coop` — rejoignez une coopérative pour des bonus permanents\n\n' +
-      'Bonne chance, fermier ! 🌾',
+      'Every day:\n\n' +
+      '• `/daily` — daily reward and streak\n' +
+      '• `/quests` — 4 daily quests + 3 weekly\n' +
+      '• `/coop` — join a co-op for permanent bonuses\n\n' +
+      'Good luck, farmer! 🌾',
   },
 ] as const;
 
@@ -189,7 +189,7 @@ const tutoriel: Command = {
           title: `🎓 ${step.title}`,
           description: step.body,
           color: COLORS.info,
-          footer: 'Utilisez les boutons pour naviguer',
+          footer: 'Use the buttons to navigate',
         }),
       ],
       components: [
@@ -207,7 +207,7 @@ const tutoriel: Command = {
             action: 'step',
             ownerId: interaction.user.id,
             params: [2],
-            label: 'Suivant',
+            label: 'Next',
             emoji: '▶️',
             style: ButtonStyle.Primary,
           }),
@@ -247,29 +247,29 @@ export function helpEmbed(category?: CommandCategory) {
   }
 
   return baseEmbed({
-    title: '🌾 Aide de Harvester',
+    title: '🌾 Harvester help',
     description:
-      'Harvester est un jeu de ferme : plantez, élevez, transformez, vendez, progressez.\n' +
-      'Choisissez une catégorie ci-dessous pour voir les commandes détaillées.',
+      'Harvester is a farming game: plant, raise, process, sell, progress.\n' +
+      'Pick a category below to see the detailed commands.',
     color: COLORS.primary,
     fields: [
       {
-        name: '🚀 Pour bien démarrer',
+        name: '🚀 Getting going',
         value: '`/start` → `/plant` → `/water` → `/harvest` → `/sell`',
       },
       {
-        name: '📚 Catégories',
+        name: '📚 Categories',
         value: Object.entries(CATEGORY_LABELS)
           .filter(([key]) => key !== 'admin')
-          .map(([key, meta]) => `${meta.emoji} **${meta.label}** — ${commandsByCategory.get(key as CommandCategory)?.length ?? 0} commandes`)
+          .map(([key, meta]) => `${meta.emoji} **${meta.label}** — ${commandsByCategory.get(key as CommandCategory)?.length ?? 0} commands`)
           .join('\n'),
       },
       {
-        name: '💡 Le saviez-vous ?',
+        name: '💡 Did you know?',
         value:
-          "• La météo est commune à tout le village : les jours de pluie, l'arrosage est gratuit.\n" +
-          '• Les prix du marché baissent quand tout le monde vend la même chose.\n' +
-          "• Une coopérative accorde des bonus permanents à tous ses membres.",
+          "• Weather is shared by the whole village: on rainy days, watering is free.\n" +
+          '• Market prices fall when everyone sells the same thing.\n' +
+          "• A co-op grants permanent bonuses to all its members.",
       },
     ],
   });
@@ -304,7 +304,7 @@ const aide: Command = {
             namespace: 'help',
             action: 'category',
             ownerId: interaction.user.id,
-            placeholder: 'Choisissez une catégorie d\'aide',
+            placeholder: 'Pick a help category',
             choices: Object.entries(CATEGORY_LABELS)
               .filter(([key]) => key !== 'admin')
               .map(([key, meta]) => ({
