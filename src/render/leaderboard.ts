@@ -1,4 +1,5 @@
 import { balance as getBalance } from '../config';
+import { translate } from '../i18n';
 import { formatCompact } from '../utils/format';
 import {
   PALETTE,
@@ -23,6 +24,8 @@ export interface LeaderboardEntry {
 }
 
 export interface LeaderboardRenderInput {
+  /** Langue du spectateur. Toute chaîne dessinée en dépend. */
+  locale: string;
   title: string;
   emoji: string;
   unit: string;
@@ -36,6 +39,7 @@ const PODIUM_COLORS = ['#ffd700', '#c0c0c0', '#cd7f32'];
 export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<Buffer> {
   const dims = getBalance().render.leaderboard;
   const { canvas, ctx } = newCanvas(dims.width, dims.height);
+  const locale = input.locale;
 
   ctx.fillStyle = verticalGradient(ctx, 0, 0, dims.height, '#232a3a', PALETTE.card);
   ctx.fillRect(0, 0, dims.width, dims.height);
@@ -44,7 +48,7 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
   // en carré. L'emoji reste dans le titre de l'embed Discord.
   ctx.font = font(30, 'bold');
   ctx.fillStyle = PALETTE.text;
-  ctx.fillText(`Classement — ${input.title}`, 32, 24);
+  ctx.fillText(translate(locale, 'render.leaderboard.title', { title: input.title }), 32, 24);
   ctx.font = font(15);
   ctx.fillStyle = PALETTE.textMuted;
   ctx.fillText(input.scopeLabel, 32, 62);
@@ -79,7 +83,7 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
 
     ctx.font = font(15, 'bold');
     ctx.fillStyle = 'rgba(0,0,0,0.75)';
-    ctx.fillText(formatCompact(entry.score), x + columnWidth / 2, barY + 54);
+    ctx.fillText(formatCompact(entry.score, locale), x + columnWidth / 2, barY + 54);
     ctx.textAlign = 'left';
   }
 
@@ -110,7 +114,7 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
     ctx.font = font(16, 'bold');
     ctx.fillStyle = PALETTE.gold;
     ctx.textAlign = 'right';
-    ctx.fillText(`${formatCompact(entry.score)}`, dims.width - 48, rowY + 10);
+    ctx.fillText(formatCompact(entry.score, locale), dims.width - 48, rowY + 10);
     ctx.textAlign = 'left';
 
     rowY += 44;
@@ -125,7 +129,11 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
     ctx.font = font(16, 'bold');
     ctx.fillStyle = PALETTE.text;
     ctx.fillText(
-      `Votre rang : #${input.viewer.rank} — ${formatCompact(input.viewer.score)} ${input.unit}`,
+      translate(locale, 'render.leaderboard.your_rank', {
+        rank: input.viewer.rank,
+        score: formatCompact(input.viewer.score, locale),
+        unit: input.unit,
+      }),
       48,
       bandY + 12,
     );

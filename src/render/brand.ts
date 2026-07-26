@@ -278,7 +278,7 @@ export async function renderBrandBanner(
   options: { name?: string; tagline?: string } = {},
 ): Promise<Buffer> {
   const name = options.name ?? 'HARVESTER';
-  const tagline = options.tagline ?? 'Semez · Récoltez · Prospérez';
+  const tagline = options.tagline ?? 'Sow · Harvest · Prosper';
   const { canvas, ctx } = newCanvas(width, height);
 
   const sky = ctx.createLinearGradient(0, 0, 0, height);

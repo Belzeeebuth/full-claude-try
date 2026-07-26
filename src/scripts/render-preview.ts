@@ -7,6 +7,7 @@ import { renderMarketChart } from '../render/chart';
 import { renderProfile } from '../render/profile';
 import { renderLeaderboard } from '../render/leaderboard';
 import { gridSizeFor } from '../game/grid';
+import { translate } from '../i18n';
 import { moduleLogger } from '../utils/logger';
 
 const log = moduleLogger('preview');
@@ -23,7 +24,11 @@ const log = moduleLogger('preview');
 async function main(): Promise<void> {
   const config = getConfig();
   const balance = getBalance();
-  const outDir = join(process.cwd(), 'out');
+  // Une langue par exécution, dans son propre dossier : c'est la façon la plus
+  // simple de comparer côte à côte les deux rendus.
+  //   PREVIEW_LOCALE=en npm run render:preview
+  const locale = process.env.PREVIEW_LOCALE ?? 'fr';
+  const outDir = join(process.cwd(), 'out', locale);
   mkdirSync(outDir, { recursive: true });
 
   const now = Date.now();
@@ -78,6 +83,7 @@ async function main(): Promise<void> {
   }).slice(0, unlocked + 6);
 
   const farmBuffer = await renderFarm({
+    locale,
     view: {
       farmId: 'preview',
       name: 'Ferme des Trois Chênes',
@@ -128,6 +134,7 @@ async function main(): Promise<void> {
   writeFileSync(join(outDir, 'ferme.png'), farmBuffer);
 
   const profileBuffer = await renderProfile({
+    locale,
     username: 'Marion',
     displayName: 'Marion des Champs',
     avatarUrl: null,
@@ -163,6 +170,7 @@ async function main(): Promise<void> {
     recordedAt: new Date(now - (32 - index) * 3_600_000),
   }));
   const chartBuffer = await renderMarketChart({
+    locale,
     title: 'Melon',
     emoji: '🍈',
     points,
@@ -174,15 +182,19 @@ async function main(): Promise<void> {
   writeFileSync(join(outDir, 'marche.png'), chartBuffer);
 
   const leaderboardBuffer = await renderLeaderboard({
-    title: 'Richesse',
+    locale,
+    // Les libellés viennent du catalogue, comme dans la vraie commande : sinon
+    // la prévisualisation anglaise afficherait un classement au titre français
+    // et donnerait une fausse impression de traduction incomplète.
+    title: translate(locale, 'leaderboard.wealth'),
     emoji: '🪙',
-    unit: 'pièces',
-    scopeLabel: 'Global',
+    unit: translate(locale, 'leaderboard.unit.wealth'),
+    scopeLabel: translate(locale, 'leaderboard.scope.global'),
     entries: Array.from({ length: 10 }, (_, index) => ({
       rank: index + 1,
       name: ['Marion', 'Théo', 'Aïcha', 'Luc', 'Sofia', 'Yanis', 'Emma', 'Noah', 'Léa', 'Gabriel'][index]!,
       score: 5_000_000 - index * 420_000,
-      extra: `Niveau ${60 - index * 3}`,
+      extra: translate(locale, 'leaderboard.entry_level', { level: 60 - index * 3 }),
       isViewer: index === 3,
     })),
     viewer: { rank: 4, score: 3_740_000 },
@@ -196,7 +208,7 @@ async function main(): Promise<void> {
       marche: chartBuffer.byteLength,
       classement: leaderboardBuffer.byteLength,
     },
-    `✅ 4 images écrites dans ${outDir}`,
+    `✅ 4 images écrites dans ${outDir} (langue : ${locale})`,
   );
 }
 

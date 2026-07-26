@@ -1,5 +1,5 @@
 {
-  "$comment": "English catalogue. Any missing key automatically falls back to the French reference catalogue (see src/i18n/index.ts). Kept partial on purpose: French is the shipping language, English is the demonstration that the structure is ready for translation.",
+  "$comment": "English catalogue. Kept at full parity with the French reference — tests/config-and-balance.test.ts fails the build if a key or a {placeholder} diverges. Keys starting with $ are metadata, ignored by the translation engine.",
   "common": {
     "coins": "coins",
     "gems": "gems",
@@ -56,11 +56,227 @@
     "render_failed": "Image rendering failed, here is the text version."
   },
   "harvest": {
-    "nothing_ready": "Nothing is ready yet. Check `/ferme` for timers."
+    "nothing_ready": "Nothing is ready yet. Check `/ferme` for timers.",
+    "success": "🧺 Harvested plot {slot}: **{quantity}× {emoji} {crop}** {quality}",
+    "success_all": "🧺 **{plots} plot(s) harvested** — {quantity} units, estimated value {value} 🪙",
+    "withered": "💀 The crop on plot {slot} withered. You get nothing.",
+    "mutation": "✨ **{mutation} mutation** on plot {slot}!",
+    "seed_recovered": "🫧 The seed shed returned {count} seed(s)."
   },
   "inventory": {
     "title": "🎒 {name}'s inventory",
     "empty": "Your inventory is empty.",
-    "capacity": "Capacity: {used}/{total}"
+    "capacity": "Capacity: {used}/{total}",
+    "empty_category": "No items in this category.",
+    "full": "Your warehouse is full ({capacity}). Sell items or upgrade it with `/batiments`.",
+    "categories": {
+      "seed": "Seeds",
+      "harvest": "Harvests",
+      "animal_product": "Animal products",
+      "product": "Processed goods",
+      "tool": "Tools",
+      "consumable": "Consumables",
+      "material": "Materials",
+      "cosmetic": "Cosmetics",
+      "event": "Event"
+    }
+  },
+  "world": {
+    "weather": {
+      "sunny": "Sunny",
+      "rainy": "Rainy",
+      "stormy": "Stormy",
+      "cloudy": "Cloudy",
+      "heatwave": "Heatwave",
+      "frost": "Frost",
+      "foggy": "Foggy",
+      "rainbow": "Rainbow",
+      "windy": "Windy",
+      "snowy": "Snowy"
+    },
+    "season": {
+      "spring": "Spring",
+      "summer": "Summer",
+      "autumn": "Autumn",
+      "winter": "Winter"
+    }
+  },
+  "format": {
+    "duration": {
+      "day": "d",
+      "hour": "h",
+      "minute": "min",
+      "second": "s",
+      "instant": "< 1 s"
+    }
+  },
+  "render": {
+    "farm": {
+      "level": "Level {level}",
+      "max_level": "Max level",
+      "summary": "{ready} ready  •  {growing} growing  •  {empty} empty  •  {locked} locked",
+      "next_harvest": "Next harvest in {duration}",
+      "harvest_waiting": "Crops are waiting for you!",
+      "nothing_planted": "Nothing planted"
+    },
+    "profile": {
+      "level": "Level {level}",
+      "max_level": "Max level",
+      "xp": "{current} / {needed} XP",
+      "energy": "Energy {current}/{max}",
+      "in_bank": "{amount} in the bank",
+      "default_title": "Farmer",
+      "prestige": "Prestige {rank}",
+      "badges": "{count} badge(s)",
+      "since": "{farm} • farming since {date}",
+      "stat": {
+        "harvests": "Harvests",
+        "animals": "Animals raised",
+        "crafts": "Items crafted",
+        "plots": "Plots",
+        "streak": "Streak",
+        "achievements": "Achievements",
+        "best_harvest": "Best harvest",
+        "coins_earned": "Total earned"
+      },
+      "streak_unit": "{days} d"
+    },
+    "leaderboard": {
+      "title": "Leaderboard — {title}",
+      "your_rank": "Your rank: #{rank} — {score} {unit}"
+    },
+    "chart": {
+      "subtitle": "Base price: {base} 🪙   •   Demand index: {demand}",
+      "reference": "baseline",
+      "legend": "Min {min} 🪙   •   Max {max} 🪙   •   {count} history point(s)"
+    }
+  },
+  "settings": {
+    "language_title": "Language",
+    "language_current": "Your interface is currently set to **{language}**. Pick a language below.",
+    "language_set_title": "Language updated",
+    "language_set_body": "Your interface is now in **{language}**.",
+    "language_scope_title": "What changes",
+    "language_scope_body": "Generated images (farm, profile, market, leaderboard) switch immediately. Command names stay the same.",
+    "language_unknown_title": "Unknown language",
+    "language_unknown_body": "Available languages: {locales}."
+  },
+  "leaderboard": {
+    "wealth": "Wealth",
+    "level": "Experience",
+    "harvests": "Harvests",
+    "animals": "Livestock",
+    "crafts": "Crafting",
+    "coop_score": "Co-ops",
+    "weekly_xp": "Weekly XP",
+    "streak": "Streaks",
+    "unit": {
+      "wealth": "coins",
+      "level": "XP",
+      "harvests": "units",
+      "animals": "animals raised",
+      "crafts": "products",
+      "coop_score": "points",
+      "weekly_xp": "XP",
+      "streak": "days"
+    },
+    "scope": {
+      "discord": "This server",
+      "coop": "My co-op",
+      "global": "Global"
+    },
+    "entry_level": "Level {level}",
+    "entry_members": "{count} members"
+  },
+  "plant": {
+    "success": "🌱 {emoji} **{crop}** planted on plot {slot}. Harvest {when}.",
+    "success_many": "🌱 {count} plot(s) planted with **{crop}**. First harvest {when}.",
+    "no_seed": "You have no {crop} seeds. Buy some with `/boutique` or `/acheter`.",
+    "no_free_plot": "No free plot. Harvest one or buy another with `/acheter-parcelle`.",
+    "plot_occupied": "Plot {slot} is already occupied.",
+    "off_season": "⚠️ {crop} is out of season ({season}): slower growth and reduced yield.",
+    "wrong_level": "{crop} requires level {level}."
+  },
+  "water": {
+    "success": "💧 {count} plot(s) watered.",
+    "nothing_to_water": "No plot needs water right now.",
+    "free_rain": "🌧️ It's raining: your plots are watered for free."
+  },
+  "shop": {
+    "title": "🏪 Village shop",
+    "rotation": "Stock refreshed {when}",
+    "sold_out": "Sold out",
+    "purchased": "✅ Bought {quantity}× {emoji} {item} for {price} 🪙",
+    "stock_left": "{remaining}/{total} in stock",
+    "limit_reached": "You have reached the purchase limit for this item."
+  },
+  "market": {
+    "title": "📊 Val-Verdoyant market",
+    "next_update": "Next update {when}",
+    "sold": "💰 Sold {quantity}× {emoji} {item} for {total} 🪙 (tax: {tax} 🪙)",
+    "not_sellable": "{item} cannot be sold.",
+    "trend_up": "rising",
+    "trend_down": "falling",
+    "trend_flat": "stable"
+  },
+  "animals": {
+    "title": "🐄 {name}'s livestock",
+    "empty": "No animals yet. Build a coop with `/batiments`, then buy a chicken with `/acheter-animal`.",
+    "fed": "🌾 {count} animal(s) fed.",
+    "collected": "🥚 Collected: {summary}",
+    "petted": "🤍 {name} is delighted! Happiness +{gain}.",
+    "healed": "💉 {name} has been treated for {cost} 🪙.",
+    "died": "🪦 {name} did not survive the neglect.",
+    "no_building": "You need a {building} to house this animal.",
+    "building_full": "Your {building} is full ({capacity} slots).",
+    "not_hungry": "{name} is not hungry right now.",
+    "nothing_to_collect": "Nothing to collect."
+  },
+  "quests": {
+    "title": "📋 {name}'s quests",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "story": "Story",
+    "contract": "Village contracts",
+    "resets": "Resets {when}",
+    "completed": "Completed",
+    "claimed": "Reward claimed",
+    "claim_success": "🎁 Reward claimed: {rewards}",
+    "nothing_to_claim": "No reward to claim.",
+    "reroll_success": "🔄 Quest rerolled for {cost} 🪙.",
+    "reroll_limit": "You have reached the limit of {max} rerolls today."
+  },
+  "coop": {
+    "title": "🤝 {name} co-op",
+    "created": "🎉 Co-op **{name}** [{tag}] created for {cost} 🪙!",
+    "joined": "You joined **{name}**.",
+    "left": "You left **{name}**.",
+    "not_member": "You are not in a co-op. Try `/coop creer` or `/coop rejoindre`.",
+    "already_member": "You are already in a co-op. Leave it first.",
+    "full": "This co-op is full ({limit} members).",
+    "name_taken": "That name or tag is already taken.",
+    "forbidden": "Your rank does not allow this action.",
+    "contributed": "💰 {amount} 🪙 paid into the treasury (+{xp} co-op XP).",
+    "objectives": "This week's objectives",
+    "bonuses": "Collective bonuses"
+  },
+  "help": {
+    "title": "🌾 Harvester help",
+    "intro": "Harvester is a farming game: plant, raise, process, sell, progress.\nPick a category from the menu below.",
+    "select_placeholder": "Pick a help category"
+  },
+  "weather": {
+    "title": "{emoji} Today's weather",
+    "season": "Season: {season} ({progress}%)",
+    "next_season": "{season} starts {when}"
+  },
+  "errors": {
+    "plot_locked": "Plot {slot} is locked. Unlock it with `/acheter-parcelle`.",
+    "plot_not_found": "Plot {slot} does not exist.",
+    "item_unknown": "Unknown item: {item}",
+    "quantity_invalid": "Invalid quantity.",
+    "target_invalid": "Invalid target.",
+    "privacy_blocked": "This player has made their farm private.",
+    "not_found": "Not found."
   }
 }

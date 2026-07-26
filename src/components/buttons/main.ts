@@ -3,6 +3,7 @@ import { buildHarvestEmbed, appendTracking } from '../../commands/farm';
 import { auctionListView } from '../../commands/trade';
 import { helpEmbed, TUTORIAL_STEPS } from '../../commands/start';
 import { sendLeaderboard, helpFarmer } from '../../commands/social';
+import { applyLocale, isSupported } from '../../commands/language';
 import { COLORS, baseEmbed, button, quantityModal, row, successEmbed, textModal } from '../../framework/ui';
 import {
   animalsView,
@@ -741,6 +742,30 @@ const profileButtons: ButtonHandler = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// Langue
+// ---------------------------------------------------------------------------
+
+const langButtons: ButtonHandler = {
+  namespace: 'lang',
+  actions: ['set'],
+  lockKey: 'lang-set',
+
+  async execute(interaction: ButtonInteraction, parsed, context): Promise<void> {
+    const requested = paramString(parsed, 0);
+    if (!isSupported(requested)) {
+      await replyEphemeral(interaction, { content: 'Langue inconnue. · Unknown language.' });
+      return;
+    }
+
+    // `deferUpdate` puis `editReply` : on remplace le message existant plutôt
+    // que d'en empiler un nouveau, et la confirmation arrive dans la langue
+    // qui vient d'être choisie.
+    await interaction.deferUpdate();
+    await applyLocale(interaction, context, requested, { edit: true });
+  },
+};
+
 export const handlers: ButtonHandler[] = [
   farmButtons,
   inventoryButtons,
@@ -760,4 +785,5 @@ export const handlers: ButtonHandler[] = [
   socialButtons,
   auctionButtons,
   profileButtons,
+  langButtons,
 ];

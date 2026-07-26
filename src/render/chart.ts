@@ -1,4 +1,5 @@
 import { balance as getBalance } from '../config';
+import { translate } from '../i18n';
 import { formatCompact, formatPercent } from '../utils/format';
 import { PALETTE, encode, fillRoundRect, font, newCanvas } from './canvas';
 
@@ -23,11 +24,16 @@ export interface ChartInput {
   currentPrice: number;
   trend: number;
   demandIndex: number;
+  /** Langue du spectateur. Toute chaîne dessinée en dépend. */
+  locale: string;
 }
 
 export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   const dims = getBalance().render.chart;
   const { canvas, ctx } = newCanvas(dims.width, dims.height);
+  const locale = input.locale;
+  const t = (key: string, params?: Record<string, string | number>): string =>
+    translate(locale, key, params);
 
   ctx.fillStyle = PALETTE.card;
   ctx.fillRect(0, 0, dims.width, dims.height);
@@ -42,7 +48,7 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   ctx.font = font(18, 'bold');
   ctx.fillStyle = accent;
   ctx.fillText(
-    `${formatCompact(input.currentPrice)} 🪙  ${rising ? '▲' : '▼'} ${formatPercent(input.trend)}`,
+    `${formatCompact(input.currentPrice, locale)} 🪙  ${rising ? '▲' : '▼'} ${formatPercent(input.trend, 1, locale)}`,
     32,
     58,
   );
@@ -50,7 +56,10 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   ctx.font = font(14);
   ctx.fillStyle = PALETTE.textMuted;
   ctx.fillText(
-    `Prix de référence : ${formatCompact(input.basePrice)} 🪙   •   Indice de demande : ${input.demandIndex.toFixed(2)}`,
+    t('render.chart.subtitle', {
+      base: formatCompact(input.basePrice, locale),
+      demand: input.demandIndex.toFixed(2),
+    }),
     32,
     84,
   );
@@ -88,7 +97,7 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
     ctx.stroke();
     ctx.fillStyle = PALETTE.textMuted;
     ctx.textAlign = 'right';
-    ctx.fillText(formatCompact(Math.round(value)), plot.x - 10, y - 6);
+    ctx.fillText(formatCompact(Math.round(value), locale), plot.x - 10, y - 6);
     ctx.textAlign = 'left';
   }
 
@@ -103,7 +112,7 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   ctx.setLineDash([]);
   ctx.font = font(11);
   ctx.fillStyle = PALETTE.textMuted;
-  ctx.fillText('référence', plot.x + plot.width - 62, baseY - 16);
+  ctx.fillText(t('render.chart.reference'), plot.x + plot.width - 62, baseY - 16);
 
   // --- Aire sous la courbe ---------------------------------------------
   const gradient = ctx.createLinearGradient(0, plot.y, 0, plot.y + plot.height);
@@ -150,7 +159,7 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
     const pointIndex = Math.round((index * (points.length - 1)) / Math.max(1, labelCount - 1));
     const point = points[pointIndex];
     if (!point) continue;
-    const label = point.recordedAt.toLocaleString('fr-FR', {
+    const label = point.recordedAt.toLocaleString(locale.startsWith('en') ? 'en-US' : 'fr-FR', {
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
@@ -164,7 +173,11 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   ctx.font = font(13);
   ctx.fillStyle = PALETTE.textMuted;
   ctx.fillText(
-    `Min ${formatCompact(min)} 🪙   •   Max ${formatCompact(max)} 🪙   •   ${points.length} point(s) d'historique`,
+    t('render.chart.legend', {
+      min: formatCompact(min, locale),
+      max: formatCompact(max, locale),
+      count: points.length,
+    }),
     32,
     dims.height - 28,
   );

@@ -1,4 +1,5 @@
 import { balance as getBalance } from '../config';
+import { translate } from '../i18n';
 import type { FarmView } from '../services/farm.service';
 import { formatCompact, formatDuration } from '../utils/format';
 import {
@@ -37,6 +38,8 @@ import {
  */
 
 export interface FarmRenderInput {
+  /** Langue du spectateur. Toute chaîne dessinée en dépend. */
+  locale: string;
   view: FarmView;
   player: { username: string; level: number; coins: number; gems: number; avatarUrl: string | null };
   xp: { current: number; needed: number };
@@ -47,6 +50,9 @@ export interface FarmRenderInput {
 export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
   const balance = getBalance();
   const config = balance.render.farm;
+  const locale = input.locale;
+  const t = (key: string, params?: Record<string, string | number>): string =>
+    translate(locale, key, params);
   const theme = THEME_PALETTES[input.theme ?? 'classic'] ?? THEME_PALETTES.classic!;
 
   const { width: gridWidth, height: gridHeight } = input.view.grid;
@@ -89,7 +95,7 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
   ctx.font = font(18);
   ctx.fillStyle = PALETTE.textMuted;
   ctx.fillText(
-    `${input.player.username} • Niveau ${input.player.level}`,
+    `${input.player.username} • ${t('render.farm.level', { level: input.player.level })}`,
     textX,
     66,
   );
@@ -106,8 +112,11 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
   ctx.fillStyle = PALETTE.textMuted;
   ctx.fillText(
     input.xp.needed > 0
-      ? `${formatCompact(input.xp.current)} / ${formatCompact(input.xp.needed)} XP`
-      : 'Niveau maximum',
+      ? t('render.profile.xp', {
+          current: formatCompact(input.xp.current, locale),
+          needed: formatCompact(input.xp.needed, locale),
+        })
+      : t('render.farm.max_level'),
     textX + 252,
     92,
   );
@@ -117,11 +126,15 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
   drawWeatherIcon(ctx, infoX, 22, 40, input.view.world.weather.weather);
   ctx.font = font(16, 'bold');
   ctx.fillStyle = PALETTE.text;
-  ctx.fillText(input.view.world.weather.label, infoX + 46, 30);
+  // Le libellé de `balance.json` est français : on passe par la clé i18n, et on
+  // ne retombe sur la config que si la clé n'existe pas.
+  const weatherKey = `world.weather.${input.view.world.weather.weather}`;
+  const weatherLabel = t(weatherKey);
+  ctx.fillText(weatherLabel === weatherKey ? input.view.world.weather.label : weatherLabel, infoX + 46, 30);
   ctx.font = font(14);
   ctx.fillStyle = PALETTE.textMuted;
   ctx.fillText(
-    `${input.view.world.season.season === 'spring' ? 'Printemps' : input.view.world.season.season === 'summer' ? 'Été' : input.view.world.season.season === 'autumn' ? 'Automne' : 'Hiver'} • ${input.view.world.weather.temperature} °C`,
+    `${t(`world.season.${input.view.world.season.season}`)} • ${input.view.world.weather.temperature} °C`,
     infoX + 46,
     52,
   );
@@ -129,10 +142,10 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
   drawCoin(ctx, infoX + 8, 92, 9);
   ctx.font = font(17, 'bold');
   ctx.fillStyle = PALETTE.gold;
-  ctx.fillText(formatCompact(input.player.coins), infoX + 24, 84);
+  ctx.fillText(formatCompact(input.player.coins, locale), infoX + 24, 84);
   drawGem(ctx, infoX + 138, 92, 9);
   ctx.fillStyle = '#7fd8ff';
-  ctx.fillText(formatCompact(input.player.gems), infoX + 154, 84);
+  ctx.fillText(formatCompact(input.player.gems, locale), infoX + 154, 84);
 
   // --- Grille de parcelles ----------------------------------------------
   const boardX = boardOffsetX;
@@ -207,7 +220,7 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
       if (!plot.crop.growth.ready && !plot.crop.growth.withered) {
         ctx.font = font(Math.max(10, Math.round(tileSize * 0.14)), 'bold');
         ctx.fillStyle = 'rgba(0,0,0,0.55)';
-        const label = formatDuration(plot.crop.growth.msRemaining);
+        const label = formatDuration(plot.crop.growth.msRemaining, locale);
         const labelWidth = ctx.measureText(label).width + 10;
         fillRoundRect(
           ctx,
@@ -246,7 +259,12 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
   ctx.font = font(16, 'bold');
   ctx.fillStyle = PALETTE.text;
   const counts = input.view.counts;
-  const summary = `${counts.ready} prête(s)  •  ${counts.growing} en croissance  •  ${counts.empty} vide(s)  •  ${counts.locked} verrouillée(s)`;
+  const summary = t('render.farm.summary', {
+    ready: counts.ready,
+    growing: counts.growing,
+    empty: counts.empty,
+    locked: counts.locked,
+  });
   ctx.fillText(
     clipText(ctx, summary, width - config.padding * 2 - 32 - (input.animalsPreview?.length ?? 0) * 34),
     config.padding + 16,
@@ -256,10 +274,12 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
   ctx.font = font(14);
   ctx.fillStyle = PALETTE.textMuted;
   const nextLabel = input.view.nextReadyAt
-    ? `Prochaine récolte dans ${formatDuration(input.view.nextReadyAt.getTime() - Date.now())}`
+    ? t('render.farm.next_harvest', {
+        duration: formatDuration(input.view.nextReadyAt.getTime() - Date.now(), locale),
+      })
     : counts.ready > 0
-      ? 'Des cultures vous attendent !'
-      : 'Aucune culture en terre';
+      ? t('render.farm.harvest_waiting')
+      : t('render.farm.nothing_planted');
   ctx.fillText(nextLabel, config.padding + 16, footerY + 36);
 
   // Aperçu du cheptel, à droite du pied de page

@@ -16,7 +16,10 @@ const log = moduleLogger('render');
  * Trois garanties pour la production :
  *  1. CACHE — la clé est le hash de l'ÉTAT rendu, pas l'identifiant du joueur.
  *     Deux affichages successifs d'une ferme inchangée réutilisent le même PNG ;
- *     la moindre modification (une culture qui mûrit) change le hash.
+ *     la moindre modification (une culture qui mûrit) change le hash. La LOCALE
+ *     fait partie de l'état : les libellés sont dessinés DANS l'image, donc sans
+ *     elle un joueur anglophone recevrait la version française mise en cache par
+ *     un francophone.
  *  2. BUDGET DE TEMPS — au-delà de `RENDER_TIMEOUT_MS`, on abandonne l'image et
  *     la commande répond en texte. Une interaction Discord doit être honorée en
  *     3 secondes : mieux vaut un embed sans image qu'une commande qui échoue.
@@ -112,6 +115,7 @@ export async function renderFarmImage(input: FarmRenderInput): Promise<RenderOut
   // L'état capture : la grille, chaque parcelle avec son stade et son échéance
   // arrondie à la minute, la météo, et les compteurs du joueur.
   const stateKey = {
+    locale: input.locale,
     grid: input.view.grid,
     theme: input.theme,
     weather: input.view.world.weather.weather,
@@ -135,6 +139,7 @@ export async function renderFarmImage(input: FarmRenderInput): Promise<RenderOut
 
 export async function renderProfileImage(input: ProfileRenderInput): Promise<RenderOutcome> {
   const stateKey = {
+    locale: input.locale,
     name: input.displayName,
     level: input.level,
     xp: Math.floor(input.xp.current / 50),
@@ -153,6 +158,7 @@ export async function renderProfileImage(input: ProfileRenderInput): Promise<Ren
 
 export async function renderChartImage(input: ChartInput): Promise<RenderOutcome> {
   const stateKey = {
+    locale: input.locale,
     title: input.title,
     current: input.currentPrice,
     trend: Math.round(input.trend * 1000),
@@ -166,6 +172,7 @@ export async function renderLeaderboardImage(
   input: LeaderboardRenderInput,
 ): Promise<RenderOutcome> {
   const stateKey = {
+    locale: input.locale,
     title: input.title,
     scope: input.scopeLabel,
     entries: input.entries.map((entry) => [entry.rank, entry.name, entry.score]),

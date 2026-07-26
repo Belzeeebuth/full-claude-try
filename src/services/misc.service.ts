@@ -4,7 +4,7 @@ import { lockUserRow, withTransaction } from '../db/client';
 import { checkPrestigeEligibility, planPrestige, prestigeBadge } from '../game/prestige';
 import { gameError } from '../utils/errors';
 import { moduleLogger } from '../utils/logger';
-import { reloadCatalogs } from '../i18n';
+import { reloadCatalogs, translate } from '../i18n';
 import * as animalRepo from '../repositories/animal.repo';
 import * as economyRepo from '../repositories/economy.repo';
 import * as farmRepo from '../repositories/farm.repo';
@@ -33,21 +33,42 @@ const log = moduleLogger('misc');
 /** Les classements de joueurs, plus le classement de coopératives. */
 export type LeaderboardType = socialRepo.LeaderboardType | 'coop_score';
 
-export const LEADERBOARD_LABELS: Record<LeaderboardType, { label: string; emoji: string; unit: string }> = {
-  wealth: { label: 'Richesse', emoji: '🪙', unit: 'pièces' },
-  level: { label: 'Expérience', emoji: '⭐', unit: 'XP' },
-  harvests: { label: 'Récoltes', emoji: '🌾', unit: 'unités' },
-  animals: { label: 'Élevage', emoji: '🐄', unit: 'animaux élevés' },
-  crafts: { label: 'Artisanat', emoji: '🛠️', unit: 'produits' },
-  coop_score: { label: 'Coopératives', emoji: '🤝', unit: 'points' },
-  weekly_xp: { label: 'XP de la semaine', emoji: '📈', unit: 'XP' },
-  streak: { label: 'Séries', emoji: '🔥', unit: 'jours' },
+/** Seuls les emoji sont figés ici : libellé et unité viennent du catalogue i18n. */
+export const LEADERBOARD_EMOJI: Record<LeaderboardType, string> = {
+  wealth: '🪙',
+  level: '⭐',
+  harvests: '🌾',
+  animals: '🐄',
+  crafts: '🛠️',
+  coop_score: '🤝',
+  weekly_xp: '📈',
+  streak: '🔥',
 };
+
+/** Métadonnées d'un classement, dans la langue du spectateur. */
+export function leaderboardMeta(
+  type: LeaderboardType,
+  locale: string,
+): { label: string; emoji: string; unit: string } {
+  return {
+    label: translate(locale, `leaderboard.${type}`),
+    emoji: LEADERBOARD_EMOJI[type],
+    unit: translate(locale, `leaderboard.unit.${type}`),
+  };
+}
 
 export async function getLeaderboard(
   type: LeaderboardType,
-  options: { scope?: 'global' | 'discord' | 'coop'; discordGuildId?: string; coopId?: string; limit?: number } = {},
+  options: {
+    scope?: 'global' | 'discord' | 'coop';
+    discordGuildId?: string;
+    coopId?: string;
+    limit?: number;
+    /** Langue du spectateur : le champ `extra` est rendu tel quel dans l'image. */
+    locale?: string;
+  } = {},
 ) {
+  const locale = options.locale ?? 'fr';
   if (type === 'coop_score') {
     const rows = await socialRepo.coopLeaderboard(options.limit ?? 10);
     return {
@@ -57,7 +78,7 @@ export async function getLeaderboard(
         name: `${row.emblem} ${row.name} [${row.tag}]`,
         score: row.weeklyScore,
         level: row.level,
-        extra: `${row.memberCount} membres`,
+        extra: translate(locale, 'leaderboard.entry_members', { count: row.memberCount }),
       })),
     };
   }
@@ -81,7 +102,7 @@ export async function getLeaderboard(
       score: Number(row.score),
       level: row.level,
       prestige: row.prestige,
-      extra: `Niveau ${row.level}${row.prestige > 0 ? ` ${prestigeBadge(row.prestige)}` : ''}`,
+      extra: `${translate(locale, 'leaderboard.entry_level', { level: row.level })}${row.prestige > 0 ? ` ${prestigeBadge(row.prestige)}` : ''}`,
     })),
   };
 }

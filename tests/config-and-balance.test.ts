@@ -18,6 +18,8 @@ import {
   nextMidnight,
   weeklyCycleKey,
 } from '../src/utils/time';
+import frCatalog from '../src/i18n/locales/fr.json';
+import enCatalog from '../src/i18n/locales/en.json';
 
 const config = getConfig();
 const balance = getBalance();
@@ -317,5 +319,53 @@ describe('utilitaires', () => {
   it('détecte le week-end', () => {
     expect(isWeekend(new Date('2026-07-25T12:00:00Z'), 'UTC')).toBe(true); // samedi
     expect(isWeekend(new Date('2026-07-22T12:00:00Z'), 'UTC')).toBe(false); // mercredi
+  });
+});
+
+describe('internationalisation', () => {
+  /**
+   * Les deux catalogues doivent porter EXACTEMENT les mêmes clés.
+   *
+   * Une clé absente de `en.json` ne casse rien visiblement : `translate()`
+   * retombe sur le français. C'est précisément le problème — le bot paraît
+   * traduit, et affiche du français à un anglophone sans qu'aucune erreur ne le
+   * signale. Ce test transforme ce silence en échec de CI.
+   */
+  // Les clés `$…` sont des métadonnées du fichier (commentaire d'en-tête), pas
+  // des chaînes traduisibles : le moteur de traduction ne les lit jamais.
+  const isMeta = (key: string): boolean => key.startsWith('$');
+
+  const flatten = (value: unknown, prefix = ''): string[] =>
+    typeof value === 'string'
+      ? [prefix]
+      : Object.entries(value as Record<string, unknown>)
+          .filter(([key]) => !isMeta(key))
+          .flatMap(([key, child]) => flatten(child, prefix ? `${prefix}.${key}` : key));
+
+  it('les catalogues fr et en ont les mêmes clés', () => {
+    const fr = flatten(frCatalog).sort();
+    const en = flatten(enCatalog).sort();
+
+    expect(fr.filter((key) => !en.includes(key))).toEqual([]);
+    expect(en.filter((key) => !fr.includes(key))).toEqual([]);
+    expect(fr.length).toBeGreaterThan(200);
+  });
+
+  it('les paramètres {nom} sont identiques dans les deux langues', () => {
+    const placeholders = (text: string): string[] =>
+      [...text.matchAll(/\{(\w+)\}/g)].map((match) => match[1]!).sort();
+
+    const walk = (a: unknown, b: unknown, path = ''): void => {
+      if (typeof a === 'string' && typeof b === 'string') {
+        expect({ path, params: placeholders(b) }).toEqual({ path, params: placeholders(a) });
+        return;
+      }
+      for (const [key, child] of Object.entries(a as Record<string, unknown>)) {
+        if (key.startsWith('$')) continue;
+        walk(child, (b as Record<string, unknown>)[key], path ? `${path}.${key}` : key);
+      }
+    };
+
+    walk(frCatalog, enCatalog);
   });
 });

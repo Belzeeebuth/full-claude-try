@@ -1,4 +1,5 @@
 {
+  "$comment": "Catalogue de référence. Toute clé absente d'une autre langue retombe ici (voir src/i18n/index.ts). Les clés $… sont des métadonnées, ignorées par le moteur de traduction et par le test de parité.",
   "common": {
     "coins": "pièces",
     "gems": "gemmes",
@@ -170,5 +171,112 @@
     "target_invalid": "Cible invalide.",
     "privacy_blocked": "Ce joueur a rendu sa ferme privée.",
     "not_found": "Introuvable."
+  },
+  "world": {
+    "weather": {
+      "sunny": "Ensoleillé",
+      "rainy": "Pluvieux",
+      "stormy": "Orageux",
+      "cloudy": "Nuageux",
+      "heatwave": "Canicule",
+      "frost": "Gel",
+      "foggy": "Brouillard",
+      "rainbow": "Arc-en-ciel",
+      "windy": "Venteux",
+      "snowy": "Neigeux"
+    },
+    "season": {
+      "spring": "Printemps",
+      "summer": "Été",
+      "autumn": "Automne",
+      "winter": "Hiver"
+    }
+  },
+  "format": {
+    "duration": {
+      "day": "j",
+      "hour": "h",
+      "minute": "min",
+      "second": "s",
+      "instant": "< 1 s"
+    }
+  },
+  "render": {
+    "farm": {
+      "level": "Niveau {level}",
+      "max_level": "Niveau maximum",
+      "summary": "{ready} prête(s)  •  {growing} en croissance  •  {empty} vide(s)  •  {locked} verrouillée(s)",
+      "next_harvest": "Prochaine récolte dans {duration}",
+      "harvest_waiting": "Des cultures vous attendent !",
+      "nothing_planted": "Aucune culture en terre"
+    },
+    "profile": {
+      "level": "Niveau {level}",
+      "max_level": "Niveau maximum",
+      "xp": "{current} / {needed} XP",
+      "energy": "Énergie {current}/{max}",
+      "in_bank": "{amount} en banque",
+      "default_title": "Fermier",
+      "prestige": "Prestige {rank}",
+      "badges": "{count} badge(s)",
+      "since": "{farm} • fermier depuis le {date}",
+      "stat": {
+        "harvests": "Récoltes",
+        "animals": "Animaux élevés",
+        "crafts": "Objets fabriqués",
+        "plots": "Parcelles",
+        "streak": "Série",
+        "achievements": "Succès",
+        "best_harvest": "Meilleure récolte",
+        "coins_earned": "Total gagné"
+      },
+      "streak_unit": "{days} j"
+    },
+    "leaderboard": {
+      "title": "Classement — {title}",
+      "your_rank": "Votre rang : #{rank} — {score} {unit}"
+    },
+    "chart": {
+      "subtitle": "Prix de référence : {base} 🪙   •   Indice de demande : {demand}",
+      "reference": "référence",
+      "legend": "Min {min} 🪙   •   Max {max} 🪙   •   {count} point(s) d'historique"
+    }
+  },
+  "settings": {
+    "language_title": "Langue",
+    "language_current": "Votre interface est actuellement en **{language}**. Choisissez une langue ci-dessous.",
+    "language_set_title": "Langue modifiée",
+    "language_set_body": "Votre interface est désormais en **{language}**.",
+    "language_scope_title": "Ce qui change",
+    "language_scope_body": "Les images générées (ferme, profil, marché, classement) suivent immédiatement. Les noms des commandes restent identiques.",
+    "language_unknown_title": "Langue inconnue",
+    "language_unknown_body": "Langues disponibles : {locales}."
+  },
+  "leaderboard": {
+    "wealth": "Richesse",
+    "level": "Expérience",
+    "harvests": "Récoltes",
+    "animals": "Élevage",
+    "crafts": "Artisanat",
+    "coop_score": "Coopératives",
+    "weekly_xp": "XP de la semaine",
+    "streak": "Séries",
+    "unit": {
+      "wealth": "pièces",
+      "level": "XP",
+      "harvests": "unités",
+      "animals": "animaux élevés",
+      "crafts": "produits",
+      "coop_score": "points",
+      "weekly_xp": "XP",
+      "streak": "jours"
+    },
+    "scope": {
+      "discord": "Ce serveur",
+      "coop": "Ma coopérative",
+      "global": "Global"
+    },
+    "entry_level": "Niveau {level}",
+    "entry_members": "{count} membres"
   }
 }

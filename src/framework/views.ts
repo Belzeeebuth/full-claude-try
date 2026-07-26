@@ -54,6 +54,7 @@ export async function farmView(
   const xpForNext = (await import('../game/xp')).xpForNextLevel(player.level, context.balance);
 
   const image = await renderFarmImage({
+    locale: context.locale,
     view,
     player: {
       username: options.targetName ?? player.username,

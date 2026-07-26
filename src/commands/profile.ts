@@ -36,6 +36,7 @@ const profil: Command = {
     if (!profile) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
 
     const image = await renderProfileImage({
+      locale: context.locale,
       username: profile.user.username,
       displayName: profile.user.displayName ?? profile.user.username,
       avatarUrl: target.displayAvatarURL({ extension: 'png', size: 256 }),

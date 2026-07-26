@@ -122,7 +122,8 @@ npm run brand
 |---|---|---|
 | `harvester-avatar.png` | 512 × 512 | Avatar de l'application Discord |
 | `harvester-avatar-256.png` | 256 × 256 | Icône de serveur, favicon |
-| `harvester-banner.png` | 680 × 240 | Bannière de profil de l'application |
+| `harvester-banner.png` | 680 × 240 | Bannière de profil de l'application (**anglais**) |
+| `harvester-banner-fr.png` | 680 × 240 | Même bannière, accroche française |
 
 Ces images sont dessinées en vectoriel par `src/render/brand.ts`, sans aucun asset
 externe : elles n'engagent donc **aucune licence tierce** et sont régénérables à
@@ -137,7 +138,12 @@ Deux contraintes ont guidé la composition :
   dense et centré, plutôt qu'une scène détaillée : c'est la silhouette qui porte la
   reconnaissance à cette taille, pas le détail.
 
-Le nom et la accroche de la bannière se changent sans toucher au code :
+La bannière par défaut est en **anglais** : Discord n'en accepte qu'une seule par
+application, et elle est vue de tous les joueurs quelle que soit leur langue —
+contrairement aux images de jeu, qui suivent le réglage de chacun. La variante
+française est produite en même temps, pour un site ou un serveur francophone.
+
+Le nom et l'accroche se changent sans toucher au code :
 
 ```bash
 BRAND_NAME="MA FERME" BRAND_TAGLINE="Ma propre accroche" npm run brand
@@ -146,9 +152,17 @@ BRAND_NAME="MA FERME" BRAND_TAGLINE="Ma propre accroche" npm run brand
 ## Prévisualiser sans lancer le bot
 
 ```bash
-npm run render:preview
+npm run render:preview      # → out/fr/
+npm run render:preview:en   # → out/en/
 ```
 
-Écrit `out/ferme.png`, `out/profil.png`, `out/marche.png` et
-`out/classement.png` à partir de données factices. Ni base de données, ni Redis,
-ni token Discord requis : c'est la boucle d'itération pour travailler le visuel.
+Écrit `ferme.png`, `profil.png`, `marche.png` et `classement.png` à partir de
+données factices. Ni base de données, ni Redis, ni token Discord requis : c'est la
+boucle d'itération pour travailler le visuel.
+
+Les deux langues sont produites dans des dossiers séparés, pour les comparer côte
+à côte. **Toute chaîne dessinée dans une image passe par le catalogue i18n** — les
+libellés de parcelles, la météo, la saison, les statistiques, les unités de durée
+et le formatage des nombres suivent la langue du joueur. La locale fait d'ailleurs
+partie de la clé de cache Redis : sans elle, un joueur anglophone recevrait
+l'image française mise en cache par un francophone.

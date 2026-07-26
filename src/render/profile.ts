@@ -1,4 +1,5 @@
 import { balance as getBalance } from '../config';
+import { translate } from '../i18n';
 import { formatCompact, formatNumber } from '../utils/format';
 import {
   PALETTE,
@@ -16,6 +17,8 @@ import { drawCoin, drawGem, rarityColor } from './sprites';
 /** Carte de profil : avatar, bannière, niveau, XP, statistiques clés, badges. */
 
 export interface ProfileRenderInput {
+  /** Langue du spectateur. Toute chaîne dessinée en dépend. */
+  locale: string;
   username: string;
   displayName: string;
   avatarUrl: string | null;
@@ -57,6 +60,9 @@ const BANNERS: Record<string, [string, string]> = {
 export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> {
   const dims = getBalance().render.profile;
   const { canvas, ctx } = newCanvas(dims.width, dims.height);
+  const locale = input.locale;
+  const t = (key: string, params?: Record<string, string | number>): string =>
+    translate(locale, key, params);
 
   // --- Bannière et fond -------------------------------------------------
   // La bannière ne porte AUCUN texte : sa couleur est choisie par le joueur, on
@@ -85,8 +91,8 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
   ctx.font = font(16);
   ctx.fillStyle = PALETTE.textMuted;
   const subtitle = [
-    input.title ?? 'Fermier',
-    input.prestige > 0 ? `Prestige ${input.prestige}` : null,
+    input.title ?? t('render.profile.default_title'),
+    input.prestige > 0 ? t('render.profile.prestige', { rank: input.prestige }) : null,
     input.coop ? `[${input.coop.tag}] ${input.coop.name}` : null,
   ]
     .filter(Boolean)
@@ -96,7 +102,7 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
   // --- Niveau et XP -----------------------------------------------------
   ctx.font = font(20, 'bold');
   ctx.fillStyle = PALETTE.text;
-  ctx.fillText(`Niveau ${input.level}`, nameX, bannerHeight + 82);
+  ctx.fillText(t('render.profile.level', { level: input.level }), nameX, bannerHeight + 82);
 
   // Les libellés sont dessinés DANS les barres : à droite, ils empiéteraient
   // sur le bloc des monnaies.
@@ -109,8 +115,11 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
     fill: PALETTE.xp,
     label:
       input.xp.needed > 0
-        ? `${formatCompact(input.xp.current)} / ${formatCompact(input.xp.needed)} XP`
-        : 'Niveau maximum',
+        ? t('render.profile.xp', {
+            current: formatCompact(input.xp.current, locale),
+            needed: formatCompact(input.xp.needed, locale),
+          })
+        : t('render.profile.max_level'),
   });
 
   progressBar(ctx, {
@@ -120,7 +129,10 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
     height: 18,
     ratio: input.energy.max > 0 ? input.energy.current / input.energy.max : 1,
     fill: '#f7c948',
-    label: `Énergie ${input.energy.current}/${input.energy.max}`,
+    label: t('render.profile.energy', {
+      current: input.energy.current,
+      max: input.energy.max,
+    }),
   });
 
   // --- Monnaies ---------------------------------------------------------
@@ -129,25 +141,29 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
   drawCoin(ctx, walletX + 26, bannerHeight + 56, 11);
   ctx.font = font(20, 'bold');
   ctx.fillStyle = PALETTE.gold;
-  ctx.fillText(formatNumber(input.coins), walletX + 46, bannerHeight + 46);
+  ctx.fillText(formatNumber(input.coins, locale), walletX + 46, bannerHeight + 46);
   drawGem(ctx, walletX + 26, bannerHeight + 92, 11);
   ctx.fillStyle = '#7fd8ff';
-  ctx.fillText(formatNumber(input.gems), walletX + 46, bannerHeight + 82);
+  ctx.fillText(formatNumber(input.gems, locale), walletX + 46, bannerHeight + 82);
   ctx.font = font(14);
   ctx.fillStyle = PALETTE.textMuted;
-  ctx.fillText(`${formatCompact(input.bank)} en banque`, walletX + 20, bannerHeight + 116);
+  ctx.fillText(
+    t('render.profile.in_bank', { amount: formatCompact(input.bank, locale) }),
+    walletX + 20,
+    bannerHeight + 116,
+  );
 
   // --- Statistiques en grille ------------------------------------------
   const statsY = bannerHeight + 176;
   const cells: Array<{ label: string; value: string; color: string }> = [
-    { label: 'Récoltes', value: formatCompact(input.stats.harvests), color: PALETTE.grass },
-    { label: 'Animaux élevés', value: formatCompact(input.stats.animals), color: '#e8b04b' },
-    { label: 'Objets fabriqués', value: formatCompact(input.stats.crafts), color: '#7fd8ff' },
-    { label: 'Parcelles', value: `${input.stats.plots}/64`, color: PALETTE.soil },
-    { label: 'Série', value: `${input.stats.streak} j`, color: '#ff7043' },
-    { label: 'Succès', value: String(input.stats.achievements), color: PALETTE.gold },
-    { label: 'Meilleure récolte', value: formatCompact(input.stats.bestHarvest), color: rarityColor('epic') },
-    { label: 'Total gagné', value: formatCompact(input.stats.coinsEarned), color: rarityColor('legendary') },
+    { label: t('render.profile.stat.harvests'), value: formatCompact(input.stats.harvests, locale), color: PALETTE.grass },
+    { label: t('render.profile.stat.animals'), value: formatCompact(input.stats.animals, locale), color: '#e8b04b' },
+    { label: t('render.profile.stat.crafts'), value: formatCompact(input.stats.crafts, locale), color: '#7fd8ff' },
+    { label: t('render.profile.stat.plots'), value: `${input.stats.plots}/64`, color: PALETTE.soil },
+    { label: t('render.profile.stat.streak'), value: t('render.profile.streak_unit', { days: input.stats.streak }), color: '#ff7043' },
+    { label: t('render.profile.stat.achievements'), value: String(input.stats.achievements), color: PALETTE.gold },
+    { label: t('render.profile.stat.best_harvest'), value: formatCompact(input.stats.bestHarvest, locale), color: rarityColor('epic') },
+    { label: t('render.profile.stat.coins_earned'), value: formatCompact(input.stats.coinsEarned, locale), color: rarityColor('legendary') },
   ];
 
   const columns = 4;
@@ -187,7 +203,7 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
     ctx.font = font(13);
     ctx.fillStyle = PALETTE.textMuted;
     ctx.fillText(
-      `${input.badges.length} badge(s)`,
+      t('render.profile.badges', { count: input.badges.length }),
       42 + Math.min(10, input.badges.length) * 22 + 6,
       footerY + 2,
     );
@@ -199,7 +215,10 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
   ctx.fillText(
     clipText(
       ctx,
-      `${input.farmName} • fermier depuis le ${input.createdAt.toLocaleDateString('fr-FR')}`,
+      t('render.profile.since', {
+        farm: input.farmName,
+        date: input.createdAt.toLocaleDateString(locale.startsWith('en') ? 'en-US' : 'fr-FR'),
+      }),
       480,
     ),
     dims.width - 36,

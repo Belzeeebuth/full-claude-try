@@ -254,6 +254,7 @@ export async function sendMarketChart(
 
   const points = await marketService.getPriceHistory(itemKey);
   const image = await renderChartImage({
+    locale: context.locale,
     title: item.name,
     emoji: item.emoji,
     points: points.length > 0 ? points : [{ price: row.price, recordedAt: new Date() }],

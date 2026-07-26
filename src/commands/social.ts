@@ -318,19 +318,26 @@ export async function sendLeaderboard(
   type: miscService.LeaderboardType,
   scope: 'global' | 'discord' | 'coop',
 ): Promise<void> {
-  const meta = miscService.LEADERBOARD_LABELS[type];
+  const t = context.t;
+  const meta = miscService.leaderboardMeta(type, context.locale);
   const board = await miscService.getLeaderboard(type, {
     scope,
     discordGuildId: context.discordGuildId,
     coopId: context.player.coopId ?? undefined,
     limit: 10,
+    locale: context.locale,
   });
   const viewerRank = await miscService.getUserRank(type, context.player.id);
 
   const scopeLabel =
-    scope === 'discord' ? 'Ce serveur' : scope === 'coop' ? 'Ma coopérative' : 'Global';
+    scope === 'discord'
+      ? t('leaderboard.scope.discord')
+      : scope === 'coop'
+        ? t('leaderboard.scope.coop')
+        : t('leaderboard.scope.global');
 
   const image = await renderLeaderboardImage({
+    locale: context.locale,
     title: meta.label,
     emoji: meta.emoji,
     unit: meta.unit,
@@ -346,12 +353,12 @@ export async function sendLeaderboard(
   });
 
   const embed = baseEmbed({
-    title: `${meta.emoji} Classement — ${meta.label}`,
+    title: `${meta.emoji} ${t('render.leaderboard.title', { title: meta.label })}`,
     description:
       board.rows
         .map(
           (entry) =>
-            `${entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `\`#${entry.rank}\``} **${entry.name}** — ${formatCompact(entry.score)} ${meta.unit}`,
+            `${entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `\`#${entry.rank}\``} **${entry.name}** — ${formatCompact(entry.score, context.locale)} ${meta.unit}`,
         )
         .join('\n') || 'Aucun classement disponible.',
     color: COLORS.gold,

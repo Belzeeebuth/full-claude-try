@@ -318,6 +318,7 @@ journalctl -u harvester -f
 | `/start [code]` | Accueil et code de parrainage |
 | `/tutoriel` | Guide interactif paginé |
 | `/aide [catégorie]` | Aide complète |
+| `/lang [langue]` | Changer la langue de l'interface (français / anglais) |
 
 ### Ferme
 
@@ -489,7 +490,8 @@ npm run test:watch       # mode veille
 npm run test:coverage    # couverture (seuil 70 % sur src/game/**)
 npm run db:studio        # explorateur de base Drizzle
 npm run balance:report   # tables d'équilibrage
-npm run render:preview   # écrit 4 PNG dans out/
+npm run render:preview   # écrit 4 PNG dans out/fr/
+npm run render:preview:en # les mêmes en anglais, dans out/en/
 npm run brand            # régénère l'avatar et la bannière du bot
 npm run commands:clear   # retire les commandes publiées
 ```
