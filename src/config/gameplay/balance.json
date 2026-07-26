@@ -1,0 +1,607 @@
+{
+  "$comment": "Toutes les valeurs d'équilibrage du jeu. Éditable à chaud via /admin reload-config. Voir docs/04-equilibrage.md pour les justifications chiffrées.",
+  "progression": {
+    "maxLevel": 60,
+    "xpCurve": {
+      "base": 60,
+      "exponent": 1.45,
+      "linear": 40
+    },
+    "levelRewardCoins": {
+      "base": 250,
+      "perLevel": 180,
+      "exponent": 1.25
+    },
+    "milestoneLevels": [
+      5,
+      10,
+      15,
+      20,
+      25,
+      30,
+      35,
+      40,
+      45,
+      50,
+      55,
+      60
+    ],
+    "milestoneGems": 5,
+    "weeklyXpResetDay": 1
+  },
+  "prestige": {
+    "requiredLevel": 60,
+    "pointsPerPrestige": {
+      "base": 100,
+      "perLevelOverMax": 10
+    },
+    "multiplierPerPrestige": 0.15,
+    "maxPrestige": 20,
+    "keeps": {
+      "plots": 0.5,
+      "buildings": true,
+      "animals": false,
+      "inventoryCategories": [
+        "cosmetic",
+        "tool",
+        "event"
+      ],
+      "coinsPercent": 0.05,
+      "gems": true
+    },
+    "startingCoinsAfterPrestige": 5000
+  },
+  "plots": {
+    "startingUnlocked": 9,
+    "maxPlots": 64,
+    "baseCost": 800,
+    "costGrowth": 1.155,
+    "costRounding": 10,
+    "gridSteps": [
+      {
+        "plots": 9,
+        "width": 3,
+        "height": 3
+      },
+      {
+        "plots": 12,
+        "width": 4,
+        "height": 3
+      },
+      {
+        "plots": 16,
+        "width": 4,
+        "height": 4
+      },
+      {
+        "plots": 20,
+        "width": 5,
+        "height": 4
+      },
+      {
+        "plots": 25,
+        "width": 5,
+        "height": 5
+      },
+      {
+        "plots": 30,
+        "width": 6,
+        "height": 5
+      },
+      {
+        "plots": 36,
+        "width": 6,
+        "height": 6
+      },
+      {
+        "plots": 42,
+        "width": 7,
+        "height": 6
+      },
+      {
+        "plots": 49,
+        "width": 7,
+        "height": 7
+      },
+      {
+        "plots": 56,
+        "width": 8,
+        "height": 7
+      },
+      {
+        "plots": 64,
+        "width": 8,
+        "height": 8
+      }
+    ]
+  },
+  "fertility": {
+    "start": 70,
+    "min": 0,
+    "max": 100,
+    "fallowRecoveryPerHour": 1.5,
+    "lowThreshold": 30,
+    "yieldPenaltyAtZero": 0.45,
+    "yieldBonusAtMax": 0.15
+  },
+  "water": {
+    "penaltyPerMissedWatering": 0.08,
+    "maxPenalty": 0.4,
+    "graceMinutes": 20,
+    "helpBonusPerHelper": 0.03,
+    "maxHelpBonus": 0.12
+  },
+  "weeds": {
+    "growthPerHour": 2.5,
+    "penaltyThreshold": 30,
+    "yieldPenaltyAtMax": 0.3,
+    "weedsPerClear": 3
+  },
+  "pests": {
+    "baseDailyChancePerPlot": 0.05,
+    "deadlineHours": 8,
+    "yieldLossIfIgnored": 0.5,
+    "witherIfIgnoredChance": 0.15,
+    "treatEnergyCost": 2
+  },
+  "quality": {
+    "weights": {
+      "normal": 1000,
+      "silver": 180,
+      "gold": 55,
+      "iridium": 8
+    },
+    "multipliers": {
+      "normal": 1.0,
+      "silver": 1.35,
+      "gold": 1.9,
+      "iridium": 3.0
+    },
+    "fertilityInfluence": 0.6,
+    "levelInfluence": 0.004,
+    "maxLuckBonus": 0.6
+  },
+  "mutations": {
+    "giant": {
+      "weight": 55,
+      "yieldMultiplier": 2.5,
+      "priceMultiplier": 1.0
+    },
+    "rainbow": {
+      "weight": 28,
+      "yieldMultiplier": 1.0,
+      "priceMultiplier": 3.0
+    },
+    "ancient": {
+      "weight": 8,
+      "yieldMultiplier": 1.5,
+      "priceMultiplier": 2.0
+    }
+  },
+  "seasons": {
+    "lengthDays": 14,
+    "order": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+    ],
+    "inSeasonYieldBonus": 0.2,
+    "offSeasonYieldPenalty": 0.35,
+    "offSeasonGrowthPenalty": 0.25,
+    "winterExtraPenalty": 0.1
+  },
+  "weather": {
+    "table": [
+      {
+        "weather": "sunny",
+        "emoji": "☀️",
+        "label": "Grand soleil",
+        "weights": {
+          "spring": 30,
+          "summer": 40,
+          "autumn": 25,
+          "winter": 15
+        },
+        "yieldModifier": 1.05,
+        "growthModifier": 1.05,
+        "freeWatering": false,
+        "damageChance": 0,
+        "pestChance": 0.06,
+        "description": "Journée idéale : la pousse est légèrement accélérée."
+      },
+      {
+        "weather": "cloudy",
+        "emoji": "☁️",
+        "label": "Nuageux",
+        "weights": {
+          "spring": 25,
+          "summer": 20,
+          "autumn": 30,
+          "winter": 25
+        },
+        "yieldModifier": 1.0,
+        "growthModifier": 1.0,
+        "freeWatering": false,
+        "damageChance": 0,
+        "pestChance": 0.05,
+        "description": "Rien de particulier. La ferme tourne."
+      },
+      {
+        "weather": "rainy",
+        "emoji": "🌧️",
+        "label": "Pluie",
+        "weights": {
+          "spring": 30,
+          "summer": 15,
+          "autumn": 25,
+          "winter": 15
+        },
+        "yieldModifier": 1.1,
+        "growthModifier": 1.0,
+        "freeWatering": true,
+        "damageChance": 0,
+        "pestChance": 0.09,
+        "description": "Vos parcelles sont arrosées gratuitement, mais les limaces adorent."
+      },
+      {
+        "weather": "storm",
+        "emoji": "⛈️",
+        "label": "Orage",
+        "weights": {
+          "spring": 10,
+          "summer": 12,
+          "autumn": 12,
+          "winter": 5
+        },
+        "yieldModifier": 0.9,
+        "growthModifier": 1.0,
+        "freeWatering": true,
+        "damageChance": 0.12,
+        "pestChance": 0.04,
+        "description": "Arrosage gratuit, mais 12 % de risque de dégâts par parcelle."
+      },
+      {
+        "weather": "heatwave",
+        "emoji": "🔥",
+        "label": "Canicule",
+        "weights": {
+          "spring": 3,
+          "summer": 13,
+          "autumn": 3,
+          "winter": 0
+        },
+        "yieldModifier": 0.85,
+        "growthModifier": 1.15,
+        "freeWatering": false,
+        "damageChance": 0.08,
+        "pestChance": 0.03,
+        "description": "Pousse accélérée mais deux fois plus d'eau nécessaire."
+      },
+      {
+        "weather": "frost",
+        "emoji": "🥶",
+        "label": "Gel",
+        "weights": {
+          "spring": 2,
+          "summer": 0,
+          "autumn": 5,
+          "winter": 25
+        },
+        "yieldModifier": 0.8,
+        "growthModifier": 0.8,
+        "freeWatering": false,
+        "damageChance": 0.15,
+        "pestChance": 0.01,
+        "description": "Le gel ralentit tout et abîme les cultures fragiles."
+      },
+      {
+        "weather": "snow",
+        "emoji": "❄️",
+        "label": "Neige",
+        "weights": {
+          "spring": 0,
+          "summer": 0,
+          "autumn": 0,
+          "winter": 15
+        },
+        "yieldModifier": 0.9,
+        "growthModifier": 0.85,
+        "freeWatering": true,
+        "damageChance": 0.05,
+        "pestChance": 0.0,
+        "description": "Manteau neigeux : pousse lente, mais aucun nuisible."
+      }
+    ],
+    "heatwaveWaterMultiplier": 2
+  },
+  "market": {
+    "updateMinutes": 60,
+    "volatility": 0.08,
+    "priceFloorPct": 0.55,
+    "priceCeilPct": 1.8,
+    "demandSmoothing": 0.35,
+    "demandDecay": 0.5,
+    "referenceVolumeBase": 120,
+    "referenceVolumeRarityDivisor": {
+      "common": 1,
+      "uncommon": 2,
+      "rare": 4,
+      "epic": 8,
+      "legendary": 16,
+      "mythic": 32
+    },
+    "featuredCount": 3,
+    "featuredBonus": 0.15,
+    "historyRetentionDays": 30,
+    "historyPointsForChart": 48
+  },
+  "shop": {
+    "dailySlots": 6,
+    "rotationHourUtc": 0,
+    "discountChance": 0.3,
+    "discountRange": [
+      10,
+      40
+    ],
+    "stockRange": [
+      3,
+      25
+    ],
+    "featuredCount": 1,
+    "seedStockMultiplier": 4
+  },
+  "auction": {
+    "commissionRate": 0.05,
+    "listingFeeRate": 0.02,
+    "minListingFee": 25,
+    "durationsHours": [
+      6,
+      12,
+      24,
+      48
+    ],
+    "defaultDurationHours": 24,
+    "maxActiveListings": 8,
+    "minPricePctOfMarket": 0.4,
+    "maxPricePctOfMarket": 5.0,
+    "minBidIncrementPct": 0.05,
+    "antiSnipeExtensionMinutes": 5
+  },
+  "trade": {
+    "expiryMinutes": 10,
+    "maxItemsPerSide": 8,
+    "maxCoinsPerSide": 5000000,
+    "minLevel": 5,
+    "taxRate": 0.02
+  },
+  "bank": {
+    "tiers": [
+      {
+        "tier": 1,
+        "requiredLevel": 1,
+        "capacity": 50000,
+        "interestRate": 0.005,
+        "interestCap": 500,
+        "upgradeCost": 0
+      },
+      {
+        "tier": 2,
+        "requiredLevel": 10,
+        "capacity": 250000,
+        "interestRate": 0.006,
+        "interestCap": 2500,
+        "upgradeCost": 20000
+      },
+      {
+        "tier": 3,
+        "requiredLevel": 20,
+        "capacity": 1000000,
+        "interestRate": 0.007,
+        "interestCap": 10000,
+        "upgradeCost": 120000
+      },
+      {
+        "tier": 4,
+        "requiredLevel": 30,
+        "capacity": 5000000,
+        "interestRate": 0.008,
+        "interestCap": 45000,
+        "upgradeCost": 600000
+      },
+      {
+        "tier": 5,
+        "requiredLevel": 40,
+        "capacity": 25000000,
+        "interestRate": 0.009,
+        "interestCap": 200000,
+        "upgradeCost": 3000000
+      },
+      {
+        "tier": 6,
+        "requiredLevel": 50,
+        "capacity": 100000000,
+        "interestRate": 0.01,
+        "interestCap": 800000,
+        "upgradeCost": 15000000
+      }
+    ],
+    "theftProtection": true,
+    "withdrawFeeRate": 0.0
+  },
+  "energy": {
+    "enabled": true,
+    "startingMax": 100,
+    "regenPerMinute": 1,
+    "costs": {
+      "plant": 1,
+      "water": 1,
+      "harvest": 2,
+      "fertilize": 1,
+      "weed": 1,
+      "treat": 2,
+      "feed": 1,
+      "collect": 1,
+      "pet": 1,
+      "heal": 3,
+      "breed": 5,
+      "craft": 2,
+      "help": 2
+    },
+    "refillGemCost": 15
+  },
+  "daily": {
+    "baseCoins": 250,
+    "coinsPerStreakDay": 60,
+    "maxStreakBonusCoins": 2400,
+    "baseXp": 60,
+    "xpPerStreakDay": 15,
+    "gemsEveryNDays": 7,
+    "gemsAmount": 3,
+    "itemRewardChance": 0.35,
+    "streakGraceHours": 30
+  },
+  "quests": {
+    "dailyCount": 4,
+    "weeklyCount": 3,
+    "rerollCostCoins": 500,
+    "rerollCostGrowth": 2.0,
+    "maxRerollsPerDay": 3,
+    "contractCount": 3,
+    "contractRefreshHours": 8,
+    "storyChainKey": "village",
+    "rewardLevelScale": 0.12,
+    "amountLevelScale": 0.05
+  },
+  "seasonPass": {
+    "maxTier": 30,
+    "xpPerTier": 500,
+    "premiumSource": "vote_or_boost",
+    "premiumVotesRequired": 10
+  },
+  "coop": {
+    "creationCostCoins": 25000,
+    "creationMinLevel": 10,
+    "baseMemberLimit": 10,
+    "memberLimitPerLevel": 2,
+    "xpPerLevel": {
+      "base": 5000,
+      "exponent": 1.6
+    },
+    "maxLevel": 30,
+    "contributionXpRatio": 0.02,
+    "weeklyObjectiveCount": 3,
+    "bonusesPerLevel": {
+      "growthSpeed": 0.004,
+      "sellBonus": 0.003,
+      "xpBonus": 0.004,
+      "qualityBonus": 0.002
+    },
+    "treasuryWithdrawRoles": [
+      "owner",
+      "officer"
+    ],
+    "leaveCooldownHours": 24
+  },
+  "social": {
+    "visitRewardCoins": 120,
+    "visitRewardXp": 15,
+    "helpRewardCoins": 200,
+    "helpRewardXp": 25,
+    "maxHelpsPerDay": 10,
+    "referralRewardCoins": 5000,
+    "referralRewardGems": 10,
+    "referralQualifyLevel": 10,
+    "referredStartBonusCoins": 1500
+  },
+  "vote": {
+    "rewardGems": 5,
+    "weekendMultiplier": 2,
+    "streakBonusGems": 1,
+    "maxStreakBonusGems": 10,
+    "rewardCoins": 1500,
+    "cooldownHours": 12
+  },
+  "animals": {
+    "hungerProductionThreshold": 25,
+    "happinessProductionThreshold": 20,
+    "sickHealthThreshold": 25,
+    "starvationHoursBeforeSickness": 24,
+    "starvationHoursBeforeDeath": 96,
+    "petCooldownSeconds": 3600,
+    "petHappinessGain": 12,
+    "feedHungerGain": 45,
+    "vetCostBase": 500,
+    "vetCostPerLevel": 120,
+    "breedingCostCoins": 1200,
+    "breedingSuccessChance": 0.75,
+    "breedingQualityInheritance": 0.5,
+    "maxPendingProduction": 5,
+    "hungerYieldPenalty": 0.5,
+    "happinessQualityBonus": 0.15,
+    "sellPriceRatio": 0.6
+  },
+  "economy": {
+    "startingCoins": 500,
+    "startingGems": 0,
+    "salesTaxRate": 0.03,
+    "salesTaxFreeLevel": 5,
+    "giftTaxRate": 0.05,
+    "giftMinLevel": 5,
+    "giftDailyLimit": 50000,
+    "sellDirectPenalty": 0.15,
+    "inflationAlertDailyGrowth": 0.08,
+    "suspicionThresholds": {
+      "warn": 50,
+      "review": 120,
+      "autoBan": 250
+    }
+  },
+  "cooldowns": {
+    "default": 2,
+    "daily": 0,
+    "vote": 0,
+    "help": 60,
+    "visit": 30,
+    "reroll": 5,
+    "breed": 30,
+    "prestige": 86400,
+    "coop_create": 3600,
+    "market": 5,
+    "classement": 10
+  },
+  "rateLimit": {
+    "commandsPerMinute": 30,
+    "commandsPerHour": 600,
+    "interactionsPerMinute": 60,
+    "penaltySeconds": 60
+  },
+  "render": {
+    "farm": {
+      "tileSize": 96,
+      "padding": 28,
+      "headerHeight": 132,
+      "maxWidth": 1100
+    },
+    "profile": {
+      "width": 900,
+      "height": 520
+    },
+    "chart": {
+      "width": 900,
+      "height": 460
+    },
+    "leaderboard": {
+      "width": 900,
+      "height": 700
+    },
+    "quality": 0.85
+  },
+  "notifications": {
+    "cropReadyEnabled": true,
+    "animalHungryThreshold": 30,
+    "batchWindowMinutes": 10,
+    "maxPerUserPerDay": 12,
+    "dispatchRatePerSecond": 4
+  }
+}

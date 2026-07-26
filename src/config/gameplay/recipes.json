@@ -1,0 +1,507 @@
+[
+  {
+    "key": "flour",
+    "name": "Farine",
+    "emoji": "🌾",
+    "buildingKey": "mill",
+    "outputItemKey": "flour",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "wheat", "quantity": 3 }],
+    "durationSeconds": 300,
+    "requiredLevel": 4,
+    "xpReward": 8,
+    "category": "boulangerie",
+    "sortOrder": 10
+  },
+  {
+    "key": "bread",
+    "name": "Pain",
+    "emoji": "🍞",
+    "buildingKey": "mill",
+    "outputItemKey": "bread",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "flour", "quantity": 2 },
+      { "itemKey": "egg", "quantity": 1 }
+    ],
+    "durationSeconds": 600,
+    "requiredLevel": 6,
+    "xpReward": 14,
+    "category": "boulangerie",
+    "sortOrder": 20
+  },
+  {
+    "key": "fertilizer_basic",
+    "name": "Compost",
+    "emoji": "💩",
+    "buildingKey": "workshop",
+    "outputItemKey": "fertilizer_basic",
+    "outputQuantity": 2,
+    "ingredients": [
+      { "itemKey": "weeds", "quantity": 8 },
+      { "itemKey": "wheat", "quantity": 2 }
+    ],
+    "durationSeconds": 1200,
+    "requiredLevel": 5,
+    "xpReward": 12,
+    "category": "atelier",
+    "sortOrder": 30
+  },
+  {
+    "key": "vegetable_soup",
+    "name": "Soupe de légumes",
+    "emoji": "🥣",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "vegetable_soup",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "carrot", "quantity": 2 },
+      { "itemKey": "potato", "quantity": 2 },
+      { "itemKey": "lettuce", "quantity": 2 }
+    ],
+    "durationSeconds": 900,
+    "requiredLevel": 9,
+    "xpReward": 18,
+    "category": "conserverie",
+    "sortOrder": 40
+  },
+  {
+    "key": "ketchup",
+    "name": "Ketchup",
+    "emoji": "🧴",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "ketchup",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "tomato", "quantity": 4 }],
+    "durationSeconds": 1200,
+    "requiredLevel": 9,
+    "xpReward": 20,
+    "category": "conserverie",
+    "sortOrder": 50
+  },
+  {
+    "key": "hot_sauce",
+    "name": "Sauce piquante",
+    "emoji": "🌶️",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "hot_sauce",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "pepper", "quantity": 4 }],
+    "durationSeconds": 1500,
+    "requiredLevel": 10,
+    "xpReward": 26,
+    "category": "conserverie",
+    "sortOrder": 60
+  },
+  {
+    "key": "spun_wool",
+    "name": "Laine filée",
+    "emoji": "🧶",
+    "buildingKey": "workshop",
+    "outputItemKey": "spun_wool",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "wool", "quantity": 3 }],
+    "durationSeconds": 1800,
+    "requiredLevel": 10,
+    "xpReward": 30,
+    "category": "atelier",
+    "sortOrder": 70
+  },
+  {
+    "key": "melon_nectar",
+    "name": "Nectar de melon",
+    "emoji": "🧃",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "melon_nectar",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "melon", "quantity": 3 }],
+    "durationSeconds": 2100,
+    "requiredLevel": 12,
+    "xpReward": 32,
+    "category": "conserverie",
+    "sortOrder": 80
+  },
+  {
+    "key": "goat_cheese",
+    "name": "Fromage de chèvre",
+    "emoji": "🧀",
+    "buildingKey": "creamery",
+    "outputItemKey": "goat_cheese",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "goat_milk", "quantity": 2 }],
+    "durationSeconds": 2100,
+    "requiredLevel": 12,
+    "xpReward": 34,
+    "category": "laiterie",
+    "sortOrder": 90
+  },
+  {
+    "key": "cheese",
+    "name": "Fromage",
+    "emoji": "🧀",
+    "buildingKey": "creamery",
+    "outputItemKey": "cheese",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "milk", "quantity": 2 }],
+    "durationSeconds": 2400,
+    "requiredLevel": 12,
+    "xpReward": 40,
+    "category": "laiterie",
+    "sortOrder": 100
+  },
+  {
+    "key": "jam_strawberry",
+    "name": "Confiture de fraises",
+    "emoji": "🍓",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "jam_strawberry",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "strawberry", "quantity": 5 },
+      { "itemKey": "honey", "quantity": 1 }
+    ],
+    "durationSeconds": 1800,
+    "requiredLevel": 13,
+    "xpReward": 34,
+    "category": "conserverie",
+    "sortOrder": 110
+  },
+  {
+    "key": "butter",
+    "name": "Beurre",
+    "emoji": "🧈",
+    "buildingKey": "creamery",
+    "outputItemKey": "butter",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "milk", "quantity": 3 }],
+    "durationSeconds": 3600,
+    "requiredLevel": 14,
+    "xpReward": 55,
+    "category": "laiterie",
+    "sortOrder": 120
+  },
+  {
+    "key": "strawberry_yogurt",
+    "name": "Yaourt à la fraise",
+    "emoji": "🍨",
+    "buildingKey": "creamery",
+    "outputItemKey": "strawberry_yogurt",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "milk", "quantity": 2 },
+      { "itemKey": "strawberry", "quantity": 3 }
+    ],
+    "durationSeconds": 3000,
+    "requiredLevel": 15,
+    "xpReward": 48,
+    "category": "laiterie",
+    "sortOrder": 130
+  },
+  {
+    "key": "wine",
+    "name": "Vin",
+    "emoji": "🍷",
+    "buildingKey": "brewery",
+    "outputItemKey": "wine",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "grape", "quantity": 6 }],
+    "durationSeconds": 14400,
+    "requiredLevel": 15,
+    "xpReward": 70,
+    "category": "brasserie",
+    "sortOrder": 140
+  },
+  {
+    "key": "beer",
+    "name": "Bière",
+    "emoji": "🍺",
+    "buildingKey": "brewery",
+    "outputItemKey": "beer",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "hops", "quantity": 5 },
+      { "itemKey": "wheat", "quantity": 2 }
+    ],
+    "durationSeconds": 7200,
+    "requiredLevel": 16,
+    "xpReward": 46,
+    "category": "brasserie",
+    "sortOrder": 150
+  },
+  {
+    "key": "grape_juice",
+    "name": "Jus de raisin",
+    "emoji": "🧃",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "grape_juice",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "grape", "quantity": 4 }],
+    "durationSeconds": 2400,
+    "requiredLevel": 16,
+    "xpReward": 42,
+    "category": "conserverie",
+    "sortOrder": 160
+  },
+  {
+    "key": "jam_grape",
+    "name": "Confiture de raisin",
+    "emoji": "🍇",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "jam_grape",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "grape", "quantity": 5 },
+      { "itemKey": "honey", "quantity": 1 }
+    ],
+    "durationSeconds": 2700,
+    "requiredLevel": 17,
+    "xpReward": 50,
+    "category": "conserverie",
+    "sortOrder": 170
+  },
+  {
+    "key": "sunflower_oil",
+    "name": "Huile de tournesol",
+    "emoji": "🫙",
+    "buildingKey": "oil_press",
+    "outputItemKey": "sunflower_oil",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "sunflower", "quantity": 4 }],
+    "durationSeconds": 3600,
+    "requiredLevel": 18,
+    "xpReward": 44,
+    "category": "huilerie",
+    "sortOrder": 180
+  },
+  {
+    "key": "mead",
+    "name": "Hydromel",
+    "emoji": "🍯",
+    "buildingKey": "brewery",
+    "outputItemKey": "mead",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "honey", "quantity": 4 },
+      { "itemKey": "hops", "quantity": 2 }
+    ],
+    "durationSeconds": 10800,
+    "requiredLevel": 19,
+    "xpReward": 66,
+    "category": "brasserie",
+    "sortOrder": 190
+  },
+  {
+    "key": "roasted_coffee",
+    "name": "Café torréfié",
+    "emoji": "☕",
+    "buildingKey": "smokehouse",
+    "outputItemKey": "roasted_coffee",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "coffee", "quantity": 3 }],
+    "durationSeconds": 3600,
+    "requiredLevel": 20,
+    "xpReward": 52,
+    "category": "fumoir",
+    "sortOrder": 200
+  },
+  {
+    "key": "fine_cloth",
+    "name": "Tissu fin",
+    "emoji": "🪡",
+    "buildingKey": "workshop",
+    "outputItemKey": "fine_cloth",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "fine_wool", "quantity": 3 }],
+    "durationSeconds": 5400,
+    "requiredLevel": 22,
+    "xpReward": 130,
+    "category": "atelier",
+    "sortOrder": 210
+  },
+  {
+    "key": "lavender_soap",
+    "name": "Savon de lavande",
+    "emoji": "🧼",
+    "buildingKey": "oil_press",
+    "outputItemKey": "lavender_soap",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "lavender", "quantity": 3 },
+      { "itemKey": "sunflower_oil", "quantity": 1 }
+    ],
+    "durationSeconds": 7200,
+    "requiredLevel": 22,
+    "xpReward": 100,
+    "category": "huilerie",
+    "sortOrder": 220
+  },
+  {
+    "key": "smoked_cheese",
+    "name": "Fromage fumé",
+    "emoji": "🧀",
+    "buildingKey": "smokehouse",
+    "outputItemKey": "smoked_cheese",
+    "outputQuantity": 1,
+    "ingredients": [{ "itemKey": "cheese", "quantity": 2 }],
+    "durationSeconds": 5400,
+    "requiredLevel": 23,
+    "xpReward": 105,
+    "category": "fumoir",
+    "sortOrder": 230
+  },
+  {
+    "key": "chocolate",
+    "name": "Chocolat",
+    "emoji": "🍫",
+    "buildingKey": "confectionery",
+    "outputItemKey": "chocolate",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "cacao", "quantity": 3 },
+      { "itemKey": "milk", "quantity": 1 }
+    ],
+    "durationSeconds": 7200,
+    "requiredLevel": 25,
+    "xpReward": 90,
+    "category": "confiserie",
+    "sortOrder": 240
+  },
+  {
+    "key": "smoked_truffle",
+    "name": "Truffe fumée",
+    "emoji": "🍖",
+    "buildingKey": "smokehouse",
+    "outputItemKey": "smoked_truffle",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "wild_truffle", "quantity": 1 },
+      { "itemKey": "sunflower_oil", "quantity": 1 }
+    ],
+    "durationSeconds": 7200,
+    "requiredLevel": 25,
+    "xpReward": 112,
+    "category": "fumoir",
+    "sortOrder": 250
+  },
+  {
+    "key": "cake",
+    "name": "Gâteau",
+    "emoji": "🍰",
+    "buildingKey": "confectionery",
+    "outputItemKey": "cake",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "flour", "quantity": 2 },
+      { "itemKey": "egg", "quantity": 3 },
+      { "itemKey": "butter", "quantity": 1 }
+    ],
+    "durationSeconds": 5400,
+    "requiredLevel": 26,
+    "xpReward": 95,
+    "category": "confiserie",
+    "sortOrder": 260
+  },
+  {
+    "key": "pumpkin_pie",
+    "name": "Tarte à la citrouille",
+    "emoji": "🥧",
+    "buildingKey": "confectionery",
+    "outputItemKey": "pumpkin_pie",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "pumpkin", "quantity": 1 },
+      { "itemKey": "flour", "quantity": 2 },
+      { "itemKey": "butter", "quantity": 1 }
+    ],
+    "durationSeconds": 6300,
+    "requiredLevel": 26,
+    "xpReward": 100,
+    "category": "confiserie",
+    "sortOrder": 270
+  },
+  {
+    "key": "vanilla_praline",
+    "name": "Praline de vanille",
+    "emoji": "🍬",
+    "buildingKey": "confectionery",
+    "outputItemKey": "vanilla_praline",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "vanilla", "quantity": 2 },
+      { "itemKey": "chocolate", "quantity": 2 }
+    ],
+    "durationSeconds": 14400,
+    "requiredLevel": 28,
+    "xpReward": 330,
+    "category": "confiserie",
+    "sortOrder": 280
+  },
+  {
+    "key": "ginseng_elixir",
+    "name": "Élixir de ginseng",
+    "emoji": "⚗️",
+    "buildingKey": "workshop",
+    "outputItemKey": "ginseng_elixir",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "ginseng", "quantity": 2 },
+      { "itemKey": "honey", "quantity": 1 }
+    ],
+    "durationSeconds": 14400,
+    "requiredLevel": 30,
+    "xpReward": 150,
+    "category": "atelier",
+    "sortOrder": 290
+  },
+  {
+    "key": "truffle_oil",
+    "name": "Huile de truffe",
+    "emoji": "🫗",
+    "buildingKey": "oil_press",
+    "outputItemKey": "truffle_oil",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "truffle", "quantity": 1 },
+      { "itemKey": "sunflower_oil", "quantity": 2 }
+    ],
+    "durationSeconds": 10800,
+    "requiredLevel": 32,
+    "xpReward": 180,
+    "category": "huilerie",
+    "sortOrder": 300
+  },
+  {
+    "key": "saffron_essence",
+    "name": "Essence de safran",
+    "emoji": "🧪",
+    "buildingKey": "oil_press",
+    "outputItemKey": "saffron_essence",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "saffron", "quantity": 3 },
+      { "itemKey": "sunflower_oil", "quantity": 1 }
+    ],
+    "durationSeconds": 21600,
+    "requiredLevel": 36,
+    "xpReward": 420,
+    "category": "huilerie",
+    "sortOrder": 310
+  },
+  {
+    "key": "dragon_potion",
+    "name": "Potion de dragon",
+    "emoji": "🧫",
+    "buildingKey": "workshop",
+    "outputItemKey": "dragon_potion",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "itemKey": "dragon_scale", "quantity": 1 },
+      { "itemKey": "ginseng_elixir", "quantity": 1 }
+    ],
+    "durationSeconds": 28800,
+    "requiredLevel": 42,
+    "xpReward": 900,
+    "category": "atelier",
+    "sortOrder": 320
+  }
+]

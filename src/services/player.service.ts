@@ -1,0 +1,494 @@
+import { balance as getBalance, getConfig } from '../config';
+import { env } from '../config/env';
+import { getDb, withTransaction, type Executor } from '../db/client';
+import { addXp, levelRewardCoins, levelRewardGems, levelFromTotalXp, xpForNextLevel } from '../game/xp';
+import { energyCost, hasEnergy, projectEnergy, spendEnergy, type EnergyProjection } from '../game/energy';
+import { buildModifiers, type FarmModifiers, type ModifierSources } from '../game/modifiers';
+import { coopBonuses } from '../game/coop';
+import { gameError } from '../utils/errors';
+import { moduleLogger } from '../utils/logger';
+import * as animalRepo from '../repositories/animal.repo';
+import * as economyRepo from '../repositories/economy.repo';
+import * as inventoryRepo from '../repositories/inventory.repo';
+import * as playerRepo from '../repositories/player.repo';
+import * as progressionRepo from '../repositories/progression.repo';
+import { getWorldState, globalMultipliers } from './world.service';
+import type { PlayerContext } from '../types';
+
+const log = moduleLogger('player');
+
+/**
+ * Cycle de vie du joueur : création, progression, énergie, modificateurs.
+ *
+ * `ensurePlayer()` est appelé au début de CHAQUE interaction : c'est le point
+ * d'entrée qui garantit qu'un joueur existe et que ses métadonnées Discord sont
+ * à jour. Il est optimisé pour une seule requête en régime normal.
+ */
+
+export interface EnsurePlayerInput {
+  discordId: string;
+  username: string;
+  displayName?: string;
+  avatarHash?: string;
+  discordLocale?: string;
+  discordGuildId?: string;
+  /** Créer le compte s'il n'existe pas (vrai uniquement pour `/start`). */
+  createIfMissing?: boolean;
+  referralCode?: string;
+}
+
+export interface EnsurePlayerResult {
+  player: PlayerContext;
+  created: boolean;
+}
+
+export async function ensurePlayer(input: EnsurePlayerInput): Promise<EnsurePlayerResult | null> {
+  const bundle = await playerRepo.loadPlayerBundle(input.discordId);
+
+  if (bundle) {
+    // Mise à jour opportuniste des métadonnées : on ne bloque pas la commande
+    // dessus (pas de `await` sur le chemin critique en cas d'erreur).
+    void playerRepo
+      .touchUser(bundle.user.id, {
+        username: input.username,
+        displayName: input.displayName,
+        avatarHash: input.avatarHash,
+        discordGuildId: input.discordGuildId,
+      })
+      .catch((error: unknown) => log.warn({ err: error }, 'touchUser a échoué'));
+
+    return { player: toPlayerContext(bundle), created: false };
+  }
+
+  if (!input.createIfMissing) return null;
+
+  const created = await createPlayer(input);
+  return { player: created, created: true };
+}
+
+async function createPlayer(input: EnsurePlayerInput): Promise<PlayerContext> {
+  const balance = getBalance();
+  const config = getConfig();
+
+  return withTransaction(async (tx) => {
+    let referrerId: string | undefined;
+    let startingBonus = 0;
+    if (input.referralCode) {
+      const referrer = await playerRepo.findUserByReferralCode(input.referralCode, tx);
+      if (referrer) {
+        referrerId = referrer.id;
+        startingBonus = balance.social.referredStartBonusCoins;
+      }
+    }
+
+    const { user, farm, settings } = await playerRepo.createPlayer(
+      {
+        discordId: input.discordId,
+        username: input.username,
+        displayName: input.displayName,
+        avatarHash: input.avatarHash,
+        locale: input.discordLocale?.startsWith('en') ? 'en' : 'fr',
+        balance,
+        referrerId,
+        startingCoinsBonus: startingBonus,
+      },
+      tx,
+    );
+
+    // Kit de départ : de quoi jouer immédiatement sans passer par la boutique.
+    // Le choix des objets est délibéré — deux cultures très rapides pour la
+    // boucle d'apprentissage, un engrais pour découvrir la mécanique de sol,
+    // et l'arrosoir de base qui est un OUTIL (donc jamais consommé).
+    await inventoryRepo.addItems(
+      user.id,
+      [
+        { key: { itemKey: 'seed_wheat' }, quantity: 10 },
+        { key: { itemKey: 'seed_carrot' }, quantity: 5 },
+        { key: { itemKey: 'fertilizer_basic' }, quantity: 2 },
+        { key: { itemKey: 'tool_wateringcan_wood' }, quantity: 1 },
+        { key: { itemKey: 'feed_grain' }, quantity: 10 },
+      ],
+      tx,
+    );
+
+    // Entrepôt et maison de niveau 1 : offerts, ils matérialisent la capacité
+    // d'inventaire et l'énergie maximale sans que le joueur ait à les construire.
+    for (const buildingKey of ['warehouse', 'house']) {
+      const building = config.buildings.get(buildingKey);
+      const tier = building?.tiers[0];
+      if (!building || !tier) continue;
+      await animalRepo.upsertBuilding(
+        {
+          farmId: farm.id,
+          userId: user.id,
+          buildingKey,
+          tier: 1,
+          capacity: tier.capacity,
+          slots: tier.slots,
+          speedMultiplier: tier.speedMultiplier.toFixed(3),
+          totalInvested: 0,
+        },
+        tx,
+      );
+    }
+
+    // Le solde de départ est déjà posé par l'INSERT de `createPlayer` ; on écrit
+    // seulement la ligne comptable correspondante pour que l'égalité
+    // « solde = somme du journal » soit vraie dès la création.
+    const startingCoins = balance.economy.startingCoins + startingBonus;
+    await economyRepo.recordGenesisLedger(
+      {
+        userId: user.id,
+        type: 'starting_bonus',
+        amount: startingCoins,
+        balanceAfter: startingCoins,
+        metadata: { referred: Boolean(referrerId) },
+      },
+      tx,
+    );
+
+    log.info({ userId: user.id, discordId: input.discordId }, 'nouvelle ferme créée');
+
+    return {
+      id: user.id,
+      discordId: user.discordId,
+      username: user.username,
+      level: user.level,
+      xp: user.xp,
+      coins: balance.economy.startingCoins + startingBonus,
+      gems: user.gems,
+      prestige: user.prestige,
+      energy: user.energy,
+      energyMax: user.energyMax,
+      locale: settings.locale,
+      isAdmin: env.BOT_OWNER_IDS.includes(user.discordId),
+      ecoBannedUntil: user.ecoBannedUntil,
+      farmId: farm.id,
+      coopId: null,
+      coopRole: null,
+      created: true,
+    };
+  });
+}
+
+function toPlayerContext(bundle: playerRepo.PlayerBundle): PlayerContext {
+  return {
+    id: bundle.user.id,
+    discordId: bundle.user.discordId,
+    username: bundle.user.displayName ?? bundle.user.username,
+    level: bundle.user.level,
+    xp: bundle.user.xp,
+    coins: bundle.user.coins,
+    gems: bundle.user.gems,
+    prestige: bundle.user.prestige,
+    energy: bundle.user.energy,
+    energyMax: bundle.user.energyMax,
+    locale: bundle.settings.locale,
+    isAdmin: bundle.user.isAdmin || env.BOT_OWNER_IDS.includes(bundle.user.discordId),
+    ecoBannedUntil: bundle.user.ecoBannedUntil,
+    farmId: bundle.farm.id,
+    coopId: bundle.coop?.id ?? null,
+    coopRole: bundle.coop?.role ?? null,
+    created: false,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Progression
+// ---------------------------------------------------------------------------
+
+export interface XpGainResult {
+  level: number;
+  xpInLevel: number;
+  xpForNext: number;
+  levelsGained: number;
+  rewardCoins: number;
+  rewardGems: number;
+  crossedLevels: number[];
+}
+
+/**
+ * Attribue de l'XP et distribue les récompenses de palier.
+ * Toujours appelé DANS la transaction de l'action qui l'a produite : si la
+ * récolte échoue, l'XP n'est pas accordée.
+ */
+export async function grantXp(
+  userId: string,
+  amount: number,
+  tx: Executor,
+  options: { discordGuildId?: string } = {},
+): Promise<XpGainResult> {
+  const balance = getBalance();
+  const user = await playerRepo.findUserById(userId, tx);
+  if (!user) throw gameError('not_registered', 'Joueur introuvable.');
+
+  const result = addXp({ level: user.level, xp: user.xp }, amount, balance);
+  await playerRepo.setLevelAndXp(
+    userId,
+    { level: result.level, xp: result.xpInLevel, totalXpDelta: Math.max(0, Math.floor(amount)) },
+    tx,
+  );
+
+  let rewardCoins = 0;
+  let rewardGems = 0;
+  for (const level of result.crossedLevels) {
+    rewardCoins += levelRewardCoins(level, balance);
+    rewardGems += levelRewardGems(level, balance);
+  }
+
+  if (rewardCoins > 0) {
+    await economyRepo.credit(
+      {
+        userId,
+        type: 'level_reward',
+        amount: rewardCoins,
+        discordGuildId: options.discordGuildId ?? null,
+        metadata: { levels: result.crossedLevels },
+      },
+      tx,
+    );
+  }
+  if (rewardGems > 0) {
+    await economyRepo.credit(
+      {
+        userId,
+        type: 'level_reward',
+        currency: 'gems',
+        amount: rewardGems,
+        metadata: { levels: result.crossedLevels },
+      },
+      tx,
+    );
+  }
+
+  if (result.levelsGained > 0) {
+    // Les quêtes et succès « atteindre le niveau N » sont mis à jour ici, une
+    // seule fois, plutôt que d'être vérifiés à chaque action.
+    await progressionRepo.setQuestProgress(userId, 'reach_level', result.level, tx);
+    await progressionRepo.setAchievementProgress(userId, 'reach_level', result.level, tx);
+  }
+
+  return {
+    level: result.level,
+    xpInLevel: result.xpInLevel,
+    xpForNext: result.xpForNext,
+    levelsGained: result.levelsGained,
+    rewardCoins,
+    rewardGems,
+    crossedLevels: result.crossedLevels,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Énergie
+// ---------------------------------------------------------------------------
+
+export async function getEnergy(
+  userId: string,
+  now: Date = new Date(),
+  executor: Executor = getDb(),
+): Promise<EnergyProjection> {
+  const user = await playerRepo.findUserById(userId, executor);
+  if (!user) throw gameError('not_registered', 'Joueur introuvable.');
+  return projectEnergy(
+    { energy: user.energy, energyMax: user.energyMax, energyUpdatedAt: user.energyUpdatedAt },
+    now,
+    getBalance(),
+  );
+}
+
+/**
+ * Vérifie et consomme l'énergie d'une action.
+ * Lève `insufficient_energy` sans rien modifier si le joueur n'a pas assez.
+ */
+export async function consumeEnergy(
+  userId: string,
+  action: string,
+  tx: Executor,
+  options: { quantity?: number; costReduction?: number; now?: Date } = {},
+): Promise<{ spent: number; remaining: number }> {
+  const balance = getBalance();
+  if (!balance.energy.enabled) return { spent: 0, remaining: 0 };
+
+  const now = options.now ?? new Date();
+  const projection = await getEnergy(userId, now, tx);
+  const cost = energyCost(action, balance, options.costReduction ?? 0, options.quantity ?? 1);
+
+  if (!hasEnergy(projection, cost)) {
+    throw gameError(
+      'insufficient_energy',
+      `Il vous faut ${cost} ⚡ (vous avez ${projection.current}).`,
+      {
+        hint: `L'énergie remonte de ${balance.energy.regenPerMinute} point/minute. Un jus d'énergie en rend ${50}.`,
+        context: { cost, current: projection.current },
+        suggestedCommand: 'boutique',
+      },
+    );
+  }
+
+  const next = spendEnergy(projection, cost, now);
+  await playerRepo.setEnergy(userId, next, tx);
+  return { spent: cost, remaining: next.energy };
+}
+
+// ---------------------------------------------------------------------------
+// Modificateurs de ferme
+// ---------------------------------------------------------------------------
+
+/**
+ * Assemble les modificateurs actifs d'un joueur.
+ *
+ * Coûteux (4 requêtes) mais mis en cache 60 s : les bâtiments, outils et animaux
+ * ne changent pas d'une seconde à l'autre, alors qu'une session de jeu enchaîne
+ * plusieurs actions qui en ont besoin.
+ */
+export async function getFarmModifiers(
+  player: { id: string; farmId: string; prestige: number; coopId: string | null },
+  options: { coopLevel?: number; now?: Date } = {},
+): Promise<FarmModifiers> {
+  const config = getConfig();
+  const balance = getBalance();
+  const world = await getWorldState(options.now);
+  const globals = globalMultipliers();
+
+  const [buildings, animals, tools] = await Promise.all([
+    animalRepo.listBuildings(player.farmId),
+    animalRepo.listAnimals(player.farmId),
+    inventoryRepo.listInventory(player.id, { category: 'tool' }),
+  ]);
+
+  const animalCounts = new Map<string, number>();
+  for (const entry of animals) {
+    animalCounts.set(entry.animalKey, (animalCounts.get(entry.animalKey) ?? 0) + 1);
+  }
+
+  const sources: ModifierSources = {
+    buildings: buildings
+      .map((entry) => {
+        const buildingConfig = config.buildings.get(entry.buildingKey);
+        return buildingConfig
+          ? {
+              config: buildingConfig,
+              tier: entry.building.tier,
+              speedMultiplier: Number(entry.building.speedMultiplier),
+            }
+          : undefined;
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined),
+    tools: tools
+      .map((entry) => config.items.get(entry.itemKey))
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined),
+    animals: [...animalCounts.entries()]
+      .map(([animalKey, count]) => {
+        const animalConfig = config.animals.get(animalKey);
+        return animalConfig ? { config: animalConfig, count } : undefined;
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined),
+    coopLevel: options.coopLevel ?? 0,
+    prestige: player.prestige,
+    activeBoosts: [],
+    eventModifiers: {
+      xpMultiplier: world.eventModifiers.xpMultiplier,
+      growthMultiplier: world.eventModifiers.growthMultiplier,
+      mutationMultiplier: world.eventModifiers.mutationMultiplier,
+      qualityBonus: world.eventModifiers.qualityBonus,
+    },
+    globalGrowthMultiplier: globals.growth,
+    globalEconomyMultiplier: globals.economy,
+  };
+
+  return buildModifiers(sources, balance);
+}
+
+/** Bonus de coopérative d'un joueur (0 s'il n'en a pas). */
+export function coopBonusesFor(coopLevel: number) {
+  return coopBonuses(coopLevel, getBalance());
+}
+
+// ---------------------------------------------------------------------------
+// Profil et statistiques
+// ---------------------------------------------------------------------------
+
+export interface PlayerProfile {
+  user: playerRepo.UserRow;
+  farm: playerRepo.FarmRow;
+  levelState: ReturnType<typeof levelFromTotalXp>;
+  xpForNext: number;
+  energy: EnergyProjection;
+  plotsUnlocked: number;
+  animalsAlive: number;
+  inventoryUsed: number;
+  inventoryCapacity: number;
+  bankBalance: number;
+  streak: number;
+  achievementsUnlocked: number;
+  coop: { name: string; tag: string; level: number; role: string } | null;
+  rank: { wealth?: number; level?: number } ;
+}
+
+export async function getProfile(discordId: string): Promise<PlayerProfile | null> {
+  const bundle = await playerRepo.loadPlayerBundle(discordId);
+  if (!bundle) return null;
+  const balance = getBalance();
+
+  const [plotsUnlocked, animals, inventoryUsed, bank, streak, achievements] = await Promise.all([
+    (await import('../repositories/farm.repo')).countUnlockedPlots(bundle.farm.id),
+    animalRepo.listAnimals(bundle.farm.id),
+    inventoryRepo.totalQuantity(bundle.user.id),
+    playerRepo.getBankAccount(bundle.user.id),
+    playerRepo.getDailyStreak(bundle.user.id),
+    progressionRepo.listAchievements(bundle.user.id, undefined),
+  ]);
+
+  return {
+    user: bundle.user,
+    farm: bundle.farm,
+    levelState: levelFromTotalXp(bundle.user.totalXp, balance),
+    xpForNext: xpForNextLevel(bundle.user.level, balance),
+    energy: projectEnergy(
+      {
+        energy: bundle.user.energy,
+        energyMax: bundle.user.energyMax,
+        energyUpdatedAt: bundle.user.energyUpdatedAt,
+      },
+      new Date(),
+      balance,
+    ),
+    plotsUnlocked,
+    animalsAlive: animals.length,
+    inventoryUsed,
+    inventoryCapacity: bundle.farm.warehouseCapacity,
+    bankBalance: bank?.balance ?? 0,
+    streak: streak?.currentStreak ?? 0,
+    achievementsUnlocked: achievements.filter((entry) => entry.unlocked).length,
+    coop: bundle.coop
+      ? {
+          name: bundle.coop.name,
+          tag: bundle.coop.tag,
+          level: bundle.coop.level,
+          role: bundle.coop.role,
+        }
+      : null,
+    rank: {},
+  };
+}
+
+/** Vérifie qu'un joueur n'est pas banni de l'économie. */
+export function assertNotEcoBanned(player: PlayerContext, now: Date = new Date()): void {
+  if (player.ecoBannedUntil && player.ecoBannedUntil.getTime() > now.getTime()) {
+    throw gameError(
+      'eco_banned',
+      `Votre accès à l'économie est suspendu jusqu'au ${player.ecoBannedUntil.toLocaleString('fr-FR')}.`,
+    );
+  }
+}
+
+/** Vérifie un niveau requis et lève une erreur explicite sinon. */
+export function assertLevel(player: { level: number }, required: number, what: string): void {
+  if (player.level < required) {
+    throw gameError('level_too_low', `${what} demande le niveau ${required}.`, {
+      hint: `Vous êtes niveau ${player.level}. Récoltez et terminez vos quêtes pour progresser.`,
+      context: { required, current: player.level },
+    });
+  }
+}

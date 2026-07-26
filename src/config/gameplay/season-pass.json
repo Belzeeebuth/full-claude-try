@@ -1,0 +1,447 @@
+[
+  {
+    "id": "pass_spring_y1",
+    "seasonKey": "spring_y1",
+    "name": "Passe du Printemps — An 1",
+    "description": "Le premier passe saisonnier de HarvestBot. 30 paliers, entièrement gratuit ; la piste premium se débloque en votant pour le bot ou en boostant un serveur — jamais avec de l'argent réel.",
+    "startsAt": "2026-03-20T00:00:00.000Z",
+    "endsAt": "2026-06-20T23:59:59.000Z",
+    "maxTier": 30,
+    "xpPerTier": 500,
+    "active": true,
+    "tiers": [
+      {
+        "tier": 1,
+        "free": {
+          "coins": 1200,
+          "xp": 140
+        },
+        "premium": {
+          "gems": 3,
+          "coins": 700
+        }
+      },
+      {
+        "tier": 2,
+        "free": {
+          "coins": 2100,
+          "xp": 180
+        },
+        "premium": {
+          "gems": 3,
+          "coins": 1250
+        }
+      },
+      {
+        "tier": 3,
+        "free": {
+          "coins": 3250,
+          "xp": 220,
+          "items": [
+            {
+              "itemKey": "fertilizer_basic",
+              "quantity": 3
+            }
+          ]
+        },
+        "premium": {
+          "gems": 3,
+          "coins": 1950
+        }
+      },
+      {
+        "tier": 4,
+        "free": {
+          "coins": 4500,
+          "xp": 260
+        },
+        "premium": {
+          "gems": 3,
+          "coins": 2700
+        }
+      },
+      {
+        "tier": 5,
+        "free": {
+          "coins": 5800,
+          "xp": 300
+        },
+        "premium": {
+          "gems": 4,
+          "coins": 3500,
+          "items": [
+            {
+              "itemKey": "quest_reroll_token",
+              "quantity": 3
+            }
+          ]
+        }
+      },
+      {
+        "tier": 6,
+        "free": {
+          "coins": 7200,
+          "xp": 340,
+          "items": [
+            {
+              "itemKey": "feed_grain",
+              "quantity": 20
+            }
+          ]
+        },
+        "premium": {
+          "gems": 4,
+          "coins": 4300
+        }
+      },
+      {
+        "tier": 7,
+        "free": {
+          "coins": 8650,
+          "xp": 380
+        },
+        "premium": {
+          "gems": 4,
+          "coins": 5200
+        }
+      },
+      {
+        "tier": 8,
+        "free": {
+          "coins": 10150,
+          "xp": 420
+        },
+        "premium": {
+          "gems": 4,
+          "coins": 6100
+        }
+      },
+      {
+        "tier": 9,
+        "free": {
+          "coins": 11650,
+          "xp": 460,
+          "items": [
+            {
+              "itemKey": "luck_ticket",
+              "quantity": 1
+            }
+          ]
+        },
+        "premium": {
+          "gems": 4,
+          "coins": 7000
+        }
+      },
+      {
+        "tier": 10,
+        "free": {
+          "coins": 13250,
+          "xp": 500,
+          "gems": 5
+        },
+        "premium": {
+          "gems": 5,
+          "coins": 7950,
+          "items": [
+            {
+              "itemKey": "streak_freeze",
+              "quantity": 2
+            }
+          ],
+          "title": "Fermier saisonnier"
+        }
+      },
+      {
+        "tier": 11,
+        "free": {
+          "coins": 14800,
+          "xp": 540
+        },
+        "premium": {
+          "gems": 5,
+          "coins": 8900
+        }
+      },
+      {
+        "tier": 12,
+        "free": {
+          "coins": 16450,
+          "xp": 580,
+          "items": [
+            {
+              "itemKey": "fertilizer_quality",
+              "quantity": 3
+            }
+          ]
+        },
+        "premium": {
+          "gems": 5,
+          "coins": 9850
+        }
+      },
+      {
+        "tier": 13,
+        "free": {
+          "coins": 18100,
+          "xp": 620
+        },
+        "premium": {
+          "gems": 5,
+          "coins": 10850
+        }
+      },
+      {
+        "tier": 14,
+        "free": {
+          "coins": 19750,
+          "xp": 660
+        },
+        "premium": {
+          "gems": 5,
+          "coins": 11850,
+          "items": [
+            {
+              "itemKey": "banner_sunset",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      {
+        "tier": 15,
+        "free": {
+          "coins": 21450,
+          "xp": 700,
+          "items": [
+            {
+              "itemKey": "xp_booster",
+              "quantity": 2
+            }
+          ]
+        },
+        "premium": {
+          "gems": 6,
+          "coins": 12850
+        }
+      },
+      {
+        "tier": 16,
+        "free": {
+          "coins": 23200,
+          "xp": 740
+        },
+        "premium": {
+          "gems": 6,
+          "coins": 13900
+        }
+      },
+      {
+        "tier": 17,
+        "free": {
+          "coins": 24900,
+          "xp": 780
+        },
+        "premium": {
+          "gems": 6,
+          "coins": 14950
+        }
+      },
+      {
+        "tier": 18,
+        "free": {
+          "coins": 26700,
+          "xp": 820,
+          "items": [
+            {
+              "itemKey": "feed_premium",
+              "quantity": 15
+            }
+          ]
+        },
+        "premium": {
+          "gems": 6,
+          "coins": 16000
+        }
+      },
+      {
+        "tier": 19,
+        "free": {
+          "coins": 28450,
+          "xp": 860
+        },
+        "premium": {
+          "gems": 6,
+          "coins": 17050
+        }
+      },
+      {
+        "tier": 20,
+        "free": {
+          "coins": 30250,
+          "xp": 900,
+          "gems": 5
+        },
+        "premium": {
+          "gems": 7,
+          "coins": 18150,
+          "items": [
+            {
+              "itemKey": "theme_autumn",
+              "quantity": 1
+            }
+          ],
+          "title": "Champion de la saison"
+        }
+      },
+      {
+        "tier": 21,
+        "free": {
+          "coins": 32050,
+          "xp": 940,
+          "items": [
+            {
+              "itemKey": "growth_booster",
+              "quantity": 2
+            }
+          ]
+        },
+        "premium": {
+          "gems": 7,
+          "coins": 19250
+        }
+      },
+      {
+        "tier": 22,
+        "free": {
+          "coins": 33900,
+          "xp": 980
+        },
+        "premium": {
+          "gems": 7,
+          "coins": 20350
+        }
+      },
+      {
+        "tier": 23,
+        "free": {
+          "coins": 35750,
+          "xp": 1020
+        },
+        "premium": {
+          "gems": 7,
+          "coins": 21450
+        }
+      },
+      {
+        "tier": 24,
+        "free": {
+          "coins": 37600,
+          "xp": 1060,
+          "items": [
+            {
+              "itemKey": "fertilizer_deluxe",
+              "quantity": 3
+            }
+          ]
+        },
+        "premium": {
+          "gems": 7,
+          "coins": 22550
+        }
+      },
+      {
+        "tier": 25,
+        "free": {
+          "coins": 39450,
+          "xp": 1100
+        },
+        "premium": {
+          "gems": 8,
+          "coins": 23650,
+          "items": [
+            {
+              "itemKey": "banner_starry",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      {
+        "tier": 26,
+        "free": {
+          "coins": 41350,
+          "xp": 1140
+        },
+        "premium": {
+          "gems": 8,
+          "coins": 24800
+        }
+      },
+      {
+        "tier": 27,
+        "free": {
+          "coins": 43250,
+          "xp": 1180,
+          "items": [
+            {
+              "itemKey": "watering_can_magic",
+              "quantity": 3
+            }
+          ]
+        },
+        "premium": {
+          "gems": 8,
+          "coins": 25950
+        }
+      },
+      {
+        "tier": 28,
+        "free": {
+          "coins": 45200,
+          "xp": 1220
+        },
+        "premium": {
+          "gems": 8,
+          "coins": 27100
+        }
+      },
+      {
+        "tier": 29,
+        "free": {
+          "coins": 47100,
+          "xp": 1260
+        },
+        "premium": {
+          "gems": 8,
+          "coins": 28250
+        }
+      },
+      {
+        "tier": 30,
+        "free": {
+          "coins": 49050,
+          "xp": 1300,
+          "items": [
+            {
+              "itemKey": "tool_scythe_iron",
+              "quantity": 1
+            }
+          ],
+          "gems": 5
+        },
+        "premium": {
+          "gems": 9,
+          "coins": 29450,
+          "items": [
+            {
+              "itemKey": "theme_neon",
+              "quantity": 1
+            }
+          ],
+          "title": "Légende de la saison"
+        }
+      }
+    ]
+  }
+]

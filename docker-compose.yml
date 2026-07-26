@@ -1,0 +1,104 @@
+# =============================================================================
+#  HarvestBot — pile complète (bot + PostgreSQL + Redis)
+#
+#    docker compose up -d db redis      # infrastructure seule (développement)
+#    docker compose run --rm bot npm run db:migrate
+#    docker compose run --rm bot npm run db:seed
+#    docker compose up -d               # tout
+#
+#  Les secrets viennent de `.env` (jamais commité). Voir `.env.example`.
+# =============================================================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: harvest-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-harvest}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-harvest}
+      POSTGRES_DB: ${POSTGRES_DB:-harvestbot}
+      # Le tri français : les classements par nom sortent dans le bon ordre.
+      LANG: fr_FR.utf8
+    command:
+      # Réglages adaptés à une charge de jeu : beaucoup de petites transactions,
+      # peu de requêtes analytiques.
+      - postgres
+      - -c
+      - max_connections=200
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - effective_cache_size=768MB
+      - -c
+      - work_mem=8MB
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - log_min_duration_statement=500
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-harvest} -d ${POSTGRES_DB:-harvestbot}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    container_name: harvest-redis
+    restart: unless-stopped
+    # `appendonly` : les cooldowns longs et les files BullMQ survivent à un
+    # redémarrage. `maxmemory-policy noeviction` : on ne veut PAS que Redis
+    # supprime silencieusement un job de la file sous pression mémoire.
+    command:
+      - redis-server
+      - --appendonly
+      - 'yes'
+      - --maxmemory
+      - 512mb
+      - --maxmemory-policy
+      - noeviction
+    volumes:
+      - redis-data:/data
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: harvest-bot
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-harvest}:${POSTGRES_PASSWORD:-harvest}@db:5432/${POSTGRES_DB:-harvestbot}
+      REDIS_URL: redis://redis:6379
+      HTTP_PORT: 3001
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - '${HTTP_PORT:-3001}:3001'
+    volumes:
+      # Les sprites peuvent être remplacés sans reconstruire l'image.
+      - ./assets:/app/assets:ro
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+volumes:
+  db-data:
+  redis-data:

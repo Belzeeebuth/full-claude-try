@@ -1,0 +1,403 @@
+import { balance as getBalance } from '../config';
+import { getDb } from '../db/client';
+import { pruneMemoryLocks } from '../utils/lock';
+import { pruneMemory } from '../framework/cooldown';
+import { moduleLogger } from '../utils/logger';
+import { liveRng } from '../game/rng';
+import { pestConsequence, rollPest, rollWeatherDamage } from '../game/plot';
+import { projectAnimal } from '../game/animals';
+import { getConfig } from '../config';
+import * as animalRepo from '../repositories/animal.repo';
+import * as economyRepo from '../repositories/economy.repo';
+import * as farmRepo from '../repositories/farm.repo';
+import * as inventoryRepo from '../repositories/inventory.repo';
+import * as progressionRepo from '../repositories/progression.repo';
+import * as systemRepo from '../repositories/system.repo';
+import * as coopService from '../services/coop.service';
+import * as economyService from '../services/economy.service';
+import * as marketService from '../services/market.service';
+import * as miscService from '../services/misc.service';
+import * as progressionService from '../services/progression.service';
+import * as tradeService from '../services/trade.service';
+import { ensureSeasonCalendar, getWorldState } from '../services/world.service';
+import { isPestRepelActive } from '../services/consumable.service';
+import { currentWeekStart, toSqlDate, weeklyCycleKey } from '../utils/time';
+
+const log = moduleLogger('jobs');
+
+/**
+ * ---------------------------------------------------------------------------
+ * TÂCHES PLANIFIÉES
+ * ---------------------------------------------------------------------------
+ * Rappel de conception : la croissance des cultures et la décroissance des
+ * jauges animales sont calculées À LA LECTURE. Les jobs ci-dessous ne font donc
+ * PAS avancer le jeu ; ils gèrent uniquement ce qui doit arriver même quand le
+ * joueur ne regarde pas :
+ *   • événements du monde (météo, saison, nuisibles, dégâts) ;
+ *   • fermetures à échéance (enchères, échanges, quêtes) ;
+ *   • agrégats et instantanés (marché, classements, économie) ;
+ *   • notifications sortantes.
+ *
+ * Chaque job est idempotent : le relancer deux fois ne double jamais un effet.
+ */
+
+export interface JobDefinition {
+  key: string;
+  /** Expression cron (UTC). */
+  cron: string;
+  description: string;
+  run: () => Promise<string>;
+}
+
+export const jobs: JobDefinition[] = [
+  {
+    key: 'market:update',
+    cron: '0 * * * *',
+    description: 'Recalcule les prix du marché selon offre et demande',
+    async run() {
+      const updated = await marketService.updateMarket();
+      return `${updated} prix mis à jour`;
+    },
+  },
+
+  {
+    key: 'shop:rotate',
+    cron: '5 0 * * *',
+    description: 'Génère la boutique du jour',
+    async run() {
+      const entries = await marketService.rotateShop();
+      return `${entries} articles en boutique`;
+    },
+  },
+
+  {
+    key: 'world:weather',
+    cron: '0 0 * * *',
+    description: 'Établit la météo du jour et met à jour la saison active',
+    async run() {
+      await ensureSeasonCalendar();
+      const world = await getWorldState();
+      return `${world.weather.label} (${world.season.season})`;
+    },
+  },
+
+  {
+    key: 'farm:pests',
+    cron: '0 */2 * * *',
+    description: 'Fait apparaître des nuisibles et applique les dégâts météo',
+    async run() {
+      const balance = getBalance();
+      const world = await getWorldState();
+      const candidates = await farmRepo.findPlotsForPestRoll(500);
+      const windowMs = 2 * 3_600_000;
+      let pests = 0;
+      let damaged = 0;
+
+      for (const candidate of candidates) {
+        const repelActive = await isPestRepelActive(candidate.userId);
+        const rng = liveRng(`pest:${candidate.plotId}`);
+
+        const pest = rollPest(
+          {
+            windowMs,
+            weatherPestChance: world.weather.pestChance,
+            repelActive,
+            weedLevel: candidate.weedLevel,
+          },
+          balance,
+          rng,
+        );
+
+        if (pest) {
+          await farmRepo.updatePlot(candidate.plotId, {
+            pestType: pest,
+            pestAppearedAt: new Date(),
+            pestDeadlineAt: new Date(Date.now() + balance.pests.deadlineHours * 3_600_000),
+          });
+          pests += 1;
+
+          await systemRepo.enqueueNotification({
+            userId: candidate.userId,
+            type: 'crop_withering',
+            title: '🐛 Nuisibles !',
+            body: `Des nuisibles s'attaquent à votre parcelle ${candidate.slot}. Utilisez \`/traiter parcelle:${candidate.slot}\` avant ${balance.pests.deadlineHours} h.`,
+            dedupeKey: `pest:${candidate.plotId}:${toSqlDate(new Date())}`,
+          });
+        }
+
+        // Dégâts météo (orage, gel) : indépendants des nuisibles.
+        const damage = rollWeatherDamage(
+          { damageChance: world.weather.damageChance, damageReduction: 0 },
+          rng,
+        );
+        if (damage > 0) {
+          const plots = await farmRepo.getPlotBySlot(candidate.farmId, candidate.slot);
+          if (plots?.crop) {
+            await farmRepo.updatePlantedCrop(plots.crop.id, {
+              damagePenalty: Math.min(1, Number(plots.crop.damagePenalty) + damage).toFixed(3),
+            });
+            damaged += 1;
+          }
+        }
+      }
+
+      return `${pests} nuisibles, ${damaged} parcelles endommagées`;
+    },
+  },
+
+  {
+    key: 'farm:pest-consequences',
+    cron: '30 */2 * * *',
+    description: 'Applique les conséquences des nuisibles ignorés',
+    async run() {
+      const balance = getBalance();
+      const db = getDb();
+      const { and, lte, isNotNull, eq, sql } = await import('drizzle-orm');
+      const schema = await import('../db/schema');
+
+      const overdue = await db
+        .select({ plotId: schema.plots.id, cropId: schema.plantedCrops.id })
+        .from(schema.plots)
+        .innerJoin(schema.plantedCrops, eq(schema.plantedCrops.plotId, schema.plots.id))
+        .where(
+          and(
+            isNotNull(schema.plots.pestDeadlineAt),
+            lte(schema.plots.pestDeadlineAt, new Date()),
+            sql`${schema.plots.pestType} IS NOT NULL`,
+          ),
+        )
+        .limit(300);
+
+      let applied = 0;
+      for (const entry of overdue) {
+        const outcome = pestConsequence(balance, liveRng(`pest-out:${entry.plotId}`));
+        await farmRepo.updatePlantedCrop(entry.cropId, {
+          damagePenalty: outcome.damagePenalty.toFixed(3),
+          withered: outcome.withered,
+        });
+        await farmRepo.updatePlot(entry.plotId, {
+          pestType: null,
+          pestAppearedAt: null,
+          pestDeadlineAt: null,
+          ...(outcome.withered ? { state: 'withered' as const } : {}),
+        });
+        applied += 1;
+      }
+      return `${applied} parcelles affectées`;
+    },
+  },
+
+  {
+    key: 'farm:wither',
+    cron: '15 * * * *',
+    description: 'Fait faner les cultures laissées trop longtemps',
+    async run() {
+      const withered = await farmRepo.witherOverdueCrops(new Date(), 500);
+      return `${withered} cultures fanées`;
+    },
+  },
+
+  {
+    key: 'animals:decay',
+    cron: '0 */3 * * *',
+    description: 'Matérialise faim, bonheur et santé ; déclenche maladies et décès',
+    async run() {
+      const balance = getBalance();
+      const config = getConfig();
+      const now = new Date();
+      const rows = await animalRepo.findAnimalsForDecay(new Date(now.getTime() - 3 * 3_600_000), 500);
+
+      let sick = 0;
+      let died = 0;
+      let notified = 0;
+
+      for (const row of rows) {
+        const animalConfig = config.animals.get(row.animal.animalKey);
+        if (!animalConfig) continue;
+
+        const status = projectAnimal(
+          {
+            animalKey: row.animal.animalKey,
+            hunger: row.animal.hunger,
+            happiness: row.animal.happiness,
+            health: row.animal.health,
+            statsUpdatedAt: row.animal.statsUpdatedAt,
+            lastFedAt: row.animal.lastFedAt,
+            lastCollectedAt: row.animal.lastCollectedAt,
+            lastPettedAt: row.animal.lastPettedAt,
+            productionReadyAt: row.animal.productionReadyAt,
+            pendingProduction: row.animal.pendingProduction,
+            qualityMultiplier: Number(row.animal.qualityMultiplier),
+            isSick: row.animal.isSick,
+            isAlive: row.animal.isAlive,
+            bornAt: row.animal.bornAt,
+          },
+          animalConfig,
+          now,
+          balance,
+        );
+
+        if (status.shouldDie) {
+          await animalRepo.killAnimal(row.animal.id, 'negligence', now);
+          died += 1;
+          await systemRepo.enqueueNotification({
+            userId: row.animal.userId,
+            type: 'animal_sick',
+            title: '🪦 Un animal est mort',
+            body: `Votre ${row.name} n'a pas survécu à la négligence. Nourrissez vos animaux avec \`/nourrir\`.`,
+            dedupeKey: `death:${row.animal.id}`,
+          });
+          continue;
+        }
+
+        await animalRepo.updateAnimal(row.animal.id, {
+          hunger: status.hunger,
+          happiness: status.happiness,
+          health: status.health,
+          isSick: status.sick,
+          statsUpdatedAt: now,
+        });
+        if (status.sick && !row.animal.isSick) sick += 1;
+
+        if (status.hungry) {
+          const enqueued = await systemRepo.enqueueNotification({
+            userId: row.animal.userId,
+            type: 'animal_hungry',
+            title: '🍽️ Vos animaux ont faim',
+            body: `Votre ${row.name} a faim (${status.hunger} %). Un animal affamé produit deux fois moins.`,
+            dedupeKey: `hungry:${row.animal.id}:${toSqlDate(now)}`,
+          });
+          if (enqueued) notified += 1;
+        }
+      }
+
+      return `${rows.length} animaux traités, ${sick} malades, ${died} décès, ${notified} alertes`;
+    },
+  },
+
+  {
+    key: 'crops:ready-notify',
+    cron: '*/10 * * * *',
+    description: 'Prévient les joueurs dont les cultures sont prêtes',
+    async run() {
+      const ready = await farmRepo.findCropsReadyForNotification(300);
+      let queued = 0;
+      for (const crop of ready) {
+        const enqueued = await systemRepo.enqueueNotification({
+          userId: crop.userId,
+          type: 'crop_ready',
+          title: '🌾 Récolte prête !',
+          body: `Votre parcelle ${crop.plotSlot} est prête. Utilisez \`/recolter\` avant qu'elle ne fane.`,
+          dedupeKey: `ready:${crop.userId}:${crop.plotSlot}:${crop.readyAt.toISOString()}`,
+        });
+        if (enqueued) queued += 1;
+      }
+      return `${queued} notifications programmées`;
+    },
+  },
+
+  {
+    key: 'auctions:expire',
+    cron: '*/5 * * * *',
+    description: 'Clôture les enchères expirées et rembourse les mises perdantes',
+    async run() {
+      const result = await tradeService.closeExpiredListings(50);
+      const trades = await tradeService.expireTrades(50);
+      return `${result.sold} vendues, ${result.returned} rendues, ${trades} échanges expirés`;
+    },
+  },
+
+  {
+    key: 'quests:expire',
+    cron: '10 0 * * *',
+    description: 'Expire les quêtes du cycle écoulé',
+    async run() {
+      const expired = await progressionService.expireQuests(new Date());
+      return `${expired} quêtes expirées`;
+    },
+  },
+
+  {
+    key: 'coop:objectives',
+    cron: '*/15 * * * *',
+    description: 'Distribue les récompenses des objectifs de coopérative terminés',
+    async run() {
+      const distributed = await coopService.distributeObjectiveRewards(20);
+      return `${distributed} objectifs récompensés`;
+    },
+  },
+
+  {
+    key: 'bank:interest',
+    cron: '0 3 * * *',
+    description: 'Verse les intérêts bancaires quotidiens',
+    async run() {
+      const accounts = await economyRepo.findAccountsForInterest(
+        new Date(Date.now() - 86_400_000),
+        500,
+      );
+      const now = new Date();
+      let total = 0;
+
+      for (const account of accounts) {
+        const raw = Math.floor(account.balance * Number(account.interestRate));
+        const interest = Math.min(raw, account.interestCap);
+        if (interest <= 0) continue;
+        const { withTransaction } = await import('../db/client');
+        await withTransaction(async (tx) => {
+          await economyRepo.applyInterest(account.id, interest, now, tx);
+        });
+        total += interest;
+      }
+      return `${accounts.length} comptes, ${total} pièces d'intérêts`;
+    },
+  },
+
+  {
+    key: 'economy:snapshot',
+    cron: '30 * * * *',
+    description: 'Capture un instantané économique et vérifie le grand livre',
+    async run() {
+      const snapshot = await economyRepo.captureEconomySnapshot(new Date(Date.now() - 3_600_000));
+      const mismatches = await economyService.auditLedger(20);
+      return `masse ${snapshot.totalCoins} 🪙, ${mismatches.length} écart(s)`;
+    },
+  },
+
+  {
+    key: 'leaderboard:weekly',
+    cron: '0 0 * * 1',
+    description: 'Fige les classements et réinitialise les compteurs hebdomadaires',
+    async run() {
+      const periodKey = weeklyCycleKey(new Date(Date.now() - 86_400_000));
+      const captured = await miscService.snapshotLeaderboards(periodKey);
+      await progressionService.weeklyReset();
+      await coopService.weeklyReset();
+      return `${captured} lignes figées pour ${periodKey}`;
+    },
+  },
+
+  {
+    key: 'maintenance:cleanup',
+    cron: '0 4 * * *',
+    description: 'Purge historiques, piles vides et verrous mémoire',
+    async run() {
+      const balance = getBalance();
+      const before = new Date(Date.now() - balance.market.historyRetentionDays * 86_400_000);
+      const history = await economyRepo.purgeOldHistory(before);
+      const shop = await economyRepo.purgeOldShopStock(
+        toSqlDate(new Date(Date.now() - 7 * 86_400_000)),
+      );
+      const stacks = await inventoryRepo.pruneEmptyStacks();
+      const locks = pruneMemoryLocks() + pruneMemory();
+      return `${history} points d'historique, ${shop} lignes de boutique, ${stacks} piles vides, ${locks} verrous`;
+    },
+  },
+];
+
+/** Job additionnel : purge des objectifs de coopérative de la semaine passée. */
+export function currentWeek(): string {
+  return currentWeekStart(new Date());
+}
+
+export { log as jobsLogger };

@@ -1,0 +1,174 @@
+{
+  "common": {
+    "coins": "pièces",
+    "gems": "gemmes",
+    "xp": "XP",
+    "energy": "énergie",
+    "level": "Niveau",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "refresh": "Rafraîchir",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "first": "Début",
+    "last": "Fin",
+    "page": "Page {current}/{total}",
+    "none": "Aucun",
+    "loading": "Un instant…",
+    "yes": "Oui",
+    "no": "Non",
+    "expired": "Ce message a expiré. Relancez la commande.",
+    "not_your_button": "Ce bouton n'est pas le vôtre. Lancez la commande pour avoir le vôtre.",
+    "action_in_progress": "Une action est déjà en cours, patientez une seconde.",
+    "unknown_error": "Une erreur inattendue est survenue. L'incident a été enregistré.",
+    "maintenance": "🛠️ HarvestBot est en maintenance. {message}",
+    "cooldown": "⏳ Patience ! Vous pourrez réutiliser cette commande {when}.",
+    "rate_limited": "🚦 Vous allez trop vite. Réessayez dans {seconds} s.",
+    "eco_banned": "🚫 Votre accès à l'économie est suspendu jusqu'à {when}. Raison : {reason}",
+    "no_account": "Vous n'avez pas encore de ferme. Lancez `/start` pour commencer !",
+    "insufficient_funds": "Il vous manque {missing} 🪙 pour cette opération.",
+    "insufficient_gems": "Il vous manque {missing} 💎 pour cette opération.",
+    "level_required": "Cette action demande le niveau {level} (vous êtes niveau {current}).",
+    "energy_required": "Il vous faut {cost} ⚡ (vous avez {current}). L'énergie remonte de 1 point par minute."
+  },
+  "start": {
+    "welcome_title": "🌾 Bienvenue à Val-Verdoyant !",
+    "welcome_body": "Le maire vous confie une parcelle de terre en friche, {coins} 🪙 et un sac de graines.\n\nVotre objectif est simple : **faire pousser, récolter, vendre, réinvestir**.\n\n**Trois commandes pour commencer :**\n• `/planter` — mettre une graine en terre\n• `/ferme` — voir votre exploitation\n• `/recolter` — encaisser votre travail\n\nUne question ? `/aide` répond à tout, et `/tutoriel` vous prend par la main.",
+    "already_registered": "Vous avez déjà une ferme ! Utilisez `/ferme` pour la consulter.",
+    "starter_kit": "Sac de départ",
+    "button_tutorial": "Lancer le tutoriel",
+    "button_farm": "Voir ma ferme",
+    "button_plant": "Planter maintenant"
+  },
+  "farm": {
+    "title": "Ferme de {name}",
+    "plot_empty": "Vide",
+    "plot_locked": "Verrouillée",
+    "plot_ready": "Prête à récolter",
+    "plot_growing": "En croissance",
+    "plot_withered": "Fanée",
+    "plot_pest": "Nuisibles !",
+    "needs_water": "À arroser",
+    "summary": "{ready} prête(s) • {growing} en croissance • {empty} vide(s) • {locked} verrouillée(s)",
+    "nothing_planted": "Aucune culture en terre. `/planter` pour démarrer.",
+    "render_failed": "Le rendu graphique a échoué, voici la version texte."
+  },
+  "plant": {
+    "success": "🌱 {emoji} **{crop}** planté sur la parcelle {slot}. Récolte {when}.",
+    "success_many": "🌱 {count} parcelle(s) plantée(s) en **{crop}**. Première récolte {when}.",
+    "no_seed": "Vous n'avez pas de graines de {crop}. Achetez-en avec `/boutique` ou `/acheter`.",
+    "no_free_plot": "Aucune parcelle libre. Récoltez ou achetez une parcelle avec `/acheter-parcelle`.",
+    "plot_occupied": "La parcelle {slot} est déjà occupée.",
+    "off_season": "⚠️ {crop} n'est pas de saison ({season}) : pousse plus lente et rendement réduit.",
+    "wrong_level": "{crop} demande le niveau {level}."
+  },
+  "harvest": {
+    "success": "🧺 Récolte de la parcelle {slot} : **{quantity}× {emoji} {crop}** {quality}",
+    "success_all": "🧺 **{plots} parcelle(s) récoltée(s)** — {quantity} unités, valeur estimée {value} 🪙",
+    "nothing_ready": "Rien n'est prêt. Consultez `/ferme` pour voir les échéances.",
+    "withered": "💀 La culture de la parcelle {slot} a fané. Vous ne récupérez rien.",
+    "mutation": "✨ **Mutation {mutation}** sur la parcelle {slot} !",
+    "seed_recovered": "🫧 La grainerie vous a rendu {count} graine(s)."
+  },
+  "water": {
+    "success": "💧 {count} parcelle(s) arrosée(s).",
+    "nothing_to_water": "Aucune parcelle n'a besoin d'eau pour le moment.",
+    "free_rain": "🌧️ Il pleut : vos parcelles sont arrosées gratuitement."
+  },
+  "shop": {
+    "title": "🏪 Boutique du village",
+    "rotation": "Stock renouvelé {when}",
+    "sold_out": "Épuisé",
+    "purchased": "✅ {quantity}× {emoji} {item} acheté(s) pour {price} 🪙",
+    "stock_left": "{remaining}/{total} en stock",
+    "limit_reached": "Vous avez atteint la limite d'achat pour cet article."
+  },
+  "market": {
+    "title": "📊 Marché de Val-Verdoyant",
+    "next_update": "Prochaine mise à jour {when}",
+    "sold": "💰 {quantity}× {emoji} {item} vendu(s) pour {total} 🪙 (taxe : {tax} 🪙)",
+    "not_sellable": "{item} ne peut pas être vendu.",
+    "trend_up": "en hausse",
+    "trend_down": "en baisse",
+    "trend_flat": "stable"
+  },
+  "animals": {
+    "title": "🐄 Cheptel de {name}",
+    "empty": "Aucun animal. Construisez un poulailler avec `/batiments` puis achetez une poule avec `/acheter-animal`.",
+    "fed": "🌾 {count} animal(aux) nourri(s).",
+    "collected": "🥚 Collecte : {summary}",
+    "petted": "🤍 {name} est ravi ! Bonheur +{gain}.",
+    "healed": "💉 {name} est soigné pour {cost} 🪙.",
+    "died": "🪦 {name} n'a pas survécu à la négligence.",
+    "no_building": "Il vous faut un {building} pour héberger cet animal.",
+    "building_full": "Votre {building} est plein ({capacity} places).",
+    "not_hungry": "{name} n'a pas faim pour le moment.",
+    "nothing_to_collect": "Aucune production disponible."
+  },
+  "inventory": {
+    "title": "🎒 Inventaire de {name}",
+    "empty": "Votre inventaire est vide.",
+    "empty_category": "Aucun objet dans cette catégorie.",
+    "capacity": "Capacité : {used}/{total}",
+    "full": "Votre entrepôt est plein ({capacity}). Vendez ou améliorez-le avec `/batiments`.",
+    "categories": {
+      "seed": "Graines",
+      "harvest": "Récoltes",
+      "animal_product": "Produits animaux",
+      "product": "Produits transformés",
+      "tool": "Outils",
+      "consumable": "Consommables",
+      "material": "Matériaux",
+      "cosmetic": "Cosmétiques",
+      "event": "Événement"
+    }
+  },
+  "quests": {
+    "title": "📋 Quêtes de {name}",
+    "daily": "Journalières",
+    "weekly": "Hebdomadaires",
+    "story": "Histoire",
+    "contract": "Contrats du village",
+    "resets": "Renouvellement {when}",
+    "completed": "Terminée",
+    "claimed": "Récompense perçue",
+    "claim_success": "🎁 Récompense perçue : {rewards}",
+    "nothing_to_claim": "Aucune récompense à percevoir.",
+    "reroll_success": "🔄 Quête remplacée pour {cost} 🪙.",
+    "reroll_limit": "Vous avez atteint la limite de {max} relances aujourd'hui."
+  },
+  "coop": {
+    "title": "🤝 Coopérative {name}",
+    "created": "🎉 Coopérative **{name}** [{tag}] créée pour {cost} 🪙 !",
+    "joined": "Vous avez rejoint **{name}**.",
+    "left": "Vous avez quitté **{name}**.",
+    "not_member": "Vous n'êtes dans aucune coopérative. `/coop creer` ou `/coop rejoindre`.",
+    "already_member": "Vous êtes déjà dans une coopérative. Quittez-la d'abord.",
+    "full": "Cette coopérative est complète ({limit} membres).",
+    "name_taken": "Ce nom ou cette étiquette est déjà pris.",
+    "forbidden": "Votre rang ne permet pas cette action.",
+    "contributed": "💰 {amount} 🪙 versés à la trésorerie (+{xp} XP de coopérative).",
+    "objectives": "Objectifs de la semaine",
+    "bonuses": "Bonus collectifs"
+  },
+  "help": {
+    "title": "🌾 Aide de HarvestBot",
+    "intro": "HarvestBot est un jeu de ferme : plantez, élevez, transformez, vendez, progressez.\nChoisissez une catégorie dans le menu ci-dessous.",
+    "select_placeholder": "Choisissez une catégorie d'aide"
+  },
+  "weather": {
+    "title": "{emoji} Météo du jour",
+    "season": "Saison : {season} ({progress} %)",
+    "next_season": "{season} commence {when}"
+  },
+  "errors": {
+    "plot_locked": "La parcelle {slot} est verrouillée. Débloquez-la avec `/acheter-parcelle`.",
+    "plot_not_found": "La parcelle {slot} n'existe pas.",
+    "item_unknown": "Objet inconnu : {item}",
+    "quantity_invalid": "Quantité invalide.",
+    "target_invalid": "Cible invalide.",
+    "privacy_blocked": "Ce joueur a rendu sa ferme privée.",
+    "not_found": "Introuvable."
+  }
+}

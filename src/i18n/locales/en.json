@@ -1,0 +1,66 @@
+{
+  "$comment": "English catalogue. Any missing key automatically falls back to the French reference catalogue (see src/i18n/index.ts). Kept partial on purpose: French is the shipping language, English is the demonstration that the structure is ready for translation.",
+  "common": {
+    "coins": "coins",
+    "gems": "gems",
+    "xp": "XP",
+    "energy": "energy",
+    "level": "Level",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "refresh": "Refresh",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "first": "First",
+    "last": "Last",
+    "page": "Page {current}/{total}",
+    "none": "None",
+    "loading": "One moment…",
+    "yes": "Yes",
+    "no": "No",
+    "expired": "This message has expired. Please run the command again.",
+    "not_your_button": "This button isn't yours. Run the command to get your own.",
+    "action_in_progress": "An action is already running, hold on a second.",
+    "unknown_error": "An unexpected error occurred. The incident has been logged.",
+    "maintenance": "🛠️ HarvestBot is under maintenance. {message}",
+    "cooldown": "⏳ Easy! You can use this command again {when}.",
+    "rate_limited": "🚦 You're going too fast. Try again in {seconds}s.",
+    "eco_banned": "🚫 Your economy access is suspended until {when}. Reason: {reason}",
+    "no_account": "You don't have a farm yet. Run `/start` to begin!",
+    "insufficient_funds": "You need {missing} more 🪙 for this.",
+    "insufficient_gems": "You need {missing} more 💎 for this.",
+    "level_required": "This requires level {level} (you are level {current}).",
+    "energy_required": "You need {cost} ⚡ (you have {current}). Energy regenerates 1 point per minute."
+  },
+  "start": {
+    "welcome_title": "🌾 Welcome to Greendale!",
+    "welcome_body": "The mayor grants you a patch of fallow land, {coins} 🪙 and a bag of seeds.\n\nYour goal is simple: **grow, harvest, sell, reinvest**.\n\n**Three commands to get going:**\n• `/planter` — sow a seed\n• `/ferme` — view your farm\n• `/recolter` — cash in your work\n\nStuck? `/aide` answers everything and `/tutoriel` walks you through it.",
+    "already_registered": "You already have a farm! Use `/ferme` to view it.",
+    "starter_kit": "Starter pack",
+    "button_tutorial": "Start tutorial",
+    "button_farm": "View my farm",
+    "button_plant": "Plant now"
+  },
+  "farm": {
+    "title": "{name}'s farm",
+    "plot_empty": "Empty",
+    "plot_locked": "Locked",
+    "plot_ready": "Ready to harvest",
+    "plot_growing": "Growing",
+    "plot_withered": "Withered",
+    "plot_pest": "Pests!",
+    "needs_water": "Needs water",
+    "summary": "{ready} ready • {growing} growing • {empty} empty • {locked} locked",
+    "nothing_planted": "Nothing planted. Use `/planter` to start.",
+    "render_failed": "Image rendering failed, here is the text version."
+  },
+  "harvest": {
+    "nothing_ready": "Nothing is ready yet. Check `/ferme` for timers."
+  },
+  "inventory": {
+    "title": "🎒 {name}'s inventory",
+    "empty": "Your inventory is empty.",
+    "capacity": "Capacity: {used}/{total}"
+  }
+}

@@ -1,0 +1,133 @@
+import { eq } from 'drizzle-orm';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Pool, type PoolClient } from 'pg';
+import { env, isProduction } from '../config/env';
+import { moduleLogger } from '../utils/logger';
+import * as schema from './schema';
+
+const log = moduleLogger('db');
+
+export type Database = NodePgDatabase<typeof schema>;
+/** Type d'une transaction Drizzle : même API que `Database`, dans un `BEGIN`. */
+export type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
+/** Accepte indifféremment le pool ou une transaction en cours. */
+export type Executor = Database | Transaction;
+
+let pool: Pool | undefined;
+let db: Database | undefined;
+
+function createPool(): Pool {
+  const created = new Pool({
+    connectionString: env.DATABASE_URL,
+    max: env.DATABASE_POOL_MAX,
+    idleTimeoutMillis: env.DATABASE_POOL_IDLE_TIMEOUT_MS,
+    connectionTimeoutMillis: 10_000,
+    // Coupe net toute requête qui partirait en vrille (jointure oubliée,
+    // verrou pris par un autre process) au lieu de saturer le pool.
+    statement_timeout: env.DATABASE_STATEMENT_TIMEOUT_MS,
+    query_timeout: env.DATABASE_STATEMENT_TIMEOUT_MS,
+    application_name: 'harvestbot',
+    ...(env.DATABASE_SSL ? { ssl: { rejectUnauthorized: false } } : {}),
+  });
+
+  created.on('error', (error) => {
+    // Un client idle qui meurt (redémarrage PG, failover) ne doit pas faire
+    // tomber le process : pg le retirera du pool et en recréera un.
+    log.error({ err: error }, 'erreur inattendue sur un client PostgreSQL idle');
+  });
+
+  return created;
+}
+
+export function getPool(): Pool {
+  if (!pool) pool = createPool();
+  return pool;
+}
+
+export function getDb(): Database {
+  if (!db) {
+    db = drizzle(getPool(), {
+      schema,
+      logger: !isProduction && env.LOG_LEVEL === 'trace',
+    });
+  }
+  return db;
+}
+
+/**
+ * Exécute `fn` dans une transaction SÉRIALISABLE en lecture/écriture.
+ *
+ * Toute opération économique (achat, vente, échange, craft, enchère) DOIT
+ * passer par ici : c'est ce qui garantit qu'un double-clic ne débite pas deux
+ * fois, et que le débit du solde et l'écriture du journal `transactions` sont
+ * atomiques. On complète par des `SELECT ... FOR UPDATE` sur les lignes
+ * touchées (voir `lockUserRow`), ce qui sérialise les accès concurrents au même
+ * joueur sans verrou global.
+ */
+export async function withTransaction<T>(fn: (tx: Transaction) => Promise<T>): Promise<T> {
+  return getDb().transaction(async (tx) => fn(tx), {
+    isolationLevel: 'read committed',
+  });
+}
+
+/**
+ * Verrouille la ligne joueur pour la durée de la transaction.
+ * `SELECT ... FOR UPDATE` : les autres transactions qui veulent le même joueur
+ * attendent ici, ce qui rend impossible la course « lire solde → décider →
+ * écrire solde ». Retourne `undefined` si le joueur n'existe pas.
+ */
+export async function lockUserRow(tx: Transaction, userId: string) {
+  const [row] = await tx
+    .select({
+      id: schema.users.id,
+      coins: schema.users.coins,
+      gems: schema.users.gems,
+      level: schema.users.level,
+      xp: schema.users.xp,
+      ecoBannedUntil: schema.users.ecoBannedUntil,
+    })
+    .from(schema.users)
+    .where(eq(schema.users.id, userId))
+    .for('update');
+  return row;
+}
+
+/**
+ * Verrouille plusieurs lignes joueur dans un ordre déterministe (tri par UUID).
+ * Indispensable pour les échanges et enchères : si A verrouille A puis B tandis
+ * que B verrouille B puis A, on obtient un interblocage. Trier les IDs impose
+ * un ordre global unique et supprime la classe entière de deadlocks.
+ */
+export async function lockUserRows(tx: Transaction, userIds: string[]) {
+  const ordered = [...new Set(userIds)].sort();
+  const locked: Array<Awaited<ReturnType<typeof lockUserRow>>> = [];
+  for (const id of ordered) {
+    locked.push(await lockUserRow(tx, id));
+  }
+  return locked.filter((row): row is NonNullable<typeof row> => row !== undefined);
+}
+
+/** Emprunte un client brut du pool (migrations, requêtes de maintenance). */
+export async function withRawClient<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+  const client = await getPool().connect();
+  try {
+    return await fn(client);
+  } finally {
+    client.release();
+  }
+}
+
+export async function pingDatabase(): Promise<number> {
+  const started = Date.now();
+  await getPool().query('SELECT 1');
+  return Date.now() - started;
+}
+
+export async function closeDatabase(): Promise<void> {
+  if (pool) {
+    await pool.end();
+    pool = undefined;
+    db = undefined;
+    log.info('pool PostgreSQL fermé');
+  }
+}

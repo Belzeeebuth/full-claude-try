@@ -1,0 +1,194 @@
+import { SlashCommandBuilder } from 'discord.js';
+import { COLORS, baseEmbed, successEmbed } from '../framework/ui';
+import { buildingsView, productionView } from '../framework/views';
+import * as craftService from '../services/craft.service';
+import { discordTimestamp, formatCoins, formatNumber, truncate } from '../utils/format';
+import { appendTracking } from './farm';
+import type { Command } from '../types';
+
+/** Artisanat, recettes, file de production et bâtiments. */
+
+const crafter: Command = {
+  category: 'inventaire',
+  cooldown: { seconds: 2 },
+  data: new SlashCommandBuilder()
+    .setName('crafter')
+    .setDescription('Lance une production dans un de vos bâtiments')
+    .addStringOption((option) =>
+      option.setName('recette').setDescription('La recette').setRequired(true).setAutocomplete(true),
+    )
+    .addIntegerOption((option) =>
+      option.setName('quantité').setDescription('Nombre de lots').setMinValue(1).setMaxValue(20),
+    )
+    .toJSON(),
+
+  async execute(interaction, context): Promise<void> {
+    await interaction.deferReply();
+    const result = await craftService.craft(context.player, {
+      recipeKey: interaction.options.getString('recette', true),
+      quantity: interaction.options.getInteger('quantité') ?? 1,
+    });
+
+    await interaction.editReply({
+      embeds: [
+        successEmbed(
+          `${result.emoji} ${result.recipeName} en production`,
+          [
+            `Bâtiment : **${result.buildingName}** (emplacement ${result.slotIndex + 1})`,
+            `Quantité : **${result.quantity}** lot(s)`,
+            `Prêt ${discordTimestamp(result.finishAt, 'R')} (${discordTimestamp(result.finishAt, 't')})`,
+            '',
+            `Ingrédients consommés : ${result.consumed.map((entry) => `${entry.quantity}× \`${entry.itemKey}\``).join(', ')}`,
+          ].join('\n'),
+        ),
+      ],
+    });
+  },
+
+  async autocomplete(interaction, context): Promise<void> {
+    const query = interaction.options.getFocused().toString();
+    const level = context.playerId
+      ? ((await (await import('../repositories/player.repo')).findUserById(context.playerId))?.level ?? 1)
+      : 1;
+    const recipes = craftService.craftableRecipes(level, query);
+    await interaction.respond(
+      recipes.map((recipe) => ({
+        name: truncate(
+          `${recipe.emoji} ${recipe.name} — ${Math.round(recipe.durationSeconds / 60)} min • niv. ${recipe.requiredLevel}`,
+          100,
+        ),
+        value: recipe.key,
+      })),
+    );
+  },
+};
+
+const recettes: Command = {
+  category: 'inventaire',
+  cooldown: { seconds: 3 },
+  data: new SlashCommandBuilder()
+    .setName('recettes')
+    .setDescription('Toutes les recettes de transformation')
+    .addStringOption((option) =>
+      option
+        .setName('catégorie')
+        .setDescription('Filtrer par atelier')
+        .addChoices(
+          { name: '🌬️ Boulangerie', value: 'boulangerie' },
+          { name: '🫙 Conserverie', value: 'conserverie' },
+          { name: '🧈 Laiterie', value: 'laiterie' },
+          { name: '🍺 Brasserie', value: 'brasserie' },
+          { name: '🫗 Huilerie', value: 'huilerie' },
+          { name: '🔥 Fumoir', value: 'fumoir' },
+          { name: '🍬 Confiserie', value: 'confiserie' },
+          { name: '🛠️ Atelier', value: 'atelier' },
+        ),
+    )
+    .toJSON(),
+
+  async execute(interaction, context): Promise<void> {
+    await interaction.deferReply();
+    const category = interaction.options.getString('catégorie') ?? undefined;
+    const recipes = await craftService.listRecipes(context.player, { category });
+
+    const lines = recipes.slice(0, 20).map((entry) => {
+      const lock = !entry.unlocked
+        ? `🔒 niv. ${entry.recipe.requiredLevel}`
+        : !entry.hasBuilding
+          ? `🏗️ ${entry.building?.name ?? entry.recipe.buildingKey} requis`
+          : entry.craftableCount > 0
+            ? `✅ ${entry.craftableCount} réalisable(s)`
+            : '⚠️ ingrédients manquants';
+      const ingredients = entry.ingredients
+        .map((ingredient) => `${ingredient.needed}× ${ingredient.emoji}${ingredient.owned < ingredient.needed ? `(${ingredient.owned})` : ''}`)
+        .join(' + ');
+      return [
+        `${entry.recipe.emoji} **${entry.recipe.name}** — ${lock}`,
+        `   ${ingredients} → ${entry.recipe.outputQuantity}× ${entry.outputEmoji} (**×${entry.margin.toFixed(2)}** de valeur, ${Math.round(entry.recipe.durationSeconds / 60)} min)`,
+      ].join('\n');
+    });
+
+    await interaction.editReply({
+      embeds: [
+        baseEmbed({
+          title: '📜 Recettes de transformation',
+          description: lines.join('\n') || 'Aucune recette dans cette catégorie.',
+          color: COLORS.primary,
+          footer: 'La transformation double environ la valeur des ingrédients — c\'est la clé de la rentabilité.',
+        }),
+      ],
+    });
+  },
+};
+
+const production: Command = {
+  category: 'inventaire',
+  cooldown: { seconds: 3 },
+  data: new SlashCommandBuilder()
+    .setName('production')
+    .setDescription('État de vos files de transformation')
+    .toJSON(),
+
+  async execute(interaction, context): Promise<void> {
+    await interaction.deferReply();
+    await interaction.editReply(await productionView(context));
+  },
+};
+
+const batiments: Command = {
+  category: 'inventaire',
+  cooldown: { seconds: 3 },
+  data: new SlashCommandBuilder()
+    .setName('batiments')
+    .setDescription('Construire et améliorer vos bâtiments')
+    .addStringOption((option) =>
+      option
+        .setName('construire')
+        .setDescription('Construire ou améliorer directement un bâtiment')
+        .setAutocomplete(true)
+        .setRequired(false),
+    )
+    .toJSON(),
+
+  async execute(interaction, context): Promise<void> {
+    await interaction.deferReply();
+    const buildingKey = interaction.options.getString('construire');
+
+    if (buildingKey) {
+      const result = await craftService.buildOrUpgrade(context.player, buildingKey);
+      await interaction.editReply({
+        embeds: [
+          successEmbed(
+            `${result.emoji} ${result.name} — ${result.built ? 'construit' : `palier ${result.tier}`}`,
+            [
+              `Coût : ${formatCoins(result.costCoins)}`,
+              result.capacity > 0 ? `Capacité : **${formatNumber(result.capacity)}**` : '',
+              result.slots > 0 ? `Emplacements de production : **${result.slots}**` : '',
+            ]
+              .filter(Boolean)
+              .join('\n'),
+          ),
+        ],
+      });
+      return;
+    }
+
+    await interaction.editReply(await buildingsView(context));
+  },
+
+  async autocomplete(interaction, context): Promise<void> {
+    const query = interaction.options.getFocused().toString().toLowerCase();
+    await interaction.respond(
+      context.config.buildingList
+        .filter((building) => building.enabled && (!query || building.name.toLowerCase().includes(query)))
+        .slice(0, 25)
+        .map((building) => ({
+          name: truncate(`${building.emoji} ${building.name} — ${building.description ?? ''}`, 100),
+          value: building.key,
+        })),
+    );
+  },
+};
+
+export const commands: Command[] = [crafter, recettes, production, batiments];
+export { appendTracking };
