@@ -176,14 +176,14 @@ export function classifyError(error: unknown, context?: CommandContext): ErrorRe
   }
   if (error instanceof LockBusyError) {
     return {
-      userMessage: '⏳ Une action est déjà en cours, patientez une seconde.',
+      userMessage: '⏳ An action is already running, give it a second.',
       report: false,
       code: 'busy',
     };
   }
   if (error instanceof CooldownError) {
     return {
-      userMessage: `⏳ Patience ! Réessayez ${discordTimestamp(error.retryAt, 'R')}.`,
+      userMessage: `⏳ Easy! Try again ${discordTimestamp(error.retryAt, 'R')}.`,
       report: false,
       code: 'cooldown',
     };
@@ -228,17 +228,17 @@ export async function replyError(
 /** Embed « vous n'avez pas encore de ferme ». */
 export function noAccountEmbed() {
   return baseEmbed({
-    title: '🌱 Bienvenue !',
+    title: '🌱 Welcome!',
     description:
-      "Vous n'avez pas encore de ferme.\nLancez **`/start`** pour recevoir vos premières parcelles, " +
-      'votre sac de graines et vos 500 🪙 de départ.',
+      "You do not have a farm yet.\nRun **`/start`** to receive your first plots, " +
+      'your bag of seeds and your 500 🪙 to get going.',
     color: COLORS.info,
   });
 }
 
 /** Message de cooldown lisible. */
 export function cooldownMessage(retryAt: Date): string {
-  return `⏳ Patience ! Vous pourrez réutiliser cette commande ${discordTimestamp(retryAt, 'R')} (dans ${formatDuration(retryAt.getTime() - Date.now())}).`;
+  return `⏳ Easy! You can use this command again ${discordTimestamp(retryAt, 'R')} (in ${formatDuration(retryAt.getTime() - Date.now())}).`;
 }
 
 /** Type-guard utilitaire pour les interactions de composant que l'on gère. */

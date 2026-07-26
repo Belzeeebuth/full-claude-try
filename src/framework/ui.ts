@@ -87,7 +87,7 @@ export function rewardsField(rewards: {
   if (rewards.xp) parts.push(`${formatNumber(rewards.xp)} ${XP}`);
   if (rewards.items) parts.push(rewards.items);
   if (parts.length === 0) return undefined;
-  return { name: '🎁 Récompenses', value: parts.join(' • '), inline: false };
+  return { name: '🎁 Rewards', value: parts.join(' • '), inline: false };
 }
 
 // ---------------------------------------------------------------------------
@@ -232,7 +232,7 @@ export function farmShortcutsRow(ownerId: string, options: {
       namespace: 'farm',
       action: 'harvest_all',
       ownerId,
-      label: 'Tout récolter',
+      label: 'Harvest all',
       emoji: '🧺',
       style: ButtonStyle.Success,
       disabled: options.canHarvest === false,
@@ -241,7 +241,7 @@ export function farmShortcutsRow(ownerId: string, options: {
       namespace: 'farm',
       action: 'water_all',
       ownerId,
-      label: 'Tout arroser',
+      label: 'Water all',
       emoji: '💧',
       style: ButtonStyle.Primary,
       disabled: options.canWater === false,
@@ -312,8 +312,8 @@ export function quantityModal(options: {
       new ActionRowBuilder<TextInputBuilder>().addComponents(
         new TextInputBuilder()
           .setCustomId('quantity')
-          .setLabel(truncate(options.label ?? 'Quantité', 45))
-          .setPlaceholder(options.placeholder ?? 'Ex. 10, ou « tout »')
+          .setLabel(truncate(options.label ?? 'Quantity', 45))
+          .setPlaceholder(options.placeholder ?? 'e.g. 10, or "all"')
           .setStyle(TextInputStyle.Short)
           .setRequired(true)
           .setMaxLength(12),
@@ -368,13 +368,20 @@ export function disableAll(
 /** Bouton « boutique » proposé automatiquement sur les erreurs de fonds. */
 export function suggestionRow(command: string, ownerId = PUBLIC_OWNER): ActionRowBuilder<ButtonBuilder> | undefined {
   const suggestions: Record<string, { label: string; emoji: string; namespace: string; action: string }> = {
-    boutique: { label: 'Ouvrir la boutique', emoji: '🏪', namespace: 'shop', action: 'open' },
-    ferme: { label: 'Voir ma ferme', emoji: '🌾', namespace: 'farm', action: 'refresh' },
-    inventaire: { label: 'Mon inventaire', emoji: '🎒', namespace: 'inv', action: 'open' },
-    batiments: { label: 'Bâtiments', emoji: '🏗️', namespace: 'build', action: 'open' },
-    quetes: { label: 'Mes quêtes', emoji: '📋', namespace: 'quest', action: 'open' },
+    // ⚠ Les clés doivent correspondre EXACTEMENT aux valeurs `suggestedCommand`
+    // des erreurs (src/utils/errors.ts). Elles étaient restées en français après
+    // le renommage des commandes : la table ne matchait plus rien et le bouton
+    // de suggestion disparaissait silencieusement.
+    shop: { label: 'Open the shop', emoji: '🏪', namespace: 'shop', action: 'open' },
+    farm: { label: 'View my farm', emoji: '🌾', namespace: 'farm', action: 'refresh' },
+    inventory: { label: 'My inventory', emoji: '🎒', namespace: 'inv', action: 'open' },
+    buildings: { label: 'Buildings', emoji: '🏗️', namespace: 'build', action: 'open' },
+    quests: { label: 'My quests', emoji: '📋', namespace: 'quest', action: 'open' },
     production: { label: 'Production', emoji: '🛠️', namespace: 'craft', action: 'queue' },
-    animaux: { label: 'Mes animaux', emoji: '🐄', namespace: 'animal', action: 'open' },
+    animals: { label: 'My animals', emoji: '🐄', namespace: 'animal', action: 'open' },
+    'buy-plot': { label: 'Buy a plot', emoji: '🗺️', namespace: 'farm', action: 'buy_plot' },
+    coop: { label: 'My co-op', emoji: '🤝', namespace: 'coop', action: 'open' },
+    event: { label: 'Current event', emoji: '🎉', namespace: 'world', action: 'event' },
   };
   const suggestion = suggestions[command];
   if (!suggestion) return undefined;
