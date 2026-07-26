@@ -7,7 +7,7 @@
 **Jeu de ferme persistant pour Discord — prêt pour la production.**
 
 27 cultures · 13 animaux · 32 recettes · 18 bâtiments · ~70 commandes
-49 tables PostgreSQL · images générées · économie fermée et auditée
+48 tables PostgreSQL · images générées · économie fermée et auditée
 
 </div>
 
@@ -175,7 +175,7 @@ malformée fait échouer le lancement immédiatement, avec le nom du champ fauti
 | `RENDER_TIMEOUT_MS` | `4000` | Budget de rendu avant repli texte |
 | `MAINTENANCE_MODE` | `false` | Bloque le jeu sauf `/admin` |
 | `QUEUES_ENABLED` | `true` | BullMQ ; `false` = minuteurs (mono-processus **uniquement**) |
-| `SHARD_COUNT` | `auto` | *Sharding* discord.js |
+| `SHARDING_TOTAL` | `auto` | Nombre de shards. **Ne jamais nommer cette variable `SHARD_COUNT`** : ce nom appartient au protocole interne de discord.js. |
 
 ### 5.2 Équilibrage — les 10 fichiers JSON
 
@@ -461,8 +461,8 @@ sauvegarder.**
 ### Surveiller l'économie
 
 ```sql
--- Écarts entre solde et grand livre : doit toujours être vide
-SELECT * FROM ledger_integrity WHERE drift <> 0;
+-- Écarts entre solde et grand livre. La vue filtre déjà : elle doit être VIDE.
+SELECT * FROM ledger_integrity;
 
 -- Masse monétaire et flux, heure par heure
 SELECT * FROM economy_snapshots ORDER BY created_at DESC LIMIT 24;
@@ -554,7 +554,7 @@ Aucune ligne de code à écrire.
 |---|---|
 | [01 — Cahier des charges](./docs/01-cahier-des-charges.md) | Périmètre fonctionnel complet, décision ferme globale, règles de jeu |
 | [02 — Architecture](./docs/02-architecture.md) | Pile, arborescence commentée, flux d'interaction, transactions, montée en charge |
-| [03 — Base de données](./docs/03-base-de-donnees.md) | 49 tables, stratégie de clés, verrouillage, immuabilité, index |
+| [03 — Base de données](./docs/03-base-de-donnees.md) | 48 tables, stratégie de clés, verrouillage, immuabilité, index |
 | [04 — Équilibrage](./docs/04-equilibrage.md) | Toutes les tables chiffrées et leur justification |
 | [05 — Pipeline d'assets](./docs/05-pipeline-assets.md) | Conventions de nommage, sources libres, licences, cache |
 | [06 — Roadmap](./docs/06-roadmap.md) | Extensions v2 et v3, dette technique, hors périmètre |

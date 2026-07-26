@@ -231,21 +231,12 @@ export const guildSettings = pgTable(
 );
 
 /**
- * Registre des migrations appliquées, écrit par notre runner
- * (`src/scripts/migrate.ts`). On garde notre propre table plutôt que la table
- * interne de drizzle-kit pour y stocker le hash du fichier : si un fichier de
- * migration déjà appliqué est modifié, le runner refuse de démarrer au lieu de
- * laisser deux environnements divergents.
+ * La table `migrations` n'est volontairement PAS déclarée ici.
+ *
+ * Elle est créée et interrogée en SQL brut par `src/scripts/migrate.ts`, qui en
+ * est le seul propriétaire. La déclarer aussi côté Drizzle la faisait figurer
+ * dans `0000_init.sql` : le runner créait la table pour son propre suivi, puis
+ * la première migration tentait de la recréer et échouait sur
+ * « relation "migrations" already exists ». Un registre de migrations doit
+ * exister AVANT la première migration, il ne peut donc pas en faire partie.
  */
-export const migrations = pgTable(
-  'migrations',
-  {
-    id: serial('id').primaryKey(),
-    name: varchar('name', { length: 128 }).notNull(),
-    hash: varchar('hash', { length: 64 }).notNull(),
-    appliedAt: timestamp('applied_at', { withTimezone: true }).notNull().defaultNow(),
-    executionMs: integer('execution_ms').notNull().default(0),
-    appliedBy: varchar('applied_by', { length: 64 }),
-  },
-  (t) => [uniqueIndex('migrations_name_uq').on(t.name)],
-);

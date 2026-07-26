@@ -90,8 +90,14 @@ const envSchema = z.object({
   MAINTENANCE_MESSAGE: z
     .string()
     .default('Harvester est en maintenance, revenez dans quelques minutes.'),
-  SHARD_COUNT: z.string().default('auto'),
-  SHARD_LIST: z.string().default('auto'),
+  // ⚠ NE JAMAIS nommer ces variables SHARD_COUNT ni SHARDS : ces deux noms
+  // appartiennent au protocole interne de discord.js. `ShardingManager` les
+  // pose sur l'environnement de chaque processus enfant, et `new Client()` les
+  // relit (Client.js §50-62). Une variable `SHARD_COUNT=auto` définie par nous
+  // était donc convertie par `Number('auto')` → NaN, et le client refusait de
+  // démarrer avec « shardCount must be a number greater than or equal to 1 ».
+  SHARDING_TOTAL: z.string().default('auto'),
+  SHARDING_LIST: z.string().default('auto'),
 
   // --- Gameplay ---
   SEASON_LENGTH_DAYS: intFromEnv(1, 365, 14),

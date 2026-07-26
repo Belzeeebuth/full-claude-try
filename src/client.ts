@@ -18,7 +18,42 @@ const log = moduleLogger('client');
  * désactive tout ce dont on ne se sert pas ; le bot tient alors dans ~120 Mo par
  * shard, même à 2 500 serveurs.
  */
+/**
+ * Neutralise un `SHARD_COUNT` / `SHARDS` invalide hérité de l'environnement.
+ *
+ * Ces deux noms appartiennent au protocole interne de discord.js : c'est ainsi
+ * que `ShardingManager` transmet son découpage aux processus enfants, et
+ * `new Client()` les relit quand l'option correspondante n'est pas fournie
+ * (Client.js §50-62). Une valeur non numérique — un `SHARD_COUNT=auto` laissé
+ * dans un ancien `.env`, par exemple — devient `NaN` et fait échouer le
+ * démarrage avec « shardCount must be a number greater than or equal to 1 ».
+ *
+ * Sous ShardingManager (`SHARDING_MANAGER=true`), les valeurs sont posées par
+ * le manager et forcément correctes : on n'y touche pas. Hors sharding, on
+ * retire ce qui est inexploitable plutôt que de laisser le bot en boucle de
+ * redémarrage.
+ */
+function sanitizeShardEnv(): void {
+  if (process.env.SHARDING_MANAGER === 'true') return;
+
+  for (const key of ['SHARD_COUNT', 'SHARDS'] as const) {
+    const raw = process.env[key];
+    if (raw === undefined) continue;
+
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      log.warn(
+        { variable: key, value: raw },
+        'variable réservée à discord.js ignorée : utilisez SHARDING_TOTAL / SHARDING_LIST',
+      );
+      delete process.env[key];
+    }
+  }
+}
+
 export function createClient(): Client {
+  sanitizeShardEnv();
+
   const client = new Client({
     intents: [GatewayIntentBits.Guilds],
     partials: [Partials.Channel], // nécessaire pour envoyer des MP

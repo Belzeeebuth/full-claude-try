@@ -53,7 +53,47 @@ async function main(): Promise<void> {
   }
 }
 
+/**
+ * Traduit les erreurs Discord courantes en instruction actionnable.
+ *
+ * Par défaut, `DiscordAPIError` embarque le corps complet de la requête : sur un
+ * déploiement de 62 commandes, cela noie l'unique information utile — le code —
+ * sous plusieurs milliers de lignes de JSON. On extrait donc le diagnostic, et
+ * on ne journalise l'erreur brute qu'en `debug`.
+ */
+function explain(error: unknown): string | undefined {
+  const code = (error as { code?: unknown }).code;
+  const status = (error as { status?: number }).status;
+  const guild = env.DISCORD_DEV_GUILD_ID;
+
+  // Discord ne renseigne pas toujours `code` : un jeton invalide renvoie un 403
+  // au corps vide. On se rabat donc sur le statut HTTP.
+  if (code === 50001 || status === 403) {
+    return guild
+      ? `Accès refusé au serveur ${guild}. Le bot n'y est pas présent, ou il y a été `
+        + 'invité sans le scope `applications.commands`. Réinvitez-le avec les deux '
+        + 'scopes `bot` et `applications.commands`, ou videz DISCORD_DEV_GUILD_ID '
+        + 'pour un déploiement global.'
+      : 'Accès refusé. Vérifiez que DISCORD_CLIENT_ID correspond bien au jeton utilisé.';
+  }
+  if (code === 50035) {
+    return 'Payload refusé par Discord : une commande dépasse une limite (nom > 32 '
+      + 'caractères, description > 100, plus de 25 options ou choix). Le détail figure '
+      + 'dans le champ `errors` de la réponse.';
+  }
+  if (code === 0 || status === 401) {
+    return 'Jeton invalide. DISCORD_TOKEN ne correspond à aucune application.';
+  }
+  return undefined;
+}
+
 main().catch((error: unknown) => {
-  log.fatal({ err: error }, '❌ déploiement impossible');
+  const hint = explain(error);
+  if (hint) {
+    log.fatal({ code: (error as { code?: unknown }).code }, `❌ déploiement impossible — ${hint}`);
+    log.debug({ err: error }, 'erreur Discord brute');
+  } else {
+    log.fatal({ err: error }, '❌ déploiement impossible');
+  }
   process.exit(1);
 });

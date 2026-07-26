@@ -107,7 +107,7 @@ harvester/
 │   ├── db/
 │   │   ├── client.ts            Pool pg, helper `transaction()`, verrous de ligne
 │   │   ├── redis.ts             3 connexions (principale, souscripteur, BullMQ)
-│   │   └── schema/              49 tables Drizzle, réparties par domaine
+│   │   └── schema/              48 tables Drizzle, réparties par domaine
 │   │
 │   ├── game/                    ⚠ MOTEUR PUR — aucune E/S, aucun import d'env, 100 % testable
 │   │   ├── xp.ts  growth.ts  harvest.ts  quality.ts  market.ts  grid.ts
@@ -334,7 +334,7 @@ explicitement déconseillé en production multi-*shard*.
 - il **refuse de démarrer** si un fichier déjà appliqué a été modifié — c'est la
   garantie qu'un environnement ne dérive pas silencieusement d'un autre.
 
-`0000_init.sql` est généré par `drizzle-kit` (49 tables, 138 index, 91 contraintes
+`0000_init.sql` est généré par `drizzle-kit` (48 tables, 137 index, 91 contraintes
 `CHECK`). `0001_triggers_and_guards.sql` est écrit à la main : *triggers*
 `updated_at`, *triggers* d'immuabilité, index partiels et fonctionnels, garde
 anti-boucle de parrainage, vue `ledger_integrity`.

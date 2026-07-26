@@ -12,7 +12,7 @@ Boucle complète semer → entretenir → récolter → transformer → vendre �
 27 cultures, 13 animaux, 32 recettes, 18 bâtiments ; économie fermée avec marché
 dynamique, hôtel des ventes, échanges P2P et banque ; quêtes, succès, passe
 saisonnier, saisons, météo, événements ; coopératives, classements, visites,
-entraide, parrainage ; ~70 commandes ; rendu graphique complet ; 49 tables ;
+entraide, parrainage ; ~70 commandes ; rendu graphique complet ; 48 tables ;
 administration et anti-triche.
 
 ---

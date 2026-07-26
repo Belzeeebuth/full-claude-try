@@ -24,7 +24,7 @@ const log = moduleLogger('sharding');
  *    `DATABASE_POOL_MAX × nombre de shards < max_connections`.
  */
 async function main(): Promise<void> {
-  const totalShards = env.SHARD_COUNT === 'auto' ? 'auto' : Number.parseInt(env.SHARD_COUNT, 10);
+  const totalShards = env.SHARDING_TOTAL === 'auto' ? 'auto' : Number.parseInt(env.SHARDING_TOTAL, 10);
 
   const manager = new ShardingManager(join(__dirname, 'index.js'), {
     token: env.DISCORD_TOKEN,

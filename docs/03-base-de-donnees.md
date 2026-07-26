@@ -1,6 +1,7 @@
 # 03 — Base de données
 
-> **49 tables · 138 index · 91 contraintes `CHECK` · 3 tables immuables.**
+> **48 tables applicatives · 91 contraintes `CHECK` · 3 tables immuables.**
+> (49 en base : le runner de migrations crée et possède sa propre table `migrations`.)
 > Schéma ORM : `src/db/schema/*.ts`. SQL exécutable : `drizzle/0000_init.sql` et
 > `drizzle/0001_triggers_and_guards.sql`.
 
@@ -86,7 +87,7 @@ donc que sur les lignes vivantes.
 
 ---
 
-## 2. Les 49 tables, par domaine
+## 2. Les 48 tables, par domaine
 
 ### 2.1 Cœur joueur — `src/db/schema/core.ts` (9)
 
@@ -154,8 +155,12 @@ endroit où un `guild_id` Discord apparaît dans le schéma).
 ### 2.6 Monde et système — `src/db/schema/system.ts` (5)
 
 `weather` (une ligne par jour, *seedée* pour être identique sur tous les *shards*) ·
-`seasons` · `notifications` · `scheduled_tasks` · `audit_logs` (**immuable**) ·
-`migrations`.
+`seasons` · `notifications` · `scheduled_tasks` · `audit_logs` (**immuable**).
+
+> La table `migrations` n'est pas listée ici : elle est créée et possédée par
+> `src/scripts/migrate.ts` en SQL brut. Un registre de migrations doit exister
+> **avant** la première migration, il ne peut donc pas faire partie du schéma
+> qu'elle applique.
 
 ### 2.7 Configuration miroir — `src/db/schema/config.ts` (9)
 
@@ -284,18 +289,24 @@ un `.sql` déjà appliqué est une erreur, il faut créer un nouveau fichier.
 
 ```sql
 CREATE OR REPLACE VIEW ledger_integrity AS
-SELECT u.id,
+SELECT u.id                                 AS user_id,
        u.discord_id,
-       u.coins                                   AS balance,
-       COALESCE(SUM(t.amount), 0)                AS ledger_sum,
-       u.coins - COALESCE(SUM(t.amount), 0)      AS drift
+       u.coins                              AS wallet_balance,
+       COALESCE(SUM(t.amount), 0)           AS ledger_balance,
+       u.coins - COALESCE(SUM(t.amount), 0) AS drift
 FROM users u
-LEFT JOIN transactions t ON t.user_id = u.id
+LEFT JOIN transactions t
+  ON t.user_id = u.id AND t.currency = 'coins'
 WHERE u.deleted_at IS NULL
-GROUP BY u.id;
+GROUP BY u.id, u.discord_id, u.coins
+HAVING u.coins <> COALESCE(SUM(t.amount), 0);
 ```
 
-Le job `economy_snapshot` interroge cette vue toutes les 30 minutes. `drift ≠ 0`
-signifie qu'un solde a été modifié sans écriture au grand livre : c'est soit un bug,
-soit une intrusion. Dans les deux cas, la ligne est journalisée et remontée dans le
-salon d'erreurs privé. En exploitation normale, `drift` est identiquement nul.
+Le `HAVING` est l'essentiel : la vue ne renvoie **que** les lignes en écart. En
+exploitation normale elle est vide, et toute ligne qui y apparaît est un
+incident.
+
+Le job `economy_snapshot` interroge cette vue toutes les 30 minutes. Une ligne
+présente signifie qu'un solde a été modifié sans écriture au grand livre : c'est
+soit un bug, soit une intrusion. Dans les deux cas, elle est journalisée et
+remontée dans le salon d'erreurs privé.

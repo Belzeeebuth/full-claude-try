@@ -925,15 +925,6 @@ CREATE TABLE "guild_settings" (
 	CONSTRAINT "guild_settings_xp_multiplier_range" CHECK ("guild_settings"."xp_multiplier" BETWEEN 0.1 AND 2.0)
 );
 --> statement-breakpoint
-CREATE TABLE "migrations" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"name" varchar(128) NOT NULL,
-	"hash" varchar(64) NOT NULL,
-	"applied_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"execution_ms" integer DEFAULT 0 NOT NULL,
-	"applied_by" varchar(64)
-);
---> statement-breakpoint
 CREATE TABLE "notifications" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"user_id" uuid NOT NULL,
@@ -1188,7 +1179,6 @@ CREATE INDEX "audit_logs_action_idx" ON "audit_logs" USING btree ("action","crea
 CREATE INDEX "audit_logs_severity_idx" ON "audit_logs" USING btree ("severity","created_at" DESC NULLS LAST);--> statement-breakpoint
 CREATE UNIQUE INDEX "guild_settings_discord_id_uq" ON "guild_settings" USING btree ("discord_guild_id");--> statement-breakpoint
 CREATE INDEX "guild_settings_left_idx" ON "guild_settings" USING btree ("left_at");--> statement-breakpoint
-CREATE UNIQUE INDEX "migrations_name_uq" ON "migrations" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "notifications_pending_idx" ON "notifications" USING btree ("delivered","deliver_at");--> statement-breakpoint
 CREATE INDEX "notifications_user_idx" ON "notifications" USING btree ("user_id","created_at" DESC NULLS LAST);--> statement-breakpoint
 CREATE UNIQUE INDEX "notifications_dedupe_uq" ON "notifications" USING btree ("dedupe_key");--> statement-breakpoint
