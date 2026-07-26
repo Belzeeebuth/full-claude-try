@@ -223,7 +223,7 @@ export function breed(
   rng: Rng,
 ): BreedingResult {
   if (!config.breedable) {
-    return { success: false, qualityMultiplier: 1, generation: 1, reason: 'espèce non reproductible' };
+    return { success: false, qualityMultiplier: 1, generation: 1, reason: 'species cannot breed' };
   }
   if (parentA.status.sick || parentB.status.sick) {
     return { success: false, qualityMultiplier: 1, generation: 1, reason: 'animal malade' };
@@ -259,12 +259,12 @@ function describeMood(
   sick: boolean,
   alive: boolean,
 ): string {
-  if (!alive) return 'Décédé 🪦';
+  if (!alive) return 'Deceased 🪦';
   if (sick || health <= 25) return 'Malade 🤒';
-  if (hunger <= 10) return 'Affamé 🥺';
+  if (hunger <= 10) return 'Hungry 🥺';
   if (hunger <= 30) return 'A faim 😕';
   if (happiness >= 80 && hunger >= 70) return 'Radieux 😄';
   if (happiness >= 50) return 'Content 🙂';
   if (happiness >= 25) return 'Morose 😐';
-  return 'Déprimé 😞';
+  return 'Unhappy 😞';
 }

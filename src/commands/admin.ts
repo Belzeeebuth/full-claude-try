@@ -131,8 +131,8 @@ const admin: Command = {
           ownerId: interaction.user.id,
           title: 'Annonce globale',
           fieldId: 'message',
-          label: 'Message à diffuser',
-          placeholder: 'Le marché de Noël ouvre ses portes !',
+          label: 'Message to broadcast',
+          placeholder: 'The Christmas market is now open!',
           maxLength: 1800,
           paragraph: true,
         }),
@@ -165,8 +165,8 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              sub === 'give' ? '✅ Ressource attribuée' : '✅ Ressource retirée',
-              `${target} — **${formatNumber(result.applied)}** ${interaction.options.getString('resource', true)}\nAction journalisée dans l'audit.`,
+              sub === 'give' ? '✅ Resource granted' : '✅ Resource removed',
+              `${target} — **${formatNumber(result.applied)}** ${interaction.options.getString('resource', true)}\nAction written to the audit log.`,
             ),
           ],
         });
@@ -183,8 +183,8 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '🗑️ Joueur réinitialisé',
-              `${target} a été supprimé (suppression douce : le journal comptable est conservé).\nIl pourra recommencer avec \`/start\`.`,
+              '🗑️ Player reset',
+              `${target} has been removed (soft delete: the ledger is preserved).\nThey can start over with \`/start\`.`,
             ),
           ],
         });
@@ -202,8 +202,8 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '🚫 Bannissement économique',
-              `${target} ne peut plus interagir avec l'économie jusqu'au ${discordTimestamp(result.until, 'F')}.`,
+              '🚫 Economic ban',
+              `${target} can no longer interact with the economy until ${discordTimestamp(result.until, 'F')}.`,
             ),
           ],
         });
@@ -220,10 +220,10 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              enabled ? '🛠️ Maintenance activée' : '✅ Maintenance désactivée',
+              enabled ? '🛠️ Maintenance enabled' : '✅ Maintenance disabled',
               enabled
                 ? 'Seuls les administrateurs peuvent utiliser le bot.'
-                : 'Le bot est de nouveau accessible à tous.',
+                : 'The bot is available to everyone again.',
             ),
           ],
         });
@@ -236,8 +236,8 @@ const admin: Command = {
           await interaction.editReply({
             embeds: [
               successEmbed(
-                '♻️ Configuration rechargée',
-                `${result.crops} cultures • ${result.items} objets • ${result.recipes} recettes • ${result.quests} quêtes\nChargée le ${result.loadedAt.toLocaleString('fr-FR')}.`,
+                '♻️ Configuration reloaded',
+                `${result.crops} crops • ${result.items} items • ${result.recipes} recipes • ${result.quests} quests\nLoaded on ${result.loadedAt.toLocaleString('en-US')}.`,
               ),
             ],
           });
@@ -248,7 +248,7 @@ const admin: Command = {
               : [];
           throw gameError(
             'invalid_state',
-            `Rechargement refusé : la configuration est invalide. **L'ancienne reste active.**\n\`\`\`\n${truncate(issues.slice(0, 10).join('\n') || String(error), 900)}\n\`\`\``,
+            `Reload refused: the configuration is invalid. **The previous one stays active.**\n\`\`\`\n${truncate(issues.slice(0, 10).join('\n') || String(error), 900)}\n\`\`\``,
           );
         }
         break;
@@ -273,9 +273,9 @@ const admin: Command = {
                   inline: true,
                 },
                 {
-                  name: '💰 Économie',
+                  name: '💰 Economy',
                   value: [
-                    `Masse monétaire : **${formatCompact(stats.economy.snapshot?.totalCoins ?? 0)}** 🪙`,
+                    `Money supply: **${formatCompact(stats.economy.snapshot?.totalCoins ?? 0)}** 🪙`,
                     `En banque : **${formatCompact(stats.economy.snapshot?.totalBankCoins ?? 0)}**`,
                     `Inflation 24 h : **${formatPercent(stats.economy.inflationRate)}**`,
                   ].join('\n'),
@@ -284,13 +284,13 @@ const admin: Command = {
                 {
                   name: '⚙️ Configuration',
                   value: [
-                    `Chargée : ${discordTimestamp(stats.config.loadedAt, 'R')}`,
+                    `Loaded: ${discordTimestamp(stats.config.loadedAt, 'R')}`,
                     `${stats.config.crops} cultures • ${stats.config.items} objets`,
                   ].join('\n'),
                   inline: true,
                 },
                 {
-                  name: '🔄 Flux monétaires (24 h)',
+                  name: '🔄 Money flows (24 h)',
                   value:
                     stats.economy.flows
                       .sort((a, b) => Math.abs(b.total) - Math.abs(a.total))
@@ -300,7 +300,7 @@ const admin: Command = {
                   inline: false,
                 },
                 {
-                  name: '🗓️ Tâches planifiées',
+                  name: '🗓️ Scheduled tasks',
                   value:
                     stats.tasks
                       .slice(0, 6)
@@ -311,7 +311,7 @@ const admin: Command = {
                 ...(incidents.length > 0
                   ? [
                       {
-                        name: '🚨 Incidents récents',
+                        name: '🚨 Recent incidents',
                         value: incidents
                           .slice(0, 5)
                           .map((incident) => `×${incident.count} — \`${truncate(incident.signature, 80)}\``)
@@ -350,11 +350,11 @@ const admin: Command = {
                   value:
                     result.logs
                       .map((entry) => `\`${entry.action}\` — ${discordTimestamp(entry.createdAt, 'R')}`)
-                      .join('\n') || 'Aucune entrée.',
+                      .join('\n') || 'No entry.',
                   inline: true,
                 },
                 {
-                  name: 'Dernières transactions',
+                  name: 'Latest transactions',
                   value:
                     result.transactions
                       .slice(0, 10)
@@ -378,8 +378,8 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '📈 Marché mis à jour',
-              `${updated} prix recalculés.\n${audit.length === 0 ? '✅ Aucun écart comptable détecté.' : `⚠️ **${audit.length} écart(s) comptable(s)** — voir les logs.`}`,
+              '📈 Market updated',
+              `${updated} prices recalculated.\n${audit.length === 0 ? '✅ No ledger drift detected.' : `⚠️ **${audit.length} écart(s) comptable(s)** — voir les logs.`}`,
             ),
           ],
         });

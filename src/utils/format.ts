@@ -4,9 +4,11 @@
  * le renderer d'images.
  *
  * Chaque fonction sensible à la langue prend un `locale` OPTIONNEL, défaut `fr`.
- * Ce défaut est délibéré : le français reste la langue de référence du bot, et
- * les nombreux appels des embeds n'ont pas eu à être réécrits. Les surfaces
- * réellement traduites — les images — passent la locale explicitement.
+ * Le texte de l'interface est désormais anglais, mais ce défaut reste : il ne
+ * touche que le FORMAT (séparateur de milliers, unités de durée), et le changer
+ * modifierait silencieusement l'affichage de tous les appels qui ne passent pas
+ * de locale. Les surfaces qui en passent une — les images — sont correctes ;
+ * basculer le défaut est un chantier à part, pas un effet de bord.
  */
 
 type IntlLocale = 'fr-FR' | 'en-US';
@@ -148,9 +150,9 @@ export function escapeMarkdown(value: string): string {
 }
 
 const QUALITY_LABELS: Record<string, string> = {
-  normal: 'Normale',
-  silver: 'Argent',
-  gold: 'Or',
+  normal: 'Normal',
+  silver: 'Silver',
+  gold: 'Gold',
   iridium: 'Iridium',
 };
 
@@ -181,12 +183,12 @@ export function mutationIcon(mutation: string): string {
 }
 
 const RARITY_LABELS: Record<string, string> = {
-  common: 'Commune',
-  uncommon: 'Peu commune',
+  common: 'Common',
+  uncommon: 'Uncommon',
   rare: 'Rare',
-  epic: 'Épique',
-  legendary: 'Légendaire',
-  mythic: 'Mythique',
+  epic: 'Epic',
+  legendary: 'Legendary',
+  mythic: 'Mythic',
 };
 
 export const RARITY_COLORS: Record<string, number> = {

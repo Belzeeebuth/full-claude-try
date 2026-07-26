@@ -83,7 +83,7 @@ export async function dispatchBatch(client: Client, limit: number): Promise<numb
             .setColor(COLORS.primary)
             .setTitle(notification.title ?? '🌾 Harvester')
             .setDescription(notification.body ?? '')
-            .setFooter({ text: 'Gérez vos alertes avec /settings' }),
+            .setFooter({ text: 'Manage your alerts with /settings' }),
         ],
       });
 

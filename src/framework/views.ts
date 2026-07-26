@@ -209,7 +209,7 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
         name: 'Expansion',
         value:
           view.nextPlotCost > 0
-            ? `Prochaine parcelle : **${formatCoins(view.nextPlotCost)}** (${view.unlockedPlots}/${context.balance.plots.maxPlots} débloquées)`
+            ? `Next plot: **${formatCoins(view.nextPlotCost)}** (${view.unlockedPlots}/${context.balance.plots.maxPlots} unlocked)`
             : `All plots unlocked (${view.unlockedPlots}) 🏆`,
       },
     ],

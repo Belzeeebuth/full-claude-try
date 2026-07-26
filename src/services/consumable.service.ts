@@ -89,7 +89,7 @@ export async function useConsumable(
         await playerRepo.setEnergy(player.id, restored, tx);
         return {
           consumed: quantity,
-          message: `⚡ Énergie restaurée : **${restored.energy}/${projection.max}**.`,
+          message: `⚡ Energy restored: **${restored.energy}/${projection.max}**.`,
         };
       }
 
@@ -102,7 +102,7 @@ export async function useConsumable(
         const watered = await farmRepo.waterCrops(cropIds, new Date(), tx);
         return {
           consumed: quantity,
-          message: `💧 **${watered}** parcelle(s) arrosée(s) instantanément, sans dépenser d'énergie.`,
+          message: `💧 **${watered}** plot(s) watered instantly, without spending energy.`,
         };
       }
 
@@ -149,7 +149,7 @@ export async function useConsumable(
         const rows = await farmRepo.listPlots(player.farmId, tx);
         const infested = rows.filter((entry) => entry.plot.pestType).slice(0, quantity);
         if (infested.length === 0) {
-          throw gameError('no_pest', 'Aucune parcelle infestée. Gardez votre traitement.');
+          throw gameError('no_pest', 'No infested plot. Keep your treatment.');
         }
         await farmRepo.updatePlots(
           infested.map((entry) => entry.plot.id),
@@ -164,7 +164,7 @@ export async function useConsumable(
 
       case 'streak_freeze': {
         const streak = await playerRepo.getDailyStreak(player.id, tx);
-        if (!streak) throw gameError('not_registered', 'Série introuvable.');
+        if (!streak) throw gameError('not_registered', 'Streak not found.');
         await tx
           .update((await import('../db/schema')).dailyStreaks)
           .set({ freezeTokens: Math.min(5, streak.freezeTokens + quantity) })
@@ -176,7 +176,7 @@ export async function useConsumable(
           );
         return {
           consumed: quantity,
-          message: `🧊 **${quantity}** jeton(s) de gel ajouté(s) : votre série survivra à ${quantity} journée(s) manquée(s).`,
+          message: `🧊 **${quantity}** freeze token(s) added: your streak will survive ${quantity} missed day(s).`,
         };
       }
 
@@ -191,7 +191,7 @@ export async function useConsumable(
           );
         return {
           consumed: quantity,
-          message: `🎨 Apparence appliquée : **${effect.value}**. Consultez \`/profile\` !`,
+          message: `🎨 Appearance applied: **${effect.value}**. Check \`/profile\`!`,
         };
       }
 
@@ -205,7 +205,7 @@ export async function useConsumable(
       case 'quest_reroll':
         throw gameError(
           'invalid_state',
-          'Ce jeton est consommé automatiquement par `/reroll-quest`.',
+          'This token is consumed automatically by `/reroll-quest`.',
           { suggestedCommand: 'quests' },
         );
 

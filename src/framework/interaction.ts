@@ -169,7 +169,7 @@ export function classifyError(error: unknown, context?: CommandContext): ErrorRe
   }
   if (error instanceof NotOwnerError) {
     return {
-      userMessage: "Ce bouton n'est pas le vôtre — lancez la commande pour obtenir le vôtre.",
+      userMessage: "This button is not yours — run the command to get your own.",
       report: false,
       code: 'not_owner',
     };
@@ -197,7 +197,7 @@ export function classifyError(error: unknown, context?: CommandContext): ErrorRe
   log.error({ err: normalized, userId: context?.player.discordId }, 'erreur non gérée');
   return {
     userMessage:
-      "😵 Une erreur inattendue est survenue. L'incident a été enregistré, réessayez dans un instant.",
+      "😵 Something went wrong. The incident was logged, try again in a moment.",
     report: true,
     code: 'internal',
   };

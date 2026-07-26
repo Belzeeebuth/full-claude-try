@@ -84,7 +84,7 @@ export function canAfford(balance: number, cost: number): boolean {
  */
 export function totalCost(unitPrice: number, quantity: number): number {
   if (!Number.isInteger(quantity) || quantity < 0) {
-    throw new MoneyError(`quantité invalide : ${quantity}`);
+    throw new MoneyError(`invalid quantity: ${quantity}`);
   }
   return assertMoney(Math.trunc(unitPrice) * quantity);
 }

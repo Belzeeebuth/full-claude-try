@@ -176,8 +176,8 @@ export async function sell(
     });
 
     if (targets.length === 0) {
-      throw gameError('insufficient_items', "Vous n'avez rien à vendre qui corresponde.", {
-        hint: 'Consultez `/inventory` pour voir ce que vous possédez.',
+      throw gameError('insufficient_items', "You have nothing matching to sell.", {
+        hint: 'Check `/inventory` to see what you own.',
         suggestedCommand: 'inventory',
       });
     }
@@ -239,7 +239,7 @@ export async function sell(
     }
 
     if (lines.length === 0 || gross <= 0) {
-      throw gameError('insufficient_items', 'Rien à vendre.');
+      throw gameError('insufficient_items', 'Nothing to sell.');
     }
 
     const { net, tax } = economyService.applySalesTax(gross, player.level);
@@ -454,7 +454,7 @@ export async function rotateShop(now: Date = new Date()): Promise<number> {
     );
   });
 
-  log.info({ rotationDate, entries: rows.length }, 'boutique du jour générée');
+  log.info({ rotationDate, entries: rows.length }, 'daily shop generated');
   return rows.length;
 }
 
@@ -492,7 +492,7 @@ export async function buy(
 
     if (!stock) {
       throw gameError('not_found', `${item.emoji} ${item.name} n'est pas en vente aujourd'hui.`, {
-        hint: 'La boutique change tous les jours à minuit UTC. Consultez `/shop`.',
+        hint: 'The shop changes every day at midnight UTC. Check `/shop`.',
         suggestedCommand: 'shop',
       });
     }
@@ -601,7 +601,7 @@ export async function updateMarket(now: Date = new Date()): Promise<number> {
     }
   });
 
-  log.info({ updated, nextUpdateAt }, 'marché mis à jour');
+  log.info({ updated, nextUpdateAt }, 'market updated');
   return updated;
 }
 
@@ -630,7 +630,7 @@ export async function ensureMarketRows(): Promise<number> {
     created += 1;
   }
 
-  if (created > 0) log.info({ created }, 'lignes de marché initialisées');
+  if (created > 0) log.info({ created }, 'market rows initialised');
   return created;
 }
 

@@ -53,17 +53,17 @@ export const jobs: JobDefinition[] = [
   {
     key: 'market:update',
     cron: '0 * * * *',
-    description: 'Recalcule les prix du marché selon offre et demande',
+    description: 'Recalculates market prices from supply and demand',
     async run() {
       const updated = await marketService.updateMarket();
-      return `${updated} prix mis à jour`;
+      return `${updated} prices updated`;
     },
   },
 
   {
     key: 'shop:rotate',
     cron: '5 0 * * *',
-    description: 'Génère la boutique du jour',
+    description: 'Generates the daily shop',
     async run() {
       const entries = await marketService.rotateShop();
       return `${entries} articles en boutique`;
@@ -73,7 +73,7 @@ export const jobs: JobDefinition[] = [
   {
     key: 'world:weather',
     cron: '0 0 * * *',
-    description: 'Établit la météo du jour et met à jour la saison active',
+    description: 'Sets the daily weather and updates the active season',
     async run() {
       await ensureSeasonCalendar();
       const world = await getWorldState();
@@ -84,7 +84,7 @@ export const jobs: JobDefinition[] = [
   {
     key: 'farm:pests',
     cron: '0 */2 * * *',
-    description: 'Fait apparaître des nuisibles et applique les dégâts météo',
+    description: 'Spawns pests and applies weather damage',
     async run() {
       const balance = getBalance();
       const world = await getWorldState();
@@ -120,7 +120,7 @@ export const jobs: JobDefinition[] = [
             userId: candidate.userId,
             type: 'crop_withering',
             title: '🐛 Nuisibles !',
-            body: `Des nuisibles s'attaquent à votre parcelle ${candidate.slot}. Utilisez \`/treat parcelle:${candidate.slot}\` avant ${balance.pests.deadlineHours} h.`,
+            body: `Pests are attacking your plot ${candidate.slot}. Use \`/treat plot:${candidate.slot}\` avant ${balance.pests.deadlineHours} h.`,
             dedupeKey: `pest:${candidate.plotId}:${toSqlDate(new Date())}`,
           });
         }
@@ -141,14 +141,14 @@ export const jobs: JobDefinition[] = [
         }
       }
 
-      return `${pests} nuisibles, ${damaged} parcelles endommagées`;
+      return `${pests} pests, ${damaged} plots damaged`;
     },
   },
 
   {
     key: 'farm:pest-consequences',
     cron: '30 */2 * * *',
-    description: 'Applique les conséquences des nuisibles ignorés',
+    description: 'Applies the consequences of ignored pests',
     async run() {
       const balance = getBalance();
       const db = getDb();
@@ -183,24 +183,24 @@ export const jobs: JobDefinition[] = [
         });
         applied += 1;
       }
-      return `${applied} parcelles affectées`;
+      return `${applied} plots affected`;
     },
   },
 
   {
     key: 'farm:wither',
     cron: '15 * * * *',
-    description: 'Fait faner les cultures laissées trop longtemps',
+    description: 'Withers crops left too long',
     async run() {
       const withered = await farmRepo.witherOverdueCrops(new Date(), 500);
-      return `${withered} cultures fanées`;
+      return `${withered} crops withered`;
     },
   },
 
   {
     key: 'animals:decay',
     cron: '0 */3 * * *',
-    description: 'Matérialise faim, bonheur et santé ; déclenche maladies et décès',
+    description: 'Materialises hunger, happiness and health; triggers illness and death',
     async run() {
       const balance = getBalance();
       const config = getConfig();
@@ -244,7 +244,7 @@ export const jobs: JobDefinition[] = [
             userId: row.animal.userId,
             type: 'animal_sick',
             title: '🪦 Un animal est mort',
-            body: `Votre ${row.name} n'a pas survécu à la négligence. Nourrissez vos animaux avec \`/feed\`.`,
+            body: `Your ${row.name} did not survive the neglect. Feed your animals with \`/feed\`.`,
             dedupeKey: `death:${row.animal.id}`,
           });
           continue;
@@ -264,21 +264,21 @@ export const jobs: JobDefinition[] = [
             userId: row.animal.userId,
             type: 'animal_hungry',
             title: '🍽️ Vos animaux ont faim',
-            body: `Votre ${row.name} a faim (${status.hunger} %). Un animal affamé produit deux fois moins.`,
+            body: `Your ${row.name} is hungry (${status.hunger}%). A hungry animal produces half as much.`,
             dedupeKey: `hungry:${row.animal.id}:${toSqlDate(now)}`,
           });
           if (enqueued) notified += 1;
         }
       }
 
-      return `${rows.length} animaux traités, ${sick} malades, ${died} décès, ${notified} alertes`;
+      return `${rows.length} animals processed, ${sick} sick, ${died} deaths, ${notified} alerts`;
     },
   },
 
   {
     key: 'crops:ready-notify',
     cron: '*/10 * * * *',
-    description: 'Prévient les joueurs dont les cultures sont prêtes',
+    description: 'Notifies players whose crops are ready',
     async run() {
       const ready = await farmRepo.findCropsReadyForNotification(300);
       let queued = 0;
@@ -286,51 +286,51 @@ export const jobs: JobDefinition[] = [
         const enqueued = await systemRepo.enqueueNotification({
           userId: crop.userId,
           type: 'crop_ready',
-          title: '🌾 Récolte prête !',
-          body: `Votre parcelle ${crop.plotSlot} est prête. Utilisez \`/harvest\` avant qu'elle ne fane.`,
+          title: '🌾 Harvest ready!',
+          body: `Your plot ${crop.plotSlot} is ready. Use \`/harvest\` before it withers.`,
           dedupeKey: `ready:${crop.userId}:${crop.plotSlot}:${crop.readyAt.toISOString()}`,
         });
         if (enqueued) queued += 1;
       }
-      return `${queued} notifications programmées`;
+      return `${queued} notifications scheduled`;
     },
   },
 
   {
     key: 'auctions:expire',
     cron: '*/5 * * * *',
-    description: 'Clôture les enchères expirées et rembourse les mises perdantes',
+    description: 'Closes expired auctions and refunds losing bids',
     async run() {
       const result = await tradeService.closeExpiredListings(50);
       const trades = await tradeService.expireTrades(50);
-      return `${result.sold} vendues, ${result.returned} rendues, ${trades} échanges expirés`;
+      return `${result.sold} sold, ${result.returned} returned, ${trades} trades expired`;
     },
   },
 
   {
     key: 'quests:expire',
     cron: '10 0 * * *',
-    description: 'Expire les quêtes du cycle écoulé',
+    description: 'Expires quests from the elapsed cycle',
     async run() {
       const expired = await progressionService.expireQuests(new Date());
-      return `${expired} quêtes expirées`;
+      return `${expired} quests expired`;
     },
   },
 
   {
     key: 'coop:objectives',
     cron: '*/15 * * * *',
-    description: 'Distribue les récompenses des objectifs de coopérative terminés',
+    description: 'Distributes rewards for completed co-op objectives',
     async run() {
       const distributed = await coopService.distributeObjectiveRewards(20);
-      return `${distributed} objectifs récompensés`;
+      return `${distributed} objectives rewarded`;
     },
   },
 
   {
     key: 'bank:interest',
     cron: '0 3 * * *',
-    description: 'Verse les intérêts bancaires quotidiens',
+    description: 'Pays daily bank interest',
     async run() {
       const accounts = await economyRepo.findAccountsForInterest(
         new Date(Date.now() - 86_400_000),
@@ -349,38 +349,38 @@ export const jobs: JobDefinition[] = [
         });
         total += interest;
       }
-      return `${accounts.length} comptes, ${total} pièces d'intérêts`;
+      return `${accounts.length} accounts, ${total} coins of interest`;
     },
   },
 
   {
     key: 'economy:snapshot',
     cron: '30 * * * *',
-    description: 'Capture un instantané économique et vérifie le grand livre',
+    description: 'Captures an economic snapshot and checks the ledger',
     async run() {
       const snapshot = await economyRepo.captureEconomySnapshot(new Date(Date.now() - 3_600_000));
       const mismatches = await economyService.auditLedger(20);
-      return `masse ${snapshot.totalCoins} 🪙, ${mismatches.length} écart(s)`;
+      return `supply ${snapshot.totalCoins} 🪙, ${mismatches.length} drift(s)`;
     },
   },
 
   {
     key: 'leaderboard:weekly',
     cron: '0 0 * * 1',
-    description: 'Fige les classements et réinitialise les compteurs hebdomadaires',
+    description: 'Freezes leaderboards and resets weekly counters',
     async run() {
       const periodKey = weeklyCycleKey(new Date(Date.now() - 86_400_000));
       const captured = await miscService.snapshotLeaderboards(periodKey);
       await progressionService.weeklyReset();
       await coopService.weeklyReset();
-      return `${captured} lignes figées pour ${periodKey}`;
+      return `${captured} rows frozen for ${periodKey}`;
     },
   },
 
   {
     key: 'maintenance:cleanup',
     cron: '0 4 * * *',
-    description: 'Purge historiques, piles vides et verrous mémoire',
+    description: 'Purges history, empty stacks and stale locks',
     async run() {
       const balance = getBalance();
       const before = new Date(Date.now() - balance.market.historyRetentionDays * 86_400_000);

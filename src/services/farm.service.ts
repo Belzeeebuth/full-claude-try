@@ -268,7 +268,7 @@ export async function plant(
 
     if (targetSlots.length === 0) {
       throw gameError('plot_empty', 'Aucune parcelle libre.', {
-        hint: 'Récoltez vos cultures ou achetez une parcelle avec `/buy-plot`.',
+        hint: 'Harvest your crops or buy a plot with `/buy-plot`.',
         suggestedCommand: 'buy-plot',
       });
     }
@@ -280,13 +280,13 @@ export async function plant(
       const first = locked[0];
       if (!first) throw gameError('plot_not_found', `Parcelle ${targetSlots[0]} introuvable.`);
       if (first.state === 'locked') {
-        throw gameError('plot_locked', `La parcelle ${first.slot} est verrouillée.`, {
-          hint: `Débloquez-la pour ${plotUnlockCost(first.slot, balance).toLocaleString('fr-FR')} 🪙 avec \`/buy-plot\`.`,
+        throw gameError('plot_locked', `Plot ${first.slot} is locked.`, {
+          hint: `Unlock it for ${plotUnlockCost(first.slot, balance).toLocaleString('en-US')} 🪙 with \`/buy-plot\`.`,
           suggestedCommand: 'buy-plot',
         });
       }
-      throw gameError('plot_occupied', `La parcelle ${first.slot} est déjà occupée.`, {
-        hint: 'Récoltez-la avec `/harvest` ou désherbez-la si elle a fané.',
+      throw gameError('plot_occupied', `Plot ${first.slot} is already occupied.`, {
+        hint: 'Harvest it with `/harvest`, or clear it if the crop withered.',
       });
     }
 
@@ -495,8 +495,8 @@ export async function harvest(
     });
 
     if (ready.length === 0) {
-      throw gameError('crop_not_ready', "Rien n'est prêt à être récolté.", {
-        hint: 'Consultez `/farm` pour voir les échéances.',
+      throw gameError('crop_not_ready', "Nothing is ready to harvest.", {
+        hint: 'Check `/farm` for the deadlines.',
         suggestedCommand: 'farm',
       });
     }
@@ -699,7 +699,7 @@ export async function harvest(
 
     log.debug(
       { userId: player.id, plots: harvested.length, quantity: totalQuantity, xp: xpTotal },
-      'récolte',
+      'harvest',
     );
 
     return {
@@ -753,7 +753,7 @@ export async function fertilize(
       .slice(0, input.all ? 64 : 1);
 
     if (candidates.length === 0) {
-      throw gameError('invalid_state', 'Aucune parcelle ne peut être fertilisée davantage.');
+      throw gameError('invalid_state', 'No plot can be fertilized further.');
     }
 
     await inventoryService.consume(player.id, input.fertilizerKey, candidates.length, tx);
@@ -815,7 +815,7 @@ export async function weed(
       .slice(0, input.all ? 64 : 1);
 
     if (candidates.length === 0) {
-      throw gameError('invalid_state', 'Aucune mauvaise herbe à arracher. Beau travail !');
+      throw gameError('invalid_state', 'No weeds to pull. Nice work!');
     }
 
     await consumeEnergy(player.id, 'weed', tx, {
@@ -913,7 +913,7 @@ export async function buyPlot(player: PlayerContext): Promise<BuyPlotResult> {
     if (!next) {
       throw gameError(
         'invalid_state',
-        `Vous possédez déjà les ${balance.plots.maxPlots} parcelles. Bravo !`,
+        `You already own all ${balance.plots.maxPlots} plots. Well done!`,
       );
     }
 
@@ -932,7 +932,7 @@ export async function buyPlot(player: PlayerContext): Promise<BuyPlotResult> {
     if (!unlocked) {
       // Un autre clic a déjà débloqué cette parcelle : on annule pour ne pas
       // facturer deux fois.
-      throw gameError('busy', 'Cette parcelle vient déjà d\'être débloquée.');
+      throw gameError('busy', 'That plot was just unlocked.');
     }
 
     const unlockedCount = await farmRepo.countUnlockedPlots(player.farmId, tx);

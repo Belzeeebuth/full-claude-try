@@ -112,13 +112,13 @@ const planter: Command = {
     });
 
     const embed = successEmbed(
-      `${result.emoji} ${result.cropName} planté`,
+      `${result.emoji} ${result.cropName} planted`,
       [
-        `**${result.slots.length}** parcelle(s) plantée(s) : ${result.slots.map((value) => `\`${value}\``).join(' ')}`,
-        `🌱 Récolte ${discordTimestamp(result.readyAt, 'R')} (${discordTimestamp(result.readyAt, 't')})`,
+        `**${result.slots.length}** plot(s) planted: ${result.slots.map((value) => `\`${value}\``).join(' ')}`,
+        `🌱 Harvest ${discordTimestamp(result.readyAt, 'R')} (${discordTimestamp(result.readyAt, 't')})`,
         result.waterNeeded > 0 ? `💧 ${result.waterNeeded} arrosage(s) attendu(s)` : '',
         result.offSeason
-          ? '⚠️ *Hors saison : pousse plus lente et rendement réduit. Une serre annulerait ce malus.*'
+          ? '⚠️ *Out of season: slower growth and reduced yield. A greenhouse would cancel this penalty.*'
           : '',
       ]
         .filter(Boolean)
@@ -187,21 +187,21 @@ export function buildHarvestEmbed(summary: farmService.HarvestSummary) {
   });
 
   const embed = baseEmbed({
-    title: '🧺 Récolte',
-    description: lines.join('\n') || 'Rien de récolté.',
+    title: '🧺 Harvest',
+    description: lines.join('\n') || 'Nothing harvested.',
     color: COLORS.success,
     fields: [
       {
         name: 'Total',
-        value: `**${formatNumber(summary.totalQuantity)}** unité(s) • valeur estimée **${formatCoins(summary.estimatedValue)}** • **${formatNumber(summary.xpGained)}** ✨`,
+        value: `**${formatNumber(summary.totalQuantity)}** unit(s) • estimated value **${formatCoins(summary.estimatedValue)}** • **${formatNumber(summary.xpGained)}** ✨`,
       },
     ],
   });
 
   if (summary.witheredSlots.length > 0) {
     embed.addFields({
-      name: '💀 Cultures fanées',
-      value: `Parcelles ${summary.witheredSlots.join(', ')} — récoltez plus tôt la prochaine fois !`,
+      name: '💀 Withered crops',
+      value: `Plots ${summary.witheredSlots.join(', ')} — harvest sooner next time!`,
     });
   }
   if (summary.seedsRecovered.length > 0) {
@@ -214,8 +214,8 @@ export function buildHarvestEmbed(summary: farmService.HarvestSummary) {
   }
   if (summary.levelUp) {
     embed.addFields({
-      name: '🎉 Niveau supérieur !',
-      value: `Vous atteignez le **niveau ${summary.levelUp.level}** (+${summary.levelUp.levelsGained})\nRécompense : ${formatCoins(summary.levelUp.rewardCoins)}${summary.levelUp.rewardGems > 0 ? ` + ${summary.levelUp.rewardGems} 💎` : ''}`,
+      name: '🎉 Level up!',
+      value: `You reached **level ${summary.levelUp.level}** (+${summary.levelUp.levelsGained})\nReward: ${formatCoins(summary.levelUp.rewardCoins)}${summary.levelUp.rewardGems > 0 ? ` + ${summary.levelUp.rewardGems} 💎` : ''}`,
     });
   }
   appendTracking(embed, summary.tracking);
@@ -254,7 +254,7 @@ const arroser: Command = {
           baseEmbed({
             title: '🌧️ Il pleut !',
             description:
-              'Toutes vos parcelles sont arrosées gratuitement aujourd\'hui. Économisez votre énergie.',
+              'All your plots are watered for free today. Save your energy.',
             color: COLORS.info,
           }),
         ],
@@ -264,7 +264,7 @@ const arroser: Command = {
 
     const embed = successEmbed(
       '💧 Arrosage',
-      `**${result.watered}** parcelle(s) arrosée(s).${result.toolPlots > 1 ? `\n*Votre arrosoir couvre ${result.toolPlots} parcelles par action.*` : ''}`,
+      `**${result.watered}** plot(s) watered.${result.toolPlots > 1 ? `\n*Votre arrosoir couvre ${result.toolPlots} parcelles par action.*` : ''}`,
     );
     appendTracking(embed, result.tracking);
     await interaction.editReply({ embeds: [embed] });
@@ -305,7 +305,7 @@ const fertiliser: Command = {
     const result = await farmService.fertilize(context.player, { fertilizerKey, slot, all: !slot });
     const embed = successEmbed(
       '🧪 Fertilisation',
-      `${result.fertilizer} appliqué sur **${result.slots.length}** parcelle(s).\nFertilité du sol : **${result.fertilityAfter}%**`,
+      `${result.fertilizer} applied to **${result.slots.length}** plot(s).\nSoil fertility: **${result.fertilityAfter}%**`,
     );
     appendTracking(embed, result.tracking);
     await interaction.editReply({ embeds: [embed] });
@@ -331,8 +331,8 @@ const desherber: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🌿 Désherbage',
-          `**${result.slots.length}** parcelle(s) nettoyée(s).\nVous récupérez **${result.weedsCollected}× 🌱 mauvaises herbes** — de quoi faire du compost à l'atelier.`,
+          '🌿 Weeding',
+          `**${result.slots.length}** plot(s) cleared.\nYou collect **${result.weedsCollected}× 🌱 weeds** — enough to make compost at the workshop.`,
         ),
       ],
     });
@@ -364,8 +364,8 @@ const traiter: Command = {
     const pest = PEST_LABELS[result.pestType];
 
     const embed = successEmbed(
-      `${pest.emoji} ${pest.name} éliminés`,
-      `Parcelle **${result.slot}** assainie.${result.usedItem ? '\n🧯 Un traitement bio a été consommé.' : "\n*Sans traitement bio, l'opération coûte plus d'énergie.*"}`,
+      `${pest.emoji} ${pest.name} cleared`,
+      `Plot **${result.slot}** treated.${result.usedItem ? '\n🧯 An organic treatment was consumed.' : '\n*Without an organic treatment, the job costs more energy.*'}`,
     );
     appendTracking(embed, result.tracking);
     await interaction.editReply({ embeds: [embed] });
@@ -405,8 +405,8 @@ const acheterParcelle: Command = {
     const embed = successEmbed(
       '🗺️ Nouvelle parcelle !',
       [
-        `Parcelle **${result.slot}** débloquée pour ${formatCoins(result.cost)}.`,
-        `Votre ferme fait désormais **${result.grid.width}×${result.grid.height}** (${result.unlockedPlots} parcelles).`,
+        `Plot **${result.slot}** unlocked for ${formatCoins(result.cost)}.`,
+        `Your farm is now **${result.grid.width}×${result.grid.height}** (${result.unlockedPlots} plots).`,
         result.nextCost > 0 ? `Prochaine parcelle : ${formatCoins(result.nextCost)}` : '🏆 Domaine complet !',
       ].join('\n'),
     );
@@ -476,10 +476,10 @@ const cultures: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '🌾 Encyclopédie des cultures',
-          description: lines.join('\n') || 'Aucune culture ne correspond à ce filtre.',
+          title: '🌾 Crop encyclopedia',
+          description: lines.join('\n') || 'No crop matches this filter.',
           color: COLORS.primary,
-          footer: `${crops.length} culture(s) • le rendement horaire est calculé pour un sol à 70 % et en saison`,
+          footer: `${crops.length} crop(s) • hourly yield assumes 70% soil, in season`,
         }),
       ],
     });
@@ -498,16 +498,16 @@ export function appendTracking(
   const parts: string[] = [];
   if (tracking.completedQuests.length > 0) {
     parts.push(
-      `📋 Quête(s) terminée(s) : ${tracking.completedQuests.map((quest) => `**${quest.title}**`).join(', ')} — \`/quests\` pour réclamer`,
+      `📋 Quest(s) completed: ${tracking.completedQuests.map((quest) => `**${quest.title}**`).join(', ')} — \`/quests\` to claim`,
     );
   }
   if (tracking.unlockedAchievements.length > 0) {
     parts.push(
-      `🏆 Succès débloqué(s) : ${tracking.unlockedAchievements.map((entry) => `**${entry.name}**`).join(', ')}`,
+      `🏆 Achievement(s) unlocked: ${tracking.unlockedAchievements.map((entry) => `**${entry.name}**`).join(', ')}`,
     );
   }
   if (tracking.completedCoopObjectives.length > 0) {
-    parts.push(`🤝 Objectif de coopérative atteint : **${tracking.completedCoopObjectives.join(', ')}**`);
+    parts.push(`🤝 Co-op objective reached: **${tracking.completedCoopObjectives.join(', ')}**`);
   }
   if (parts.length > 0) {
     embed.addFields({ name: '​', value: parts.join('\n') });

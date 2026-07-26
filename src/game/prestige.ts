@@ -55,7 +55,7 @@ export function checkPrestigeEligibility(
       currentLevel: user.level,
       currentPrestige: user.prestige,
       maxPrestige: balance.prestige.maxPrestige,
-      reason: `Le prestige demande le niveau ${requiredLevel} (vous êtes niveau ${user.level}).`,
+      reason: `Prestige requires level ${requiredLevel} (you are level ${user.level}).`,
     };
   }
   return {

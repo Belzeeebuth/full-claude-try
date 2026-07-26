@@ -89,12 +89,12 @@ const hdv: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '🔨 Annonce publiée',
+              '🔨 Listing posted',
               [
                 `Lot de **${result.quantity}** au prix de **${formatCoins(result.price)}**.`,
                 `Frais de mise en vente : ${formatCoins(result.fee)} (non remboursables).`,
                 `Expiration ${discordTimestamp(result.expiresAt, 'R')}.`,
-                `Commission à la vente : ${(context.balance.auction.commissionRate * 100).toFixed(0)} %.`,
+                `Sale commission: ${(context.balance.auction.commissionRate * 100).toFixed(0)}%.`,
                 '',
                 `Identifiant : \`${result.id}\``,
               ].join('\n'),
@@ -126,7 +126,7 @@ const hdv: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '↩️ Annonce annulée',
+              '↩️ Listing cancelled',
               `**${result.quantity}× ${result.itemName}** sont de retour dans votre inventaire.\n*Les frais de mise en vente restent acquis au village.*`,
             ),
           ],
@@ -148,8 +148,8 @@ const hdv: Command = {
                         : entry.listing.status === 'active'
                           ? `⏳ expire ${discordTimestamp(entry.listing.expiresAt, 'R')}`
                           : entry.listing.status === 'expired'
-                            ? '⌛ expirée (objets rendus)'
-                            : '↩️ annulée';
+                            ? '⌛ expired (items returned)'
+                            : '↩️ cancelled';
                     return `${entry.itemEmoji} **${entry.listing.quantity}× ${entry.itemName}** — ${formatCoins(entry.listing.startPrice)} — ${status}\n\`${entry.listing.id}\``;
                   })
                   .join('\n') || 'Aucune annonce.',
@@ -195,14 +195,14 @@ export async function auctionListView(
   const result = await tradeService.browse(context.player.id, { itemKey, page });
 
   const embed = baseEmbed({
-    title: '🔨 Hôtel des ventes',
+    title: '🔨 Auction house',
     description:
       result.listings
         .map((listing) => {
           const bid = listing.currentBid
-            ? `enchère **${formatCoins(listing.currentBid)}**`
-            : `mise à partir de **${formatCoins(listing.startPrice)}**`;
-          const buyout = listing.buyoutPrice ? ` • achat immédiat **${formatCoins(listing.buyoutPrice)}**` : '';
+            ? `bid **${formatCoins(listing.currentBid)}**`
+            : `starting at **${formatCoins(listing.startPrice)}**`;
+          const buyout = listing.buyoutPrice ? ` • buy now **${formatCoins(listing.buyoutPrice)}**` : '';
           return [
             `${listing.itemEmoji} **${listing.quantity}× ${listing.itemName}**${qualityIcon(listing.quality)}${listing.isOwn ? ' *(votre annonce)*' : ''}`,
             `   ${bid}${buyout} • vendeur : ${listing.sellerName} • expire ${discordTimestamp(listing.expiresAt, 'R')}`,
@@ -289,7 +289,7 @@ export async function tradeView(
   const format = (items: typeof mine, coins: number): string =>
     [
       ...items.map((item) => `${item.emoji} ${item.quantity}× ${item.name}`),
-      coins > 0 ? `🪙 ${formatNumber(coins)} pièces` : '',
+      coins > 0 ? `🪙 ${formatNumber(coins)} coins` : '',
     ]
       .filter(Boolean)
       .join('\n') || '*rien pour le moment*';
@@ -297,10 +297,10 @@ export async function tradeView(
   return {
     embeds: [
       baseEmbed({
-        title: `🤝 Échange avec ${partnerName}`,
+        title: `🤝 Trade with ${partnerName}`,
         description: [
           '**Les deux joueurs doivent confirmer.** Toute modification annule les confirmations.',
-          `Expire ${discordTimestamp(trade.expiresAt, 'R')} • révision ${trade.revision}`,
+          `Expires ${discordTimestamp(trade.expiresAt, 'R')} • revision ${trade.revision}`,
         ].join('\n'),
         color: COLORS.info,
         fields: [
@@ -332,7 +332,7 @@ export async function tradeView(
           action: 'add_coins',
           ownerId: context.player.discordId,
           params: [trade.id],
-          label: 'Ajouter des pièces',
+          label: 'Add coins',
           emoji: '🪙',
         }),
         button({

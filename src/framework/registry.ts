@@ -83,7 +83,7 @@ export function loadCommands(directory = join(__dirname, '..', 'commands')): num
         continue;
       }
       if (registry.commands.has(command.data.name)) {
-        throw new Error(`Commande dupliquée : /${command.data.name} (${file})`);
+        throw new Error(`Duplicate command: /${command.data.name} (${file})`);
       }
       registry.commands.set(command.data.name, command);
       count += 1;
@@ -147,7 +147,7 @@ export function loadComponents(directory = join(__dirname, '..', 'components')):
 
   log.info(
     { buttons: registry.buttons.length, selects: registry.selects.length, modals: registry.modals.length },
-    'composants chargés',
+    'components loaded',
   );
   return count;
 }

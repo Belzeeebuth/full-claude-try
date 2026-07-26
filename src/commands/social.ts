@@ -110,8 +110,8 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              `${info.emblem} ${info.name} [${info.tag}] fondée !`,
-              `Coût : ${formatCoins(context.balance.coop.creationCostCoins)}\n` +
+              `${info.emblem} ${info.name} [${info.tag}] founded!`,
+              `Cost: ${formatCoins(context.balance.coop.creationCostCoins)}\n` +
                 `Invitez vos amis avec \`/coop invite\` et remplissez les objectifs hebdomadaires ensemble.`,
             ),
           ],
@@ -124,7 +124,7 @@ const coop: Command = {
           embeds: [
             successEmbed(
               `Bienvenue chez ${info.emblem} ${info.name} !`,
-              `Vous bénéficiez immédiatement des bonus de niveau ${info.level}.`,
+              `You immediately benefit from the level ${info.level} bonuses.`,
             ),
           ],
         });
@@ -135,10 +135,10 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              'Départ enregistré',
+              'Departure recorded',
               result.dissolved
-                ? `**${result.coopName}** a été dissoute (vous étiez le dernier membre).`
-                : `Vous avez quitté **${result.coopName}**.`,
+                ? `**${result.coopName}** was disbanded (you were the last member).`
+                : `You left **${result.coopName}**.`,
             ),
           ],
         });
@@ -170,7 +170,7 @@ const coop: Command = {
         if (!targetUser) throw gameError('not_found', "Ce joueur n'a pas encore de ferme.");
         const result = await coopService.inviteMember(context.player, targetUser.id);
         await interaction.editReply({
-          embeds: [successEmbed('Invitation acceptée', `${target} a rejoint **${result.coopName}**.`)],
+          embeds: [successEmbed('Invitation accepted', `${target} a rejoint **${result.coopName}**.`)],
         });
         break;
       }
@@ -180,7 +180,7 @@ const coop: Command = {
         if (!targetUser) throw gameError('not_found', 'Joueur introuvable.');
         const result = await coopService.kickMember(context.player, targetUser.id);
         await interaction.editReply({
-          embeds: [successEmbed('Membre expulsé', `${target} ne fait plus partie de **${result.coopName}**.`)],
+          embeds: [successEmbed('Member kicked', `${target} ne fait plus partie de **${result.coopName}**.`)],
         });
         break;
       }
@@ -191,7 +191,7 @@ const coop: Command = {
         if (!targetUser) throw gameError('not_found', 'Joueur introuvable.');
         const result = await coopService.promoteMember(context.player, targetUser.id, role);
         await interaction.editReply({
-          embeds: [successEmbed('Rang modifié', `${target} est désormais **${result.roleLabel}**.`)],
+          embeds: [successEmbed('Rank changed', `${target} is now **${result.roleLabel}**.`)],
         });
         break;
       }
@@ -202,8 +202,8 @@ const coop: Command = {
           embeds: [
             successEmbed(
               '💰 Contribution',
-              `${formatCoins(amount)} versés.\nTrésorerie : **${formatCoins(result.treasury)}**\n` +
-                `+${formatNumber(result.coopXp)} XP de coopérative${result.levelsGained > 0 ? ` — 🎉 **niveau ${result.level} atteint !**` : ''}`,
+              `${formatCoins(amount)} paid in.\nTreasury: **${formatCoins(result.treasury)}**\n` +
+                `+${formatNumber(result.coopXp)} co-op XP${result.levelsGained > 0 ? ` — 🎉 **niveau ${result.level} atteint !**` : ''}`,
             ),
           ],
         });
@@ -215,7 +215,7 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: `💰 Trésorerie de ${info.name}`,
+              title: `💰 ${info.name} treasury`,
               description: `**${formatCoins(info.treasury)}**\n\nSeuls le chef et les officiers peuvent retirer.`,
               color: COLORS.gold,
             }),
@@ -246,7 +246,7 @@ const coop: Command = {
                 objectives
                   .map(
                     (objective) =>
-                      `**${objective.title}** ${objective.status === 'completed' ? '✅' : ''}\n${objective.description}\n${progressBar(Number(objective.progress), Number(objective.target), 12)} ${formatCompact(Number(objective.progress))}/${formatCompact(Number(objective.target))}\n🎁 ${formatCoins(objective.rewardCoins)} partagés + ${objective.rewardGems} 💎 chacun`,
+                      `**${objective.title}** ${objective.status === 'completed' ? '✅' : ''}\n${objective.description}\n${progressBar(Number(objective.progress), Number(objective.target), 12)} ${formatCompact(Number(objective.progress))}/${formatCompact(Number(objective.target))}\n🎁 ${formatCoins(objective.rewardCoins)} shared + ${objective.rewardGems} 💎 each`,
                   )
                   .join('\n\n') || 'Aucun objectif cette semaine.',
               color: COLORS.primary,
@@ -406,7 +406,7 @@ export async function visitFarm(
   const bundle = await playerRepo.loadPlayerBundle(target.id);
   if (!bundle) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
   if (bundle.settings.privacy === 'private' && target.id !== interaction.user.id) {
-    throw gameError('privacy_blocked', `${target.displayName} a rendu sa ferme privée.`);
+    throw gameError('privacy_blocked', `${target.displayName} has made their farm private.`);
   }
 
   const visitorContext: CommandContext = {
@@ -443,7 +443,7 @@ export async function visitFarm(
   const embed = view.embeds?.[0] as EmbedBuilder | undefined;
   if (embed && reward.rewarded) {
     embed.setFooter({
-      text: `Visite récompensée : +${reward.coins} 🪙 et +${reward.xp} XP`,
+      text: `Visit rewarded: +${reward.coins} 🪙 and +${reward.xp} XP`,
     });
   }
 
@@ -494,7 +494,7 @@ export async function helpFarmer(
   targetName: string,
 ): Promise<void> {
   if (targetDiscordId === context.player.discordId) {
-    throw gameError('target_invalid', 'Vous ne pouvez pas vous aider vous-même.');
+    throw gameError('target_invalid', 'You cannot help yourself.');
   }
 
   const bundle = await playerRepo.loadPlayerBundle(targetDiscordId);
@@ -511,13 +511,13 @@ export async function helpFarmer(
   await interaction.editReply({
     embeds: [
       successEmbed(
-        '🤝 Coup de main donné',
+        '🤝 Helping hand given',
         [
-          `Vous avez arrosé **${helped.plotsWatered}** parcelle(s) de ${targetName}.`,
+          `You watered **${helped.plotsWatered}** of ${targetName}'s plot(s).`,
           reward.rewarded
-            ? `Récompense : ${formatCoins(reward.coins)} et +${reward.xp} ✨\n${targetName} reçoit également un petit bonus.`
-            : `*Vous avez déjà aidé ${targetName} aujourd'hui : pas de récompense supplémentaire.*`,
-          `Les cultures arrosées par un ami donnent un **bonus de rendement** à leur propriétaire.`,
+            ? `Reward: ${formatCoins(reward.coins)} and +${reward.xp} ✨\n${targetName} also gets a small bonus.`
+            : `*You already helped ${targetName} today: no extra reward.*`,
+          `Crops watered by a friend give their owner a **yield bonus**.`,
         ].join('\n'),
       ),
     ],
@@ -545,10 +545,10 @@ const parrainage: Command = {
           description: [
             `Votre code : **\`${status.code}\`**`,
             '',
-            `Un nouveau joueur qui lance \`/start code:${status.code}\` reçoit **${formatCoins(context.balance.social.referredStartBonusCoins)}** de bonus de départ.`,
+            `A new player who runs \`/start code:${status.code}\` receives **${formatCoins(context.balance.social.referredStartBonusCoins)}** as a starting bonus.`,
             `Lorsqu'il atteint le **niveau ${status.qualifyLevel}**, vous recevez **${formatCoins(status.rewardCoins)}** et **${status.rewardGems} 💎**.`,
             '',
-            status.referredBy ? '✅ Vous avez été parrainé — merci de faire vivre le village !' : '',
+            status.referredBy ? '✅ You were referred — thanks for growing the village!' : '',
           ]
             .filter(Boolean)
             .join('\n'),

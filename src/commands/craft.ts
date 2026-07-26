@@ -35,10 +35,10 @@ const crafter: Command = {
           `${result.emoji} ${result.recipeName} en production`,
           [
             `Bâtiment : **${result.buildingName}** (emplacement ${result.slotIndex + 1})`,
-            `Quantité : **${result.quantity}** lot(s)`,
-            `Prêt ${discordTimestamp(result.finishAt, 'R')} (${discordTimestamp(result.finishAt, 't')})`,
+            `Quantity: **${result.quantity}** batch(es)`,
+            `Ready ${discordTimestamp(result.finishAt, 'R')} (${discordTimestamp(result.finishAt, 't')})`,
             '',
-            `Ingrédients consommés : ${result.consumed.map((entry) => `${entry.quantity}× \`${entry.itemKey}\``).join(', ')}`,
+            `Ingredients consumed: ${result.consumed.map((entry) => `${entry.quantity}× \`${entry.itemKey}\``).join(', ')}`,
           ].join('\n'),
         ),
       ],
@@ -97,8 +97,8 @@ const recettes: Command = {
         : !entry.hasBuilding
           ? `🏗️ ${entry.building?.name ?? entry.recipe.buildingKey} requis`
           : entry.craftableCount > 0
-            ? `✅ ${entry.craftableCount} réalisable(s)`
-            : '⚠️ ingrédients manquants';
+            ? `✅ ${entry.craftableCount} craftable`
+            : '⚠️ missing ingredients';
       const ingredients = entry.ingredients
         .map((ingredient) => `${ingredient.needed}× ${ingredient.emoji}${ingredient.owned < ingredient.needed ? `(${ingredient.owned})` : ''}`)
         .join(' + ');
@@ -112,9 +112,9 @@ const recettes: Command = {
       embeds: [
         baseEmbed({
           title: '📜 Recettes de transformation',
-          description: lines.join('\n') || 'Aucune recette dans cette catégorie.',
+          description: lines.join('\n') || 'No recipe in this category.',
           color: COLORS.primary,
-          footer: 'La transformation double environ la valeur des ingrédients — c\'est la clé de la rentabilité.',
+          footer: 'Processing roughly doubles the value of the ingredients — that is where the profit is.',
         }),
       ],
     });
@@ -161,8 +161,8 @@ const batiments: Command = {
           successEmbed(
             `${result.emoji} ${result.name} — ${result.built ? 'construit' : `palier ${result.tier}`}`,
             [
-              `Coût : ${formatCoins(result.costCoins)}`,
-              result.capacity > 0 ? `Capacité : **${formatNumber(result.capacity)}**` : '',
+              `Cost: ${formatCoins(result.costCoins)}`,
+              result.capacity > 0 ? `Capacity: **${formatNumber(result.capacity)}**` : '',
               result.slots > 0 ? `Emplacements de production : **${result.slots}**` : '',
             ]
               .filter(Boolean)

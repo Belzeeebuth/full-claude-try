@@ -135,7 +135,7 @@ export async function snapshotLeaderboards(periodKey: string): Promise<number> {
     total += rows.length;
   }
 
-  log.info({ periodKey, total }, 'classements figés');
+  log.info({ periodKey, total }, 'leaderboards frozen');
   return total;
 }
 
@@ -264,7 +264,7 @@ export async function doPrestige(player: PlayerContext): Promise<{
       tx,
     );
 
-    log.info({ userId: player.id, prestige: plan.newPrestige }, 'renaissance effectuée');
+    log.info({ userId: player.id, prestige: plan.newPrestige }, 'rebirth completed');
 
     return {
       newPrestige: plan.newPrestige,
@@ -295,7 +295,7 @@ export async function recordVisit(
   if (helped && helpsToday >= balance.social.maxHelpsPerDay) {
     throw gameError(
       'forbidden',
-      `Vous avez déjà aidé ${balance.social.maxHelpsPerDay} fermiers aujourd'hui.`,
+      `You have already helped ${balance.social.maxHelpsPerDay} farmers today.`,
     );
   }
 
@@ -457,7 +457,7 @@ export async function adminGrant(
         );
         break;
       case 'item': {
-        if (!input.itemKey) throw gameError('item_unknown', 'Précisez la clé de l\'objet.');
+        if (!input.itemKey) throw gameError('item_unknown', 'Specify the item key.');
         if (remove) {
           await inventoryService.consume(target.id, input.itemKey, amount, tx);
         } else {
@@ -639,7 +639,7 @@ export async function setMaintenance(
     payload: { enabled, message: maintenanceState.message },
     severity: 'warn',
   });
-  log.warn({ enabled }, 'mode maintenance modifié');
+  log.warn({ enabled }, 'maintenance mode changed');
 }
 
 /** Statistiques d'un joueur pour `/stats`. */

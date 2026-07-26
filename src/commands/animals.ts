@@ -86,7 +86,7 @@ const acheterAnimal: Command = {
         successEmbed(
           `${result.emoji} ${result.quantity}× ${result.name}`,
           `Achat conclu pour **${result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)}**.\n` +
-            'Pensez à les nourrir régulièrement avec `/feed` : un animal affamé produit deux fois moins.',
+            'Feed them regularly with `/feed`: a hungry animal produces half as much.',
         ),
       ],
     });
@@ -202,8 +202,8 @@ const soigner: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `${result.emoji} ${result.name} est soigné`,
-          `Le vétérinaire a été payé ${formatCoins(result.cost)}.\nSanté rétablie à **100 %**.`,
+          `${result.emoji} ${result.name} has been treated`,
+          `The vet was paid ${formatCoins(result.cost)}.\nHealth restored to **100%**.`,
         ),
       ],
     });
@@ -265,8 +265,8 @@ const reproduire: Command = {
       await interaction.editReply({
         embeds: [
           baseEmbed({
-            title: '💔 Pas de portée cette fois',
-            description: `${result.reason ?? 'Tentative infructueuse.'}\nCoût engagé : ${formatCoins(result.cost)}.`,
+            title: '💔 No litter this time',
+            description: `${result.reason ?? 'The attempt failed.'}\nCost incurred: ${formatCoins(result.cost)}.`,
             color: COLORS.warning,
           }),
         ],
@@ -279,10 +279,10 @@ const reproduire: Command = {
         successEmbed(
           '🍼 Naissance !',
           [
-            `Un petit de **génération ${result.generation}** est né.`,
-            `Multiplicateur de production hérité : **×${result.qualityMultiplier?.toFixed(3)}**`,
+            `A **generation ${result.generation}** calf was born.`,
+            `Inherited production multiplier: **×${result.qualityMultiplier?.toFixed(3)}**`,
             '',
-            '*Croisez vos meilleurs reproducteurs pour améliorer votre lignée génération après génération.*',
+            '*Breed your best animals to improve your bloodline generation after generation.*',
           ].join('\n'),
         ),
       ],

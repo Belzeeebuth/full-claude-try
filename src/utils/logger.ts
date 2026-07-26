@@ -56,7 +56,7 @@ export const logger: Logger = pino({
       '*.password',
       'headers.authorization',
     ],
-    censor: '[masqué]',
+    censor: '[redacted]',
   },
   formatters: {
     level(label) {

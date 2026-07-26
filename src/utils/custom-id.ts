@@ -46,7 +46,7 @@ export class NotOwnerError extends Error {
     public readonly ownerId: string,
     public readonly clickerId: string,
   ) {
-    super("Ce bouton appartient à quelqu'un d'autre.");
+    super("This button belongs to someone else.");
     this.name = 'NotOwnerError';
   }
 }
@@ -57,7 +57,7 @@ function encodeParam(value: string | number | boolean): string {
   const str = String(value);
   if (!SAFE_PARAM.test(str)) {
     throw new CustomIdError(
-      `Paramètre de custom_id invalide : « ${str} » (caractères autorisés : A-Z a-z 0-9 _ - . = |)`,
+      `Invalid custom_id parameter: "${str}" (allowed characters: A-Z a-z 0-9 _ - . = |)`,
     );
   }
   return str;
@@ -84,8 +84,8 @@ export function buildCustomId(
   const id = parts.join(CUSTOM_ID_SEPARATOR);
   if (id.length > CUSTOM_ID_MAX_LENGTH) {
     throw new CustomIdError(
-      `custom_id trop long (${id.length} > ${CUSTOM_ID_MAX_LENGTH}) : ${id}. ` +
-        'Raccourcissez les paramètres ou stockez l\'état en cache Redis avec un jeton court.',
+      `custom_id too long (${id.length} > ${CUSTOM_ID_MAX_LENGTH}): ${id}. ` +
+        'Shorten the parameters, or cache the state in Redis behind a short token.',
     );
   }
   return id;
@@ -94,7 +94,7 @@ export function buildCustomId(
 export function parseCustomId(raw: string): ParsedCustomId {
   const parts = raw.split(CUSTOM_ID_SEPARATOR);
   if (parts.length < 3) {
-    throw new CustomIdError(`custom_id malformé : « ${raw} »`);
+    throw new CustomIdError(`Malformed custom_id: "${raw}"`);
   }
   const [namespace, action, ownerId, ...params] = parts as [string, string, string, ...string[]];
   if (!namespace || !action || !ownerId) {
@@ -124,7 +124,7 @@ export function paramInt(
   const value = raw === undefined ? Number.NaN : Number.parseInt(raw, 10);
   if (!Number.isFinite(value)) {
     if (options.fallback !== undefined) return options.fallback;
-    throw new CustomIdError(`Paramètre entier attendu en position ${index} de « ${parsed.raw} »`);
+    throw new CustomIdError(`Expected an integer parameter at position ${index} of "${parsed.raw}"`);
   }
   const min = options.min ?? Number.MIN_SAFE_INTEGER;
   const max = options.max ?? Number.MAX_SAFE_INTEGER;

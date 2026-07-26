@@ -197,7 +197,7 @@ export async function ensureQuests(
 
   if (toAssign.length > 0) {
     await progressionRepo.assignQuests(toAssign);
-    log.debug({ userId: player.id, count: toAssign.length }, 'quêtes assignées');
+    log.debug({ userId: player.id, count: toAssign.length }, 'quests assigned');
   }
 }
 
@@ -305,18 +305,18 @@ export async function claimQuest(player: PlayerContext, questId: string): Promis
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const quest = await progressionRepo.lockQuest(tx, questId, player.id);
-    if (!quest) throw gameError('not_found', 'Quête introuvable.');
+    if (!quest) throw gameError('not_found', 'Quest not found.');
     if (quest.status === 'claimed') {
-      throw gameError('invalid_state', 'Cette récompense a déjà été perçue.');
+      throw gameError('invalid_state', 'This reward was already claimed.');
     }
     if (quest.status !== 'completed' || quest.progress < quest.required) {
-      throw gameError('invalid_state', "Cette quête n'est pas terminée.", {
+      throw gameError('invalid_state', "This quest is not complete.", {
         hint: `Progression : ${quest.progress}/${quest.required}.`,
       });
     }
 
     const claimed = await progressionRepo.markQuestClaimed(questId, new Date(), tx);
-    if (!claimed) throw gameError('busy', 'Récompense déjà en cours de traitement.');
+    if (!claimed) throw gameError('busy', 'Reward already being processed.');
 
     const snapshot = quest.snapshot as QuestSnapshotShape;
     if (snapshot.rewardCoins > 0) {
@@ -383,11 +383,11 @@ export async function claimAllQuests(player: PlayerContext): Promise<ClaimResult
     try {
       results.push(await claimQuest(player, quest.id));
     } catch (error) {
-      log.debug({ err: error, questId: quest.id }, 'réclamation ignorée');
+      log.debug({ err: error, questId: quest.id }, 'claim skipped');
     }
   }
   if (results.length === 0) {
-    throw gameError('invalid_state', 'Aucune récompense à percevoir.');
+    throw gameError('invalid_state', 'No reward to claim.');
   }
   return results;
 }
@@ -409,12 +409,12 @@ export async function rerollQuest(
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const quest = await progressionRepo.lockQuest(tx, questId, player.id);
-    if (!quest) throw gameError('not_found', 'Quête introuvable.');
+    if (!quest) throw gameError('not_found', 'Quest not found.');
     if (quest.type !== 'daily') {
-      throw gameError('forbidden', 'Seules les quêtes journalières peuvent être relancées.');
+      throw gameError('forbidden', 'Only daily quests can be rerolled.');
     }
     if (quest.status !== 'active') {
-      throw gameError('invalid_state', 'Cette quête ne peut plus être relancée.');
+      throw gameError('invalid_state', 'This quest can no longer be rerolled.');
     }
 
     const rerolls = await progressionRepo.countRerollsToday(player.id, dailyKey, tx);
@@ -443,7 +443,7 @@ export async function rerollQuest(
     const rng = liveRng(`reroll:${questId}`);
     const chosen = rng.weighted(candidates.map((entry) => ({ value: entry, weight: entry.weight })));
 
-    if (!chosen) throw gameError('not_found', 'Aucune autre quête disponible à votre niveau.');
+    if (!chosen) throw gameError('not_found', 'No other quest available at your level.');
 
     const replacement = await progressionRepo.replaceQuest(
       questId,
@@ -461,7 +461,7 @@ export async function rerollQuest(
       tx,
     );
 
-    if (!replacement) throw gameError('busy', 'Relance impossible, réessayez.');
+    if (!replacement) throw gameError('busy', 'Reroll failed, try again.');
     const snapshot = replacement.snapshot as QuestSnapshotShape;
 
     return {
@@ -529,7 +529,7 @@ export async function claimDaily(
     if (!streakRow) throw gameError('not_registered', 'Compte introuvable.');
 
     if (streakRow.lastClaimDate === today) {
-      throw gameError('cooldown', 'Vous avez déjà réclamé votre récompense aujourd\'hui.', {
+      throw gameError('cooldown', 'You already claimed your reward today.', {
         hint: `Revenez ${nextMidnight(now, timezone).toLocaleString('fr-FR')}.`,
       });
     }
@@ -628,13 +628,13 @@ export async function claimAchievement(
 ): Promise<{ name: string; coins: number; gems: number; title: string | null; items: Array<{ itemKey: string; quantity: number }> }> {
   const config = getConfig();
   const achievement = config.achievements.get(achievementKey);
-  if (!achievement) throw gameError('not_found', 'Succès inconnu.');
+  if (!achievement) throw gameError('not_found', 'Unknown achievement.');
 
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const claimed = await progressionRepo.claimAchievement(player.id, achievementKey, tx);
     if (!claimed) {
-      throw gameError('invalid_state', 'Ce succès n\'est pas débloqué ou a déjà été perçu.');
+      throw gameError('invalid_state', 'This achievement is not unlocked, or was already claimed.');
     }
 
     if (achievement.rewardCoins > 0) {
@@ -741,8 +741,8 @@ export async function claimPassTier(
       throw gameError(
         'invalid_state',
         premium
-          ? 'Palier premium non débloqué (votez pour le bot) ou déjà perçu.'
-          : 'Palier non atteint ou déjà perçu.',
+          ? 'Premium tier not unlocked (vote for the bot), or already claimed.'
+          : 'Tier not reached, or already claimed.',
       );
     }
 
@@ -822,7 +822,7 @@ export function questResetTimes(timezone = 'Europe/Paris', now: Date = new Date(
 /** Réinitialisations hebdomadaires (job du lundi). */
 export async function weeklyReset(): Promise<{ xpReset: number }> {
   const xpReset = await playerRepo.resetWeeklyXp();
-  log.info({ xpReset }, 'XP hebdomadaire réinitialisée');
+  log.info({ xpReset }, 'weekly XP reset');
   return { xpReset };
 }
 

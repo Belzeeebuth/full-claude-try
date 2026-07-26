@@ -73,7 +73,7 @@ export function nextSeason(now: Date, balance: Balance, epoch: Date = GAME_EPOCH
 
 export const SEASON_LABELS: Record<SeasonName, { name: string; emoji: string }> = {
   spring: { name: 'Printemps', emoji: '🌸' },
-  summer: { name: 'Été', emoji: '☀️' },
+  summer: { name: 'Summer', emoji: '☀️' },
   autumn: { name: 'Automne', emoji: '🍂' },
   winter: { name: 'Hiver', emoji: '❄️' },
 };

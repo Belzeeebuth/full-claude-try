@@ -137,7 +137,7 @@ export const COOP_OBJECTIVE_TEMPLATES: readonly CoopObjectiveTemplate[] = [
   {
     objectiveKey: 'harvest_total',
     title: 'Moisson collective',
-    description: 'Récoltez {target} unités entre tous les membres.',
+    description: 'Harvest {target} units across all members.',
     basePerMember: 120,
     rewardCoinsPerMember: 4000,
     rewardGems: 2,
@@ -145,8 +145,8 @@ export const COOP_OBJECTIVE_TEMPLATES: readonly CoopObjectiveTemplate[] = [
   },
   {
     objectiveKey: 'craft_total',
-    title: 'Chaîne coopérative',
-    description: 'Fabriquez {target} produits transformés.',
+    title: 'Co-op chain',
+    description: 'Craft {target} processed goods.',
     basePerMember: 20,
     rewardCoinsPerMember: 5000,
     rewardGems: 2,
@@ -163,8 +163,8 @@ export const COOP_OBJECTIVE_TEMPLATES: readonly CoopObjectiveTemplate[] = [
   },
   {
     objectiveKey: 'sell_value_total',
-    title: 'Marché coopératif',
-    description: 'Vendez pour {target} pièces de marchandises.',
+    title: 'Co-op market',
+    description: 'Sell {target} coins worth of goods.',
     basePerMember: 60000,
     rewardCoinsPerMember: 6000,
     rewardGems: 3,
@@ -182,7 +182,7 @@ export const COOP_OBJECTIVE_TEMPLATES: readonly CoopObjectiveTemplate[] = [
   {
     objectiveKey: 'treasury_total',
     title: 'Caisse commune',
-    description: 'Versez {target} pièces à la trésorerie.',
+    description: 'Pay {target} coins into the treasury.',
     basePerMember: 25000,
     rewardCoinsPerMember: 2500,
     rewardGems: 1,

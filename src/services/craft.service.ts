@@ -144,8 +144,8 @@ export async function craft(
     if (slotIndex === undefined) {
       throw gameError(
         'no_crafting_slot',
-        `Tous les emplacements de votre ${buildingConfig?.name ?? 'bâtiment'} sont occupés (${building.slots}).`,
-        { hint: 'Collectez une production terminée avec `/production` ou améliorez le bâtiment.', suggestedCommand: 'production' },
+        `All slots of your ${buildingConfig?.name ?? 'building'} are busy (${building.slots}).`,
+        { hint: 'Collect a finished run with `/production` or upgrade the building.', suggestedCommand: 'production' },
       );
     }
 
@@ -184,7 +184,7 @@ export async function craft(
       tx,
     );
 
-    log.debug({ userId: player.id, recipeKey: recipe.key, quantity, finishAt }, 'production lancée');
+    log.debug({ userId: player.id, recipeKey: recipe.key, quantity, finishAt }, 'production started');
 
     return {
       recipeKey: recipe.key,
@@ -266,8 +266,8 @@ export async function collectProduction(
     );
 
     if (ready.length === 0) {
-      throw gameError('craft_not_ready', 'Aucune production terminée.', {
-        hint: 'Consultez `/production` pour voir les échéances.',
+      throw gameError('craft_not_ready', 'No finished production.', {
+        hint: 'Check `/production` for the deadlines.',
         suggestedCommand: 'production',
       });
     }
@@ -318,7 +318,7 @@ export async function collectProduction(
     }
 
     if (lines.length === 0) {
-      throw gameError('busy', 'Ces productions viennent déjà d\'être collectées.');
+      throw gameError('busy', 'Those productions were just collected.');
     }
 
     await playerRepo.incrementStats(player.id, { totalCrafts: craftedUnits }, tx);
@@ -353,7 +353,7 @@ export async function cancelProduction(
   return withTransaction(async (tx) => {
     const job = await animalRepo.lockCraftJob(tx, jobId, player.id);
     if (!job) throw gameError('not_found', 'Production introuvable.');
-    if (job.collected) throw gameError('invalid_state', 'Cette production a déjà été collectée.');
+    if (job.collected) throw gameError('invalid_state', 'This production was already collected.');
 
     const consumed = job.consumed as Array<{ itemKey: string; quantity: number }>;
     // Remboursement à 80 % : annuler n'est pas gratuit, sinon la file de
@@ -475,7 +475,7 @@ export async function buildOrUpgrade(
     if (!next) {
       throw gameError(
         'building_max_tier',
-        `${building.emoji} ${building.name} est déjà au palier maximum (${building.maxTier}).`,
+        `${building.emoji} ${building.name} is already at the maximum tier (${building.maxTier}).`,
       );
     }
     if (player.level < next.requiredLevel) {

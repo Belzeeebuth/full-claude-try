@@ -35,7 +35,7 @@ const meteo: Command = {
                 `⏳ Vitesse de pousse : **${formatPercent(weather.growthModifier - 1)}**`,
                 weather.freeWatering ? '💧 **Arrosage gratuit** — inutile d\'utiliser `/water`' : '',
                 weather.damageChance > 0
-                  ? `⚠️ Risque de dégâts : **${(weather.damageChance * 100).toFixed(0)} %** par parcelle`
+                  ? `⚠️ Damage risk: **${(weather.damageChance * 100).toFixed(0)}%** per plot`
                   : '',
                 `🐛 Risque de nuisibles : ${(weather.pestChance * 100).toFixed(0)} %`,
               ]
@@ -47,7 +47,7 @@ const meteo: Command = {
               value: `${SEASON_LABELS[world.season.season].emoji} **${SEASON_LABELS[world.season.season].name}** (an ${world.season.gameYear})\n${progressBar(world.season.progress * 100, 100, 12)} ${Math.round(world.season.progress * 100)} %`,
             },
           ],
-          footer: 'La météo est la même pour tout le village et change chaque jour à minuit UTC.',
+          footer: 'Weather is the same for the whole village and changes daily at midnight UTC.',
         }),
       ],
     });
@@ -97,7 +97,7 @@ const saison: Command = {
               ),
             },
             {
-              name: '⏭️ Bientôt de saison',
+              name: '⏭️ Coming into season',
               value: truncate(
                 comingSoon.map((crop) => `${crop.emoji} ${crop.name}`).join(' • ') || '—',
                 1000,
@@ -127,10 +127,10 @@ const evenement: Command = {
       await interaction.editReply({
         embeds: [
           baseEmbed({
-            title: '🎪 Aucun événement en cours',
+            title: '🎪 No event running',
             description:
-              'Le village prépare ses prochaines festivités.\n\n' +
-              '**Au programme de l\'année :**\n' +
+              'The village is preparing its next festivities.\n\n' +
+              '**On the calendar this year:**\n' +
               context.config.eventList
                 .filter((event) => event.enabled)
                 .map((event) => `• **${event.name}** — ${event.description}`)
@@ -177,10 +177,10 @@ const evenement: Command = {
             },
             {
               name: 'Votre progression',
-              value: `**${progress?.points ?? 0}** point(s) d'événement`,
+              value: `**${progress?.points ?? 0}** event point(s)`,
             },
             {
-              name: '🎁 Paliers de récompense',
+              name: '🎁 Reward tiers',
               value:
                 event.rewardTiers
                   .map((tier) => {
@@ -230,8 +230,8 @@ const encyclopedie: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: `📖 Encyclopédie — « ${term} »`,
-          description: total === 0 ? 'Aucun résultat.' : `${total} résultat(s).`,
+          title: `📖 Encyclopedia — "${term}"`,
+          description: total === 0 ? 'No result.' : `${total} result(s).`,
           color: COLORS.info,
           fields: [
             ...(crops.length > 0

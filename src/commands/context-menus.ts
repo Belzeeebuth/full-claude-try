@@ -32,7 +32,7 @@ const voirLaFerme: ContextMenuCommand = {
     const bundle = await playerRepo.loadPlayerBundle(target.id);
     if (!bundle) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
     if (bundle.settings.privacy === 'private' && target.id !== menu.user.id) {
-      throw gameError('privacy_blocked', `${target.displayName} a rendu sa ferme privée.`);
+      throw gameError('privacy_blocked', `${target.displayName} has made their farm private.`);
     }
 
     const viewContext: CommandContext = {

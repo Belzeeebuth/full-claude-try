@@ -107,7 +107,7 @@ export async function createListing(
   const balance = getBalance();
   const item = inventoryService.requireItem(input.itemKey);
   if (!item.tradable) {
-    throw gameError('item_not_tradable', `${item.emoji} ${item.name} ne peut pas être échangé.`);
+    throw gameError('item_not_tradable', `${item.emoji} ${item.name} cannot be traded.`);
   }
   const quantity = Math.max(1, Math.floor(input.quantity));
   const duration = balance.auction.durationsHours.includes(input.durationHours ?? 0)
@@ -121,7 +121,7 @@ export async function createListing(
     if (active >= balance.auction.maxActiveListings) {
       throw gameError(
         'forbidden',
-        `Vous avez déjà ${active} annonces en cours (maximum ${balance.auction.maxActiveListings}).`,
+        `You already have ${active} active listings (maximum ${balance.auction.maxActiveListings}).`,
       );
     }
 
@@ -134,7 +134,7 @@ export async function createListing(
       throw gameError(
         'quantity_invalid',
         `Prix hors bornes : entre ${bounds.min.toLocaleString('fr-FR')} et ${bounds.max.toLocaleString('fr-FR')} 🪙 pour ce lot.`,
-        { hint: 'Les bornes protègent le marché contre les prix aberrants.' },
+        { hint: 'The bounds protect the market from absurd prices.' },
       );
     }
 
@@ -175,7 +175,7 @@ export async function createListing(
       tx,
     );
 
-    log.debug({ userId: player.id, listingId: listing.id, price: input.price }, 'annonce créée');
+    log.debug({ userId: player.id, listingId: listing.id, price: input.price }, 'listing created');
     return { id: listing.id, fee, expiresAt, price: input.price, quantity };
   });
 }
@@ -196,12 +196,12 @@ export async function buyout(
   return withTransaction(async (tx) => {
     const listing = await tradeRepo.lockListing(tx, listingId);
     if (!listing) throw gameError('auction_not_found', 'Annonce introuvable.');
-    if (listing.status !== 'active') throw gameError('auction_not_found', 'Cette annonce est clôturée.');
+    if (listing.status !== 'active') throw gameError('auction_not_found', 'This listing is closed.');
     if (listing.sellerId === player.id) {
       throw gameError('auction_own_listing', 'Vous ne pouvez pas acheter votre propre annonce.');
     }
     if (listing.buyoutPrice === null) {
-      throw gameError('invalid_state', 'Cette annonce est uniquement aux enchères.');
+      throw gameError('invalid_state', 'This listing is auction-only.');
     }
 
     await lockUserRows(tx, [player.id, listing.sellerId]);
@@ -222,7 +222,7 @@ export async function buyout(
     );
 
     const sold = await tradeRepo.markSold(listing.id, player.id, price, tx);
-    if (!sold) throw gameError('busy', 'Cette annonce vient d\'être vendue.');
+    if (!sold) throw gameError('busy', 'This listing was just sold.');
 
     const commission = auctionCommission(price, balance);
     await economyService.pay(
@@ -299,9 +299,9 @@ export async function bid(
   return withTransaction(async (tx) => {
     const listing = await tradeRepo.lockListing(tx, listingId);
     if (!listing) throw gameError('auction_not_found', 'Annonce introuvable.');
-    if (listing.status !== 'active') throw gameError('auction_not_found', 'Annonce clôturée.');
+    if (listing.status !== 'active') throw gameError('auction_not_found', 'Listing closed.');
     if (listing.sellerId === player.id) {
-      throw gameError('auction_own_listing', 'Vous ne pouvez pas enchérir sur votre annonce.');
+      throw gameError('auction_own_listing', 'You cannot bid on your own listing.');
     }
 
     const minimum = minimumBid(
@@ -328,7 +328,7 @@ export async function bid(
     );
 
     const result = await tradeRepo.placeBid(listing.id, player.id, amount, minimum, tx);
-    if (!result) throw gameError('busy', 'Une mise plus élevée vient d\'être placée.');
+    if (!result) throw gameError('busy', 'A higher bid was just placed.');
 
     if (result.previousBidderId && result.previousBid) {
       await economyService.pay(
@@ -373,7 +373,7 @@ export async function cancelListing(
     if (!listing) {
       throw gameError(
         'auction_not_found',
-        'Annulation impossible : annonce introuvable, déjà clôturée, ou une mise a été placée.',
+        'Cannot cancel: listing not found, already closed, or a bid was placed.',
       );
     }
 
@@ -496,7 +496,7 @@ export async function closeExpiredListings(limit = 50): Promise<{ sold: number; 
   }
 
   if (sold + returned > 0) {
-    log.info({ sold, returned }, 'annonces expirées traitées');
+    log.info({ sold, returned }, 'expired listings processed');
   }
   return { sold, returned };
 }
@@ -525,12 +525,12 @@ export async function openTrade(
 ): Promise<TradeView> {
   const balance = getBalance();
   if (player.id === partnerId) {
-    throw gameError('target_invalid', 'Vous ne pouvez pas échanger avec vous-même.');
+    throw gameError('target_invalid', 'You cannot trade with yourself.');
   }
   if (player.level < balance.trade.minLevel) {
     throw gameError(
       'level_too_low',
-      `Les échanges sont disponibles à partir du niveau ${balance.trade.minLevel}.`,
+      `Trading is available from level ${balance.trade.minLevel}.`,
     );
   }
 
@@ -553,7 +553,7 @@ export async function openTrade(
 
 export async function getTrade(tradeId: string): Promise<TradeView> {
   const trade = await tradeRepo.findTrade(tradeId);
-  if (!trade) throw gameError('not_found', 'Échange introuvable.');
+  if (!trade) throw gameError('not_found', 'Trade not found.');
   const items = await tradeRepo.listTradeItems(tradeId);
 
   return {
@@ -586,15 +586,15 @@ export async function offerItem(
   const balance = getBalance();
   const item = inventoryService.requireItem(input.itemKey);
   if (!item.tradable) {
-    throw gameError('item_not_tradable', `${item.name} ne peut pas être échangé.`);
+    throw gameError('item_not_tradable', `${item.name} cannot be traded.`);
   }
 
   return withTransaction(async (tx) => {
     const trade = await tradeRepo.lockTrade(tx, input.tradeId);
-    if (!trade) throw gameError('not_found', 'Échange introuvable.');
-    if (trade.status !== 'pending') throw gameError('trade_expired', 'Cet échange est clos.');
+    if (!trade) throw gameError('not_found', 'Trade not found.');
+    if (trade.status !== 'pending') throw gameError('trade_expired', 'This trade is closed.');
     if (trade.initiatorId !== player.id && trade.partnerId !== player.id) {
-      throw gameError('forbidden', "Vous ne participez pas à cet échange.");
+      throw gameError('forbidden', "You are not part of this trade.");
     }
 
     const existing = await tradeRepo.listTradeItems(input.tradeId, tx);
@@ -636,12 +636,12 @@ export async function offerCoins(
 
   return withTransaction(async (tx) => {
     const trade = await tradeRepo.lockTrade(tx, input.tradeId);
-    if (!trade) throw gameError('not_found', 'Échange introuvable.');
-    if (trade.status !== 'pending') throw gameError('trade_expired', 'Cet échange est clos.');
+    if (!trade) throw gameError('not_found', 'Trade not found.');
+    if (trade.status !== 'pending') throw gameError('trade_expired', 'This trade is closed.');
 
     const isInitiator = trade.initiatorId === player.id;
     if (!isInitiator && trade.partnerId !== player.id) {
-      throw gameError('forbidden', "Vous ne participez pas à cet échange.");
+      throw gameError('forbidden', "You are not part of this trade.");
     }
 
     await tx
@@ -670,7 +670,7 @@ export async function confirmTrade(
     if (!confirmed) {
       throw gameError(
         'invalid_state',
-        "L'offre a changé depuis votre validation. Vérifiez et confirmez à nouveau.",
+        "The offer changed since you confirmed. Review it and confirm again.",
       );
     }
     if (!confirmed.initiatorConfirmed || !confirmed.partnerConfirmed) {
@@ -743,7 +743,7 @@ export async function confirmTrade(
     }
 
     await tradeRepo.setTradeStatus(tradeId, 'completed', null, tx);
-    log.info({ tradeId, items: items.length }, 'échange conclu');
+    log.info({ tradeId, items: items.length }, 'trade completed');
     return { completed: true };
   });
 
@@ -756,7 +756,7 @@ export async function cancelTrade(
 ): Promise<void> {
   await withTransaction(async (tx) => {
     const cancelled = await tradeRepo.setTradeStatus(tradeId, 'cancelled', player.id, tx);
-    if (!cancelled) throw gameError('invalid_state', 'Cet échange est déjà clos.');
+    if (!cancelled) throw gameError('invalid_state', 'This trade is already closed.');
   });
 }
 

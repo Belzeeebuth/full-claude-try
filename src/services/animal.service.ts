@@ -158,12 +158,12 @@ export async function buyAnimal(
   const config = getConfig();
   const animalConfig = config.animals.get(input.animalKey);
   if (!animalConfig || !animalConfig.enabled) {
-    throw gameError('animal_not_found', `Espèce inconnue : \`${input.animalKey}\`.`);
+    throw gameError('animal_not_found', `Unknown species: \`${input.animalKey}\`.`);
   }
   if (animalConfig.eventOnly) {
     throw gameError(
       'forbidden',
-      `${animalConfig.emoji} ${animalConfig.name} ne s'obtient que pendant un événement.`,
+      `${animalConfig.emoji} ${animalConfig.name} can only be obtained during an event.`,
       { suggestedCommand: 'event' },
     );
   }
@@ -186,7 +186,7 @@ export async function buyAnimal(
     if (!building) {
       throw gameError(
         'building_required',
-        `Il vous faut un ${buildingConfig?.emoji ?? ''} ${buildingConfig?.name ?? animalConfig.buildingKey} pour héberger cet animal.`,
+        `You need a ${buildingConfig?.emoji ?? ''} ${buildingConfig?.name ?? animalConfig.buildingKey} to house this animal.`,
         { hint: 'Construisez-le avec `/buildings`.', suggestedCommand: 'buildings' },
       );
     }
@@ -200,7 +200,7 @@ export async function buyAnimal(
       throw gameError(
         'building_full',
         `Votre ${buildingConfig?.name ?? 'bâtiment'} est plein (${used}/${building.capacity}).`,
-        { hint: 'Améliorez-le avec `/buildings` ou vendez un animal.' },
+        { hint: 'Upgrade it with `/buildings` or sell an animal.' },
       );
     }
 
@@ -380,7 +380,7 @@ export async function collect(
 
     if (collectable.length === 0) {
       throw gameError('animal_not_ready', 'Aucune production disponible.', {
-        hint: 'Nourrissez vos animaux et revenez plus tard — un animal affamé produit moitié moins.',
+        hint: 'Feed your animals and come back later — a hungry animal produces half as much.',
         suggestedCommand: 'animals',
       });
     }
@@ -495,16 +495,16 @@ export async function pet(
   return withTransaction(async (tx) => {
     const row = await animalRepo.lockAnimal(tx, animalId, player.id);
     if (!row) throw gameError('animal_not_found', 'Animal introuvable.');
-    if (!row.isAlive) throw gameError('animal_dead', 'Cet animal est décédé.');
+    if (!row.isAlive) throw gameError('animal_dead', 'This animal has died.');
 
     const animalConfig = config.animals.get(row.animalKey);
-    if (!animalConfig) throw gameError('animal_not_found', 'Espèce inconnue.');
+    if (!animalConfig) throw gameError('animal_not_found', 'Unknown species.');
 
     if (
       row.lastPettedAt &&
       now.getTime() - row.lastPettedAt.getTime() < balance.animals.petCooldownSeconds * 1_000
     ) {
-      throw gameError('cooldown', 'Cet animal a déjà eu sa dose de câlins récemment.');
+      throw gameError('cooldown', 'This animal has had its share of affection recently.');
     }
 
     const status = projectAnimal(toAnimalState(row), animalConfig, now, balance);
@@ -551,10 +551,10 @@ export async function heal(
     await lockUserRow(tx, player.id);
     const row = await animalRepo.lockAnimal(tx, animalId, player.id);
     if (!row) throw gameError('animal_not_found', 'Animal introuvable.');
-    if (!row.isAlive) throw gameError('animal_dead', 'Cet animal est décédé.');
+    if (!row.isAlive) throw gameError('animal_dead', 'This animal has died.');
 
     const animalConfig = config.animals.get(row.animalKey);
-    if (!animalConfig) throw gameError('animal_not_found', 'Espèce inconnue.');
+    if (!animalConfig) throw gameError('animal_not_found', 'Unknown species.');
 
     const status = projectAnimal(toAnimalState(row), animalConfig, now, balance);
     if (!status.sick && status.health >= 95) {
@@ -595,10 +595,10 @@ export async function sellAnimal(
     await lockUserRow(tx, player.id);
     const row = await animalRepo.lockAnimal(tx, animalId, player.id);
     if (!row) throw gameError('animal_not_found', 'Animal introuvable.');
-    if (!row.isAlive) throw gameError('animal_dead', 'Cet animal est décédé.');
+    if (!row.isAlive) throw gameError('animal_dead', 'This animal has died.');
 
     const animalConfig = config.animals.get(row.animalKey);
-    if (!animalConfig) throw gameError('animal_not_found', 'Espèce inconnue.');
+    if (!animalConfig) throw gameError('animal_not_found', 'Unknown species.');
 
     const status = projectAnimal(toAnimalState(row), animalConfig, now, balance);
     const price = sellValue(animalConfig, status, balance);
@@ -622,7 +622,7 @@ export async function breed(
   const now = new Date();
 
   if (input.animalAId === input.animalBId) {
-    throw gameError('breeding_unavailable', 'Il faut deux animaux différents.');
+    throw gameError('breeding_unavailable', 'You need two different animals.');
   }
 
   return withTransaction(async (tx) => {
@@ -634,11 +634,11 @@ export async function breed(
     const second = await animalRepo.lockAnimal(tx, secondId!, player.id);
     if (!first || !second) throw gameError('animal_not_found', 'Animal introuvable.');
     if (first.animalKey !== second.animalKey) {
-      throw gameError('breeding_unavailable', 'Les deux animaux doivent être de la même espèce.');
+      throw gameError('breeding_unavailable', 'Both animals must be of the same species.');
     }
 
     const animalConfig = config.animals.get(first.animalKey);
-    if (!animalConfig) throw gameError('animal_not_found', 'Espèce inconnue.');
+    if (!animalConfig) throw gameError('animal_not_found', 'Unknown species.');
     if (!animalConfig.breedable) {
       throw gameError('breeding_unavailable', `${animalConfig.name} ne se reproduit pas.`);
     }
@@ -649,7 +649,7 @@ export async function breed(
         now.getTime() - parent.lastBredAt.getTime() <
           animalConfig.breedingCooldownSeconds * 1_000 * (1 - (animalConfig.passiveBonus.breedingSpeed ?? 0))
       ) {
-        throw gameError('cooldown', `${animalConfig.name} doit se reposer avant une nouvelle portée.`);
+        throw gameError('cooldown', `${animalConfig.name} must rest before another litter.`);
       }
     }
 

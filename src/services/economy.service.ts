@@ -139,7 +139,7 @@ export async function bankStatus(userId: string): Promise<BankResult> {
  * riche gagnerait passivement plus que tout le reste du jeu réuni.
  */
 export async function deposit(userId: string, amount: number): Promise<BankResult> {
-  if (amount <= 0) throw gameError('quantity_invalid', 'Le montant doit être positif.');
+  if (amount <= 0) throw gameError('quantity_invalid', 'The amount must be positive.');
 
   return withTransaction(async (tx) => {
     await lockUserRow(tx, userId);
@@ -150,14 +150,14 @@ export async function deposit(userId: string, amount: number): Promise<BankResul
       throw gameError(
         'bank_capacity',
         `Votre coffre ne peut contenir que ${account.capacity.toLocaleString('fr-FR')} 🪙.`,
-        { hint: 'Améliorez votre banque avec `/bank upgrade`.' },
+        { hint: 'Upgrade your bank with `/bank upgrade`.' },
       );
     }
 
     await charge({ userId, amount, type: 'bank_deposit' }, tx);
     const balanceAfter = await economyRepo.updateBankBalance(userId, amount, tx);
     if (balanceAfter === null) {
-      throw gameError('bank_capacity', 'Dépôt refusé : capacité dépassée.');
+      throw gameError('bank_capacity', 'Deposit refused: capacity exceeded.');
     }
 
     const user = await playerRepo.findUserById(userId, tx);
@@ -172,7 +172,7 @@ export async function deposit(userId: string, amount: number): Promise<BankResul
 }
 
 export async function withdraw(userId: string, amount: number): Promise<BankResult> {
-  if (amount <= 0) throw gameError('quantity_invalid', 'Le montant doit être positif.');
+  if (amount <= 0) throw gameError('quantity_invalid', 'The amount must be positive.');
 
   return withTransaction(async (tx) => {
     await lockUserRow(tx, userId);
@@ -207,12 +207,12 @@ export async function upgradeBank(userId: string, level: number): Promise<{ tier
 
     const nextTier = balance.bank.tiers.find((tier) => tier.tier === account.tier + 1);
     if (!nextTier) {
-      throw gameError('invalid_state', 'Votre banque est déjà au niveau maximum.');
+      throw gameError('invalid_state', 'Your bank is already at the maximum level.');
     }
     if (level < nextTier.requiredLevel) {
       throw gameError(
         'level_too_low',
-        `L'amélioration de banque demande le niveau ${nextTier.requiredLevel}.`,
+        `The bank upgrade requires level ${nextTier.requiredLevel}.`,
       );
     }
 
@@ -239,12 +239,12 @@ export async function gift(
   options: { discordGuildId?: string } = {},
 ): Promise<{ sent: number; tax: number; received: number }> {
   const balance = getBalance();
-  if (amount <= 0) throw gameError('quantity_invalid', 'Le montant doit être positif.');
+  if (amount <= 0) throw gameError('quantity_invalid', 'The amount must be positive.');
   if (from.id === toUserId) throw gameError('target_invalid', 'Vous ne pouvez pas vous faire un don.');
   if (from.level < balance.economy.giftMinLevel) {
     throw gameError(
       'level_too_low',
-      `Les dons sont disponibles à partir du niveau ${balance.economy.giftMinLevel}.`,
+      `Gifts are available from level ${balance.economy.giftMinLevel}.`,
     );
   }
 
@@ -254,7 +254,7 @@ export async function gift(
     throw gameError(
       'forbidden',
       `Plafond de dons atteint : ${balance.economy.giftDailyLimit.toLocaleString('fr-FR')} 🪙 par 24 h ` +
-        `(déjà donné : ${alreadyGifted.toLocaleString('fr-FR')} 🪙).`,
+        `(already gifted: ${alreadyGifted.toLocaleString('en-US')} 🪙).`,
     );
   }
 
@@ -320,7 +320,7 @@ export async function gift(
 export async function auditLedger(limit = 50): Promise<Array<{ userId: string; coins: number; ledger: number }>> {
   const mismatches = await economyRepo.findLedgerMismatches(limit);
   if (mismatches.length > 0) {
-    log.error({ count: mismatches.length, sample: mismatches.slice(0, 5) }, 'ÉCART COMPTABLE détecté');
+    log.error({ count: mismatches.length, sample: mismatches.slice(0, 5) }, 'LEDGER DRIFT detected');
     for (const mismatch of mismatches) {
       await systemRepo.audit({
         action: 'ledger_mismatch',
@@ -363,9 +363,9 @@ export async function flagSuspicion(
     await playerRepo.setEcoBan(
       userId,
       new Date(Date.now() + 7 * 86_400_000),
-      `Anomalies économiques répétées (score ${score}).`,
+      `Repeated economic anomalies (score ${score}).`,
     );
-    log.error({ userId, score, reason }, 'bannissement économique automatique');
+    log.error({ userId, score, reason }, 'automatic economic ban');
   }
 
   return { score, action };

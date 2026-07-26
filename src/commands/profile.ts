@@ -86,11 +86,11 @@ const profil: Command = {
     if (!image.attachment) {
       embed.addFields(
         { name: '🌾 Harvests', value: formatNumber(profile.user.totalHarvests), inline: true },
-        { name: '🐄 Animaux élevés', value: formatNumber(profile.user.totalAnimalsRaised), inline: true },
-        { name: '🛠️ Objets fabriqués', value: formatNumber(profile.user.totalCrafts), inline: true },
+        { name: '🐄 Animals raised', value: formatNumber(profile.user.totalAnimalsRaised), inline: true },
+        { name: '🛠️ Items crafted', value: formatNumber(profile.user.totalCrafts), inline: true },
         { name: '🗺️ Parcelles', value: `${profile.plotsUnlocked}/64`, inline: true },
-        { name: '🔥 Série', value: `${profile.streak} jour(s)`, inline: true },
-        { name: '🏆 Succès', value: String(profile.achievementsUnlocked), inline: true },
+        { name: '🔥 Streak', value: `${profile.streak} jour(s)`, inline: true },
+        { name: '🏆 Achievements', value: String(profile.achievementsUnlocked), inline: true },
       );
     }
 
@@ -144,37 +144,37 @@ const stats: Command = {
             {
               name: '🌾 Agriculture',
               value: [
-                `Récoltes : **${formatNumber(data.user.totalHarvests)}**`,
-                `Graines plantées : **${formatNumber(data.user.totalPlanted)}**`,
+                `Harvests: **${formatNumber(data.user.totalHarvests)}**`,
+                `Seeds planted: **${formatNumber(data.user.totalPlanted)}**`,
                 `Arrosages : **${formatNumber(data.user.totalWatered)}**`,
-                `Meilleure récolte : **${formatCoins(data.user.bestHarvestValue, true)}**`,
+                `Best harvest: **${formatCoins(data.user.bestHarvestValue, true)}**`,
               ].join('\n'),
               inline: true,
             },
             {
-              name: '🐄 Élevage & artisanat',
+              name: '🐄 Livestock & crafting',
               value: [
-                `Animaux élevés : **${formatNumber(data.user.totalAnimalsRaised)}**`,
+                `Animals raised: **${formatNumber(data.user.totalAnimalsRaised)}**`,
                 `Vivants : **${data.animalsAlive}**`,
-                `Objets fabriqués : **${formatNumber(data.user.totalCrafts)}**`,
+                `Items crafted: **${formatNumber(data.user.totalCrafts)}**`,
               ].join('\n'),
               inline: true,
             },
             {
-              name: '💰 Économie',
+              name: '💰 Economy',
               value: [
-                `Gagné : **${formatCoins(data.user.totalCoinsEarned, true)}**`,
-                `Dépensé : **${formatCoins(data.user.totalCoinsSpent, true)}**`,
+                `Earned: **${formatCoins(data.user.totalCoinsEarned, true)}**`,
+                `Spent: **${formatCoins(data.user.totalCoinsSpent, true)}**`,
                 `Solde : **${formatCoins(data.user.coins, true)}**`,
               ].join('\n'),
               inline: true,
             },
             {
-              name: '🤝 Social & fidélité',
+              name: '🤝 Social & loyalty',
               value: [
-                `Coups de main donnés : **${formatNumber(data.user.totalHelpGiven)}**`,
-                `Série actuelle : **${data.streak}** j (record : ${data.longestStreak})`,
-                `Commandes utilisées : **${formatNumber(data.user.commandsUsed)}**`,
+                `Helping hands given: **${formatNumber(data.user.totalHelpGiven)}**`,
+                `Current streak: **${data.streak}** d (best: ${data.longestStreak})`,
+                `Commands used: **${formatNumber(data.user.commandsUsed)}**`,
               ].join('\n'),
               inline: true,
             },
@@ -182,8 +182,8 @@ const stats: Command = {
               name: '🏅 Classements',
               value: [
                 data.ranks.wealth ? `Richesse : **#${data.ranks.wealth.rank}**` : '',
-                data.ranks.level ? `Expérience : **#${data.ranks.level.rank}**` : '',
-                data.ranks.harvests ? `Récoltes : **#${data.ranks.harvests.rank}**` : '',
+                data.ranks.level ? `Experience: **#${data.ranks.level.rank}**` : '',
+                data.ranks.harvests ? `Harvests: **#${data.ranks.harvests.rank}**` : '',
               ]
                 .filter(Boolean)
                 .join('\n') || '—',
@@ -193,7 +193,7 @@ const stats: Command = {
               name: '📦 Divers',
               value: [
                 `Inventaire : **${formatNumber(data.inventoryTotal)}** objets`,
-                `Ferme créée le **${data.user.createdAt.toLocaleDateString('fr-FR')}**`,
+                `Farm created on **${data.user.createdAt.toLocaleDateString('en-US')}**`,
                 `Prestige : **${data.user.prestige}** ${prestigeBadge(data.user.prestige)}`,
               ].join('\n'),
               inline: true,
@@ -225,9 +225,9 @@ const solde: Command = {
         baseEmbed({
           title: `💰 Solde de ${user.displayName ?? user.username}`,
           description: [
-            `${COIN} **${formatNumber(user.coins)}** pièces en poche`,
+            `${COIN} **${formatNumber(user.coins)}** coins on hand`,
             `${GEM} **${formatNumber(user.gems)}** gemmes`,
-            `🏦 **${formatNumber(bank?.balance ?? 0)}** en banque (capacité ${formatCompact(bank?.capacity ?? 0)})`,
+            `🏦 **${formatNumber(bank?.balance ?? 0)}** in the bank (capacity ${formatCompact(bank?.capacity ?? 0)})`,
             '',
             `Patrimoine total : **${formatCoins(user.coins + (bank?.balance ?? 0))}**`,
           ].join('\n'),
@@ -300,17 +300,17 @@ const parametres: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '⚙️ Vos paramètres',
+          title: '⚙️ Your settings',
           description:
-            Object.keys(patch).length > 0 ? '✅ Préférences mises à jour.' : 'Voici vos réglages actuels.',
+            Object.keys(patch).length > 0 ? '✅ Preferences updated.' : 'Here are your current settings.',
           color: COLORS.info,
           fields: [
             {
               name: '🔔 Notifications',
               value: [
-                `Messages privés : **${settings?.dmNotifications ? 'activés' : 'désactivés'}**`,
-                `Cultures prêtes : ${settings?.notifyCrops ? '✅' : '❌'}`,
-                `Animaux affamés : ${settings?.notifyAnimals ? '✅' : '❌'}`,
+                `Direct messages: **${settings?.dmNotifications ? 'enabled' : 'disabled'}**`,
+                `Crops ready: ${settings?.notifyCrops ? '✅' : '❌'}`,
+                `Hungry animals: ${settings?.notifyAnimals ? '✅' : '❌'}`,
                 `Rappel quotidien : ${settings?.dailyReminder ? '✅' : '❌'}`,
               ].join('\n'),
               inline: true,
@@ -325,10 +325,10 @@ const parametres: Command = {
               inline: true,
             },
             {
-              name: '🔒 Confidentialité',
+              name: '🔒 Privacy',
               value: [
-                `Ferme visible par : **${settings?.privacy === 'private' ? 'personne' : settings?.privacy === 'coop_only' ? 'ma coopérative' : 'tout le monde'}**`,
-                `Échanges : ${settings?.allowTrades ? '✅ autorisés' : '❌ refusés'}`,
+                `Farm visible to: **${settings?.privacy === 'private' ? 'nobody' : settings?.privacy === 'coop_only' ? 'my co-op' : 'everyone'}**`,
+                `Trades: ${settings?.allowTrades ? '✅ allowed' : '❌ refused'}`,
               ].join('\n'),
               inline: false,
             },
@@ -398,7 +398,7 @@ const prestige: Command = {
         baseEmbed({
           title: '🌟 Renaissance — confirmation requise',
           description:
-            '**Cette action est irréversible.** Voici exactement ce qui se passera :',
+            '**This cannot be undone.** Here is exactly what will happen:',
           color: COLORS.warning,
           fields: [
             {
@@ -407,8 +407,8 @@ const prestige: Command = {
                 `🏗️ Tous vos bâtiments`,
                 `🗺️ **${plan.plotsKept}** parcelles (50 %)`,
                 `💎 Toutes vos gemmes`,
-                `🪙 ${formatCoins(plan.coinsKept)} (5 %) + ${formatCoins(plan.startingCoins)} de départ`,
-                `🎨 Cosmétiques, outils et objets d'événement`,
+                `🪙 ${formatCoins(plan.coinsKept)} (5%) + ${formatCoins(plan.startingCoins)} to start over`,
+                `🎨 Cosmetics, tools and event items`,
               ].join('\n'),
               inline: true,
             },
@@ -435,7 +435,7 @@ const prestige: Command = {
           namespace: 'prestige',
           action: 'confirm',
           ownerId: interaction.user.id,
-          confirmLabel: 'Renaître',
+          confirmLabel: 'Rebirth',
           danger: true,
         }),
       ],

@@ -55,7 +55,7 @@ export async function ensurePlayer(input: EnsurePlayerInput): Promise<EnsurePlay
         avatarHash: input.avatarHash,
         discordGuildId: input.discordGuildId,
       })
-      .catch((error: unknown) => log.warn({ err: error }, 'touchUser a échoué'));
+      .catch((error: unknown) => log.warn({ err: error }, 'touchUser failed'));
 
     return { player: toPlayerContext(bundle), created: false };
   }
@@ -147,7 +147,7 @@ async function createPlayer(input: EnsurePlayerInput): Promise<PlayerContext> {
       tx,
     );
 
-    log.info({ userId: user.id, discordId: input.discordId }, 'nouvelle ferme créée');
+    log.info({ userId: user.id, discordId: input.discordId }, 'new farm created');
 
     return {
       id: user.id,
@@ -319,7 +319,7 @@ export async function consumeEnergy(
       'insufficient_energy',
       `Il vous faut ${cost} ⚡ (vous avez ${projection.current}).`,
       {
-        hint: `L'énergie remonte de ${balance.energy.regenPerMinute} point/minute. Un jus d'énergie en rend ${50}.`,
+        hint: `Energy regenerates ${balance.energy.regenPerMinute} point/minute. An energy drink restores ${50}.`,
         context: { cost, current: projection.current },
         suggestedCommand: 'shop',
       },
@@ -478,7 +478,7 @@ export function assertNotEcoBanned(player: PlayerContext, now: Date = new Date()
   if (player.ecoBannedUntil && player.ecoBannedUntil.getTime() > now.getTime()) {
     throw gameError(
       'eco_banned',
-      `Votre accès à l'économie est suspendu jusqu'au ${player.ecoBannedUntil.toLocaleString('fr-FR')}.`,
+      `Your access to the economy is suspended until ${player.ecoBannedUntil.toLocaleString('en-US')}.`,
     );
   }
 }
@@ -487,7 +487,7 @@ export function assertNotEcoBanned(player: PlayerContext, now: Date = new Date()
 export function assertLevel(player: { level: number }, required: number, what: string): void {
   if (player.level < required) {
     throw gameError('level_too_low', `${what} demande le niveau ${required}.`, {
-      hint: `Vous êtes niveau ${player.level}. Récoltez et terminez vos quêtes pour progresser.`,
+      hint: `You are level ${player.level}. Harvest and complete quests to progress.`,
       context: { required, current: player.level },
     });
   }

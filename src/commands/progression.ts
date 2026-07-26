@@ -69,11 +69,11 @@ const rerollQuete: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🔄 Quête remplacée',
+          '🔄 Quest rerolled',
           [
             result.usedToken
-              ? '🎫 Un jeton de relance a été utilisé.'
-              : `Coût : ${formatCoins(result.cost)}`,
+              ? '🎫 A reroll token was used.'
+              : `Cost: ${formatCoins(result.cost)}`,
             '',
             `**${result.newQuest.title}**`,
             result.newQuest.description,
@@ -142,7 +142,7 @@ const succes: Command = {
       const status = entry.unlocked
         ? entry.claimed
           ? '✅'
-          : '🎁 **à réclamer**'
+          : '🎁 **to claim**'
         : `${progressBar(progress, target, 8)} ${formatCompact(progress)}/${formatCompact(target)}`;
       return `${entry.icon} **${entry.name}** — ${status}\n   *${entry.description}*`;
     });
@@ -150,10 +150,10 @@ const succes: Command = {
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: '🏆 Succès',
-          description: lines.join('\n') || 'Aucun succès dans cette catégorie.',
+          title: '🏆 Achievements',
+          description: lines.join('\n') || 'No achievement in this category.',
           color: COLORS.gold,
-          footer: `${unlocked.length}/${achievements.length} débloqués${claimable.length > 0 ? ` • ${claimable.length} récompense(s) à réclamer` : ''}`,
+          footer: `${unlocked.length}/${achievements.length} unlocked${claimable.length > 0 ? ` • ${claimable.length} récompense(s) à réclamer` : ''}`,
         }),
       ],
       components:
@@ -164,7 +164,7 @@ const succes: Command = {
                   namespace: 'achv',
                   action: 'claim_all',
                   ownerId: interaction.user.id,
-                  label: `Réclamer (${claimable.length})`,
+                  label: `Claim (${claimable.length})`,
                   emoji: '🎁',
                   style: ButtonStyle.Success,
                 }),
@@ -228,19 +228,19 @@ const passe: Command = {
             `Fin de saison ${discordTimestamp(pass.endsAt, 'R')}`,
             '',
             pass.premium
-              ? '⭐ **Piste premium débloquée** (merci pour votre vote !)'
-              : `⭐ Piste premium : votez pour le bot ${context.balance.seasonPass.premiumVotesRequired} fois avec \`/vote\` pour la débloquer — jamais d'argent réel.`,
+              ? '⭐ **Premium track unlocked** (thanks for voting!)'
+              : `⭐ Premium track: vote for the bot ${context.balance.seasonPass.premiumVotesRequired} times with \`/vote\` to unlock it — never real money.`,
           ].join('\n'),
           color: COLORS.xp,
           fields: [
             {
-              name: '🎁 À réclamer',
+              name: '🎁 To claim',
               value:
                 claimable.length > 0
                   ? `**${claimable.length}** palier(s) disponible(s)`
                   : 'Aucun palier en attente.',
             },
-            { name: '⏭️ Prochains paliers', value: nextTiers.join('\n') || 'Passe terminé 🏆' },
+            { name: '⏭️ Prochains paliers', value: nextTiers.join('\n') || 'Pass completed 🏆' },
           ],
         }),
       ],
@@ -252,7 +252,7 @@ const passe: Command = {
                   namespace: 'pass',
                   action: 'claim_all',
                   ownerId: interaction.user.id,
-                  label: `Réclamer ${claimable.length} palier(s)`,
+                  label: `Claim ${claimable.length} tier(s)`,
                   emoji: '🎁',
                   style: ButtonStyle.Success,
                 }),
@@ -278,17 +278,17 @@ const daily: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `📅 Récompense quotidienne — jour ${result.streak}`,
+          `📅 Daily reward — day ${result.streak}`,
           [
             `${formatCoins(result.coins)} • ${formatNumber(result.xp)} ✨${result.gems > 0 ? ` • ${result.gems} 💎` : ''}`,
             result.items.length > 0 ? `🎁 Bonus : ${describeItems(result.items)}` : '',
             '',
             result.streakBroken
-              ? '💔 Votre série a été réinitialisée. Revenez chaque jour pour la faire grandir !'
+              ? '💔 Your streak was reset. Come back every day to grow it!'
               : result.usedFreeze
-                ? '🧊 Un jeton de gel a sauvé votre série.'
-                : `🔥 Série de **${result.streak}** jour(s) — record : ${result.longestStreak}`,
-            `Prochaine récompense ${discordTimestamp(result.nextClaimAt, 'R')}`,
+                ? '🧊 A freeze token saved your streak.'
+                : `🔥 Streak of **${result.streak}** day(s) — best: ${result.longestStreak}`,
+            `Next reward ${discordTimestamp(result.nextClaimAt, 'R')}`,
           ]
             .filter(Boolean)
             .join('\n'),
@@ -300,7 +300,7 @@ const daily: Command = {
             namespace: 'quest',
             action: 'open',
             ownerId: interaction.user.id,
-            label: 'Mes quêtes',
+            label: 'My quests',
             emoji: '📋',
           }),
           button({
@@ -334,14 +334,14 @@ const vote: Command = {
           title: '🗳️ Votez pour Harvester',
           description: [
             `Chaque vote vous rapporte **${info.rewardGems} 💎** et **${formatCoins(info.rewardCoins)}**.`,
-            `Le week-end, les récompenses sont **×${info.weekendMultiplier}**.`,
+            `On weekends, rewards are **×${info.weekendMultiplier}**.`,
             `Vous pouvez voter toutes les **${info.cooldownHours} h**.`,
             '',
             cooldown.active
               ? `⏳ Prochain vote possible ${discordTimestamp(cooldown.retryAt, 'R')}`
               : '✅ Vous pouvez voter maintenant !',
             '',
-            '*Les gemmes ne s\'achètent pas avec de l\'argent réel : voter est la façon la plus rapide d\'en obtenir.*',
+            '*Gems cannot be bought with real money: voting is the fastest way to get them.*',
           ].join('\n'),
           color: COLORS.info,
         }),

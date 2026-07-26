@@ -173,7 +173,7 @@ export async function trackAction(
     // La progression est un système SECONDAIRE : si elle échoue, l'action de jeu
     // principale (la récolte) ne doit pas être perdue. On journalise et on
     // continue — l'incohérence éventuelle est rattrapée au cycle suivant.
-    log.error({ err: error, action, userId: context.userId }, 'suivi de progression en échec');
+    log.error({ err: error, action, userId: context.userId }, 'progress tracking failed');
   }
 
   return result;

@@ -24,7 +24,7 @@ const memoryLocks = new Map<string, number>();
 
 export class LockBusyError extends Error {
   constructor(public readonly lockKey: string) {
-    super(`Action déjà en cours : ${lockKey}`);
+    super(`Action already running: ${lockKey}`);
     this.name = 'LockBusyError';
   }
 }

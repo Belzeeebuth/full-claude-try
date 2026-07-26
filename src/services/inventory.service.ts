@@ -93,9 +93,9 @@ export async function addItems(
     if (total > capacity.free) {
       throw gameError(
         'inventory_full',
-        `Votre entrepôt est plein (${capacity.used}/${capacity.capacity}).`,
+        `Your warehouse is full (${capacity.used}/${capacity.capacity}).`,
         {
-          hint: 'Vendez des objets avec `/sell` ou améliorez votre entrepôt avec `/buildings`.',
+          hint: 'Sell items with `/sell` or upgrade your warehouse with `/buildings`.',
           context: { needed: total, free: capacity.free },
           suggestedCommand: 'buildings',
         },

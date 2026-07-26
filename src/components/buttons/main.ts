@@ -645,7 +645,7 @@ const settingsButtons: ButtonHandler = {
           '⚙️ Setting updated',
           `\`${field}\` is now **${!current ? 'enabled' : 'disabled'}**.` +
             (!settings?.dmNotifications && !current
-              ? "\n\n⚠️ Activez aussi les **notifications par message privé** pour recevoir les alertes."
+              ? "\n\n⚠️ Also enable **direct message notifications** to receive alerts."
               : ''),
         ),
       ],

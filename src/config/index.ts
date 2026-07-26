@@ -124,7 +124,7 @@ function indexBy<T extends { key: string }>(entries: T[]): Map<string, T> {
   const map = new Map<string, T>();
   for (const entry of entries) {
     if (map.has(entry.key)) {
-      throw new ConfigError(`Clé dupliquée : « ${entry.key} »`);
+      throw new ConfigError(`Duplicate key: "${entry.key}"`);
     }
     map.set(entry.key, entry);
   }
@@ -177,7 +177,7 @@ export function deriveCropItems(crops: CropConfig[]): ItemConfig[] {
         marketTracked: true,
         requiredLevel: crop.requiredLevel,
         sourceKey: crop.key,
-        description: crop.description ?? `Récolte de ${crop.name.toLowerCase()}.`,
+        description: crop.description ?? `Harvested ${crop.name.toLowerCase()}.`,
         sortOrder: 200_000 + crop.sortOrder,
         enabled: crop.enabled,
       }),
@@ -217,13 +217,13 @@ function validateReferences(config: Omit<GameConfig, 'loadedAt'>): void {
     }
     for (const ingredient of recipe.ingredients) {
       if (!has(config.items, ingredient.itemKey)) {
-        issues.push(`recipes.json [${recipe.key}] ingrédient inconnu : ${ingredient.itemKey}`);
+        issues.push(`recipes.json [${recipe.key}] unknown ingredient: ${ingredient.itemKey}`);
       }
     }
     const building = config.buildings.get(recipe.buildingKey);
     if (building && !building.unlocksRecipes.includes(recipe.key)) {
       issues.push(
-        `buildings.json [${building.key}] ne déclare pas la recette « ${recipe.key} » dans unlocksRecipes`,
+        `buildings.json [${building.key}] does not declare recipe "${recipe.key}" in unlocksRecipes`,
       );
     }
   }
@@ -238,7 +238,7 @@ function validateReferences(config: Omit<GameConfig, 'loadedAt'>): void {
       for (const cost of tier.costItems) {
         if (!has(config.items, cost.itemKey)) {
           issues.push(
-            `buildings.json [${building.key}] palier ${tier.tier} : matériau inconnu ${cost.itemKey}`,
+            `buildings.json [${building.key}] tier ${tier.tier}: unknown material ${cost.itemKey}`,
           );
         }
       }
@@ -268,7 +268,7 @@ function validateReferences(config: Omit<GameConfig, 'loadedAt'>): void {
     checkTarget('quests.json', quest.key, quest.objectiveTarget);
     for (const reward of quest.rewardItems) {
       if (!has(config.items, reward.itemKey)) {
-        issues.push(`quests.json [${quest.key}] récompense inconnue : ${reward.itemKey}`);
+        issues.push(`quests.json [${quest.key}] unknown reward: ${reward.itemKey}`);
       }
     }
   }
@@ -278,7 +278,7 @@ function validateReferences(config: Omit<GameConfig, 'loadedAt'>): void {
     for (const reward of achievement.rewardItems) {
       if (!has(config.items, reward.itemKey)) {
         issues.push(
-          `achievements.json [${achievement.key}] récompense inconnue : ${reward.itemKey}`,
+          `achievements.json [${achievement.key}] unknown reward: ${reward.itemKey}`,
         );
       }
     }
@@ -301,7 +301,7 @@ function validateReferences(config: Omit<GameConfig, 'loadedAt'>): void {
     for (const tier of event.rewardTiers) {
       for (const reward of tier.rewards.items ?? []) {
         if (!has(config.items, reward.itemKey)) {
-          issues.push(`events.json [${event.key}] récompense inconnue : ${reward.itemKey}`);
+          issues.push(`events.json [${event.key}] unknown reward: ${reward.itemKey}`);
         }
       }
       if (tier.rewards.animalKey && !has(config.animals, tier.rewards.animalKey)) {
@@ -337,7 +337,7 @@ function validateReferences(config: Omit<GameConfig, 'loadedAt'>): void {
   for (const step of balance.plots.gridSteps) {
     if (step.width * step.height !== step.plots) {
       issues.push(
-        `balance.json : gridStep ${step.plots} incohérent (${step.width}×${step.height} = ${step.width * step.height})`,
+        `balance.json: gridStep ${step.plots} inconsistent (${step.width}×${step.height} = ${step.width * step.height})`,
       );
     }
   }
@@ -349,12 +349,12 @@ function validateReferences(config: Omit<GameConfig, 'loadedAt'>): void {
       issues.push(`crops.json [${crop.key}] regrowCycles > 0 mais regrowSeconds = 0`);
     }
     if (crop.requiredLevel > balance.progression.maxLevel) {
-      issues.push(`crops.json [${crop.key}] requiredLevel dépasse le niveau maximum`);
+      issues.push(`crops.json [${crop.key}] requiredLevel exceeds the maximum level`);
     }
   }
 
   if (issues.length > 0) {
-    throw new ConfigError(`${issues.length} incohérence(s) de configuration`, issues);
+    throw new ConfigError(`${issues.length} configuration inconsistency(ies)`, issues);
   }
 }
 

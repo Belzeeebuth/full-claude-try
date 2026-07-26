@@ -79,10 +79,10 @@ const acheter: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🛒 Achat effectué',
+          '🛒 Purchase complete',
           `${result.quantity}× ${result.emoji} **${result.name}** pour **${
             result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)
-          }**.\nStock restant : ${result.stockRemaining >= 999 ? 'illimité' : result.stockRemaining}`,
+          }**.\nStock restant : ${result.stockRemaining >= 999 ? 'unlimited' : result.stockRemaining}`,
         ),
       ],
     });
@@ -97,7 +97,7 @@ const acheter: Command = {
         .slice(0, 25)
         .map((entry) => ({
           name: truncate(
-            `${entry.emoji} ${entry.name} — ${formatNumber(entry.price)} ${entry.currency === 'gems' ? 'gemmes' : 'pièces'}`,
+            `${entry.emoji} ${entry.name} — ${formatNumber(entry.price)} ${entry.currency === 'gems' ? 'gems' : 'coins'}`,
             100,
           ),
           value: entry.itemKey,
@@ -131,7 +131,7 @@ const vendre: Command = {
     const quantity = raw === 'tout' || raw === 'all' ? ('all' as const) : Number.parseInt(raw, 10);
 
     if (quantity !== 'all' && (!Number.isFinite(quantity) || quantity <= 0)) {
-      throw gameError('quantity_invalid', 'Quantité invalide : indiquez un nombre ou « tout ».');
+      throw gameError('quantity_invalid', 'Invalid quantity: give a number or "all".');
     }
 
     const result = await marketService.sell(context.player, {
@@ -151,7 +151,7 @@ const vendre: Command = {
     );
     embed.addFields({
       name: 'Total',
-      value: `Brut **${formatCoins(result.gross)}**${result.tax > 0 ? ` — taxe ${formatCoins(result.tax)}` : ''} → **${formatCoins(result.net)}** encaissés`,
+      value: `Brut **${formatCoins(result.gross)}**${result.tax > 0 ? ` — taxe ${formatCoins(result.tax)}` : ''} → **${formatCoins(result.net)}** received`,
     });
     appendTracking(embed, result.tracking);
 
@@ -250,7 +250,7 @@ export async function sendMarketChart(
   const item = inventoryService.requireItem(itemKey);
   const rows = await marketService.getMarket({});
   const row = rows.find((entry) => entry.itemKey === itemKey);
-  if (!row) throw gameError('not_found', `${item.name} n'est pas suivi par le marché.`);
+  if (!row) throw gameError('not_found', `${item.name} is not tracked by the market.`);
 
   const points = await marketService.getPriceHistory(itemKey);
   const image = await renderChartImage({
@@ -268,12 +268,12 @@ export async function sendMarketChart(
   await interaction.editReply({
     embeds: [
       baseEmbed({
-        title: `${item.emoji} ${item.name} — marché`,
+        title: `${item.emoji} ${item.name} — market`,
         description: [
           `Prix actuel : **${formatNumber(row.price)} ${COIN}** ${trend.emoji} ${trend.label} (${formatPercent(row.trend)})`,
-          `Prix de référence : ${formatNumber(row.basePrice)} ${COIN}`,
-          `Indice de demande : **${row.demandIndex.toFixed(2)}** ${row.demandIndex > 1 ? '(pénurie — vendez !)' : '(marché saturé — attendez)'}`,
-          `Prochaine mise à jour ${discordTimestamp(row.nextUpdateAt, 'R')}`,
+          `Base price: ${formatNumber(row.basePrice)} ${COIN}`,
+          `Demand index: **${row.demandIndex.toFixed(2)}** ${row.demandIndex > 1 ? '(shortage — sell!)' : '(saturated — wait)'}`,
+          `Next update ${discordTimestamp(row.nextUpdateAt, 'R')}`,
         ].join('\n'),
         color: row.trend >= 0 ? COLORS.success : COLORS.danger,
         // Image laissée en pièce jointe libre, hors de l'embed : voir la note
@@ -362,12 +362,12 @@ const objet: Command = {
             {
               name: 'Informations',
               value: [
-                `Catégorie : **${item.category}**`,
-                `Rareté : **${item.rarity}**`,
+                `Category: **${item.category}**`,
+                `Rarity: **${item.rarity}**`,
                 item.basePrice > 0 ? `Achat : **${formatNumber(item.basePrice)} ${COIN}**` : '',
                 item.sellable ? `Vente : **${formatNumber(price?.price ?? item.sellPrice)} ${COIN}**` : 'Non vendable',
-                item.tradable ? 'Échangeable ✅' : 'Non échangeable ❌',
-                `Vous en possédez : **${formatNumber(owned)}**`,
+                item.tradable ? 'Tradable ✅' : 'Not tradable ❌',
+                `You own: **${formatNumber(owned)}**`,
               ]
                 .filter(Boolean)
                 .join('\n'),
@@ -376,7 +376,7 @@ const objet: Command = {
             ...(producedBy.length > 0
               ? [
                   {
-                    name: 'Fabriqué par',
+                    name: 'Crafted by',
                     value: producedBy.map((recipe) => `${recipe.emoji} \`${recipe.name}\``).join('\n'),
                     inline: true,
                   },
@@ -385,7 +385,7 @@ const objet: Command = {
             ...(usedIn.length > 0
               ? [
                   {
-                    name: 'Utilisé dans',
+                    name: 'Used in',
                     value: usedIn
                       .slice(0, 8)
                       .map((recipe) => `${recipe.emoji} \`${recipe.name}\``)
@@ -439,7 +439,7 @@ const utiliser: Command = {
     const result = await useConsumable(context.player, itemKey, quantity);
 
     await interaction.editReply({
-      embeds: [successEmbed(`${item.emoji} ${item.name} utilisé`, result.message)],
+      embeds: [successEmbed(`${item.emoji} ${item.name} used`, result.message)],
     });
   },
 
@@ -485,7 +485,7 @@ const jeter: Command = {
       embeds: [
         baseEmbed({
           title: '🗑️ Confirmation',
-          description: `Jeter **${quantity}× ${item.emoji} ${item.name}** ? Cette action est irréversible et ne rapporte rien.\n\n*Astuce : \`/sell\` rapporte des pièces.*`,
+          description: `Discard **${quantity}× ${item.emoji} ${item.name}**? This cannot be undone and earns you nothing.\n\n*Tip: \`/sell\` pays coins.*`,
           color: COLORS.warning,
         }),
       ],
@@ -550,7 +550,7 @@ const banque: Command = {
       await interaction.editReply({
         embeds: [
           successEmbed(
-            sub === 'deposit' ? '🏦 Dépôt effectué' : '🏦 Retrait effectué',
+            sub === 'deposit' ? '🏦 Deposit complete' : '🏦 Withdrawal complete',
             `Compte : **${formatCoins(result.balance)}** / ${formatCompact(result.capacity)}\nEn poche : **${formatCoins(result.walletBalance)}**`,
           ),
         ],
@@ -563,8 +563,8 @@ const banque: Command = {
       await interaction.editReply({
         embeds: [
           successEmbed(
-            '🏦 Banque améliorée',
-            `Palier **${result.tier}** — capacité portée à **${formatCoins(result.capacity)}**.`,
+            '🏦 Bank upgraded',
+            `Tier **${result.tier}** — capacity raised to **${formatCoins(result.capacity)}**.`,
           ),
         ],
       });
@@ -581,11 +581,11 @@ const banque: Command = {
           description: [
             `Compte : **${formatCoins(status.balance)}** / ${formatCompact(status.capacity)}`,
             `En poche : **${formatCoins(status.walletBalance)}**`,
-            `Intérêts : **${(status.interestRate * 100).toFixed(2)} %/jour** (plafonnés)`,
+            `Interest: **${(status.interestRate * 100).toFixed(2)}%/day** (capped)`,
             '',
-            "L'argent en banque est protégé et génère des intérêts quotidiens.",
+            "Money in the bank is protected and earns daily interest.",
             nextTier
-              ? `\nProchain palier : niveau ${nextTier.requiredLevel} requis, ${formatCoins(nextTier.upgradeCost)} → capacité ${formatCompact(nextTier.capacity)}`
+              ? `\nNext tier: level ${nextTier.requiredLevel} required, ${formatCoins(nextTier.upgradeCost)} → capacity ${formatCompact(nextTier.capacity)}`
               : '\n🏆 Palier maximum atteint.',
           ].join('\n'),
           color: COLORS.gold,
@@ -625,8 +625,8 @@ const donner: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🎁 Don effectué',
-          `${target} reçoit **${formatCoins(result.received)}**.\n` +
+          '🎁 Gift sent',
+          `${target} receives **${formatCoins(result.received)}**.\n` +
             `*Taxe de transfert : ${formatCoins(result.tax)} (${(context.balance.economy.giftTaxRate * 100).toFixed(0)} %).*`,
         ),
       ],
