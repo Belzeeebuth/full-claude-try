@@ -332,6 +332,7 @@ export const achievementSchema = z.object({
   rewardGems: nonNegativeInt.default(0),
   rewardItems: z.array(itemStackSchema).default([]),
   rewardTitle: z.string().max(64).optional(),
+  rewardTitleEn: z.string().max(64).optional(),
   rewardBadge: z.string().max(64).optional(),
   rewardXp: nonNegativeInt.default(0),
   hidden: z.boolean().default(false),
@@ -539,6 +540,7 @@ export const balanceSchema = z.object({
           weather: z.enum(weatherNames),
           emoji: z.string().min(1).max(16),
           label: z.string().min(1).max(48),
+          labelEn: z.string().min(1).max(48).optional(),
           weights: z.object({
             spring: z.number().min(0),
             summer: z.number().min(0),
@@ -551,6 +553,7 @@ export const balanceSchema = z.object({
           damageChance: ratio,
           pestChance: ratio,
           description: z.string().min(1).max(256),
+          descriptionEn: z.string().min(1).max(256).optional(),
         }),
       )
       .min(1),

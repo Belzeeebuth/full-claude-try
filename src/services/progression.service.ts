@@ -421,7 +421,7 @@ export async function rerollQuest(
     if (rerolls >= balance.quests.maxRerollsPerDay) {
       throw gameError(
         'forbidden',
-        `Limite de ${balance.quests.maxRerollsPerDay} relances par jour atteinte.`,
+        `Limit of ${balance.quests.maxRerollsPerDay} rerolls per day reached.`,
       );
     }
 
@@ -526,11 +526,11 @@ export async function claimDaily(
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const streakRow = await progressionRepo.lockStreak(tx, player.id);
-    if (!streakRow) throw gameError('not_registered', 'Compte introuvable.');
+    if (!streakRow) throw gameError('not_registered', 'Account not found.');
 
     if (streakRow.lastClaimDate === today) {
       throw gameError('cooldown', 'You already claimed your reward today.', {
-        hint: `Revenez ${nextMidnight(now, timezone).toLocaleString('fr-FR')}.`,
+        hint: `Come back ${nextMidnight(now, timezone).toLocaleString('en-US')}.`,
       });
     }
 
@@ -729,9 +729,9 @@ export async function claimPassTier(
   premium: boolean,
 ): Promise<{ coins: number; gems: number; items: Array<{ itemKey: string; quantity: number }>; title?: string }> {
   const pass = getActiveSeasonPass();
-  if (!pass) throw gameError('not_found', 'Aucun passe saisonnier actif.');
+  if (!pass) throw gameError('not_found', 'No active season pass.');
   const tierConfig = pass.tiers.find((entry) => entry.tier === tier);
-  if (!tierConfig) throw gameError('not_found', `Palier ${tier} inexistant.`);
+  if (!tierConfig) throw gameError('not_found', `Tier ${tier} does not exist.`);
   const rewards = premium ? tierConfig.premium : tierConfig.free;
 
   return withTransaction(async (tx) => {
@@ -781,12 +781,12 @@ export async function deliverItems(
 ): Promise<{ delivered: number; progress: number; required: number; completed: boolean }> {
   return withTransaction(async (tx) => {
     const quest = await progressionRepo.lockQuest(tx, input.questId, player.id);
-    if (!quest) throw gameError('not_found', 'Contrat introuvable.');
-    if (quest.status !== 'active') throw gameError('invalid_state', 'Ce contrat est clos.');
+    if (!quest) throw gameError('not_found', 'Contract not found.');
+    if (quest.status !== 'active') throw gameError('invalid_state', 'This contract is closed.');
 
     const snapshot = quest.snapshot as QuestSnapshotShape;
     if (snapshot.objectiveTarget.itemKey !== input.itemKey) {
-      throw gameError('target_invalid', 'Cet objet ne correspond pas au contrat.');
+      throw gameError('target_invalid', 'This item does not match the contract.');
     }
 
     const missing = quest.required - quest.progress;

@@ -52,7 +52,7 @@ const shopBuy: SelectHandler = {
         ownerId: interaction.user.id,
         params: [itemKey],
         title: 'Quantity to buy',
-        label: 'Combien en voulez-vous ?',
+        label: 'How many do you want?',
         placeholder: 'Ex. 10',
       }),
     );
@@ -85,7 +85,7 @@ const plantSelect: SelectHandler = {
     const embed = successEmbed(
       `${result.emoji} ${result.cropName} planted`,
       [
-        `**${result.slots.length}** parcelle(s) : ${result.slots.map((slot) => `\`${slot}\``).join(' ')}`,
+        `**${result.slots.length}** plot(s): ${result.slots.map((slot) => `\`${slot}\``).join(' ')}`,
         `Harvest ${discordTimestamp(result.readyAt, 'R')}`,
         result.offSeason ? '⚠️ *Out of season: reduced yield.*' : '',
       ]
@@ -111,8 +111,8 @@ const animalPet: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          `${result.emoji} ${result.name} est ravi !`,
-          `Bonheur +${result.gain} → ${gaugeBar(result.happiness, 8)} ${result.happiness}%`,
+          `${result.emoji} ${result.name} is delighted!`,
+          `Happiness +${result.gain} → ${gaugeBar(result.happiness, 8)} ${result.happiness}%`,
         ),
       ],
       flags: MessageFlags.Ephemeral,
@@ -134,7 +134,7 @@ const buildingUpgrade: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          `${result.emoji} ${result.name} — ${result.built ? 'built!' : `palier ${result.tier}`}`,
+          `${result.emoji} ${result.name} — ${result.built ? 'built!' : `tier ${result.tier}`}`,
           [
             `Cost: ${formatCoins(result.costCoins)}`,
             result.capacity > 0 ? `Capacity: **${formatNumber(result.capacity)}**` : '',
@@ -165,7 +165,7 @@ const questReroll: SelectHandler = {
       embeds: [
         successEmbed(
           '🔄 Quest rerolled',
-          `${result.usedToken ? '🎫 Token used.' : `Coût : ${formatCoins(result.cost)}`}\n\n**${result.newQuest.title}**\n${result.newQuest.description}`,
+          `${result.usedToken ? '🎫 Token used.' : `Cost: ${formatCoins(result.cost)}`}\n\n**${result.newQuest.title}**\n${result.newQuest.description}`,
         ),
       ],
       flags: MessageFlags.Ephemeral,
@@ -189,7 +189,7 @@ const coopJoin: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          `Bienvenue chez ${info.emblem} ${info.name} !`,
+          `Welcome to ${info.emblem} ${info.name}!`,
           `You immediately benefit from the level ${info.level} bonuses.`,
         ),
       ],
@@ -213,8 +213,8 @@ const auctionBuy: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          '🛍️ Achat conclu',
-          `**${result.quantity}× ${result.emoji} ${result.itemName}** pour ${formatCoins(result.price)}.`,
+          '🛍️ Purchase completed',
+          `**${result.quantity}× ${result.emoji} ${result.itemName}** for ${formatCoins(result.price)}.`,
         ),
       ],
       flags: MessageFlags.Ephemeral,

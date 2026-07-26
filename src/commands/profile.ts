@@ -33,7 +33,7 @@ const profil: Command = {
     await interaction.deferReply();
     const target = interaction.options.getUser('user') ?? interaction.user;
     const profile = await getProfile(target.id);
-    if (!profile) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
+    if (!profile) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
 
     const image = await renderProfileImage({
       locale: context.locale,
@@ -70,10 +70,10 @@ const profil: Command = {
       title: `${profile.user.displayName ?? profile.user.username} ${prestigeBadge(profile.user.prestige)}`,
       description: [
         profile.user.title ? `*${profile.user.title}*` : '',
-        `**Niveau ${profile.user.level}** — ${progressBar(profile.user.xp, profile.xpForNext || 1, 12)} ${formatCompact(profile.user.xp)}/${formatCompact(profile.xpForNext)} XP`,
+        `**Level ${profile.user.level}** — ${progressBar(profile.user.xp, profile.xpForNext || 1, 12)} ${formatCompact(profile.user.xp)}/${formatCompact(profile.xpForNext)} XP`,
         `${COIN} ${formatNumber(profile.user.coins)} • ${GEM} ${formatNumber(profile.user.gems)} • 🏦 ${formatCompact(profile.bankBalance)}`,
         `⚡ ${profile.energy.current}/${profile.energy.max}${profile.energy.fullAt ? ` (plein ${discordTimestamp(profile.energy.fullAt, 'R')})` : ''}`,
-        profile.coop ? `🤝 **${profile.coop.name}** [${profile.coop.tag}] — niv. ${profile.coop.level}` : '',
+        profile.coop ? `🤝 **${profile.coop.name}** [${profile.coop.tag}] — lv. ${profile.coop.level}` : '',
       ]
         .filter(Boolean)
         .join('\n'),
@@ -88,8 +88,8 @@ const profil: Command = {
         { name: '🌾 Harvests', value: formatNumber(profile.user.totalHarvests), inline: true },
         { name: '🐄 Animals raised', value: formatNumber(profile.user.totalAnimalsRaised), inline: true },
         { name: '🛠️ Items crafted', value: formatNumber(profile.user.totalCrafts), inline: true },
-        { name: '🗺️ Parcelles', value: `${profile.plotsUnlocked}/64`, inline: true },
-        { name: '🔥 Streak', value: `${profile.streak} jour(s)`, inline: true },
+        { name: '🗺️ Plots', value: `${profile.plotsUnlocked}/64`, inline: true },
+        { name: '🔥 Streak', value: `${profile.streak} day(s)`, inline: true },
         { name: '🏆 Achievements', value: String(profile.achievementsUnlocked), inline: true },
       );
     }
@@ -103,7 +103,7 @@ const profil: Command = {
             namespace: 'farm',
             action: 'refresh',
             ownerId: interaction.user.id,
-            label: 'Ma ferme',
+            label: 'My farm',
             emoji: '🌾',
           }),
           button({
@@ -111,7 +111,7 @@ const profil: Command = {
             action: 'stats',
             ownerId: interaction.user.id,
             params: [target.id],
-            label: 'Statistiques',
+            label: 'Stats',
             emoji: '📊',
           }),
         ),
@@ -133,12 +133,12 @@ const stats: Command = {
     await interaction.deferReply();
     const target = interaction.options.getUser('user') ?? interaction.user;
     const data = await miscService.playerStats(target.id);
-    if (!data) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
+    if (!data) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
 
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: `📊 Statistiques de ${data.user.displayName ?? data.user.username}`,
+          title: `📊 Stats for ${data.user.displayName ?? data.user.username}`,
           color: COLORS.info,
           fields: [
             {
@@ -146,7 +146,7 @@ const stats: Command = {
               value: [
                 `Harvests: **${formatNumber(data.user.totalHarvests)}**`,
                 `Seeds planted: **${formatNumber(data.user.totalPlanted)}**`,
-                `Arrosages : **${formatNumber(data.user.totalWatered)}**`,
+                `Waterings: **${formatNumber(data.user.totalWatered)}**`,
                 `Best harvest: **${formatCoins(data.user.bestHarvestValue, true)}**`,
               ].join('\n'),
               inline: true,
@@ -155,7 +155,7 @@ const stats: Command = {
               name: '🐄 Livestock & crafting',
               value: [
                 `Animals raised: **${formatNumber(data.user.totalAnimalsRaised)}**`,
-                `Vivants : **${data.animalsAlive}**`,
+                `Alive: **${data.animalsAlive}**`,
                 `Items crafted: **${formatNumber(data.user.totalCrafts)}**`,
               ].join('\n'),
               inline: true,
@@ -165,7 +165,7 @@ const stats: Command = {
               value: [
                 `Earned: **${formatCoins(data.user.totalCoinsEarned, true)}**`,
                 `Spent: **${formatCoins(data.user.totalCoinsSpent, true)}**`,
-                `Solde : **${formatCoins(data.user.coins, true)}**`,
+                `Balance: **${formatCoins(data.user.coins, true)}**`,
               ].join('\n'),
               inline: true,
             },
@@ -179,7 +179,7 @@ const stats: Command = {
               inline: true,
             },
             {
-              name: '🏅 Classements',
+              name: '🏅 Leaderboards',
               value: [
                 data.ranks.wealth ? `Richesse : **#${data.ranks.wealth.rank}**` : '',
                 data.ranks.level ? `Experience: **#${data.ranks.level.rank}**` : '',
@@ -192,7 +192,7 @@ const stats: Command = {
             {
               name: '📦 Divers',
               value: [
-                `Inventaire : **${formatNumber(data.inventoryTotal)}** objets`,
+                `Inventory: **${formatNumber(data.inventoryTotal)}** items`,
                 `Farm created on **${data.user.createdAt.toLocaleDateString('en-US')}**`,
                 `Prestige : **${data.user.prestige}** ${prestigeBadge(data.user.prestige)}`,
               ].join('\n'),
@@ -217,19 +217,19 @@ const solde: Command = {
   async execute(interaction, context): Promise<void> {
     const target = interaction.options.getUser('user') ?? interaction.user;
     const user = await playerRepo.findUserByDiscordId(target.id);
-    if (!user) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
+    if (!user) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
     const bank = await playerRepo.getBankAccount(user.id);
 
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: `💰 Solde de ${user.displayName ?? user.username}`,
+          title: `💰 ${user.displayName ?? user.username}’s balance`,
           description: [
             `${COIN} **${formatNumber(user.coins)}** coins on hand`,
-            `${GEM} **${formatNumber(user.gems)}** gemmes`,
+            `${GEM} **${formatNumber(user.gems)}** gems`,
             `🏦 **${formatNumber(bank?.balance ?? 0)}** in the bank (capacity ${formatCompact(bank?.capacity ?? 0)})`,
             '',
-            `Patrimoine total : **${formatCoins(user.coins + (bank?.balance ?? 0))}**`,
+            `Total net worth: **${formatCoins(user.coins + (bank?.balance ?? 0))}**`,
           ].join('\n'),
           color: COLORS.gold,
         }),
@@ -285,8 +285,8 @@ const parametres: Command = {
     if (compact !== null) patch.compactMode = compact;
     if (timezone) {
       if (!isValidTimezone(timezone)) {
-        throw gameError('target_invalid', `Fuseau horaire inconnu : \`${timezone}\`.`, {
-          hint: 'Exemples : Europe/Paris, America/Montreal, Indian/Reunion.',
+        throw gameError('target_invalid', `Unknown time zone: \`${timezone}\`.`, {
+          hint: 'Examples: Europe/Paris, America/Montreal, Indian/Reunion.',
         });
       }
       patch.timezone = timezone;
@@ -311,15 +311,15 @@ const parametres: Command = {
                 `Direct messages: **${settings?.dmNotifications ? 'enabled' : 'disabled'}**`,
                 `Crops ready: ${settings?.notifyCrops ? '✅' : '❌'}`,
                 `Hungry animals: ${settings?.notifyAnimals ? '✅' : '❌'}`,
-                `Rappel quotidien : ${settings?.dailyReminder ? '✅' : '❌'}`,
+                `Daily reminder: ${settings?.dailyReminder ? '✅' : '❌'}`,
               ].join('\n'),
               inline: true,
             },
             {
-              name: '🌍 Affichage',
+              name: '🌍 Display',
               value: [
-                `Langue : **${settings?.locale ?? 'fr'}**`,
-                `Fuseau : **${settings?.timezone ?? 'Europe/Paris'}**`,
+                `Language: **${settings?.locale ?? 'fr'}**`,
+                `Time zone: **${settings?.timezone ?? 'Europe/Paris'}**`,
                 `Mode compact : ${settings?.compactMode ? '✅' : '❌'}`,
               ].join('\n'),
               inline: true,
@@ -342,7 +342,7 @@ const parametres: Command = {
             action: 'toggle',
             ownerId: interaction.user.id,
             params: ['notifyCrops'],
-            label: 'Alerte cultures',
+            label: 'Crop alerts',
             emoji: '🌱',
           }),
           button({
@@ -350,7 +350,7 @@ const parametres: Command = {
             action: 'toggle',
             ownerId: interaction.user.id,
             params: ['notifyAnimals'],
-            label: 'Alerte animaux',
+            label: 'Animal alerts',
             emoji: '🐄',
           }),
           button({
@@ -358,7 +358,7 @@ const parametres: Command = {
             action: 'toggle',
             ownerId: interaction.user.id,
             params: ['dailyReminder'],
-            label: 'Rappel quotidien',
+            label: 'Daily reminder',
             emoji: '📅',
           }),
         ),
@@ -385,7 +385,7 @@ const prestige: Command = {
         embeds: [
           baseEmbed({
             title: '🌟 Prestige',
-            description: `${eligibility.reason}\n\nLe prestige devient disponible au **niveau ${eligibility.requiredLevel}**.`,
+            description: `${eligibility.reason}\n\nPrestige unlocks at **level ${eligibility.requiredLevel}**.`,
             color: COLORS.warning,
           }),
         ],
@@ -396,35 +396,35 @@ const prestige: Command = {
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: '🌟 Renaissance — confirmation requise',
+          title: '🌟 Rebirth — confirmation required',
           description:
             '**This cannot be undone.** Here is exactly what will happen:',
           color: COLORS.warning,
           fields: [
             {
-              name: '✅ Vous conservez',
+              name: '✅ You keep',
               value: [
-                `🏗️ Tous vos bâtiments`,
-                `🗺️ **${plan.plotsKept}** parcelles (50 %)`,
-                `💎 Toutes vos gemmes`,
+                `🏗️ All your buildings`,
+                `🗺️ **${plan.plotsKept}** plots (50 %)`,
+                `💎 All your gems`,
                 `🪙 ${formatCoins(plan.coinsKept)} (5%) + ${formatCoins(plan.startingCoins)} to start over`,
                 `🎨 Cosmetics, tools and event items`,
               ].join('\n'),
               inline: true,
             },
             {
-              name: '❌ Vous perdez',
+              name: '❌ You lose',
               value: [
-                `⭐ Niveau et XP (retour au niveau 1)`,
-                `🐄 Tous vos animaux`,
-                `🌱 Les cultures en cours`,
-                `📦 Le reste de l'inventaire`,
+                `⭐ Level and XP (back to level 1)`,
+                `🐄 All your animals`,
+                `🌱 Crops currently growing`,
+                `📦 The rest of your inventory`,
               ].join('\n'),
               inline: true,
             },
             {
               name: '🎁 Gain permanent',
-              value: `Multiplicateur de rendement et d'XP : **×${plan.newMultiplier.toFixed(2)}** (prestige ${plan.newPrestige})\n+${plan.pointsGained} points de prestige`,
+              value: `Yield and XP multiplier: **×${plan.newMultiplier.toFixed(2)}** (prestige ${plan.newPrestige})\n+${plan.pointsGained} prestige points`,
               inline: false,
             },
           ],

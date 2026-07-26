@@ -52,7 +52,7 @@ const shopQuantity: ModalHandler = {
       embeds: [
         successEmbed(
           '🛒 Purchase complete',
-          `${result.quantity}× ${result.emoji} **${result.name}** pour **${
+          `${result.quantity}× ${result.emoji} **${result.name}** for **${
             result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)
           }**.`,
         ),
@@ -104,7 +104,7 @@ const coopContribute: ModalHandler = {
       embeds: [
         successEmbed(
           '💰 Contribution',
-          `${formatCoins(amount)} paid in.\nTreasury: **${formatCoins(result.treasury)}**\n+${formatNumber(result.coopXp)} co-op XP${result.levelsGained > 0 ? ` — 🎉 niveau **${result.level}** !` : ''}`,
+          `${formatCoins(amount)} paid in.\nTreasury: **${formatCoins(result.treasury)}**\n+${formatNumber(result.coopXp)} co-op XP${result.levelsGained > 0 ? ` — 🎉 level **${result.level}**!` : ''}`,
         ),
       ],
     });
@@ -177,13 +177,13 @@ const adminAnnounce: ModalHandler = {
 
     const channel = await interaction.client.channels.fetch(env.DISCORD_ANNOUNCE_CHANNEL_ID);
     if (!channel?.isTextBased() || !('send' in channel)) {
-      throw gameError('invalid_state', "Le salon d'annonce est introuvable ou n'est pas textuel.");
+      throw gameError('invalid_state', "The announcement channel is missing or is not a text channel.");
     }
 
     await channel.send({
       embeds: [
         baseEmbed({
-          title: '📢 Annonce de Val-Verdoyant',
+          title: '📢 Greenvale announcement',
           description: message,
           color: COLORS.gold,
           footer: `Posted by ${interaction.user.username}`,

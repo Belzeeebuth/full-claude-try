@@ -23,7 +23,7 @@ const tradeItemSelect: SelectHandler = {
         ownerId: interaction.user.id,
         params: [tradeId, itemKey],
         title: 'Quantity to offer',
-        label: 'Combien ?',
+        label: 'How many?',
         placeholder: 'Ex. 5',
       }),
     );

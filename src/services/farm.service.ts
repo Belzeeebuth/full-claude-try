@@ -187,7 +187,7 @@ export async function getFarmView(
 
   return {
     farmId: player.farmId,
-    name: farm?.name ?? 'Ma ferme',
+    name: farm?.name ?? 'My farm',
     grid: { width: grid.width, height: grid.height },
     plots,
     counts,
@@ -239,12 +239,12 @@ export async function plant(
   const balance = getBalance();
   const crop = config.crops.get(input.cropKey);
   if (!crop || !crop.enabled) {
-    throw gameError('item_unknown', `Culture inconnue : \`${input.cropKey}\`.`);
+    throw gameError('item_unknown', `Unknown crop: \`${input.cropKey}\`.`);
   }
   if (player.level < crop.requiredLevel) {
     throw gameError(
       'level_too_low',
-      `${crop.emoji} ${crop.name} demande le niveau ${crop.requiredLevel}.`,
+      `${crop.emoji} ${crop.name} requires level ${crop.requiredLevel}.`,
       { context: { required: crop.requiredLevel, current: player.level } },
     );
   }
@@ -267,7 +267,7 @@ export async function plant(
           .map(({ plot }) => plot.slot);
 
     if (targetSlots.length === 0) {
-      throw gameError('plot_empty', 'Aucune parcelle libre.', {
+      throw gameError('plot_empty', 'No free plot.', {
         hint: 'Harvest your crops or buy a plot with `/buy-plot`.',
         suggestedCommand: 'buy-plot',
       });
@@ -278,7 +278,7 @@ export async function plant(
 
     if (plantable.length === 0) {
       const first = locked[0];
-      if (!first) throw gameError('plot_not_found', `Parcelle ${targetSlots[0]} introuvable.`);
+      if (!first) throw gameError('plot_not_found', `Plot ${targetSlots[0]} not found.`);
       if (first.state === 'locked') {
         throw gameError('plot_locked', `Plot ${first.slot} is locked.`, {
           hint: `Unlock it for ${plotUnlockCost(first.slot, balance).toLocaleString('en-US')} 🪙 with \`/buy-plot\`.`,
@@ -404,8 +404,8 @@ export async function water(
       .slice(0, input.all ? Math.max(1, toolPlots) : 1);
 
     if (candidates.length === 0) {
-      throw gameError('no_water_needed', "Aucune parcelle n'a besoin d'eau pour le moment.", {
-        hint: 'Consultez `/farm` pour voir les prochains arrosages.',
+      throw gameError('no_water_needed', "No plot needs water right now.", {
+        hint: 'Check `/farm` to see the next waterings.',
       });
     }
 
@@ -738,7 +738,7 @@ export async function fertilize(
   const balance = getBalance();
   const item = inventoryService.requireItem(input.fertilizerKey);
   if (item.effect?.type !== 'fertilizer') {
-    throw gameError('item_unknown', `${item.name} n'est pas un engrais.`);
+    throw gameError('item_unknown', `${item.name} is not a fertilizer.`);
   }
 
   const now = new Date();
@@ -849,9 +849,9 @@ export async function treatPest(
 
   return withTransaction(async (tx) => {
     const plot = await farmRepo.lockPlot(tx, player.farmId, input.slot);
-    if (!plot) throw gameError('plot_not_found', `Parcelle ${input.slot} introuvable.`);
+    if (!plot) throw gameError('plot_not_found', `Plot ${input.slot} not found.`);
     if (!plot.pestType) {
-      throw gameError('no_pest', `La parcelle ${input.slot} n'a aucun nuisible.`);
+      throw gameError('no_pest', `Plot ${input.slot} has no pest.`);
     }
 
     // Le traitement bio accélère : s'il n'en a pas, le joueur traite à la main

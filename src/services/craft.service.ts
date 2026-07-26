@@ -119,10 +119,10 @@ export async function craft(
   const config = getConfig();
   const recipe = config.recipes.get(input.recipeKey);
   if (!recipe || !recipe.enabled) {
-    throw gameError('recipe_unknown', `Recette inconnue : \`${input.recipeKey}\`.`);
+    throw gameError('recipe_unknown', `Unknown recipe: \`${input.recipeKey}\`.`);
   }
   if (player.level < recipe.requiredLevel) {
-    throw gameError('level_too_low', `${recipe.name} demande le niveau ${recipe.requiredLevel}.`);
+    throw gameError('level_too_low', `${recipe.name} requires level ${recipe.requiredLevel}.`);
   }
 
   const quantity = Math.max(1, Math.min(20, input.quantity ?? 1));
@@ -135,8 +135,8 @@ export async function craft(
     if (!building) {
       throw gameError(
         'building_required',
-        `Il vous faut un ${buildingConfig?.emoji ?? ''} ${buildingConfig?.name ?? recipe.buildingKey}.`,
-        { hint: 'Construisez-le avec `/buildings`.', suggestedCommand: 'buildings' },
+        `You need a ${buildingConfig?.emoji ?? ''} ${buildingConfig?.name ?? recipe.buildingKey}.`,
+        { hint: 'Build one with `/buildings`.', suggestedCommand: 'buildings' },
       );
     }
 
@@ -352,7 +352,7 @@ export async function cancelProduction(
 ): Promise<{ refunded: Array<{ itemKey: string; quantity: number }> }> {
   return withTransaction(async (tx) => {
     const job = await animalRepo.lockCraftJob(tx, jobId, player.id);
-    if (!job) throw gameError('not_found', 'Production introuvable.');
+    if (!job) throw gameError('not_found', 'Production not found.');
     if (job.collected) throw gameError('invalid_state', 'This production was already collected.');
 
     const consumed = job.consumed as Array<{ itemKey: string; quantity: number }>;
@@ -463,7 +463,7 @@ export async function buildOrUpgrade(
   const config = getConfig();
   const building = config.buildings.get(buildingKey);
   if (!building || !building.enabled) {
-    throw gameError('not_found', `Bâtiment inconnu : \`${buildingKey}\`.`);
+    throw gameError('not_found', `Unknown building: \`${buildingKey}\`.`);
   }
 
   return withTransaction(async (tx) => {
@@ -481,7 +481,7 @@ export async function buildOrUpgrade(
     if (player.level < next.requiredLevel) {
       throw gameError(
         'level_too_low',
-        `Le palier ${next.tier} de ${building.name} demande le niveau ${next.requiredLevel}.`,
+        `Tier ${next.tier} of ${building.name} requires level ${next.requiredLevel}.`,
       );
     }
 

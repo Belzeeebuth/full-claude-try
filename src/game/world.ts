@@ -72,10 +72,10 @@ export function nextSeason(now: Date, balance: Balance, epoch: Date = GAME_EPOCH
 }
 
 export const SEASON_LABELS: Record<SeasonName, { name: string; emoji: string }> = {
-  spring: { name: 'Printemps', emoji: '🌸' },
+  spring: { name: 'Spring', emoji: '🌸' },
   summer: { name: 'Summer', emoji: '☀️' },
-  autumn: { name: 'Automne', emoji: '🍂' },
-  winter: { name: 'Hiver', emoji: '❄️' },
+  autumn: { name: 'Autumn', emoji: '🍂' },
+  winter: { name: 'Winter', emoji: '❄️' },
 };
 
 export interface WeatherState {
@@ -146,8 +146,8 @@ export function neutralWeather(day: string, season: SeasonName): WeatherState {
   return {
     weather: 'cloudy',
     emoji: '☁️',
-    label: 'Nuageux',
-    description: 'Rien de particulier.',
+    label: 'Cloudy',
+    description: 'Nothing special.',
     yieldModifier: 1,
     growthModifier: 1,
     freeWatering: false,

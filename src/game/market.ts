@@ -124,7 +124,7 @@ export function salesTax(amount: number, level: number, balance: Balance): numbe
 export function describeTrend(trend: number): { emoji: string; label: string } {
   if (trend >= 0.1) return { emoji: '📈', label: 'forte hausse' };
   if (trend >= 0.02) return { emoji: '↗️', label: 'hausse' };
-  if (trend <= -0.1) return { emoji: '📉', label: 'forte baisse' };
+  if (trend <= -0.1) return { emoji: '📉', label: 'sharp drop' };
   if (trend <= -0.02) return { emoji: '↘️', label: 'baisse' };
   return { emoji: '➡️', label: 'stable' };
 }

@@ -43,6 +43,7 @@
     "rewardCoins": 12000,
     "rewardGems": 5,
     "rewardTitle": "Fermier confirmé",
+    "rewardTitleEn": "Seasoned farmer",
     "sortOrder": 30
   },
   {
@@ -59,6 +60,7 @@
     "rewardCoins": 120000,
     "rewardGems": 25,
     "rewardTitle": "Maître des champs",
+    "rewardTitleEn": "Master of the fields",
     "rewardBadge": "master_fields",
     "sortOrder": 40
   },
@@ -76,6 +78,7 @@
     "rewardCoins": 1500000,
     "rewardGems": 100,
     "rewardTitle": "Légende agricole",
+    "rewardTitleEn": "Farming legend",
     "rewardBadge": "legend",
     "sortOrder": 50
   },
@@ -143,6 +146,7 @@
     "rewardCoins": 30000,
     "rewardGems": 10,
     "rewardTitle": "Grand propriétaire",
+    "rewardTitleEn": "Landowner",
     "sortOrder": 90
   },
   {
@@ -159,6 +163,7 @@
     "rewardCoins": 2000000,
     "rewardGems": 150,
     "rewardTitle": "Maître du domaine",
+    "rewardTitleEn": "Lord of the estate",
     "rewardBadge": "domain_master",
     "sortOrder": 100
   },
@@ -191,6 +196,7 @@
     "rewardCoins": 250000,
     "rewardGems": 30,
     "rewardTitle": "Roi du cheptel",
+    "rewardTitleEn": "Livestock king",
     "sortOrder": 120
   },
   {
@@ -221,6 +227,7 @@
     "conditionAmount": 500,
     "rewardCoins": 18000,
     "rewardTitle": "Ami des bêtes",
+    "rewardTitleEn": "Friend of the beasts",
     "sortOrder": 140
   },
   {
@@ -252,6 +259,7 @@
     "rewardCoins": 400000,
     "rewardGems": 40,
     "rewardTitle": "Industriel",
+    "rewardTitleEn": "Industrialist",
     "sortOrder": 160
   },
   {
@@ -283,6 +291,7 @@
     "rewardCoins": 500000,
     "rewardGems": 50,
     "rewardTitle": "Millionnaire agricole",
+    "rewardTitleEn": "Farming millionaire",
     "rewardBadge": "millionaire",
     "sortOrder": 180
   },
@@ -315,6 +324,7 @@
     "rewardCoins": 150000,
     "rewardGems": 25,
     "rewardTitle": "Commissaire-priseur",
+    "rewardTitleEn": "Auctioneer",
     "sortOrder": 200
   },
   {
@@ -346,6 +356,7 @@
     "rewardCoins": 100000,
     "rewardGems": 20,
     "rewardTitle": "Vétéran",
+    "rewardTitleEn": "Veteran",
     "sortOrder": 220
   },
   {
@@ -362,6 +373,7 @@
     "rewardCoins": 1000000,
     "rewardGems": 100,
     "rewardTitle": "Doyen du village",
+    "rewardTitleEn": "Village elder",
     "rewardBadge": "apex",
     "sortOrder": 230
   },
@@ -394,6 +406,7 @@
     "rewardCoins": 500000,
     "rewardGems": 80,
     "rewardTitle": "Increvable",
+    "rewardTitleEn": "Unstoppable",
     "rewardBadge": "streak_100",
     "sortOrder": 250
   },
@@ -411,6 +424,7 @@
     "rewardCoins": 40000,
     "rewardGems": 10,
     "rewardTitle": "Bon voisin",
+    "rewardTitleEn": "Good neighbour",
     "sortOrder": 260
   },
   {

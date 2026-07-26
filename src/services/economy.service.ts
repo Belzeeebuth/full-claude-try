@@ -84,8 +84,8 @@ export async function charge(input: PayInput, tx: Executor): Promise<number> {
     throw gameError(
       currency === 'coins' ? 'insufficient_funds' : 'insufficient_gems',
       currency === 'coins'
-        ? `Il vous manque ${missing.toLocaleString('fr-FR')} 🪙.`
-        : `Il vous manque ${missing.toLocaleString('fr-FR')} 💎.`,
+        ? `You are ${missing.toLocaleString('en-US')} 🪙 short.`
+        : `You are ${missing.toLocaleString('en-US')} 💎 short.`,
       { context: { required: input.amount, owned, missing } },
     );
   }
@@ -123,7 +123,7 @@ export async function bankStatus(userId: string): Promise<BankResult> {
     playerRepo.getBankAccount(userId),
     playerRepo.findUserById(userId),
   ]);
-  if (!account || !user) throw gameError('not_registered', 'Compte introuvable.');
+  if (!account || !user) throw gameError('not_registered', 'Account not found.');
   return {
     balance: account.balance,
     walletBalance: user.coins,
@@ -144,12 +144,12 @@ export async function deposit(userId: string, amount: number): Promise<BankResul
   return withTransaction(async (tx) => {
     await lockUserRow(tx, userId);
     const account = await economyRepo.lockBankAccount(tx, userId);
-    if (!account) throw gameError('not_registered', 'Compte bancaire introuvable.');
+    if (!account) throw gameError('not_registered', 'Bank account not found.');
 
     if (account.balance + amount > account.capacity) {
       throw gameError(
         'bank_capacity',
-        `Votre coffre ne peut contenir que ${account.capacity.toLocaleString('fr-FR')} 🪙.`,
+        `Your vault can only hold ${account.capacity.toLocaleString('en-US')} 🪙.`,
         { hint: 'Upgrade your bank with `/bank upgrade`.' },
       );
     }
@@ -177,13 +177,13 @@ export async function withdraw(userId: string, amount: number): Promise<BankResu
   return withTransaction(async (tx) => {
     await lockUserRow(tx, userId);
     const account = await economyRepo.lockBankAccount(tx, userId);
-    if (!account) throw gameError('not_registered', 'Compte bancaire introuvable.');
+    if (!account) throw gameError('not_registered', 'Bank account not found.');
 
     const balanceAfter = await economyRepo.updateBankBalance(userId, -amount, tx);
     if (balanceAfter === null) {
       throw gameError(
         'insufficient_funds',
-        `Votre coffre ne contient que ${account.balance.toLocaleString('fr-FR')} 🪙.`,
+        `Your vault only holds ${account.balance.toLocaleString('en-US')} 🪙.`,
       );
     }
 
@@ -203,7 +203,7 @@ export async function upgradeBank(userId: string, level: number): Promise<{ tier
   const balance = getBalance();
   return withTransaction(async (tx) => {
     const account = await economyRepo.lockBankAccount(tx, userId);
-    if (!account) throw gameError('not_registered', 'Compte bancaire introuvable.');
+    if (!account) throw gameError('not_registered', 'Bank account not found.');
 
     const nextTier = balance.bank.tiers.find((tier) => tier.tier === account.tier + 1);
     if (!nextTier) {
@@ -240,7 +240,7 @@ export async function gift(
 ): Promise<{ sent: number; tax: number; received: number }> {
   const balance = getBalance();
   if (amount <= 0) throw gameError('quantity_invalid', 'The amount must be positive.');
-  if (from.id === toUserId) throw gameError('target_invalid', 'Vous ne pouvez pas vous faire un don.');
+  if (from.id === toUserId) throw gameError('target_invalid', 'You cannot gift yourself.');
   if (from.level < balance.economy.giftMinLevel) {
     throw gameError(
       'level_too_low',
@@ -253,7 +253,7 @@ export async function gift(
   if (alreadyGifted + amount > balance.economy.giftDailyLimit) {
     throw gameError(
       'forbidden',
-      `Plafond de dons atteint : ${balance.economy.giftDailyLimit.toLocaleString('fr-FR')} 🪙 par 24 h ` +
+      `Gift cap reached: ${balance.economy.giftDailyLimit.toLocaleString('en-US')} 🪙 per 24 h ` +
         `(already gifted: ${alreadyGifted.toLocaleString('en-US')} 🪙).`,
     );
   }

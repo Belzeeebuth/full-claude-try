@@ -80,7 +80,7 @@ const acheter: Command = {
       embeds: [
         successEmbed(
           '🛒 Purchase complete',
-          `${result.quantity}× ${result.emoji} **${result.name}** pour **${
+          `${result.quantity}× ${result.emoji} **${result.name}** for **${
             result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)
           }**.\nStock restant : ${result.stockRemaining >= 999 ? 'unlimited' : result.stockRemaining}`,
         ),
@@ -141,7 +141,7 @@ const vendre: Command = {
     });
 
     const embed = successEmbed(
-      '💰 Vente conclue',
+      '💰 Sale completed',
       result.lines
         .map(
           (line) =>
@@ -270,7 +270,7 @@ export async function sendMarketChart(
       baseEmbed({
         title: `${item.emoji} ${item.name} — market`,
         description: [
-          `Prix actuel : **${formatNumber(row.price)} ${COIN}** ${trend.emoji} ${trend.label} (${formatPercent(row.trend)})`,
+          `Current price: **${formatNumber(row.price)} ${COIN}** ${trend.emoji} ${trend.label} (${formatPercent(row.trend)})`,
           `Base price: ${formatNumber(row.basePrice)} ${COIN}`,
           `Demand index: **${row.demandIndex.toFixed(2)}** ${row.demandIndex > 1 ? '(shortage — sell!)' : '(saturated — wait)'}`,
           `Next update ${discordTimestamp(row.nextUpdateAt, 'R')}`,
@@ -356,7 +356,7 @@ const objet: Command = {
       embeds: [
         baseEmbed({
           title: `${item.emoji} ${item.name}`,
-          description: item.description ?? '*Aucune description.*',
+          description: item.description ?? '*No description.*',
           color: COLORS.info,
           fields: [
             {
@@ -364,8 +364,8 @@ const objet: Command = {
               value: [
                 `Category: **${item.category}**`,
                 `Rarity: **${item.rarity}**`,
-                item.basePrice > 0 ? `Achat : **${formatNumber(item.basePrice)} ${COIN}**` : '',
-                item.sellable ? `Vente : **${formatNumber(price?.price ?? item.sellPrice)} ${COIN}**` : 'Non vendable',
+                item.basePrice > 0 ? `Buy: **${formatNumber(item.basePrice)} ${COIN}**` : '',
+                item.sellable ? `Sell: **${formatNumber(price?.price ?? item.sellPrice)} ${COIN}**` : 'Not sellable',
                 item.tradable ? 'Tradable ✅' : 'Not tradable ❌',
                 `You own: **${formatNumber(owned)}**`,
               ]
@@ -432,7 +432,7 @@ const utiliser: Command = {
     const item = inventoryService.requireItem(itemKey);
 
     if (!item.effect?.type) {
-      throw gameError('item_unknown', `${item.emoji} ${item.name} ne s'utilise pas directement.`);
+      throw gameError('item_unknown', `${item.emoji} ${item.name} cannot be used directly.`);
     }
 
     const { useConsumable } = await import('../services/consumable.service');
@@ -495,7 +495,7 @@ const jeter: Command = {
           action: 'discard',
           ownerId: interaction.user.id,
           params: [itemKey, quantity],
-          confirmLabel: 'Jeter',
+          confirmLabel: 'Discard',
           danger: true,
         }),
       ],
@@ -551,7 +551,7 @@ const banque: Command = {
         embeds: [
           successEmbed(
             sub === 'deposit' ? '🏦 Deposit complete' : '🏦 Withdrawal complete',
-            `Compte : **${formatCoins(result.balance)}** / ${formatCompact(result.capacity)}\nEn poche : **${formatCoins(result.walletBalance)}**`,
+            `Account: **${formatCoins(result.balance)}** / ${formatCompact(result.capacity)}\nIn hand: **${formatCoins(result.walletBalance)}**`,
           ),
         ],
       });
@@ -577,16 +577,16 @@ const banque: Command = {
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: '🏦 Banque de Val-Verdoyant',
+          title: '🏦 Greenvale bank',
           description: [
-            `Compte : **${formatCoins(status.balance)}** / ${formatCompact(status.capacity)}`,
+            `Account: **${formatCoins(status.balance)}** / ${formatCompact(status.capacity)}`,
             `En poche : **${formatCoins(status.walletBalance)}**`,
             `Interest: **${(status.interestRate * 100).toFixed(2)}%/day** (capped)`,
             '',
             "Money in the bank is protected and earns daily interest.",
             nextTier
               ? `\nNext tier: level ${nextTier.requiredLevel} required, ${formatCoins(nextTier.upgradeCost)} → capacity ${formatCompact(nextTier.capacity)}`
-              : '\n🏆 Palier maximum atteint.',
+              : '\n🏆 Maximum tier reached.',
           ].join('\n'),
           color: COLORS.gold,
         }),
@@ -614,9 +614,9 @@ const donner: Command = {
     const target = interaction.options.getUser('user', true);
     const amount = interaction.options.getInteger('amount', true);
 
-    if (target.bot) throw gameError('target_invalid', 'Les robots n\'ont pas de portefeuille.');
+    if (target.bot) throw gameError('target_invalid', 'Bots do not have a wallet.');
     const targetUser = await playerRepo.findUserByDiscordId(target.id);
-    if (!targetUser) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
+    if (!targetUser) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
 
     const result = await economyService.gift(context.player, targetUser.id, amount, {
       discordGuildId: context.discordGuildId,
@@ -627,7 +627,7 @@ const donner: Command = {
         successEmbed(
           '🎁 Gift sent',
           `${target} receives **${formatCoins(result.received)}**.\n` +
-            `*Taxe de transfert : ${formatCoins(result.tax)} (${(context.balance.economy.giftTaxRate * 100).toFixed(0)} %).*`,
+            `*Transfer tax: ${formatCoins(result.tax)} (${(context.balance.economy.giftTaxRate * 100).toFixed(0)} %).*`,
         ),
       ],
     });

@@ -226,18 +226,18 @@ export function breed(
     return { success: false, qualityMultiplier: 1, generation: 1, reason: 'species cannot breed' };
   }
   if (parentA.status.sick || parentB.status.sick) {
-    return { success: false, qualityMultiplier: 1, generation: 1, reason: 'animal malade' };
+    return { success: false, qualityMultiplier: 1, generation: 1, reason: 'sick animal' };
   }
   if (parentA.status.happiness < 50 || parentB.status.happiness < 50) {
     return {
       success: false,
       qualityMultiplier: 1,
       generation: 1,
-      reason: 'les deux animaux doivent avoir au moins 50 de bonheur',
+      reason: 'both animals must have at least 50 happiness',
     };
   }
   if (!rng.chance(balance.animals.breedingSuccessChance)) {
-    return { success: false, qualityMultiplier: 1, generation: 1, reason: 'tentative infructueuse' };
+    return { success: false, qualityMultiplier: 1, generation: 1, reason: 'failed attempt' };
   }
 
   const parentAverage = (parentA.qualityMultiplier + parentB.qualityMultiplier) / 2;
@@ -260,10 +260,10 @@ function describeMood(
   alive: boolean,
 ): string {
   if (!alive) return 'Deceased 🪦';
-  if (sick || health <= 25) return 'Malade 🤒';
+  if (sick || health <= 25) return 'Sick 🤒';
   if (hunger <= 10) return 'Hungry 🥺';
-  if (hunger <= 30) return 'A faim 😕';
-  if (happiness >= 80 && hunger >= 70) return 'Radieux 😄';
+  if (hunger <= 30) return 'Hungry 😕';
+  if (happiness >= 80 && hunger >= 70) return 'Radiant 😄';
   if (happiness >= 50) return 'Content 🙂';
   if (happiness >= 25) return 'Morose 😐';
   return 'Unhappy 😞';

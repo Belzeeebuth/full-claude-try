@@ -58,7 +58,7 @@ const tradeButtons: ButtonHandler = {
         }
 
         await replyEphemeral(interaction, {
-          embeds: [baseEmbed({ title: '📦 Quel objet proposer ?', color: COLORS.info })],
+          embeds: [baseEmbed({ title: '📦 Which item do you want to offer?', color: COLORS.info })],
           components: [
             selectRow(
               select({
@@ -103,7 +103,7 @@ const tradeButtons: ButtonHandler = {
             : result.trade.initiatorId;
         const partner = await playerRepo.findUserById(partnerId);
         await interaction.editReply(
-          await tradeView(context, result.trade, partner?.username ?? 'votre partenaire'),
+          await tradeView(context, result.trade, partner?.username ?? 'your partner'),
         );
         await interaction.followUp({
           content: '✅ Your confirmation is recorded. Waiting for your partner.',

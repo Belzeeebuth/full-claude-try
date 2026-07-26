@@ -185,7 +185,7 @@ export async function joinCoop(
     if (player.level < coop.joinRequirementLevel) {
       throw gameError(
         'level_too_low',
-        `${coop.name} demande le niveau ${coop.joinRequirementLevel}.`,
+        `${coop.name} requires level ${coop.joinRequirementLevel}.`,
       );
     }
 
@@ -208,7 +208,7 @@ export async function inviteMember(
 ): Promise<{ coopName: string }> {
   const membership = await requireMembership(player.id);
   if (!canManageMembers(membership.member.role as CoopRole)) {
-    throw gameError('coop_forbidden', 'Seuls les officiers et le chef peuvent inviter.');
+    throw gameError('coop_forbidden', 'Only officers and the leader can invite.');
   }
 
   return withTransaction(async (tx) => {
@@ -234,7 +234,7 @@ export async function leaveCoop(player: PlayerContext): Promise<{ coopName: stri
     if (membership.member.role === 'owner' && coop.memberCount > 1) {
       throw gameError(
         'coop_forbidden',
-        'En tant que chef, transmettez d\'abord la direction avec `/coop promote`.',
+        'As the leader, hand over the lead first with `/coop promote`.',
       );
     }
 
@@ -251,10 +251,10 @@ export async function kickMember(
   const membership = await requireMembership(player.id);
   const actorRole = membership.member.role as CoopRole;
   if (!canManageMembers(actorRole)) {
-    throw gameError('coop_forbidden', 'Seuls les officiers et le chef peuvent expulser.');
+    throw gameError('coop_forbidden', 'Only officers and the leader can kick.');
   }
   if (targetUserId === player.id) {
-    throw gameError('target_invalid', 'Utilisez `/coop leave` pour partir.');
+    throw gameError('target_invalid', 'Use `/coop leave` to go.');
   }
 
   return withTransaction(async (tx) => {
@@ -277,7 +277,7 @@ export async function promoteMember(
 ): Promise<{ role: CoopRole; roleLabel: string }> {
   const membership = await requireMembership(player.id);
   if (membership.member.role !== 'owner') {
-    throw gameError('coop_forbidden', 'Seul le chef peut changer les rangs.');
+    throw gameError('coop_forbidden', 'Only the leader can change ranks.');
   }
 
   return withTransaction(async (tx) => {
@@ -336,7 +336,7 @@ export async function contribute(
       coop.id,
       player.id,
       amount,
-      'Contribution volontaire',
+      'Voluntary contribution',
       tx,
     );
 
@@ -386,7 +386,7 @@ export async function withdrawTreasury(
       player.id,
       amount,
       'withdraw',
-      'Retrait',
+      'Withdrawal',
       tx,
     );
     if (treasury === null) {

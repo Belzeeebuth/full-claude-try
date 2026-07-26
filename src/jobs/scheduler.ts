@@ -102,7 +102,7 @@ async function startWithBullMq(): Promise<void> {
     QUEUE_NAME,
     async (job: Job<{ key: string }>) => {
       const definition = jobs.find((entry) => entry.key === job.data.key);
-      if (!definition) throw new Error(`job inconnu : ${job.data.key}`);
+      if (!definition) throw new Error(`unknown job: ${job.data.key}`);
       return runJob(definition);
     },
     { connection, prefix: QUEUE_PREFIX, concurrency: 2 },
@@ -168,7 +168,7 @@ async function runJob(definition: JobDefinition): Promise<string> {
 /** Déclenche un job à la demande (utile en exploitation). */
 export async function runJobNow(key: string): Promise<string> {
   const definition = jobs.find((entry) => entry.key === key);
-  if (!definition) throw new Error(`job inconnu : ${key}`);
+  if (!definition) throw new Error(`unknown job: ${key}`);
   return runJob(definition);
 }
 

@@ -201,8 +201,8 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
   });
 
   const embed = baseEmbed({
-    title: '🗺️ Vos parcelles',
-    description: lines.join('\n') || 'Aucune parcelle.',
+    title: '🗺️ Your plots',
+    description: lines.join('\n') || 'No plot.',
     color: COLORS.primary,
     fields: [
       {
@@ -280,7 +280,7 @@ export async function inventoryView(
   });
 
   const embed = baseEmbed({
-    title: `🎒 Inventaire de ${player.username}`,
+    title: `🎒 ${player.username}’s inventory`,
     description: lines.join('\n') || '*No item in this category.*',
     color: COLORS.info,
     fields: [
@@ -363,8 +363,8 @@ export async function shopView(context: CommandContext, category?: string): Prom
 
   const CATEGORY_TITLES: Record<string, string> = {
     daily: "✨ Today's deals",
-    seeds: '🌱 Graines',
-    supplies: '📦 Fournitures',
+    seeds: '🌱 Seeds',
+    supplies: '📦 Supplies',
   };
 
   const fields = [...grouped.entries()].map(([key, list]) => ({
@@ -380,7 +380,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
             : entry.stockRemaining <= 0
               ? ' — **sold out**'
               : ` — ${entry.stockRemaining} in stock`;
-        const level = entry.requiredLevel > player.level ? ` 🔒 niv. ${entry.requiredLevel}` : '';
+        const level = entry.requiredLevel > player.level ? ` 🔒 lv. ${entry.requiredLevel}` : '';
         return `${entry.emoji} **${entry.name}** — ${price}${discount}${stock}${level}`;
       })
       .join('\n'),
@@ -391,7 +391,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
     title: '🏪 Village shop',
     description: first
       ? `Stock refreshed ${discordTimestamp(first.expiresAt, 'R')}.\nUse \`/buy\` or the menu below.`
-      : 'La boutique est vide pour le moment.',
+      : 'The shop is empty for now.',
     color: COLORS.gold,
     fields,
   });
@@ -493,7 +493,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
           namespace: 'market',
           action: 'chart',
           ownerId: context.player.discordId,
-          placeholder: 'Voir le graphique d\'un produit',
+          placeholder: 'View a product\'s chart',
           choices: sorted.slice(0, 25).map((entry) => ({
             label: `${entry.name} — ${entry.price} 🪙`,
             value: entry.itemKey,
@@ -564,10 +564,10 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
   });
 
   const embed = baseEmbed({
-    title: `🐄 Cheptel de ${player.username}`,
+    title: `🐄 ${player.username}’s herd`,
     description:
       lines.join('\n\n') ||
-      "*Aucun animal.*\nConstruisez un poulailler avec `/buildings`, puis achetez une poule avec `/buy-animal`.",
+      "*No animal.*\nBuild a coop with `/buildings`, then buy a hen with `/buy-animal`.",
     color: herd.totals.readyToCollect > 0 ? COLORS.success : COLORS.primary,
     fields: [
       {
@@ -640,8 +640,8 @@ export async function questsView(
   const allSections: Array<{ key: 'daily' | 'weekly' | 'story' | 'contract'; title: string }> = [
     { key: 'daily', title: `📅 Daily — resets ${discordTimestamp(resets.daily, 'R')}` },
     { key: 'weekly', title: `🗓️ Weekly — resets ${discordTimestamp(resets.weekly, 'R')}` },
-    { key: 'story', title: '📖 Histoire du village' },
-    { key: 'contract', title: '📦 Contrats de livraison' },
+    { key: 'story', title: '📖 Village history' },
+    { key: 'contract', title: '📦 Delivery contracts' },
   ];
   const sections = allSections.filter((section) => !type || section.key === type);
 
@@ -817,12 +817,12 @@ export async function coopView(context: CommandContext): Promise<View> {
 
   const embed = baseEmbed({
     title: `${info.emblem} ${info.name} [${info.tag}]`,
-    description: info.description ?? '*Aucune description.*',
+    description: info.description ?? '*No description.*',
     color: COLORS.primary,
     fields: [
       {
         name: 'Progression',
-        value: `Niveau **${info.level}**\n${progressBar(info.xp, info.xpForNext || 1, 12)} ${formatCompact(info.xp)}/${formatCompact(info.xpForNext)}`,
+        value: `Level **${info.level}**\n${progressBar(info.xp, info.xpForNext || 1, 12)} ${formatCompact(info.xp)}/${formatCompact(info.xpForNext)}`,
         inline: true,
       },
       {
@@ -836,28 +836,28 @@ export async function coopView(context: CommandContext): Promise<View> {
         inline: true,
       },
       {
-        name: '🎁 Bonus collectifs',
+        name: '🎁 Collective bonuses',
         value: [
-          `🌱 Vitesse de pousse **+${(info.bonuses.growthSpeed * 100).toFixed(1)} %**`,
-          `💰 Prix de vente **+${(info.bonuses.sellBonus * 100).toFixed(1)} %**`,
+          `🌱 Growth speed **+${(info.bonuses.growthSpeed * 100).toFixed(1)} %**`,
+          `💰 Selling price **+${(info.bonuses.sellBonus * 100).toFixed(1)} %**`,
           `✨ XP **+${(info.bonuses.xpBonus * 100).toFixed(1)}%**`,
           `🥇 Quality **+${(info.bonuses.qualityBonus * 100).toFixed(1)}%**`,
         ].join('\n'),
         inline: false,
       },
       {
-        name: '🎯 Objectifs de la semaine',
+        name: '🎯 This week\'s goals',
         value:
           objectives
             .map(
               (objective) =>
                 `**${objective.title}** ${objective.status === 'completed' ? '✅' : ''}\n${progressBar(objective.progress, objective.target, 10)} ${formatCompact(objective.progress)}/${formatCompact(objective.target)} — ${formatCompact(objective.rewardCoins)} 🪙`,
             )
-            .join('\n') || 'Aucun objectif actif.',
+            .join('\n') || 'No active goal.',
         inline: false,
       },
       {
-        name: '👥 Meilleurs contributeurs',
+        name: '👥 Top contributors',
         value:
           members
             .slice(0, 5)
@@ -922,7 +922,7 @@ export async function productionView(context: CommandContext): Promise<View> {
               line.ready ? '✅ **ready**' : `⏳ ${discordTimestamp(line.finishAt, 'R')}`
             }\n   → ${line.outputQuantity}× ${line.outputName}`,
         )
-        .join('\n') || '*Aucune production en cours.* Lancez-en une avec `/craft`.',
+        .join('\n') || '*No production running.* Start one with `/craft`.',
     color: ready.length > 0 ? COLORS.success : COLORS.primary,
   });
 
@@ -934,7 +934,7 @@ export async function productionView(context: CommandContext): Promise<View> {
           namespace: 'craft',
           action: 'collect_all',
           ownerId: player.discordId,
-          label: `Tout collecter (${ready.length})`,
+          label: `Collect all (${ready.length})`,
           emoji: '📦',
           style: ButtonStyle.Success,
           disabled: ready.length === 0,
@@ -973,7 +973,7 @@ export async function buildingsView(context: CommandContext): Promise<View> {
   const CATEGORY_TITLES: Record<string, string> = {
     livestock: '🐄 Livestock',
     production: '🏭 Transformation',
-    storage: '📦 Stockage',
+    storage: '📦 Storage',
     utility: '🔧 Utilities',
   };
 
@@ -986,14 +986,14 @@ export async function buildingsView(context: CommandContext): Promise<View> {
       value: list
         .map((building) => {
           const state = building.owned
-            ? `palier **${building.tier}**/${building.maxTier}`
-            : '*non construit*';
+            ? `tier **${building.tier}**/${building.maxTier}`
+            : '*not built*';
           const next = building.nextTier
             ? ` → ${formatCompact(building.nextTier.costCoins)} 🪙${
                 building.nextTier.costItems.length > 0
                   ? ` + ${building.nextTier.costItems.map((cost) => `${cost.quantity}× ${cost.emoji}`).join(' ')}`
                   : ''
-              }${building.nextTier.requiredLevel > player.level ? ` 🔒 niv. ${building.nextTier.requiredLevel}` : ''}`
+              }${building.nextTier.requiredLevel > player.level ? ` 🔒 lv. ${building.nextTier.requiredLevel}` : ''}`
             : ' ✅ maximum';
           return `${building.emoji} **${building.name}** — ${state}${next}`;
         })
@@ -1015,7 +1015,7 @@ export async function buildingsView(context: CommandContext): Promise<View> {
           ownerId: player.discordId,
           placeholder: 'Build or upgrade',
           choices: upgradable.slice(0, 25).map((building) => ({
-            label: `${building.name} → palier ${building.nextTier!.tier}`,
+            label: `${building.name} → tier ${building.nextTier!.tier}`,
             value: building.key,
             emoji: building.emoji,
             description: `${formatCompact(building.nextTier!.costCoins)} coins`,

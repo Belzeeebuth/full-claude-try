@@ -120,7 +120,7 @@ export class CooldownError extends GameError {
     public readonly retryAt: Date,
     commandName: string,
   ) {
-    super('cooldown', `La commande \`/${commandName}\` est en temps de recharge.`, {
+    super('cooldown', `The \`/${commandName}\` command is on cooldown.`, {
       context: { retryAt: retryAt.toISOString(), commandName },
     });
     this.name = 'CooldownError';

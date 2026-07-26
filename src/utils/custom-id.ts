@@ -98,7 +98,7 @@ export function parseCustomId(raw: string): ParsedCustomId {
   }
   const [namespace, action, ownerId, ...params] = parts as [string, string, string, ...string[]];
   if (!namespace || !action || !ownerId) {
-    throw new CustomIdError(`custom_id incomplet : « ${raw} »`);
+    throw new CustomIdError(`incomplete custom_id: « ${raw} »`);
   }
   return { namespace, action, ownerId, params, raw };
 }

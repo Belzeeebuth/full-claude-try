@@ -143,8 +143,8 @@ const farmButtons: ButtonHandler = {
           await replyEphemeral(interaction, {
             embeds: [
               baseEmbed({
-                title: '🌱 Aucune graine',
-                description: 'Achetez-en avec `/shop` ou `/buy objet:seed_wheat`.',
+                title: '🌱 No seeds',
+                description: 'Buy some with `/shop` or `/buy item:seed_wheat`.',
                 color: COLORS.warning,
               }),
             ],
@@ -156,7 +156,7 @@ const farmButtons: ButtonHandler = {
         await replyEphemeral(interaction, {
           embeds: [
             baseEmbed({
-              title: '🌱 Que voulez-vous planter ?',
+              title: '🌱 What do you want to plant?',
               description: 'The chosen crop will be sown on every empty plot.',
               color: COLORS.primary,
             }),
@@ -230,7 +230,7 @@ const inventoryButtons: ButtonHandler = {
       await replyEphemeral(interaction, {
         embeds: [
           baseEmbed({
-            title: '💰 Vendre',
+            title: '💰 Sell',
             description:
               'Use `/sell item:… quantity:all` to sell to the village,\n' +
               'or `/auction sell` to offer your stack to other players (full price, 5% commission).',
@@ -290,7 +290,7 @@ const animalButtons: ButtonHandler = {
         await interaction.deferUpdate();
         const result = await animalService.collect(context.player, { all: true });
         const embed = successEmbed(
-          '🥚 Collecte',
+          '🥚 Collection',
           result.lines.map((line) => `${line.emoji} **${line.quantity}× ${line.itemName}**`).join('\n'),
         );
         appendTracking(embed, result.tracking);
@@ -302,7 +302,7 @@ const animalButtons: ButtonHandler = {
         await interaction.deferUpdate();
         const result = await animalService.feed(context.player, { all: true });
         await interaction.followUp({
-          embeds: [successEmbed('🌾 Repas servi', `**${result.fed}** animal(aux) nourri(s).`)],
+          embeds: [successEmbed('🌾 Meal served', `**${result.fed}** animal(s) fed.`)],
           flags: MessageFlags.Ephemeral,
         });
         await interaction.editReply(await animalsView(context));
@@ -325,7 +325,7 @@ const animalButtons: ButtonHandler = {
         }
         const { select, selectRow } = await import('../../framework/ui');
         await replyEphemeral(interaction, {
-          embeds: [baseEmbed({ title: '🤍 Qui voulez-vous caresser ?', color: COLORS.primary })],
+          embeds: [baseEmbed({ title: '🤍 Which one do you want to pet?', color: COLORS.primary })],
           components: [
             selectRow(
               select({
@@ -439,7 +439,7 @@ const passButtons: ButtonHandler = {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const pass = await progressionService.getSeasonPass(context.player.id);
     if (!pass) {
-      await interaction.editReply({ content: 'Aucun passe actif.' });
+      await interaction.editReply({ content: 'No active pass.' });
       return;
     }
 
@@ -462,7 +462,7 @@ const passButtons: ButtonHandler = {
       embeds: [
         successEmbed(
           `🎟️ ${claimed} tier(s) claimed`,
-          claimed > 0 ? `${formatCoins(coins)} • ${gems} 💎` : 'Aucun palier disponible.',
+          claimed > 0 ? `${formatCoins(coins)} • ${gems} 💎` : 'No tier available.',
         ),
       ],
     });
@@ -664,7 +664,7 @@ const prestigeButtons: ButtonHandler = {
         embeds: [
           baseEmbed({
             title: '↩️ Rebirth cancelled',
-            description: 'Votre ferme reste intacte.',
+            description: 'Your farm is untouched.',
             color: COLORS.neutral,
           }),
         ],
@@ -685,7 +685,7 @@ const prestigeButtons: ButtonHandler = {
             `Coins kept: **${formatCoins(result.coinsKept)}**`,
             `Prestige points gained: **${result.pointsGained}**`,
             '',
-            'Une nouvelle aventure commence. Bonne chance, fermier !',
+            'A new adventure begins. Good luck, farmer!',
           ].join('\n'),
         ),
       ],
@@ -737,7 +737,7 @@ const profileButtons: ButtonHandler = {
 
   async execute(interaction: ButtonInteraction, parsed): Promise<void> {
     await replyEphemeral(interaction, {
-      content: `Utilisez \`/stats utilisateur:<@${paramString(parsed, 0)}>\` for the full breakdown.`,
+      content: `Use \`/stats user:<@${paramString(parsed, 0)}>\` for the full breakdown.`,
     });
   },
 };
@@ -754,7 +754,7 @@ const langButtons: ButtonHandler = {
   async execute(interaction: ButtonInteraction, parsed, context): Promise<void> {
     const requested = paramString(parsed, 0);
     if (!isSupported(requested)) {
-      await replyEphemeral(interaction, { content: 'Langue inconnue. · Unknown language.' });
+      await replyEphemeral(interaction, { content: 'Unknown language.' });
       return;
     }
 

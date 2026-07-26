@@ -34,7 +34,7 @@ const crafter: Command = {
         successEmbed(
           `${result.emoji} ${result.recipeName} en production`,
           [
-            `Bâtiment : **${result.buildingName}** (emplacement ${result.slotIndex + 1})`,
+            `Building: **${result.buildingName}** (slot ${result.slotIndex + 1})`,
             `Quantity: **${result.quantity}** batch(es)`,
             `Ready ${discordTimestamp(result.finishAt, 'R')} (${discordTimestamp(result.finishAt, 't')})`,
             '',
@@ -54,7 +54,7 @@ const crafter: Command = {
     await interaction.respond(
       recipes.map((recipe) => ({
         name: truncate(
-          `${recipe.emoji} ${recipe.name} — ${Math.round(recipe.durationSeconds / 60)} min • niv. ${recipe.requiredLevel}`,
+          `${recipe.emoji} ${recipe.name} — ${Math.round(recipe.durationSeconds / 60)} min • lv. ${recipe.requiredLevel}`,
           100,
         ),
         value: recipe.key,
@@ -93,9 +93,9 @@ const recettes: Command = {
 
     const lines = recipes.slice(0, 20).map((entry) => {
       const lock = !entry.unlocked
-        ? `🔒 niv. ${entry.recipe.requiredLevel}`
+        ? `🔒 lv. ${entry.recipe.requiredLevel}`
         : !entry.hasBuilding
-          ? `🏗️ ${entry.building?.name ?? entry.recipe.buildingKey} requis`
+          ? `🏗️ ${entry.building?.name ?? entry.recipe.buildingKey} required`
           : entry.craftableCount > 0
             ? `✅ ${entry.craftableCount} craftable`
             : '⚠️ missing ingredients';
@@ -111,7 +111,7 @@ const recettes: Command = {
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: '📜 Recettes de transformation',
+          title: '📜 Processing recipes',
           description: lines.join('\n') || 'No recipe in this category.',
           color: COLORS.primary,
           footer: 'Processing roughly doubles the value of the ingredients — that is where the profit is.',
@@ -159,7 +159,7 @@ const batiments: Command = {
       await interaction.editReply({
         embeds: [
           successEmbed(
-            `${result.emoji} ${result.name} — ${result.built ? 'construit' : `palier ${result.tier}`}`,
+            `${result.emoji} ${result.name} — ${result.built ? 'built' : `tier ${result.tier}`}`,
             [
               `Cost: ${formatCoins(result.costCoins)}`,
               result.capacity > 0 ? `Capacity: **${formatNumber(result.capacity)}**` : '',

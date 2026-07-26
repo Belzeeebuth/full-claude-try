@@ -91,12 +91,12 @@ const hdv: Command = {
             successEmbed(
               '🔨 Listing posted',
               [
-                `Lot de **${result.quantity}** au prix de **${formatCoins(result.price)}**.`,
-                `Frais de mise en vente : ${formatCoins(result.fee)} (non remboursables).`,
+                `Lot of **${result.quantity}** priced at **${formatCoins(result.price)}**.`,
+                `Listing fee: ${formatCoins(result.fee)} (non-refundable).`,
                 `Expiration ${discordTimestamp(result.expiresAt, 'R')}.`,
                 `Sale commission: ${(context.balance.auction.commissionRate * 100).toFixed(0)}%.`,
                 '',
-                `Identifiant : \`${result.id}\``,
+                `Identifier: \`${result.id}\``,
               ].join('\n'),
             ),
           ],
@@ -111,8 +111,8 @@ const hdv: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '🛍️ Achat conclu',
-              `Vous recevez **${result.quantity}× ${result.emoji} ${result.itemName}** pour ${formatCoins(result.price)}.`,
+              '🛍️ Purchase completed',
+              `You receive **${result.quantity}× ${result.emoji} ${result.itemName}** for ${formatCoins(result.price)}.`,
             ),
           ],
         });
@@ -127,7 +127,7 @@ const hdv: Command = {
           embeds: [
             successEmbed(
               '↩️ Listing cancelled',
-              `**${result.quantity}× ${result.itemName}** sont de retour dans votre inventaire.\n*Les frais de mise en vente restent acquis au village.*`,
+              `**${result.quantity}× ${result.itemName}** are back in your inventory.\n*The listing fee stays with the village.*`,
             ),
           ],
         });
@@ -138,7 +138,7 @@ const hdv: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: '📜 Vos annonces',
+              title: '📜 Your listings',
               description:
                 listings
                   .map((entry) => {
@@ -152,7 +152,7 @@ const hdv: Command = {
                             : '↩️ cancelled';
                     return `${entry.itemEmoji} **${entry.listing.quantity}× ${entry.itemName}** — ${formatCoins(entry.listing.startPrice)} — ${status}\n\`${entry.listing.id}\``;
                   })
-                  .join('\n') || 'Aucune annonce.',
+                  .join('\n') || 'No listing.',
               color: COLORS.info,
             }),
           ],
@@ -204,14 +204,14 @@ export async function auctionListView(
             : `starting at **${formatCoins(listing.startPrice)}**`;
           const buyout = listing.buyoutPrice ? ` • buy now **${formatCoins(listing.buyoutPrice)}**` : '';
           return [
-            `${listing.itemEmoji} **${listing.quantity}× ${listing.itemName}**${qualityIcon(listing.quality)}${listing.isOwn ? ' *(votre annonce)*' : ''}`,
-            `   ${bid}${buyout} • vendeur : ${listing.sellerName} • expire ${discordTimestamp(listing.expiresAt, 'R')}`,
+            `${listing.itemEmoji} **${listing.quantity}× ${listing.itemName}**${qualityIcon(listing.quality)}${listing.isOwn ? ' *(your listing)*' : ''}`,
+            `   ${bid}${buyout} • seller: ${listing.sellerName} • expires ${discordTimestamp(listing.expiresAt, 'R')}`,
             `   \`${listing.id}\``,
           ].join('\n');
         })
-        .join('\n\n') || 'Aucune annonce en cours. Soyez le premier avec `/auction sell` !',
+        .join('\n\n') || 'No listing right now. Be the first with `/auction sell`!',
     color: COLORS.gold,
-    footer: `${result.total} annonce(s) • page ${result.page}/${result.totalPages}`,
+    footer: `${result.total} listing(s) • page ${result.page}/${result.totalPages}`,
   });
 
   const buyable = result.listings.filter((listing) => !listing.isOwn && listing.buyoutPrice);
@@ -226,12 +226,12 @@ export async function auctionListView(
                 namespace: 'hdv',
                 action: 'buy',
                 ownerId: context.player.discordId,
-                placeholder: 'Acheter une annonce',
+                placeholder: 'Buy a listing',
                 choices: buyable.map((listing) => ({
                   label: truncate(`${listing.quantity}× ${listing.itemName} — ${listing.buyoutPrice} 🪙`, 90),
                   value: listing.id,
                   emoji: listing.itemEmoji,
-                  description: `Vendeur : ${listing.sellerName}`,
+                  description: `Seller: ${listing.sellerName}`,
                 })),
               }),
             ),
@@ -266,10 +266,10 @@ const echange: Command = {
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     const target = interaction.options.getUser('user', true);
-    if (target.bot) throw gameError('target_invalid', 'Les robots ne troquent pas.');
+    if (target.bot) throw gameError('target_invalid', 'Bots do not trade.');
 
     const targetUser = await playerRepo.findUserByDiscordId(target.id);
-    if (!targetUser) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
+    if (!targetUser) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
 
     const trade = await tradeService.openTrade(context.player, targetUser.id);
     await interaction.editReply(await tradeView(context, trade, target.displayName));
@@ -292,25 +292,25 @@ export async function tradeView(
       coins > 0 ? `🪙 ${formatNumber(coins)} coins` : '',
     ]
       .filter(Boolean)
-      .join('\n') || '*rien pour le moment*';
+      .join('\n') || '*nothing yet*';
 
   return {
     embeds: [
       baseEmbed({
         title: `🤝 Trade with ${partnerName}`,
         description: [
-          '**Les deux joueurs doivent confirmer.** Toute modification annule les confirmations.',
+          '**Both players must confirm.** Any change cancels the confirmations.',
           `Expires ${discordTimestamp(trade.expiresAt, 'R')} • revision ${trade.revision}`,
         ].join('\n'),
         color: COLORS.info,
         fields: [
           {
-            name: `${trade.initiatorConfirmed && isInitiator ? '✅' : '⬜'} Votre offre`,
+            name: `${trade.initiatorConfirmed && isInitiator ? '✅' : '⬜'} Your offer`,
             value: format(mine, isInitiator ? trade.initiatorCoins : trade.partnerCoins),
             inline: true,
           },
           {
-            name: `${(isInitiator ? trade.partnerConfirmed : trade.initiatorConfirmed) ? '✅' : '⬜'} Offre de ${partnerName}`,
+            name: `${(isInitiator ? trade.partnerConfirmed : trade.initiatorConfirmed) ? '✅' : '⬜'} ${partnerName}’s offer`,
             value: format(theirs, isInitiator ? trade.partnerCoins : trade.initiatorCoins),
             inline: true,
           },
@@ -324,7 +324,7 @@ export async function tradeView(
           action: 'add_item',
           ownerId: context.player.discordId,
           params: [trade.id],
-          label: 'Ajouter un objet',
+          label: 'Add an item',
           emoji: '📦',
         }),
         button({
@@ -349,7 +349,7 @@ export async function tradeView(
           action: 'cancel',
           ownerId: context.player.discordId,
           params: [trade.id],
-          label: 'Annuler',
+          label: 'Cancel',
           emoji: '✖️',
           style: ButtonStyle.Danger,
         }),

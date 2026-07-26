@@ -197,6 +197,7 @@
         "weather": "sunny",
         "emoji": "☀️",
         "label": "Grand soleil",
+        "labelEn": "Clear skies",
         "weights": {
           "spring": 30,
           "summer": 40,
@@ -208,12 +209,14 @@
         "freeWatering": false,
         "damageChance": 0,
         "pestChance": 0.06,
-        "description": "Journée idéale : la pousse est légèrement accélérée."
+        "description": "Journée idéale : la pousse est légèrement accélérée.",
+        "descriptionEn": "A perfect day: growth is slightly accelerated."
       },
       {
         "weather": "cloudy",
         "emoji": "☁️",
         "label": "Nuageux",
+        "labelEn": "Cloudy",
         "weights": {
           "spring": 25,
           "summer": 20,
@@ -225,12 +228,14 @@
         "freeWatering": false,
         "damageChance": 0,
         "pestChance": 0.05,
-        "description": "Rien de particulier. La ferme tourne."
+        "description": "Rien de particulier. La ferme tourne.",
+        "descriptionEn": "Nothing special. The farm keeps running."
       },
       {
         "weather": "rainy",
         "emoji": "🌧️",
         "label": "Pluie",
+        "labelEn": "Rain",
         "weights": {
           "spring": 30,
           "summer": 15,
@@ -242,12 +247,14 @@
         "freeWatering": true,
         "damageChance": 0,
         "pestChance": 0.09,
-        "description": "Vos parcelles sont arrosées gratuitement, mais les limaces adorent."
+        "description": "Vos parcelles sont arrosées gratuitement, mais les limaces adorent.",
+        "descriptionEn": "Your plots are watered for free, but slugs love it."
       },
       {
         "weather": "storm",
         "emoji": "⛈️",
         "label": "Orage",
+        "labelEn": "Storm",
         "weights": {
           "spring": 10,
           "summer": 12,
@@ -259,12 +266,14 @@
         "freeWatering": true,
         "damageChance": 0.12,
         "pestChance": 0.04,
-        "description": "Arrosage gratuit, mais 12 % de risque de dégâts par parcelle."
+        "description": "Arrosage gratuit, mais 12 % de risque de dégâts par parcelle.",
+        "descriptionEn": "Free watering, but a 12% chance of damage per plot."
       },
       {
         "weather": "heatwave",
         "emoji": "🔥",
         "label": "Canicule",
+        "labelEn": "Heatwave",
         "weights": {
           "spring": 3,
           "summer": 13,
@@ -276,12 +285,14 @@
         "freeWatering": false,
         "damageChance": 0.08,
         "pestChance": 0.03,
-        "description": "Pousse accélérée mais deux fois plus d'eau nécessaire."
+        "description": "Pousse accélérée mais deux fois plus d'eau nécessaire.",
+        "descriptionEn": "Faster growth, but twice as much water needed."
       },
       {
         "weather": "frost",
         "emoji": "🥶",
         "label": "Gel",
+        "labelEn": "Frost",
         "weights": {
           "spring": 2,
           "summer": 0,
@@ -293,12 +304,14 @@
         "freeWatering": false,
         "damageChance": 0.15,
         "pestChance": 0.01,
-        "description": "Le gel ralentit tout et abîme les cultures fragiles."
+        "description": "Le gel ralentit tout et abîme les cultures fragiles.",
+        "descriptionEn": "Frost slows everything down and harms fragile crops."
       },
       {
         "weather": "snow",
         "emoji": "❄️",
         "label": "Neige",
+        "labelEn": "Snow",
         "weights": {
           "spring": 0,
           "summer": 0,
@@ -310,7 +323,8 @@
         "freeWatering": true,
         "damageChance": 0.05,
         "pestChance": 0.0,
-        "description": "Manteau neigeux : pousse lente, mais aucun nuisible."
+        "description": "Manteau neigeux : pousse lente, mais aucun nuisible.",
+        "descriptionEn": "A blanket of snow: slow growth, but no pests at all."
       }
     ],
     "heatwaveWaterMultiplier": 2

@@ -29,21 +29,21 @@ const meteo: Command = {
           color: weather.damageChance > 0 ? COLORS.warning : COLORS.info,
           fields: [
             {
-              name: 'Effets du jour',
+              name: 'Today\'s effects',
               value: [
-                `🌾 Rendement : **${formatPercent(weather.yieldModifier - 1)}**`,
-                `⏳ Vitesse de pousse : **${formatPercent(weather.growthModifier - 1)}**`,
-                weather.freeWatering ? '💧 **Arrosage gratuit** — inutile d\'utiliser `/water`' : '',
+                `🌾 Yield: **${formatPercent(weather.yieldModifier - 1)}**`,
+                `⏳ Growth speed: **${formatPercent(weather.growthModifier - 1)}**`,
+                weather.freeWatering ? '💧 **Free watering** — no need to use `/water`' : '',
                 weather.damageChance > 0
                   ? `⚠️ Damage risk: **${(weather.damageChance * 100).toFixed(0)}%** per plot`
                   : '',
-                `🐛 Risque de nuisibles : ${(weather.pestChance * 100).toFixed(0)} %`,
+                `🐛 Pest risk: ${(weather.pestChance * 100).toFixed(0)} %`,
               ]
                 .filter(Boolean)
                 .join('\n'),
             },
             {
-              name: 'Saison',
+              name: 'Season',
               value: `${SEASON_LABELS[world.season.season].emoji} **${SEASON_LABELS[world.season.season].name}** (an ${world.season.gameYear})\n${progressBar(world.season.progress * 100, 100, 12)} ${Math.round(world.season.progress * 100)} %`,
             },
           ],
@@ -82,15 +82,15 @@ const saison: Command = {
           title: `${SEASON_LABELS[current].emoji} ${SEASON_LABELS[current].name} — an ${world.season.gameYear}`,
           description: [
             `${progressBar(world.season.progress * 100, 100, 16)} ${Math.round(world.season.progress * 100)} %`,
-            `Prochaine saison : ${SEASON_LABELS[next.season].emoji} **${SEASON_LABELS[next.season].name}** ${discordTimestamp(next.startsAt, 'R')}`,
+            `Next season: ${SEASON_LABELS[next.season].emoji} **${SEASON_LABELS[next.season].name}** ${discordTimestamp(next.startsAt, 'R')}`,
             '',
-            `En saison : **+${(context.balance.seasons.inSeasonYieldBonus * 100).toFixed(0)} %** de rendement.`,
-            `Hors saison : **−${(context.balance.seasons.offSeasonYieldPenalty * 100).toFixed(0)} %** de rendement et pousse ralentie (la serre annule ce malus).`,
+            `In season: **+${(context.balance.seasons.inSeasonYieldBonus * 100).toFixed(0)} %** yield.`,
+            `Off season: **−${(context.balance.seasons.offSeasonYieldPenalty * 100).toFixed(0)} %** yield and slower growth (the greenhouse cancels this penalty).`,
           ].join('\n'),
           color: COLORS.primary,
           fields: [
             {
-              name: '✅ Cultures de saison',
+              name: '✅ Seasonal crops',
               value: truncate(
                 inSeason.map((crop) => `${crop.emoji} ${crop.name}`).join(' • ') || '—',
                 1000,
@@ -155,28 +155,28 @@ const evenement: Command = {
           color: COLORS.gold,
           fields: [
             {
-              name: 'Modificateurs actifs',
+              name: 'Active modifiers',
               value:
                 [
                   event.modifiers.xpMultiplier ? `✨ XP ×${event.modifiers.xpMultiplier}` : '',
                   event.modifiers.growthMultiplier
-                    ? `🌱 Vitesse de pousse ×${event.modifiers.growthMultiplier}`
+                    ? `🌱 Growth speed ×${event.modifiers.growthMultiplier}`
                     : '',
                   event.modifiers.globalPriceMultiplier
-                    ? `💰 Prix ×${event.modifiers.globalPriceMultiplier}`
+                    ? `💰 Prices ×${event.modifiers.globalPriceMultiplier}`
                     : '',
                   event.modifiers.mutationMultiplier
                     ? `🌈 Mutations ×${event.modifiers.mutationMultiplier}`
                     : '',
                   event.modifiers.waterMultiplier
-                    ? `💧 Besoin en eau ×${event.modifiers.waterMultiplier}`
+                    ? `💧 Water need ×${event.modifiers.waterMultiplier}`
                     : '',
                 ]
                   .filter(Boolean)
-                  .join('\n') || 'Aucun',
+                  .join('\n') || 'None',
             },
             {
-              name: 'Votre progression',
+              name: 'Your progress',
               value: `**${progress?.points ?? 0}** event point(s)`,
             },
             {
@@ -194,7 +194,7 @@ const evenement: Command = {
                       .join(' • ');
                     return `${claimed ? '✅' : (progress?.points ?? 0) >= tier.points ? '🎁' : '🔒'} **${tier.points} pts** — ${rewards}`;
                   })
-                  .join('\n') || 'Aucun palier.',
+                  .join('\n') || 'No tier.',
             },
           ],
         }),
@@ -242,7 +242,7 @@ const encyclopedie: Command = {
                       .slice(0, 5)
                       .map(
                         (crop) =>
-                          `${crop.emoji} **${crop.name}** — niv. ${crop.requiredLevel}, ${Math.round(crop.growthSeconds / 60)} min, ${crop.baseYield}× ${crop.sellPrice} 🪙`,
+                          `${crop.emoji} **${crop.name}** — lv. ${crop.requiredLevel}, ${Math.round(crop.growthSeconds / 60)} min, ${crop.baseYield}× ${crop.sellPrice} 🪙`,
                       )
                       .join('\n'),
                   },
@@ -251,12 +251,12 @@ const encyclopedie: Command = {
             ...(animals.length > 0
               ? [
                   {
-                    name: '🐄 Animaux',
+                    name: '🐄 Animals',
                     value: animals
                       .slice(0, 5)
                       .map(
                         (animal) =>
-                          `${animal.emoji} **${animal.name}** — niv. ${animal.requiredLevel}, ${animal.price} 🪙, produit ${animal.productQuantity}× toutes les ${Math.round(animal.productionSeconds / 60)} min`,
+                          `${animal.emoji} **${animal.name}** — lv. ${animal.requiredLevel}, ${animal.price} 🪙, produces ${animal.productQuantity}× every ${Math.round(animal.productionSeconds / 60)} min`,
                       )
                       .join('\n'),
                   },
@@ -265,7 +265,7 @@ const encyclopedie: Command = {
             ...(items.length > 0
               ? [
                   {
-                    name: '📦 Objets',
+                    name: '📦 Items',
                     value: items
                       .slice(0, 6)
                       .map((item) => `${item.emoji} **${item.name}** — ${item.description ?? item.category}`)
@@ -276,7 +276,7 @@ const encyclopedie: Command = {
             ...(recipes.length > 0
               ? [
                   {
-                    name: '🛠️ Recettes',
+                    name: '🛠️ Recipes',
                     value: recipes
                       .slice(0, 5)
                       .map(
@@ -290,7 +290,7 @@ const encyclopedie: Command = {
             ...(buildings.length > 0
               ? [
                   {
-                    name: '🏗️ Bâtiments',
+                    name: '🏗️ Buildings',
                     value: buildings
                       .slice(0, 5)
                       .map((building) => `${building.emoji} **${building.name}** — ${building.description ?? ''}`)

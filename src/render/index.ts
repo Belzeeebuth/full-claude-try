@@ -142,7 +142,7 @@ export async function renderFarmImage(input: FarmRenderInput): Promise<RenderOut
     ]),
   };
 
-  return render('farm', stateKey, 'ferme.png', () => renderFarm(input));
+  return render('farm', stateKey, 'farm.png', () => renderFarm(input));
 }
 
 export async function renderProfileImage(input: ProfileRenderInput): Promise<RenderOutcome> {

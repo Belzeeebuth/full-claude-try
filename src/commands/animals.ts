@@ -37,7 +37,7 @@ async function autocompleteOwnedAnimals(
       .slice(0, 25)
       .map((entry) => ({
         name: truncate(
-          `${entry.emoji} ${entry.animal.nickname ?? entry.name} — faim ${entry.animal.hunger}% • bonheur ${entry.animal.happiness}%`,
+          `${entry.emoji} ${entry.animal.nickname ?? entry.name} — hunger ${entry.animal.hunger}% • happiness ${entry.animal.happiness}%`,
           100,
         ),
         value: entry.animal.id,
@@ -85,7 +85,7 @@ const acheterAnimal: Command = {
       embeds: [
         successEmbed(
           `${result.emoji} ${result.quantity}× ${result.name}`,
-          `Achat conclu pour **${result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)}**.\n` +
+          `Purchase completed for **${result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)}**.\n` +
             'Feed them regularly with `/feed`: a hungry animal produces half as much.',
         ),
       ],
@@ -101,7 +101,7 @@ const acheterAnimal: Command = {
     await interaction.respond(
       animals.map((animal) => ({
         name: truncate(
-          `${animal.emoji} ${animal.name} — ${animal.price > 0 ? `${formatNumber(animal.price)} pièces` : `${animal.priceGems} gemmes`} • niv. ${animal.requiredLevel}`,
+          `${animal.emoji} ${animal.name} — ${animal.price > 0 ? `${formatNumber(animal.price)} coins` : `${animal.priceGems} gems`} • lv. ${animal.requiredLevel}`,
           100,
         ),
         value: animal.key,
@@ -131,8 +131,8 @@ const nourrir: Command = {
     const result = await animalService.feed(context.player, { animalId, all: !animalId });
 
     const embed = successEmbed(
-      '🌾 Repas servi',
-      `**${result.fed}** animal(aux) nourri(s).\nConsommé : ${result.consumed
+      '🌾 Meal served',
+      `**${result.fed}** animal(s) fed.\nConsumed: ${result.consumed
         .map((entry) => `${entry.quantity}× ${entry.itemKey}`)
         .join(', ')}`,
     );
@@ -164,7 +164,7 @@ const collecter: Command = {
     const result = await animalService.collect(context.player, { animalId, all: !animalId });
 
     const embed = successEmbed(
-      '🥚 Collecte',
+      '🥚 Collection',
       result.lines
         .map((line) => `${line.emoji} **${line.quantity}× ${line.itemName}** — ${line.name}`)
         .join('\n'),
@@ -172,7 +172,7 @@ const collecter: Command = {
     embed.addFields({
       name: 'Total',
       value: `**${formatNumber(result.totalQuantity)}** produit(s) • **${formatNumber(result.xpGained)}** ✨${
-        result.levelUp ? `\n🎉 Niveau **${result.levelUp.level}** atteint !` : ''
+        result.levelUp ? `\n🎉 Level **${result.levelUp.level}** reached!` : ''
       }`,
     });
     appendTracking(embed, result.tracking);
@@ -230,8 +230,8 @@ const caresser: Command = {
       interaction.options.getString('animal', true),
     );
     const embed = successEmbed(
-      `${result.emoji} ${result.name} est ravi !`,
-      `Bonheur **+${result.gain}** → ${gaugeBar(result.happiness, 8)} **${result.happiness}%**`,
+      `${result.emoji} ${result.name} is delighted!`,
+      `Happiness **+${result.gain}** → ${gaugeBar(result.happiness, 8)} **${result.happiness}%**`,
     );
     appendTracking(embed, result.tracking);
     await interaction.editReply({ embeds: [embed] });
@@ -277,7 +277,7 @@ const reproduire: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🍼 Naissance !',
+          '🍼 A birth!',
           [
             `A **generation ${result.generation}** calf was born.`,
             `Inherited production multiplier: **×${result.qualityMultiplier?.toFixed(3)}**`,
@@ -312,8 +312,8 @@ const vendreAnimal: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `${result.emoji} ${result.name} vendu`,
-          `Vous recevez **${formatCoins(result.price)}**.`,
+          `${result.emoji} ${result.name} sold`,
+          `You receive **${formatCoins(result.price)}**.`,
         ),
       ],
     });

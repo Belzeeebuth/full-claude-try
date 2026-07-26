@@ -133,7 +133,7 @@ export async function createListing(
     if (input.price < bounds.min || input.price > bounds.max) {
       throw gameError(
         'quantity_invalid',
-        `Prix hors bornes : entre ${bounds.min.toLocaleString('fr-FR')} et ${bounds.max.toLocaleString('fr-FR')} 🪙 pour ce lot.`,
+        `Price out of bounds: between ${bounds.min.toLocaleString('en-US')} and ${bounds.max.toLocaleString('en-US')} 🪙 for this lot.`,
         { hint: 'The bounds protect the market from absurd prices.' },
       );
     }
@@ -195,10 +195,10 @@ export async function buyout(
 
   return withTransaction(async (tx) => {
     const listing = await tradeRepo.lockListing(tx, listingId);
-    if (!listing) throw gameError('auction_not_found', 'Annonce introuvable.');
+    if (!listing) throw gameError('auction_not_found', 'Listing not found.');
     if (listing.status !== 'active') throw gameError('auction_not_found', 'This listing is closed.');
     if (listing.sellerId === player.id) {
-      throw gameError('auction_own_listing', 'Vous ne pouvez pas acheter votre propre annonce.');
+      throw gameError('auction_own_listing', 'You cannot buy your own listing.');
     }
     if (listing.buyoutPrice === null) {
       throw gameError('invalid_state', 'This listing is auction-only.');
@@ -298,7 +298,7 @@ export async function bid(
 
   return withTransaction(async (tx) => {
     const listing = await tradeRepo.lockListing(tx, listingId);
-    if (!listing) throw gameError('auction_not_found', 'Annonce introuvable.');
+    if (!listing) throw gameError('auction_not_found', 'Listing not found.');
     if (listing.status !== 'active') throw gameError('auction_not_found', 'Listing closed.');
     if (listing.sellerId === player.id) {
       throw gameError('auction_own_listing', 'You cannot bid on your own listing.');
@@ -311,7 +311,7 @@ export async function bid(
     if (amount < minimum) {
       throw gameError(
         'auction_bid_too_low',
-        `Mise minimale : ${minimum.toLocaleString('fr-FR')} 🪙.`,
+        `Minimum bid: ${minimum.toLocaleString('en-US')} 🪙.`,
       );
     }
 
@@ -600,12 +600,12 @@ export async function offerItem(
     const existing = await tradeRepo.listTradeItems(input.tradeId, tx);
     const mine = existing.filter((entry) => entry.item.userId === player.id);
     if (mine.length >= balance.trade.maxItemsPerSide) {
-      throw gameError('forbidden', `Maximum ${balance.trade.maxItemsPerSide} objets par joueur.`);
+      throw gameError('forbidden', `Maximum ${balance.trade.maxItemsPerSide} items per player.`);
     }
 
     const owned = await inventoryService.count(player.id, input.itemKey, tx);
     if (owned < input.quantity) {
-      throw gameError('insufficient_items', `Vous n'avez que ${owned}× ${item.name}.`);
+      throw gameError('insufficient_items', `You only have ${owned}× ${item.name}.`);
     }
 
     await tradeRepo.upsertTradeItem(
@@ -631,7 +631,7 @@ export async function offerCoins(
 ): Promise<TradeView> {
   const balance = getBalance();
   if (input.amount < 0 || input.amount > balance.trade.maxCoinsPerSide) {
-    throw gameError('quantity_invalid', 'Montant invalide.');
+    throw gameError('quantity_invalid', 'Invalid amount.');
   }
 
   return withTransaction(async (tx) => {

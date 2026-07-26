@@ -97,7 +97,7 @@ export async function effectiveUnitPrice(
   const config = getConfig();
   const balance = getBalance();
   const item = config.items.get(itemKey);
-  if (!item) throw gameError('item_unknown', `Objet inconnu : ${itemKey}`);
+  if (!item) throw gameError('item_unknown', `Unknown item: ${itemKey}`);
 
   const world = await getWorldState();
   const market = await economyRepo.getMarketPrice(itemKey, executor);
@@ -491,18 +491,18 @@ export async function buy(
     );
 
     if (!stock) {
-      throw gameError('not_found', `${item.emoji} ${item.name} n'est pas en vente aujourd'hui.`, {
+      throw gameError('not_found', `${item.emoji} ${item.name} is not on sale today.`, {
         hint: 'The shop changes every day at midnight UTC. Check `/shop`.',
         suggestedCommand: 'shop',
       });
     }
     if (player.level < stock.requiredLevel) {
-      throw gameError('level_too_low', `Cet article demande le niveau ${stock.requiredLevel}.`);
+      throw gameError('level_too_low', `This article requires level ${stock.requiredLevel}.`);
     }
     if (stock.perUserLimit > 0 && quantity > stock.perUserLimit) {
       throw gameError(
         'forbidden',
-        `Limite de ${stock.perUserLimit} exemplaire(s) par joueur pour cet article.`,
+        `Limit of ${stock.perUserLimit} unit(s) per player for this article.`,
       );
     }
 
@@ -510,7 +510,7 @@ export async function buy(
     if (!reserved) {
       throw gameError(
         'not_found',
-        `Stock insuffisant : il ne reste que ${stock.stockRemaining} exemplaire(s).`,
+        `Not enough stock: only ${stock.stockRemaining} unit(s) left.`,
       );
     }
 

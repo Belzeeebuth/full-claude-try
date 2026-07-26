@@ -60,8 +60,8 @@ async function handleInteraction(interaction: Interaction): Promise<void> {
     await replyEphemeral(interaction, {
       embeds: [
         warningEmbed(
-          'Doucement !',
-          `🚦 Vous envoyez trop de commandes. Réessayez dans ${Math.ceil(rate.resetInMs / 1000)} s.`,
+          'Slow down!',
+          `🚦 You are sending too many commands. Try again in ${Math.ceil(rate.resetInMs / 1000)} s.`,
         ),
       ],
     });
@@ -91,7 +91,7 @@ async function handleCommand(
   const command = getCommand(interaction.commandName);
   if (!command) {
     await replyEphemeral(interaction, {
-      embeds: [warningEmbed('Commande inconnue', 'Cette commande n\'existe plus. Réessayez plus tard.')],
+      embeds: [warningEmbed('Unknown command', 'This command no longer exists. Try again later.')],
     });
     return;
   }
@@ -102,7 +102,7 @@ async function handleCommand(
   try {
     if (!interaction.inGuild() && command.dmAllowed === false) {
       await replyEphemeral(interaction, {
-        embeds: [warningEmbed('Serveur requis', 'Cette commande ne fonctionne que dans un serveur.')],
+        embeds: [warningEmbed('Server required', 'This command only works inside a server.')],
       });
       return;
     }
@@ -120,7 +120,7 @@ async function handleCommand(
 
     if (command.adminOnly && !context.player.isAdmin) {
       await replyEphemeral(interaction, {
-        embeds: [warningEmbed('Accès refusé', 'Cette commande est réservée aux administrateurs du bot.')],
+        embeds: [warningEmbed('Access denied', 'This command is reserved for bot administrators.')],
       });
       return;
     }
@@ -181,8 +181,8 @@ async function handleComponent(
       await replyEphemeral(interaction, {
         embeds: [
           warningEmbed(
-            'Composant expiré',
-            'Ce message provient d\'une ancienne version du bot. Relancez la commande.',
+            'Component expired',
+            'This message comes from an older version of the bot. Run the command again.',
           ),
         ],
       });
@@ -204,7 +204,7 @@ async function handleComponent(
 
     if (handler.adminOnly && !context.player.isAdmin) {
       await replyEphemeral(interaction, {
-        embeds: [warningEmbed('Accès refusé', 'Action réservée aux administrateurs.')],
+        embeds: [warningEmbed('Access denied', 'Action reserved for administrators.')],
       });
       return;
     }

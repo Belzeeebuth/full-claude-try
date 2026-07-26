@@ -76,9 +76,9 @@ export async function reportIncident(
       .setTitle('🚨 Incident')
       .setDescription(`\`\`\`\n${truncate(normalized.message, 900)}\n\`\`\``)
       .addFields(
-        { name: 'Origine', value: context.command ?? 'inconnue', inline: true },
-        { name: 'Joueur', value: context.userId ? `<@${context.userId}>` : '—', inline: true },
-        { name: 'Serveur', value: context.guildId ?? 'MP', inline: true },
+        { name: 'Origin', value: context.command ?? 'unknown', inline: true },
+        { name: 'Player', value: context.userId ? `<@${context.userId}>` : '—', inline: true },
+        { name: 'Server', value: context.guildId ?? 'DM', inline: true },
         {
           name: 'Pile',
           value: `\`\`\`\n${truncate((normalized.stack ?? '').split('\n').slice(1, 6).join('\n'), 900)}\n\`\`\``,

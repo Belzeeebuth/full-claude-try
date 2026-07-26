@@ -431,11 +431,17 @@ function build(): GameConfig {
  */
 type Localizable = Record<string, unknown>;
 
-/** Remplace `name`/`title`/`description` par leur pendant anglais s'il existe. */
+/**
+ * Champs traduisibles. Chacun a un pendant `<champ>En` optionnel dans le JSON.
+ * `label` couvre la météo, `rewardTitle` les titres décernés par les succès.
+ */
+const LOCALIZED_FIELDS = ['name', 'title', 'label', 'description', 'rewardTitle'] as const;
+
+/** Remplace les champs traduisibles par leur pendant anglais s'il existe. */
 function localizeEntry<T>(entry: T): T {
   const source = entry as Localizable;
   const out: Localizable = { ...source };
-  for (const field of ['name', 'title', 'description'] as const) {
+  for (const field of LOCALIZED_FIELDS) {
     const translated = source[`${field}En`];
     if (typeof translated === 'string' && translated.length > 0) {
       out[field] = translated;
@@ -444,7 +450,7 @@ function localizeEntry<T>(entry: T): T {
   return out as T;
 }
 
-function localizeList<T extends { key: string }>(list: T[]): T[] {
+function localizeList<T>(list: T[]): T[] {
   return list.map(localizeEntry);
 }
 
@@ -458,9 +464,22 @@ function localizeConfig(config: GameConfig): GameConfig {
   const questList = localizeList(config.questList);
   const achievementList = localizeList(config.achievementList);
   const eventList = localizeList(config.eventList);
+  const seasonPasses = localizeList(config.seasonPasses);
+
+  // La météo vit dans `balance.json` et non dans une liste indexée : elle est
+  // traduite en place, en ne reconstruisant que la branche concernée.
+  const balance: Balance = {
+    ...config.balance,
+    weather: {
+      ...config.balance.weather,
+      table: localizeList(config.balance.weather.table),
+    },
+  };
 
   return {
     ...config,
+    balance,
+    seasonPasses,
     crops: indexBy(cropList),
     cropList,
     animals: indexBy(animalList),

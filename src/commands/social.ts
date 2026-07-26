@@ -112,7 +112,7 @@ const coop: Command = {
             successEmbed(
               `${info.emblem} ${info.name} [${info.tag}] founded!`,
               `Cost: ${formatCoins(context.balance.coop.creationCostCoins)}\n` +
-                `Invitez vos amis avec \`/coop invite\` et remplissez les objectifs hebdomadaires ensemble.`,
+                `Invite your friends with \`/coop invite\` and complete the weekly goals together.`,
             ),
           ],
         });
@@ -123,7 +123,7 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              `Bienvenue chez ${info.emblem} ${info.name} !`,
+              `Welcome to ${info.emblem} ${info.name}!`,
               `You immediately benefit from the level ${info.level} bonuses.`,
             ),
           ],
@@ -150,15 +150,15 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: `👥 Membres de ${membership.coop.name}`,
+              title: `👥 Members of ${membership.coop.name}`,
               description: members
                 .map(
                   (member, index) =>
-                    `${index + 1}. **${member.username}** — ${coopService.ROLE_LABELS[member.member.role as 'owner' | 'officer' | 'member']} • niv. ${member.level}\n     Contribution semaine : ${formatCoins(member.member.weeklyContribution, true)} • totale : ${formatCoins(member.member.contributedCoins, true)}`,
+                    `${index + 1}. **${member.username}** — ${coopService.ROLE_LABELS[member.member.role as 'owner' | 'officer' | 'member']} • lv. ${member.level}\n     Weekly contribution: ${formatCoins(member.member.weeklyContribution, true)} • total: ${formatCoins(member.member.contributedCoins, true)}`,
                 )
                 .join('\n'),
               color: COLORS.primary,
-              footer: `${members.length}/${membership.coop.memberLimit} membres`,
+              footer: `${members.length}/${membership.coop.memberLimit} members`,
             }),
           ],
         });
@@ -167,20 +167,20 @@ const coop: Command = {
       case 'invite': {
         const target = interaction.options.getUser('user', true);
         const targetUser = await playerRepo.findUserByDiscordId(target.id);
-        if (!targetUser) throw gameError('not_found', "Ce joueur n'a pas encore de ferme.");
+        if (!targetUser) throw gameError('not_found', "This player does not have a farm yet.");
         const result = await coopService.inviteMember(context.player, targetUser.id);
         await interaction.editReply({
-          embeds: [successEmbed('Invitation accepted', `${target} a rejoint **${result.coopName}**.`)],
+          embeds: [successEmbed('Invitation accepted', `${target} joined **${result.coopName}**.`)],
         });
         break;
       }
       case 'kick': {
         const target = interaction.options.getUser('user', true);
         const targetUser = await playerRepo.findUserByDiscordId(target.id);
-        if (!targetUser) throw gameError('not_found', 'Joueur introuvable.');
+        if (!targetUser) throw gameError('not_found', 'Player not found.');
         const result = await coopService.kickMember(context.player, targetUser.id);
         await interaction.editReply({
-          embeds: [successEmbed('Member kicked', `${target} ne fait plus partie de **${result.coopName}**.`)],
+          embeds: [successEmbed('Member kicked', `${target} is no longer part of **${result.coopName}**.`)],
         });
         break;
       }
@@ -188,7 +188,7 @@ const coop: Command = {
         const target = interaction.options.getUser('user', true);
         const role = interaction.options.getString('rank', true) as 'owner' | 'officer' | 'member';
         const targetUser = await playerRepo.findUserByDiscordId(target.id);
-        if (!targetUser) throw gameError('not_found', 'Joueur introuvable.');
+        if (!targetUser) throw gameError('not_found', 'Player not found.');
         const result = await coopService.promoteMember(context.player, targetUser.id, role);
         await interaction.editReply({
           embeds: [successEmbed('Rank changed', `${target} is now **${result.roleLabel}**.`)],
@@ -203,7 +203,7 @@ const coop: Command = {
             successEmbed(
               '💰 Contribution',
               `${formatCoins(amount)} paid in.\nTreasury: **${formatCoins(result.treasury)}**\n` +
-                `+${formatNumber(result.coopXp)} co-op XP${result.levelsGained > 0 ? ` — 🎉 **niveau ${result.level} atteint !**` : ''}`,
+                `+${formatNumber(result.coopXp)} co-op XP${result.levelsGained > 0 ? ` — 🎉 **level ${result.level} reached!**` : ''}`,
             ),
           ],
         });
@@ -216,7 +216,7 @@ const coop: Command = {
           embeds: [
             baseEmbed({
               title: `💰 ${info.name} treasury`,
-              description: `**${formatCoins(info.treasury)}**\n\nSeuls le chef et les officiers peuvent retirer.`,
+              description: `**${formatCoins(info.treasury)}**\n\nOnly the leader and officers can withdraw.`,
               color: COLORS.gold,
             }),
           ],
@@ -226,7 +226,7 @@ const coop: Command = {
                 namespace: 'coop',
                 action: 'contribute',
                 ownerId: context.player.discordId,
-                label: 'Contribuer',
+                label: 'Contribute',
                 emoji: '💰',
                 style: ButtonStyle.Success,
               }),
@@ -241,14 +241,14 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: `🎯 Objectifs de ${membership.coop.name}`,
+              title: `🎯 Goals of ${membership.coop.name}`,
               description:
                 objectives
                   .map(
                     (objective) =>
                       `**${objective.title}** ${objective.status === 'completed' ? '✅' : ''}\n${objective.description}\n${progressBar(Number(objective.progress), Number(objective.target), 12)} ${formatCompact(Number(objective.progress))}/${formatCompact(Number(objective.target))}\n🎁 ${formatCoins(objective.rewardCoins)} shared + ${objective.rewardGems} 💎 each`,
                   )
-                  .join('\n\n') || 'Aucun objectif cette semaine.',
+                  .join('\n\n') || 'No goal this week.',
               color: COLORS.primary,
             }),
           ],
@@ -360,12 +360,12 @@ export async function sendLeaderboard(
           (entry) =>
             `${entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `\`#${entry.rank}\``} **${entry.name}** — ${formatCompact(entry.score, context.locale)} ${meta.unit}`,
         )
-        .join('\n') || 'Aucun classement disponible.',
+        .join('\n') || 'No leaderboard available.',
     color: COLORS.gold,
     // Image laissée en pièce jointe libre, hors de l'embed : voir la note
     // détaillée dans `farmView` (src/framework/views.ts). Un embed rend
     // l'image à sa propre largeur (~400 px) ; celle-ci en fait 900 px.
-    footer: viewerRank ? `Votre rang : #${viewerRank.rank} • ${scopeLabel}` : scopeLabel,
+    footer: viewerRank ? `Your rank: #${viewerRank.rank} • ${scopeLabel}` : scopeLabel,
   });
 
   await interaction.editReply({
@@ -401,10 +401,10 @@ export async function visitFarm(
   context: CommandContext,
   target: User,
 ): Promise<void> {
-  if (target.bot) throw gameError('target_invalid', 'Les robots ne cultivent pas.');
+  if (target.bot) throw gameError('target_invalid', 'Bots do not farm.');
 
   const bundle = await playerRepo.loadPlayerBundle(target.id);
-  if (!bundle) throw gameError('not_found', `${target.displayName} n'a pas encore de ferme.`);
+  if (!bundle) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
   if (bundle.settings.privacy === 'private' && target.id !== interaction.user.id) {
     throw gameError('privacy_blocked', `${target.displayName} has made their farm private.`);
   }
@@ -460,7 +460,7 @@ export async function visitFarm(
                 action: 'help',
                 ownerId: interaction.user.id,
                 params: [target.id],
-                label: 'Aider (arroser ses parcelles)',
+                label: 'Help (water their plots)',
                 emoji: '🤝',
                 style: ButtonStyle.Success,
               }),
@@ -498,7 +498,7 @@ export async function helpFarmer(
   }
 
   const bundle = await playerRepo.loadPlayerBundle(targetDiscordId);
-  if (!bundle) throw gameError('not_found', `${targetName} n'a pas encore de ferme.`);
+  if (!bundle) throw gameError('not_found', `${targetName} does not have a farm yet.`);
 
   const helped = await farmService.helpFarmer(context.player, bundle.farm.id, bundle.user.id);
   const reward = await miscService.recordVisit(
@@ -541,12 +541,12 @@ const parrainage: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '🎟️ Parrainage',
+          title: '🎟️ Referrals',
           description: [
-            `Votre code : **\`${status.code}\`**`,
+            `Your code: **\`${status.code}\`**`,
             '',
             `A new player who runs \`/start code:${status.code}\` receives **${formatCoins(context.balance.social.referredStartBonusCoins)}** as a starting bonus.`,
-            `Lorsqu'il atteint le **niveau ${status.qualifyLevel}**, vous recevez **${formatCoins(status.rewardCoins)}** et **${status.rewardGems} 💎**.`,
+            `When they reach **level ${status.qualifyLevel}**, you receive **${formatCoins(status.rewardCoins)}** and **${status.rewardGems} 💎**.`,
             '',
             status.referredBy ? '✅ You were referred — thanks for growing the village!' : '',
           ]

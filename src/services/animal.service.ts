@@ -170,7 +170,7 @@ export async function buyAnimal(
   if (player.level < animalConfig.requiredLevel) {
     throw gameError(
       'level_too_low',
-      `${animalConfig.emoji} ${animalConfig.name} demande le niveau ${animalConfig.requiredLevel}.`,
+      `${animalConfig.emoji} ${animalConfig.name} requires level ${animalConfig.requiredLevel}.`,
     );
   }
 
@@ -187,7 +187,7 @@ export async function buyAnimal(
       throw gameError(
         'building_required',
         `You need a ${buildingConfig?.emoji ?? ''} ${buildingConfig?.name ?? animalConfig.buildingKey} to house this animal.`,
-        { hint: 'Construisez-le avec `/buildings`.', suggestedCommand: 'buildings' },
+        { hint: 'Build one with `/buildings`.', suggestedCommand: 'buildings' },
       );
     }
 
@@ -199,7 +199,7 @@ export async function buyAnimal(
     if (used + quantity > building.capacity) {
       throw gameError(
         'building_full',
-        `Votre ${buildingConfig?.name ?? 'bâtiment'} est plein (${used}/${building.capacity}).`,
+        `Your ${buildingConfig?.name ?? 'building'} is full (${used}/${building.capacity}).`,
         { hint: 'Upgrade it with `/buildings` or sell an animal.' },
       );
     }
@@ -287,7 +287,7 @@ export async function feed(
     });
 
     if (targets.length === 0) {
-      throw gameError('animal_not_hungry', "Aucun animal n'a faim pour le moment.");
+      throw gameError('animal_not_hungry', "No animal is hungry right now.");
     }
 
     const selected = input.all ? targets : targets.slice(0, 1);
@@ -379,7 +379,7 @@ export async function collect(
     });
 
     if (collectable.length === 0) {
-      throw gameError('animal_not_ready', 'Aucune production disponible.', {
+      throw gameError('animal_not_ready', 'No production available.', {
         hint: 'Feed your animals and come back later — a hungry animal produces half as much.',
         suggestedCommand: 'animals',
       });
@@ -494,7 +494,7 @@ export async function pet(
 
   return withTransaction(async (tx) => {
     const row = await animalRepo.lockAnimal(tx, animalId, player.id);
-    if (!row) throw gameError('animal_not_found', 'Animal introuvable.');
+    if (!row) throw gameError('animal_not_found', 'Animal not found.');
     if (!row.isAlive) throw gameError('animal_dead', 'This animal has died.');
 
     const animalConfig = config.animals.get(row.animalKey);
@@ -550,7 +550,7 @@ export async function heal(
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const row = await animalRepo.lockAnimal(tx, animalId, player.id);
-    if (!row) throw gameError('animal_not_found', 'Animal introuvable.');
+    if (!row) throw gameError('animal_not_found', 'Animal not found.');
     if (!row.isAlive) throw gameError('animal_dead', 'This animal has died.');
 
     const animalConfig = config.animals.get(row.animalKey);
@@ -558,7 +558,7 @@ export async function heal(
 
     const status = projectAnimal(toAnimalState(row), animalConfig, now, balance);
     if (!status.sick && status.health >= 95) {
-      throw gameError('invalid_state', `${animalConfig.name} est en pleine forme.`);
+      throw gameError('invalid_state', `${animalConfig.name} is in perfect shape.`);
     }
 
     const cost = vetCost(animalConfig, balance);
@@ -594,7 +594,7 @@ export async function sellAnimal(
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const row = await animalRepo.lockAnimal(tx, animalId, player.id);
-    if (!row) throw gameError('animal_not_found', 'Animal introuvable.');
+    if (!row) throw gameError('animal_not_found', 'Animal not found.');
     if (!row.isAlive) throw gameError('animal_dead', 'This animal has died.');
 
     const animalConfig = config.animals.get(row.animalKey);
@@ -632,7 +632,7 @@ export async function breed(
     const [firstId, secondId] = [input.animalAId, input.animalBId].sort();
     const first = await animalRepo.lockAnimal(tx, firstId!, player.id);
     const second = await animalRepo.lockAnimal(tx, secondId!, player.id);
-    if (!first || !second) throw gameError('animal_not_found', 'Animal introuvable.');
+    if (!first || !second) throw gameError('animal_not_found', 'Animal not found.');
     if (first.animalKey !== second.animalKey) {
       throw gameError('breeding_unavailable', 'Both animals must be of the same species.');
     }
@@ -640,7 +640,7 @@ export async function breed(
     const animalConfig = config.animals.get(first.animalKey);
     if (!animalConfig) throw gameError('animal_not_found', 'Unknown species.');
     if (!animalConfig.breedable) {
-      throw gameError('breeding_unavailable', `${animalConfig.name} ne se reproduit pas.`);
+      throw gameError('breeding_unavailable', `${animalConfig.name} does not breed.`);
     }
 
     for (const parent of [first, second]) {
@@ -656,7 +656,7 @@ export async function breed(
     const building = await animalRepo.getBuilding(player.farmId, animalConfig.buildingKey, tx);
     const used = await animalRepo.countAnimalsInBuilding(player.farmId, animalConfig.buildingKey, tx);
     if (!building || used + 1 > building.capacity) {
-      throw gameError('building_full', 'Aucune place libre pour le petit.');
+      throw gameError('building_full', 'No free space for the offspring.');
     }
 
     const cost = balance.animals.breedingCostCoins;

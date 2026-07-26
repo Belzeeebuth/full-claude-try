@@ -33,7 +33,7 @@ export const COLORS = {
   xp: 0x8e7cff,
 } as const;
 
-export const FOOTER = 'Harvester 🌾 Val-Verdoyant';
+export const FOOTER = 'Harvester 🌾 Greenvale';
 
 export function baseEmbed(options: {
   title?: string;
@@ -214,7 +214,7 @@ export function confirmRow(options: {
       action: options.action,
       ownerId: options.ownerId,
       params: ['no', ...(options.params ?? [])],
-      label: options.cancelLabel ?? 'Annuler',
+      label: options.cancelLabel ?? 'Cancel',
       emoji: '✖️',
       style: ButtonStyle.Secondary,
     }),
@@ -250,7 +250,7 @@ export function farmShortcutsRow(ownerId: string, options: {
       namespace: 'farm',
       action: 'plant_menu',
       ownerId,
-      label: 'Planter',
+      label: 'Plant',
       emoji: '🌱',
       disabled: options.canPlant === false,
     }),

@@ -69,7 +69,7 @@ export async function useConsumable(
   const item = inventoryService.requireItem(itemKey);
   const effect = item.effect;
   if (!effect?.type) {
-    throw gameError('item_unknown', `${item.name} ne s'utilise pas directement.`);
+    throw gameError('item_unknown', `${item.name} cannot be used directly.`);
   }
 
   return withTransaction(async (tx) => {
@@ -79,7 +79,7 @@ export async function useConsumable(
     switch (effect.type) {
       case 'energy': {
         const user = await playerRepo.findUserById(player.id, tx);
-        if (!user) throw gameError('not_registered', 'Joueur introuvable.');
+        if (!user) throw gameError('not_registered', 'Player not found.');
         const projection = projectEnergy(
           { energy: user.energy, energyMax: user.energyMax, energyUpdatedAt: user.energyUpdatedAt },
           new Date(),
@@ -122,13 +122,13 @@ export async function useConsumable(
         );
         const label =
           effect.type === 'xp_boost'
-            ? `+${Math.round(((effect.multiplier ?? 1) - 1) * 100)} % d'XP`
+            ? `+${Math.round(((effect.multiplier ?? 1) - 1) * 100)} % XP`
             : effect.type === 'growth_boost'
-              ? `×${effect.multiplier ?? 1} de vitesse de pousse`
+              ? `×${effect.multiplier ?? 1} growth speed`
               : `+${Math.round((effect.bonus ?? 0) * 100)} % de chance`;
         return {
           consumed: quantity,
-          message: `✨ Bonus actif : **${label}** pendant ${Math.round(duration / 60)} minutes.`,
+          message: `✨ Bonus active: **${label}** for ${Math.round(duration / 60)} minutes.`,
         };
       }
 
@@ -141,7 +141,7 @@ export async function useConsumable(
         );
         return {
           consumed: quantity,
-          message: `🪤 Aucun nuisible sur votre ferme pendant ${Math.round(duration / 3_600)} h.`,
+          message: `🪤 No pest on your farm for ${Math.round(duration / 3_600)} h.`,
         };
       }
 
@@ -158,7 +158,7 @@ export async function useConsumable(
         );
         return {
           consumed: quantity,
-          message: `🧯 **${infested.length}** parcelle(s) assainie(s).`,
+          message: `🧯 **${infested.length}** plot(s) cleared.`,
         };
       }
 
@@ -198,7 +198,7 @@ export async function useConsumable(
       case 'fertilizer':
         throw gameError(
           'invalid_state',
-          `${item.emoji} ${item.name} s'applique avec \`/fertilize\`, pas avec \`/use\`.`,
+          `${item.emoji} ${item.name} is applied with \`/fertilize\`, not with \`/use\`.`,
           { suggestedCommand: 'farm' },
         );
 
@@ -210,7 +210,7 @@ export async function useConsumable(
         );
 
       default:
-        throw gameError('item_unknown', `Effet inconnu pour ${item.name}.`);
+        throw gameError('item_unknown', `Unknown effect for ${item.name}.`);
     }
   });
 }

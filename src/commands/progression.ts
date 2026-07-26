@@ -77,7 +77,7 @@ const rerollQuete: Command = {
             '',
             `**${result.newQuest.title}**`,
             result.newQuest.description,
-            `Objectif : 0/${result.newQuest.required}`,
+            `Goal: 0/${result.newQuest.required}`,
           ].join('\n'),
         ),
       ],
@@ -153,7 +153,7 @@ const succes: Command = {
           title: '🏆 Achievements',
           description: lines.join('\n') || 'No achievement in this category.',
           color: COLORS.gold,
-          footer: `${unlocked.length}/${achievements.length} unlocked${claimable.length > 0 ? ` • ${claimable.length} récompense(s) à réclamer` : ''}`,
+          footer: `${unlocked.length}/${achievements.length} unlocked${claimable.length > 0 ? ` • ${claimable.length} reward(s) to claim` : ''}`,
         }),
       ],
       components:
@@ -191,8 +191,8 @@ const passe: Command = {
       await interaction.editReply({
         embeds: [
           baseEmbed({
-            title: '🎟️ Passe saisonnier',
-            description: 'Aucun passe actif pour le moment. Le prochain arrive au changement de saison !',
+            title: '🎟️ Season pass',
+            description: 'No active pass right now. The next one arrives when the season changes!',
             color: COLORS.info,
           }),
         ],
@@ -205,7 +205,7 @@ const passe: Command = {
       .slice(0, 3)
       .map((tier) => {
         const free = tier.free as { coins?: number; gems?: number; items?: Array<{ itemKey: string; quantity: number }> };
-        return `**Palier ${tier.tier}** — ${[
+        return `**Tier ${tier.tier}** — ${[
           free.coins ? `${formatCompact(free.coins)} 🪙` : '',
           free.gems ? `${free.gems} 💎` : '',
           free.items ? describeItems(free.items) : '',
@@ -223,9 +223,9 @@ const passe: Command = {
         baseEmbed({
           title: `🎟️ ${pass.name}`,
           description: [
-            `Palier **${pass.tier}**/${pass.maxTier}`,
+            `Tier **${pass.tier}**/${pass.maxTier}`,
             `${progressBar(pass.passXp % pass.xpPerTier, pass.xpPerTier, 14)} ${formatNumber(pass.passXp % pass.xpPerTier)}/${formatNumber(pass.xpPerTier)} XP de passe`,
-            `Fin de saison ${discordTimestamp(pass.endsAt, 'R')}`,
+            `Season ends ${discordTimestamp(pass.endsAt, 'R')}`,
             '',
             pass.premium
               ? '⭐ **Premium track unlocked** (thanks for voting!)'
@@ -237,10 +237,10 @@ const passe: Command = {
               name: '🎁 To claim',
               value:
                 claimable.length > 0
-                  ? `**${claimable.length}** palier(s) disponible(s)`
-                  : 'Aucun palier en attente.',
+                  ? `**${claimable.length}** tier(s) available`
+                  : 'No tier pending.',
             },
-            { name: '⏭️ Prochains paliers', value: nextTiers.join('\n') || 'Pass completed 🏆' },
+            { name: '⏭️ Next tiers', value: nextTiers.join('\n') || 'Pass completed 🏆' },
           ],
         }),
       ],
@@ -307,7 +307,7 @@ const daily: Command = {
             namespace: 'farm',
             action: 'refresh',
             ownerId: interaction.user.id,
-            label: 'Ma ferme',
+            label: 'My farm',
             emoji: '🌾',
           }),
         ),
@@ -331,22 +331,22 @@ const vote: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '🗳️ Votez pour Harvester',
+          title: '🗳️ Vote for Harvester',
           description: [
-            `Chaque vote vous rapporte **${info.rewardGems} 💎** et **${formatCoins(info.rewardCoins)}**.`,
+            `Each vote earns you **${info.rewardGems} 💎** and **${formatCoins(info.rewardCoins)}**.`,
             `On weekends, rewards are **×${info.weekendMultiplier}**.`,
-            `Vous pouvez voter toutes les **${info.cooldownHours} h**.`,
+            `You can vote every **${info.cooldownHours} h**.`,
             '',
             cooldown.active
-              ? `⏳ Prochain vote possible ${discordTimestamp(cooldown.retryAt, 'R')}`
-              : '✅ Vous pouvez voter maintenant !',
+              ? `⏳ Next vote available ${discordTimestamp(cooldown.retryAt, 'R')}`
+              : '✅ You can vote now!',
             '',
             '*Gems cannot be bought with real money: voting is the fastest way to get them.*',
           ].join('\n'),
           color: COLORS.info,
         }),
       ],
-      components: [row(linkButton('Voter sur top.gg', info.url, '🗳️'))],
+      components: [row(linkButton('Vote on top.gg', info.url, '🗳️'))],
       flags: MessageFlags.Ephemeral,
     });
   },

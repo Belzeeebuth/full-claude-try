@@ -211,7 +211,7 @@
     "limit_reached": "You have reached the purchase limit for this item."
   },
   "market": {
-    "title": "📊 Val-Verdoyant market",
+    "title": "📊 Greenvale market",
     "next_update": "Next update {when}",
     "sold": "💰 Sold {quantity}× {emoji} {item} for {total} 🪙 (tax: {tax} 🪙)",
     "not_sellable": "{item} cannot be sold.",

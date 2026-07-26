@@ -129,7 +129,7 @@ const admin: Command = {
           namespace: 'admin',
           action: 'announce',
           ownerId: interaction.user.id,
-          title: 'Annonce globale',
+          title: 'Global announcement',
           fieldId: 'message',
           label: 'Message to broadcast',
           placeholder: 'The Christmas market is now open!',
@@ -222,7 +222,7 @@ const admin: Command = {
             successEmbed(
               enabled ? '🛠️ Maintenance enabled' : '✅ Maintenance disabled',
               enabled
-                ? 'Seuls les administrateurs peuvent utiliser le bot.'
+                ? 'Only bot administrators can use this bot.'
                 : 'The bot is available to everyone again.',
             ),
           ],
@@ -260,15 +260,15 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: '📊 Tableau de bord Harvester',
+              title: '📊 Harvester dashboard',
               color: COLORS.info,
               fields: [
                 {
-                  name: '👥 Joueurs',
+                  name: '👥 Players',
                   value: [
                     `Total : **${formatNumber(stats.counts.users)}**`,
-                    `Actifs 24 h : **${formatNumber(stats.counts.activeToday)}**`,
-                    `Serveurs : **${formatNumber(stats.counts.guilds)}**`,
+                    `Active 24 h: **${formatNumber(stats.counts.activeToday)}**`,
+                    `Servers: **${formatNumber(stats.counts.guilds)}**`,
                   ].join('\n'),
                   inline: true,
                 },
@@ -276,7 +276,7 @@ const admin: Command = {
                   name: '💰 Economy',
                   value: [
                     `Money supply: **${formatCompact(stats.economy.snapshot?.totalCoins ?? 0)}** 🪙`,
-                    `En banque : **${formatCompact(stats.economy.snapshot?.totalBankCoins ?? 0)}**`,
+                    `In the bank: **${formatCompact(stats.economy.snapshot?.totalBankCoins ?? 0)}**`,
                     `Inflation 24 h : **${formatPercent(stats.economy.inflationRate)}**`,
                   ].join('\n'),
                   inline: true,
@@ -285,7 +285,7 @@ const admin: Command = {
                   name: '⚙️ Configuration',
                   value: [
                     `Loaded: ${discordTimestamp(stats.config.loadedAt, 'R')}`,
-                    `${stats.config.crops} cultures • ${stats.config.items} objets`,
+                    `${stats.config.crops} crops • ${stats.config.items} items`,
                   ].join('\n'),
                   inline: true,
                 },
@@ -296,7 +296,7 @@ const admin: Command = {
                       .sort((a, b) => Math.abs(b.total) - Math.abs(a.total))
                       .slice(0, 8)
                       .map((flow) => `${flow.total > 0 ? '➕' : '➖'} \`${flow.type}\` ${formatCompact(Math.abs(flow.total))}`)
-                      .join('\n') || 'Aucun mouvement.',
+                      .join('\n') || 'No movement.',
                   inline: false,
                 },
                 {
@@ -305,7 +305,7 @@ const admin: Command = {
                     stats.tasks
                       .slice(0, 6)
                       .map((task) => `\`${task.taskKey}\` — ${task.status} • ${discordTimestamp(task.runAt, 'R')}`)
-                      .join('\n') || 'Aucune tâche.',
+                      .join('\n') || 'No jobs.',
                   inline: false,
                 },
                 ...(incidents.length > 0
@@ -335,10 +335,10 @@ const admin: Command = {
               title: `🔍 ${result.target.username}`,
               description: [
                 `ID : \`${result.target.id}\``,
-                `Niveau **${result.target.level}** • ${formatCoins(result.target.coins)} • ${result.target.gems} 💎`,
+                `Level **${result.target.level}** • ${formatCoins(result.target.coins)} • ${result.target.gems} 💎`,
                 `Score de suspicion : **${result.target.suspicionScore}**`,
                 result.target.ecoBannedUntil
-                  ? `🚫 Banni jusqu'au ${discordTimestamp(result.target.ecoBannedUntil, 'F')}`
+                  ? `🚫 Banned until ${discordTimestamp(result.target.ecoBannedUntil, 'F')}`
                   : '',
               ]
                 .filter(Boolean)
@@ -346,7 +346,7 @@ const admin: Command = {
               color: result.target.suspicionScore > 50 ? COLORS.warning : COLORS.info,
               fields: [
                 {
-                  name: "Journal d'audit",
+                  name: "Audit log",
                   value:
                     result.logs
                       .map((entry) => `\`${entry.action}\` — ${discordTimestamp(entry.createdAt, 'R')}`)
@@ -362,7 +362,7 @@ const admin: Command = {
                         (entry) =>
                           `${entry.amount > 0 ? '➕' : '➖'} ${formatCompact(Math.abs(entry.amount))} \`${entry.type}\``,
                       )
-                      .join('\n') || 'Aucune transaction.',
+                      .join('\n') || 'No transactions.',
                   inline: true,
                 },
               ],
@@ -379,7 +379,7 @@ const admin: Command = {
           embeds: [
             successEmbed(
               '📈 Market updated',
-              `${updated} prices recalculated.\n${audit.length === 0 ? '✅ No ledger drift detected.' : `⚠️ **${audit.length} écart(s) comptable(s)** — voir les logs.`}`,
+              `${updated} prices recalculated.\n${audit.length === 0 ? '✅ No ledger drift detected.' : `⚠️ **${audit.length} ledger drift(s)** — see the logs.`}`,
             ),
           ],
         });
@@ -387,7 +387,7 @@ const admin: Command = {
       }
 
       default:
-        await interaction.editReply({ content: 'Sous-commande inconnue.' });
+        await interaction.editReply({ content: 'Unknown subcommand.' });
     }
   },
 };

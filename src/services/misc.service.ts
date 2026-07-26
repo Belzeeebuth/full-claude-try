@@ -177,7 +177,7 @@ export async function doPrestige(player: PlayerContext): Promise<{
   const balance = getBalance();
   const { eligibility, plan, unlockedPlots } = await previewPrestige(player);
   if (!eligibility.eligible) {
-    throw gameError('level_too_low', eligibility.reason ?? 'Prestige indisponible.');
+    throw gameError('level_too_low', eligibility.reason ?? 'Prestige unavailable.');
   }
 
   return withTransaction(async (tx) => {
@@ -408,7 +408,7 @@ export async function adminGrant(
   remove = false,
 ): Promise<{ targetId: string; applied: number }> {
   const target = await playerRepo.findUserByDiscordId(input.targetDiscordId);
-  if (!target) throw gameError('not_found', 'Joueur introuvable.');
+  if (!target) throw gameError('not_found', 'Player not found.');
   const amount = Math.abs(Math.floor(input.amount));
 
   return withTransaction(async (tx) => {
@@ -471,7 +471,7 @@ export async function adminGrant(
         break;
       }
       default:
-        throw gameError('target_invalid', 'Ressource inconnue.');
+        throw gameError('target_invalid', 'Unknown resource.');
     }
 
     await systemRepo.audit(
@@ -500,7 +500,7 @@ export async function adminEcoBan(
   reason: string,
 ): Promise<{ until: Date }> {
   const target = await playerRepo.findUserByDiscordId(targetDiscordId);
-  if (!target) throw gameError('not_found', 'Joueur introuvable.');
+  if (!target) throw gameError('not_found', 'Player not found.');
   const until = new Date(Date.now() + Math.max(1, durationHours) * 3_600_000);
 
   await playerRepo.setEcoBan(target.id, until, reason);
@@ -525,7 +525,7 @@ export async function adminResetPlayer(
   reason: string,
 ): Promise<void> {
   const target = await playerRepo.findUserByDiscordId(targetDiscordId);
-  if (!target) throw gameError('not_found', 'Joueur introuvable.');
+  if (!target) throw gameError('not_found', 'Player not found.');
 
   await withTransaction(async (tx) => {
     const schema = await import('../db/schema');
@@ -608,7 +608,7 @@ export async function adminLookup(targetDiscordId: string, limit = 15) {
     playerRepo.findUserByDiscordId(targetDiscordId),
     systemRepo.listAuditForTarget(targetDiscordId, limit),
   ]);
-  if (!target) throw gameError('not_found', 'Joueur introuvable.');
+  if (!target) throw gameError('not_found', 'Player not found.');
   const transactions = await economyRepo.listTransactions(target.id, limit);
   return { target, logs, transactions };
 }

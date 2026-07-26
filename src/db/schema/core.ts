@@ -169,7 +169,7 @@ export const farms = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    name: varchar('name', { length: 48 }).notNull().default('Ma ferme'),
+    name: varchar('name', { length: 48 }).notNull().default('My farm'),
     /** Taille de la grille débloquée : 3x3 au départ, 8x8 au maximum. */
     gridWidth: smallint('grid_width').notNull().default(3),
     gridHeight: smallint('grid_height').notNull().default(3),

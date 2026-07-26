@@ -220,7 +220,7 @@ export async function grantXp(
 ): Promise<XpGainResult> {
   const balance = getBalance();
   const user = await playerRepo.findUserById(userId, tx);
-  if (!user) throw gameError('not_registered', 'Joueur introuvable.');
+  if (!user) throw gameError('not_registered', 'Player not found.');
 
   const result = addXp({ level: user.level, xp: user.xp }, amount, balance);
   await playerRepo.setLevelAndXp(
@@ -289,7 +289,7 @@ export async function getEnergy(
   executor: Executor = getDb(),
 ): Promise<EnergyProjection> {
   const user = await playerRepo.findUserById(userId, executor);
-  if (!user) throw gameError('not_registered', 'Joueur introuvable.');
+  if (!user) throw gameError('not_registered', 'Player not found.');
   return projectEnergy(
     { energy: user.energy, energyMax: user.energyMax, energyUpdatedAt: user.energyUpdatedAt },
     now,
@@ -317,7 +317,7 @@ export async function consumeEnergy(
   if (!hasEnergy(projection, cost)) {
     throw gameError(
       'insufficient_energy',
-      `Il vous faut ${cost} ⚡ (vous avez ${projection.current}).`,
+      `You need ${cost} ⚡ (you have ${projection.current}).`,
       {
         hint: `Energy regenerates ${balance.energy.regenPerMinute} point/minute. An energy drink restores ${50}.`,
         context: { cost, current: projection.current },
@@ -486,7 +486,7 @@ export function assertNotEcoBanned(player: PlayerContext, now: Date = new Date()
 /** Vérifie un niveau requis et lève une erreur explicite sinon. */
 export function assertLevel(player: { level: number }, required: number, what: string): void {
   if (player.level < required) {
-    throw gameError('level_too_low', `${what} demande le niveau ${required}.`, {
+    throw gameError('level_too_low', `${what} requires level ${required}.`, {
       hint: `You are level ${player.level}. Harvest and complete quests to progress.`,
       context: { required, current: player.level },
     });

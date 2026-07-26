@@ -212,7 +212,7 @@ export async function replyError(
   const report = classifyError(error, context);
   const embed = isGameError(error)
     ? warningEmbed('Action impossible', report.userMessage)
-    : errorEmbed('Oups', report.userMessage);
+    : errorEmbed('Oops', report.userMessage);
 
   const components =
     isGameError(error) && error.suggestedCommand

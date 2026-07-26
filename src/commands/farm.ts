@@ -116,7 +116,7 @@ const planter: Command = {
       [
         `**${result.slots.length}** plot(s) planted: ${result.slots.map((value) => `\`${value}\``).join(' ')}`,
         `🌱 Harvest ${discordTimestamp(result.readyAt, 'R')} (${discordTimestamp(result.readyAt, 't')})`,
-        result.waterNeeded > 0 ? `💧 ${result.waterNeeded} arrosage(s) attendu(s)` : '',
+        result.waterNeeded > 0 ? `💧 ${result.waterNeeded} watering(s) expected` : '',
         result.offSeason
           ? '⚠️ *Out of season: slower growth and reduced yield. A greenhouse would cancel this penalty.*'
           : '',
@@ -139,7 +139,7 @@ const planter: Command = {
     await interaction.respond(
       crops.map((entry) => ({
         name: truncate(
-          `${entry.crop.emoji} ${entry.crop.name} — ${entry.owned} graine(s), ${Math.round(entry.crop.growthSeconds / 60)} min`,
+          `${entry.crop.emoji} ${entry.crop.name} — ${entry.owned} seed(s), ${Math.round(entry.crop.growthSeconds / 60)} min`,
           100,
         ),
         value: entry.crop.key,
@@ -182,7 +182,7 @@ export function buildHarvestEmbed(summary: farmService.HarvestSummary) {
     const quality =
       plot.result.quality === 'normal' ? '' : ` ${qualityIcon(plot.result.quality)} ${qualityLabel(plot.result.quality)}`;
     const mutation = plot.result.mutation === 'none' ? '' : ` ${mutationIcon(plot.result.mutation)} **${plot.result.mutation}**`;
-    const regrow = plot.regrew && plot.nextReadyAt ? ` 🔁 repousse ${discordTimestamp(plot.nextReadyAt, 'R')}` : '';
+    const regrow = plot.regrew && plot.nextReadyAt ? ` 🔁 regrows ${discordTimestamp(plot.nextReadyAt, 'R')}` : '';
     return `\`${String(plot.slot).padStart(2, ' ')}\` ${plot.emoji} **${plot.result.quantity}× ${plot.cropName}**${quality}${mutation} — ~${formatCoins(plot.result.totalValue, true)}${regrow}`;
   });
 
@@ -206,7 +206,7 @@ export function buildHarvestEmbed(summary: farmService.HarvestSummary) {
   }
   if (summary.seedsRecovered.length > 0) {
     embed.addFields({
-      name: '🫧 Grainerie',
+      name: '🫧 Seed store',
       value: summary.seedsRecovered
         .map((seed) => `${seed.quantity}× ${seed.itemKey.replace('seed_', '')}`)
         .join(', '),
@@ -252,7 +252,7 @@ const arroser: Command = {
       await interaction.editReply({
         embeds: [
           baseEmbed({
-            title: '🌧️ Il pleut !',
+            title: '🌧️ It is raining!',
             description:
               'All your plots are watered for free today. Save your energy.',
             color: COLORS.info,
@@ -263,8 +263,8 @@ const arroser: Command = {
     }
 
     const embed = successEmbed(
-      '💧 Arrosage',
-      `**${result.watered}** plot(s) watered.${result.toolPlots > 1 ? `\n*Votre arrosoir couvre ${result.toolPlots} parcelles par action.*` : ''}`,
+      '💧 Watering',
+      `**${result.watered}** plot(s) watered.${result.toolPlots > 1 ? `\n*Your watering can covers ${result.toolPlots} plots per action.*` : ''}`,
     );
     appendTracking(embed, result.tracking);
     await interaction.editReply({ embeds: [embed] });
@@ -304,7 +304,7 @@ const fertiliser: Command = {
 
     const result = await farmService.fertilize(context.player, { fertilizerKey, slot, all: !slot });
     const embed = successEmbed(
-      '🧪 Fertilisation',
+      '🧪 Fertilizing',
       `${result.fertilizer} applied to **${result.slots.length}** plot(s).\nSoil fertility: **${result.fertilityAfter}%**`,
     );
     appendTracking(embed, result.tracking);
@@ -403,11 +403,11 @@ const acheterParcelle: Command = {
     const result = await farmService.buyPlot(context.player);
 
     const embed = successEmbed(
-      '🗺️ Nouvelle parcelle !',
+      '🗺️ New plot!',
       [
         `Plot **${result.slot}** unlocked for ${formatCoins(result.cost)}.`,
         `Your farm is now **${result.grid.width}×${result.grid.height}** (${result.unlockedPlots} plots).`,
-        result.nextCost > 0 ? `Prochaine parcelle : ${formatCoins(result.nextCost)}` : '🏆 Domaine complet !',
+        result.nextCost > 0 ? `Next plot: ${formatCoins(result.nextCost)}` : '🏆 Estate complete!',
       ].join('\n'),
     );
     appendTracking(embed, result.tracking);
@@ -468,8 +468,8 @@ const cultures: Command = {
       const perHour = Math.round((profit / crop.growthSeconds) * 3_600);
       const locked = crop.requiredLevel > context.player.level ? '🔒 ' : '';
       return [
-        `${locked}${crop.emoji} **${crop.name}** — ${rarityLabel(crop.rarity)} • niv. ${crop.requiredLevel}`,
-        `   🌱 ${formatNumber(crop.seedPrice)} ${COIN} → 🧺 ${crop.baseYield}× ${formatNumber(crop.sellPrice)} ${COIN} • ⏳ ${formatDuration(crop.growthSeconds * 1000)} • **~${formatNumber(perHour)} ${COIN}/h/parcelle**${crop.regrowCycles > 0 ? ` • 🔁 ${crop.regrowCycles}` : ''}`,
+        `${locked}${crop.emoji} **${crop.name}** — ${rarityLabel(crop.rarity)} • lv. ${crop.requiredLevel}`,
+        `   🌱 ${formatNumber(crop.seedPrice)} ${COIN} → 🧺 ${crop.baseYield}× ${formatNumber(crop.sellPrice)} ${COIN} • ⏳ ${formatDuration(crop.growthSeconds * 1000)} • **~${formatNumber(perHour)} ${COIN}/h/plot**${crop.regrowCycles > 0 ? ` • 🔁 ${crop.regrowCycles}` : ''}`,
       ].join('\n');
     });
 

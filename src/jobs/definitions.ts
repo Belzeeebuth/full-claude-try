@@ -66,7 +66,7 @@ export const jobs: JobDefinition[] = [
     description: 'Generates the daily shop',
     async run() {
       const entries = await marketService.rotateShop();
-      return `${entries} articles en boutique`;
+      return `${entries} shop articles`;
     },
   },
 
@@ -119,8 +119,8 @@ export const jobs: JobDefinition[] = [
           await systemRepo.enqueueNotification({
             userId: candidate.userId,
             type: 'crop_withering',
-            title: '🐛 Nuisibles !',
-            body: `Pests are attacking your plot ${candidate.slot}. Use \`/treat plot:${candidate.slot}\` avant ${balance.pests.deadlineHours} h.`,
+            title: '🐛 Pests!',
+            body: `Pests are attacking your plot ${candidate.slot}. Use \`/treat plot:${candidate.slot}\` within ${balance.pests.deadlineHours} h.`,
             dedupeKey: `pest:${candidate.plotId}:${toSqlDate(new Date())}`,
           });
         }
@@ -243,7 +243,7 @@ export const jobs: JobDefinition[] = [
           await systemRepo.enqueueNotification({
             userId: row.animal.userId,
             type: 'animal_sick',
-            title: '🪦 Un animal est mort',
+            title: '🪦 An animal has died',
             body: `Your ${row.name} did not survive the neglect. Feed your animals with \`/feed\`.`,
             dedupeKey: `death:${row.animal.id}`,
           });
@@ -263,7 +263,7 @@ export const jobs: JobDefinition[] = [
           const enqueued = await systemRepo.enqueueNotification({
             userId: row.animal.userId,
             type: 'animal_hungry',
-            title: '🍽️ Vos animaux ont faim',
+            title: '🍽️ Your animals are hungry',
             body: `Your ${row.name} is hungry (${status.hunger}%). A hungry animal produces half as much.`,
             dedupeKey: `hungry:${row.animal.id}:${toSqlDate(now)}`,
           });
@@ -390,7 +390,7 @@ export const jobs: JobDefinition[] = [
       );
       const stacks = await inventoryRepo.pruneEmptyStacks();
       const locks = pruneMemoryLocks() + pruneMemory();
-      return `${history} points d'historique, ${shop} lignes de boutique, ${stacks} piles vides, ${locks} verrous`;
+      return `${history} history points, ${shop} shop rows, ${stacks} empty stacks, ${locks} locks`;
     },
   },
 ];

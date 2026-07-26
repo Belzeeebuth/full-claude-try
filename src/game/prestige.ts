@@ -45,7 +45,7 @@ export function checkPrestigeEligibility(
       currentLevel: user.level,
       currentPrestige: user.prestige,
       maxPrestige: balance.prestige.maxPrestige,
-      reason: `Vous avez atteint le nombre maximum de renaissances (${balance.prestige.maxPrestige}).`,
+      reason: `You have reached the maximum number of rebirths (${balance.prestige.maxPrestige}).`,
     };
   }
   if (user.level < requiredLevel) {

@@ -112,9 +112,9 @@ export function canActOn(actor: CoopRole, target: CoopRole): boolean {
 }
 
 export const ROLE_LABELS: Record<CoopRole, string> = {
-  owner: 'Chef',
-  officer: 'Officier',
-  member: 'Membre',
+  owner: 'Leader',
+  officer: 'Officer',
+  member: 'Member',
 };
 
 /**
@@ -136,7 +136,7 @@ export interface CoopObjectiveTemplate {
 export const COOP_OBJECTIVE_TEMPLATES: readonly CoopObjectiveTemplate[] = [
   {
     objectiveKey: 'harvest_total',
-    title: 'Moisson collective',
+    title: 'Collective harvest',
     description: 'Harvest {target} units across all members.',
     basePerMember: 120,
     rewardCoinsPerMember: 4000,
@@ -154,8 +154,8 @@ export const COOP_OBJECTIVE_TEMPLATES: readonly CoopObjectiveTemplate[] = [
   },
   {
     objectiveKey: 'collect_total',
-    title: 'Grande traite',
-    description: 'Collectez {target} productions animales.',
+    title: 'Great milking',
+    description: 'Collect {target} animal productions.',
     basePerMember: 50,
     rewardCoinsPerMember: 3500,
     rewardGems: 2,
@@ -172,8 +172,8 @@ export const COOP_OBJECTIVE_TEMPLATES: readonly CoopObjectiveTemplate[] = [
   },
   {
     objectiveKey: 'help_total',
-    title: 'Entraide',
-    description: 'Aidez {target} fois des fermiers, membres ou non.',
+    title: 'Mutual aid',
+    description: 'Help {target} farmers, members or not.',
     basePerMember: 8,
     rewardCoinsPerMember: 3000,
     rewardGems: 2,
@@ -181,7 +181,7 @@ export const COOP_OBJECTIVE_TEMPLATES: readonly CoopObjectiveTemplate[] = [
   },
   {
     objectiveKey: 'treasury_total',
-    title: 'Caisse commune',
+    title: 'Common treasury',
     description: 'Pay {target} coins into the treasury.',
     basePerMember: 25000,
     rewardCoinsPerMember: 2500,

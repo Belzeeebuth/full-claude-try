@@ -10,10 +10,10 @@ import type { Rng } from './rng';
 export type PestType = 'crows' | 'insects' | 'fungus' | 'mole';
 
 export const PEST_LABELS: Record<PestType, { name: string; emoji: string; hint: string }> = {
-  crows: { name: 'Corbeaux', emoji: '🐦‍⬛', hint: 'A scarecrow would keep them away.' },
-  insects: { name: 'Insectes', emoji: '🐛', hint: 'Un traitement bio suffit.' },
-  fungus: { name: 'Mildiou', emoji: '🍄', hint: 'Traitez vite, il se propage.' },
-  mole: { name: 'Taupe', emoji: '🦫', hint: 'Elle ruine les racines en profondeur.' },
+  crows: { name: 'Crows', emoji: '🐦‍⬛', hint: 'A scarecrow would keep them away.' },
+  insects: { name: 'Insects', emoji: '🐛', hint: 'An organic treatment is enough.' },
+  fungus: { name: 'Blight', emoji: '🍄', hint: 'Treat it fast, it spreads.' },
+  mole: { name: 'Mole', emoji: '🦫', hint: 'It ruins the roots deep down.' },
 };
 
 /**
@@ -131,9 +131,9 @@ export function applyFertilizer(
 
 /** Libellé d'état d'une parcelle pour l'affichage. */
 export function describeFertility(fertility: number, balance: Balance): string {
-  if (fertility >= 85) return 'Excellente';
-  if (fertility >= balance.fertility.start) return 'Bonne';
-  if (fertility >= balance.fertility.lowThreshold) return 'Moyenne';
+  if (fertility >= 85) return 'Excellent';
+  if (fertility >= balance.fertility.start) return 'Good';
+  if (fertility >= balance.fertility.lowThreshold) return 'Average';
   if (fertility > 0) return 'Depleted';
   return 'Barren';
 }

@@ -27,7 +27,7 @@ const PAGE_SIZE = 10;
 export function requireItem(itemKey: string): ItemConfig {
   const item = getConfig().items.get(itemKey);
   if (!item || !item.enabled) {
-    throw gameError('item_unknown', `Objet inconnu : \`${itemKey}\`.`);
+    throw gameError('item_unknown', `Unknown item: \`${itemKey}\`.`);
   }
   return item;
 }
@@ -126,7 +126,7 @@ export async function removeExact(
     const owned = await inventoryRepo.countItem(userId, key.itemKey, tx);
     throw gameError(
       'insufficient_items',
-      `Il vous faut ${quantity}× ${item.emoji} ${item.name} (vous en avez ${owned}).`,
+      `You need ${quantity}× ${item.emoji} ${item.name} (you have ${owned}).`,
       { context: { itemKey: key.itemKey, quantity, owned } },
     );
   }
@@ -149,7 +149,7 @@ export async function consume(
     const owned = await inventoryRepo.countItem(userId, itemKey, tx);
     throw gameError(
       'insufficient_items',
-      `Il vous faut ${quantity}× ${item.emoji} ${item.name} (vous en avez ${owned}).`,
+      `You need ${quantity}× ${item.emoji} ${item.name} (you have ${owned}).`,
       { context: { itemKey, quantity, owned } },
     );
   }

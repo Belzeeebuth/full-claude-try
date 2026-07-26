@@ -30,13 +30,13 @@ export class MoneyError extends Error {
 /** Valide qu'une valeur est un montant utilisable (entier, fini, dans les bornes). */
 export function assertMoney(value: number, label = 'montant'): number {
   if (!Number.isFinite(value)) {
-    throw new MoneyError(`${label} non fini : ${value}`);
+    throw new MoneyError(`${label} not finite: ${value}`);
   }
   if (!Number.isInteger(value)) {
-    throw new MoneyError(`${label} non entier : ${value}`);
+    throw new MoneyError(`${label} not an integer: ${value}`);
   }
   if (Math.abs(value) > MAX_MONEY) {
-    throw new MoneyError(`${label} hors bornes : ${value}`);
+    throw new MoneyError(`${label} out of bounds: ${value}`);
   }
   return value;
 }
@@ -48,7 +48,7 @@ export function assertMoney(value: number, label = 'montant'): number {
  */
 export function scaleMoney(amount: number, multiplier: number): number {
   if (!Number.isFinite(multiplier) || multiplier < 0) {
-    throw new MoneyError(`multiplicateur invalide : ${multiplier}`);
+    throw new MoneyError(`invalid multiplier: ${multiplier}`);
   }
   return assertMoney(Math.floor(amount * multiplier));
 }
