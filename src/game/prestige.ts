@@ -30,7 +30,12 @@ export interface PrestigeEligibility {
   currentLevel: number;
   currentPrestige: number;
   maxPrestige: number;
-  reason?: string;
+  /**
+   * Clé de traduction expliquant l'inéligibilité (jamais de texte en dur ici :
+   * cette fonction est pure et ignore tout de la locale du joueur).
+   */
+  reasonKey?: string;
+  reasonParams?: Record<string, string | number>;
 }
 
 export function checkPrestigeEligibility(
@@ -45,7 +50,8 @@ export function checkPrestigeEligibility(
       currentLevel: user.level,
       currentPrestige: user.prestige,
       maxPrestige: balance.prestige.maxPrestige,
-      reason: `You have reached the maximum number of rebirths (${balance.prestige.maxPrestige}).`,
+      reasonKey: 'errors.player.prestige_max',
+      reasonParams: { max: balance.prestige.maxPrestige },
     };
   }
   if (user.level < requiredLevel) {
@@ -55,7 +61,8 @@ export function checkPrestigeEligibility(
       currentLevel: user.level,
       currentPrestige: user.prestige,
       maxPrestige: balance.prestige.maxPrestige,
-      reason: `Prestige requires level ${requiredLevel} (you are level ${user.level}).`,
+      reasonKey: 'errors.player.prestige_level',
+      reasonParams: { level: requiredLevel, current: user.level },
     };
   }
   return {

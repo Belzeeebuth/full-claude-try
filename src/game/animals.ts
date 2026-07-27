@@ -206,7 +206,9 @@ export interface BreedingResult {
   /** Multiplicateur de production hérité par le petit. */
   qualityMultiplier: number;
   generation: number;
-  reason?: string;
+  /** Clé de traduction de l'échec (fonction pure : jamais de texte en dur). */
+  reasonKey?: string;
+  reasonParams?: Record<string, string | number>;
 }
 
 /**
@@ -223,21 +225,37 @@ export function breed(
   rng: Rng,
 ): BreedingResult {
   if (!config.breedable) {
-    return { success: false, qualityMultiplier: 1, generation: 1, reason: 'species cannot breed' };
+    return {
+      success: false,
+      qualityMultiplier: 1,
+      generation: 1,
+      reasonKey: 'errors.animal.cannot_breed',
+      reasonParams: { name: config.name },
+    };
   }
   if (parentA.status.sick || parentB.status.sick) {
-    return { success: false, qualityMultiplier: 1, generation: 1, reason: 'sick animal' };
+    return {
+      success: false,
+      qualityMultiplier: 1,
+      generation: 1,
+      reasonKey: 'errors.animal.breed_sick',
+    };
   }
   if (parentA.status.happiness < 50 || parentB.status.happiness < 50) {
     return {
       success: false,
       qualityMultiplier: 1,
       generation: 1,
-      reason: 'both animals must have at least 50 happiness',
+      reasonKey: 'errors.animal.breed_unhappy',
     };
   }
   if (!rng.chance(balance.animals.breedingSuccessChance)) {
-    return { success: false, qualityMultiplier: 1, generation: 1, reason: 'failed attempt' };
+    return {
+      success: false,
+      qualityMultiplier: 1,
+      generation: 1,
+      reasonKey: 'errors.animal.breed_failed',
+    };
   }
 
   const parentAverage = (parentA.qualityMultiplier + parentB.qualityMultiplier) / 2;

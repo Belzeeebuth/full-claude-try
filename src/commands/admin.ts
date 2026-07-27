@@ -248,7 +248,9 @@ const admin: Command = {
               : [];
           throw gameError(
             'invalid_state',
-            `Reload refused: the configuration is invalid. **The previous one stays active.**\n\`\`\`\n${truncate(issues.slice(0, 10).join('\n') || String(error), 900)}\n\`\`\``,
+            context.t('admin.reload_failed', {
+              issues: truncate(issues.slice(0, 10).join('\n') || String(error), 900),
+            }),
           );
         }
         break;

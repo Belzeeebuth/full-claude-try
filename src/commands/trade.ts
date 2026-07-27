@@ -266,10 +266,12 @@ const echange: Command = {
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     const target = interaction.options.getUser('user', true);
-    if (target.bot) throw gameError('target_invalid', 'Bots do not trade.');
+    if (target.bot) throw gameError('target_invalid', context.t('trade.bots_no_trade'));
 
     const targetUser = await playerRepo.findUserByDiscordId(target.id);
-    if (!targetUser) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
+    if (!targetUser) {
+      throw gameError('not_found', context.t('economy.target_no_farm', { name: target.displayName }));
+    }
 
     const trade = await tradeService.openTrade(context.player, targetUser.id);
     await interaction.editReply(await tradeView(context, trade, target.displayName));

@@ -9,7 +9,7 @@ import {
 } from 'discord.js';
 import { balance as getBalance, getConfig } from '../config';
 import { env } from '../config/env';
-import { normalizeLocale } from '../i18n';
+import { normalizeLocale, translatorFor } from '../i18n';
 import { checkAndSet, checkGlobalRate, cooldownSecondsFor } from '../framework/cooldown';
 import {
   buildContext,
@@ -58,11 +58,12 @@ async function handleInteraction(interaction: Interaction): Promise<void> {
   // --- 1. Limitation de débit -------------------------------------------
   const rate = await checkGlobalRate(interaction.user.id);
   if (rate.limited && interaction.isRepliable()) {
+    const t = translatorFor(normalizeLocale(interaction.locale));
     await replyEphemeral(interaction, {
       embeds: [
         warningEmbed(
-          'Slow down!',
-          `🚦 You are sending too many commands. Try again in ${Math.ceil(rate.resetInMs / 1000)} s.`,
+          t('common.rate_limited_title'),
+          t('common.rate_limited', { seconds: Math.ceil(rate.resetInMs / 1000) }),
         ),
       ],
     });
@@ -91,8 +92,9 @@ async function handleCommand(
 ): Promise<void> {
   const command = getCommand(interaction.commandName);
   if (!command) {
+    const t = translatorFor(normalizeLocale(interaction.locale));
     await replyEphemeral(interaction, {
-      embeds: [warningEmbed('Unknown command', 'This command no longer exists. Try again later.')],
+      embeds: [warningEmbed(t('common.unknown_command_title'), t('common.unknown_command_body'))],
     });
     return;
   }
@@ -102,8 +104,9 @@ async function handleCommand(
 
   try {
     if (!interaction.inGuild() && command.dmAllowed === false) {
+      const t = translatorFor(normalizeLocale(interaction.locale));
       await replyEphemeral(interaction, {
-        embeds: [warningEmbed('Server required', 'This command only works inside a server.')],
+        embeds: [warningEmbed(t('common.guild_only_title'), t('common.guild_only_body'))],
       });
       return;
     }
@@ -115,13 +118,13 @@ async function handleCommand(
     });
 
     if (!context) {
-      await replyEphemeral(interaction, { embeds: [noAccountEmbed()] });
+      await replyEphemeral(interaction, { embeds: [noAccountEmbed(interaction.locale)] });
       return;
     }
 
     if (command.adminOnly && !context.player.isAdmin) {
       await replyEphemeral(interaction, {
-        embeds: [warningEmbed('Access denied', 'This command is reserved for bot administrators.')],
+        embeds: [warningEmbed(context.t('common.admin_only_title'), context.t('common.admin_only_body'))],
       });
       return;
     }
@@ -133,7 +136,12 @@ async function handleCommand(
       const cooldown = await checkAndSet(context.player.id, bucket, seconds);
       if (cooldown.active) {
         await replyEphemeral(interaction, {
-          embeds: [warningEmbed('Temps de recharge', cooldownMessage(cooldown.retryAt))],
+          embeds: [
+            warningEmbed(
+              context.t('common.cooldown_title'),
+              cooldownMessage(cooldown.retryAt, context.locale),
+            ),
+          ],
         });
         return;
       }
@@ -179,13 +187,9 @@ async function handleComponent(
     const handler = findHandler(kind, parsed.namespace, parsed.action);
 
     if (!handler) {
+      const t = translatorFor(normalizeLocale(interaction.locale));
       await replyEphemeral(interaction, {
-        embeds: [
-          warningEmbed(
-            'Component expired',
-            'This message comes from an older version of the bot. Run the command again.',
-          ),
-        ],
+        embeds: [warningEmbed(t('common.component_expired_title'), t('common.component_expired_body'))],
       });
       return;
     }
@@ -199,13 +203,13 @@ async function handleComponent(
       requiresAccount: handler.requiresAccount,
     });
     if (!context) {
-      await replyEphemeral(interaction, { embeds: [noAccountEmbed()] });
+      await replyEphemeral(interaction, { embeds: [noAccountEmbed(interaction.locale)] });
       return;
     }
 
     if (handler.adminOnly && !context.player.isAdmin) {
       await replyEphemeral(interaction, {
-        embeds: [warningEmbed('Access denied', 'Action reserved for administrators.')],
+        embeds: [warningEmbed(context.t('common.admin_only_title'), context.t('common.admin_only_body'))],
       });
       return;
     }
@@ -248,7 +252,7 @@ async function handleContextMenu(
   try {
     context = await buildContext(interaction, {});
     if (!context) {
-      await replyEphemeral(interaction, { embeds: [noAccountEmbed()] });
+      await replyEphemeral(interaction, { embeds: [noAccountEmbed(interaction.locale)] });
       return;
     }
     await menu.execute(interaction, context);

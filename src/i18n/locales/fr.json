@@ -28,10 +28,37 @@
     "rate_limited": "🚦 Vous allez trop vite. Réessayez dans {seconds} s.",
     "eco_banned": "🚫 Votre accès à l'économie est suspendu jusqu'à {when}. Raison : {reason}",
     "no_account": "Vous n'avez pas encore de ferme. Lancez `/start` pour commencer !",
+    "no_account_title": "Bienvenue !",
     "insufficient_funds": "Il vous manque {missing} 🪙 pour cette opération.",
     "insufficient_gems": "Il vous manque {missing} 💎 pour cette opération.",
     "level_required": "Cette action demande le niveau {level} (vous êtes niveau {current}).",
-    "energy_required": "Il vous faut {cost} ⚡ (vous avez {current}). L'énergie remonte de 1 point par minute."
+    "energy_required": "Il vous faut {cost} ⚡ (vous avez {current}). L'énergie remonte de 1 point par minute.",
+    "quality": {
+      "normal": "Normal",
+      "silver": "Argent",
+      "gold": "Or",
+      "iridium": "Iridium"
+    },
+    "rarity": {
+      "common": "Commun",
+      "uncommon": "Peu commun",
+      "rare": "Rare",
+      "epic": "Épique",
+      "legendary": "Légendaire",
+      "mythic": "Mythique"
+    },
+    "action_failed_title": "Action impossible",
+    "internal_error_title": "Oups",
+    "rate_limited_title": "Doucement !",
+    "unknown_command_title": "Commande inconnue",
+    "unknown_command_body": "Cette commande n'existe plus. Réessayez plus tard.",
+    "guild_only_title": "Serveur requis",
+    "guild_only_body": "Cette commande ne fonctionne que sur un serveur.",
+    "admin_only_title": "Accès refusé",
+    "admin_only_body": "Réservé aux administrateurs du bot.",
+    "component_expired_title": "Composant expiré",
+    "component_expired_body": "Ce message provient d'une ancienne version du bot. Relancez la commande.",
+    "cooldown_title": "Temps de recharge"
   },
   "start": {
     "welcome_title": "🌾 Bienvenue à Val-Verdoyant !",
@@ -53,7 +80,8 @@
     "needs_water": "À arroser",
     "summary": "{ready} prête(s) • {growing} en croissance • {empty} vide(s) • {locked} verrouillée(s)",
     "nothing_planted": "Aucune culture en terre. `/plant` pour démarrer.",
-    "render_failed": "Le rendu graphique a échoué, voici la version texte."
+    "render_failed": "Le rendu graphique a échoué, voici la version texte.",
+    "bots_no_farm": "Les bots ne cultivent pas."
   },
   "plant": {
     "success": "🌱 {emoji} **{crop}** planté sur la parcelle {slot}. Récolte {when}.",
@@ -92,7 +120,14 @@
     "not_sellable": "{item} ne peut pas être vendu.",
     "trend_up": "en hausse",
     "trend_down": "en baisse",
-    "trend_flat": "stable"
+    "trend_flat": "stable",
+    "not_tracked": "{item} n'est pas suivi par le marché."
+  },
+  "trade": {
+    "bots_no_trade": "Les bots ne peuvent pas échanger."
+  },
+  "social": {
+    "cannot_help_self": "Vous ne pouvez pas vous aider vous-même."
   },
   "animals": {
     "title": "🐄 Cheptel de {name}",
@@ -105,7 +140,9 @@
     "no_building": "Il vous faut un {building} pour héberger cet animal.",
     "building_full": "Votre {building} est plein ({capacity} places).",
     "not_hungry": "{name} n'a pas faim pour le moment.",
-    "nothing_to_collect": "Aucune production disponible."
+    "nothing_to_collect": "Aucune production disponible.",
+    "breed_failed_title": "Pas de portée cette fois",
+    "breed_failed_body": "{reason}\nCoût engagé : {cost}."
   },
   "inventory": {
     "title": "🎒 Inventaire de {name}",
@@ -163,6 +200,27 @@
     "season": "Saison : {season} ({progress} %)",
     "next_season": "{season} commence {when}"
   },
+  "consumable": {
+    "energy": "⚡ Énergie restaurée : **{energy}/{max}**.",
+    "water_all": "💧 **{count}** parcelle(s) arrosée(s) instantanément, sans dépenser d'énergie.",
+    "boost_active": "✨ Bonus actif : **{label}** pendant {minutes} minutes.",
+    "label_xp": "+{pct} % XP",
+    "label_growth": "×{multiplier} vitesse de pousse",
+    "label_luck": "+{pct} % de chance",
+    "pest_repel": "🪤 Aucun nuisible sur votre ferme pendant {hours} h.",
+    "pest_cure": "🧯 **{count}** parcelle(s) nettoyée(s).",
+    "streak_freeze": "🧊 **{count}** jeton(s) de gel ajouté(s) : votre série survivra à {count} jour(s) manqué(s).",
+    "appearance": "🎨 Apparence appliquée : **{value}**. Regardez `/profile` !"
+  },
+  "progression": {
+    "prestige_locked_title": "Renaissance",
+    "prestige_locked_body": "{reason}\n\nLa renaissance se débloque au **niveau {level}**."
+  },
+  "economy": {
+    "invalid_quantity_or_all": "Quantité invalide : indiquez un nombre ou « all ».",
+    "bots_no_wallet": "Les bots n'ont pas de portefeuille.",
+    "target_no_farm": "{name} n'a pas encore de ferme."
+  },
   "errors": {
     "plot_locked": "La parcelle {slot} est verrouillée. Débloquez-la avec `/buy-plot`.",
     "plot_not_found": "La parcelle {slot} n'existe pas.",
@@ -170,7 +228,180 @@
     "quantity_invalid": "Quantité invalide.",
     "target_invalid": "Cible invalide.",
     "privacy_blocked": "Ce joueur a rendu sa ferme privée.",
-    "not_found": "Introuvable."
+    "not_found": "Introuvable.",
+    "level_too_low": "{name} demande le niveau {level}.",
+    "player_not_found": "Joueur introuvable.",
+    "farm": {
+      "unknown_crop": "Culture inconnue : `{cropKey}`.",
+      "plot_locked_hint": "Débloquez-la pour {cost} 🪙.",
+      "plot_occupied_hint": "Récoltez-la avec `/harvest`, ou libérez-la si la culture a fané.",
+      "water_hint": "Consultez `/farm` pour voir les prochains arrosages.",
+      "not_a_fertilizer": "{item} n'est pas un fertilisant.",
+      "fully_fertilized": "Aucune parcelle ne peut être fertilisée davantage.",
+      "no_weeds": "Aucune mauvaise herbe à arracher. Bien joué !",
+      "no_pest": "La parcelle {slot} n'a pas de nuisible.",
+      "all_plots_owned": "Vous possédez déjà les {max} parcelles. Bravo !",
+      "plot_just_unlocked": "Cette parcelle vient d'être débloquée."
+    },
+    "market": {
+      "nothing_to_sell": "Vous n'avez rien qui corresponde à vendre.",
+      "nothing_to_sell_hint": "Consultez `/inventory` pour voir ce que vous possédez.",
+      "not_on_sale": "{emoji} {item} n'est pas en vente aujourd'hui.",
+      "not_on_sale_hint": "La boutique change chaque jour à minuit UTC. Consultez `/shop`.",
+      "item_level_too_low": "Cet article demande le niveau {level}.",
+      "per_user_limit": "Limite de {limit} unité(s) par joueur pour cet article.",
+      "out_of_stock": "Stock insuffisant : il ne reste que {remaining} unité(s)."
+    },
+    "trade": {
+      "item_not_tradable": "{item} ne peut pas être échangé.",
+      "too_many_listings": "Vous avez déjà {active} annonces actives (maximum {max}).",
+      "price_out_of_bounds": "Prix hors limites : entre {min} et {max} 🪙 pour ce lot.",
+      "price_out_of_bounds_hint": "Ces limites protègent le marché contre les prix absurdes.",
+      "listing_not_found": "Annonce introuvable.",
+      "listing_closed": "Cette annonce est fermée.",
+      "cannot_buy_own": "Vous ne pouvez pas acheter votre propre annonce.",
+      "auction_only": "Cette annonce est réservée aux enchères.",
+      "just_sold": "Cette annonce vient d'être vendue.",
+      "cannot_bid_own": "Vous ne pouvez pas enchérir sur votre propre annonce.",
+      "bid_too_low": "Enchère minimum : {minimum} 🪙.",
+      "higher_bid_placed": "Une enchère plus élevée vient d'être placée.",
+      "cannot_cancel": "Impossible d'annuler : annonce introuvable, déjà fermée, ou une enchère a été placée.",
+      "self_trade": "Vous ne pouvez pas échanger avec vous-même.",
+      "min_level": "Les échanges sont disponibles à partir du niveau {level}.",
+      "not_found": "Échange introuvable.",
+      "trade_closed": "Cet échange est fermé.",
+      "not_a_party": "Vous ne faites pas partie de cet échange.",
+      "max_items": "Maximum {max} objets par joueur.",
+      "not_enough_owned": "Vous n'avez que {owned}× {item}.",
+      "offer_changed": "L'offre a changé depuis votre confirmation. Vérifiez-la et confirmez à nouveau.",
+      "already_closed": "Cet échange est déjà fermé."
+    },
+    "craft": {
+      "unknown_recipe": "Recette inconnue : `{recipeKey}`.",
+      "building_required": "Il vous faut un {emoji} {name}.",
+      "building_required_hint": "Construisez-en un avec `/buildings`.",
+      "no_slot": "Tous les emplacements de votre {name} sont occupés ({slots}).",
+      "no_slot_hint": "Collectez une production terminée avec `/production` ou améliorez le bâtiment.",
+      "nothing_ready": "Aucune production terminée. Consultez `/production` pour voir les échéances.",
+      "just_collected": "Ces productions viennent d'être collectées.",
+      "production_not_found": "Production introuvable.",
+      "already_collected": "Cette production a déjà été collectée.",
+      "unknown_building": "Bâtiment inconnu : `{buildingKey}`.",
+      "max_tier": "{emoji} {name} est déjà au palier maximum ({maxTier}).",
+      "tier_level_too_low": "Le palier {tier} de {name} demande le niveau {level}."
+    },
+    "economy": {
+      "account_not_found": "Compte introuvable.",
+      "amount_must_be_positive": "Le montant doit être positif.",
+      "bank_not_found": "Compte bancaire introuvable.",
+      "bank_capacity": "Votre coffre ne peut contenir que {capacity} 🪙.",
+      "bank_capacity_hint": "Améliorez votre banque avec `/bank upgrade`.",
+      "deposit_refused": "Dépôt refusé : capacité dépassée.",
+      "vault_insufficient": "Votre coffre ne contient que {balance} 🪙.",
+      "bank_max_level": "Votre banque est déjà au niveau maximum.",
+      "bank_upgrade_level": "L'amélioration de la banque demande le niveau {level}.",
+      "self_gift": "Vous ne pouvez pas vous faire un don à vous-même.",
+      "gift_min_level": "Les dons sont disponibles à partir du niveau {level}.",
+      "gift_cap": "Plafond de dons atteint : {limit} 🪙 par 24 h (déjà offert : {gifted} 🪙)."
+    },
+    "progression": {
+      "quest_not_found": "Quête introuvable.",
+      "reward_already_claimed": "Cette récompense a déjà été perçue.",
+      "quest_not_complete": "Cette quête n'est pas terminée.",
+      "quest_progress_hint": "Progression : {progress}/{required}.",
+      "reward_processing": "Récompense déjà en cours de traitement.",
+      "only_daily_rerollable": "Seules les quêtes journalières peuvent être relancées.",
+      "reroll_unavailable": "Cette quête ne peut plus être relancée.",
+      "no_other_quest": "Aucune autre quête disponible à votre niveau.",
+      "reroll_failed": "Échec de la relance, réessayez.",
+      "daily_already_claimed": "Vous avez déjà perçu votre récompense aujourd'hui.",
+      "daily_come_back_hint": "Revenez {when}.",
+      "unknown_achievement": "Succès inconnu.",
+      "achievement_not_claimable": "Ce succès n'est pas débloqué, ou a déjà été perçu.",
+      "no_season_pass": "Aucun passe saisonnier actif.",
+      "tier_not_found": "Le palier {tier} n'existe pas.",
+      "premium_tier_locked": "Palier premium non débloqué (votez pour le bot), ou déjà perçu.",
+      "tier_locked": "Palier non atteint, ou déjà perçu.",
+      "contract_not_found": "Contrat introuvable.",
+      "contract_closed": "Ce contrat est fermé.",
+      "wrong_item": "Cet objet ne correspond pas au contrat."
+    },
+    "animal": {
+      "unknown_species": "Espèce inconnue : `{animalKey}`.",
+      "event_only": "{emoji} {name} ne peut être obtenu que pendant un événement.",
+      "building_required": "Il vous faut un {emoji} {name} pour héberger cet animal.",
+      "building_full": "Votre {name} est plein ({used}/{capacity}).",
+      "building_full_hint": "Améliorez-le avec `/buildings` ou vendez un animal.",
+      "none_hungry": "Aucun animal n'a faim pour le moment.",
+      "nothing_to_collect_hint": "Nourrissez vos animaux et revenez plus tard — un animal affamé produit moitié moins.",
+      "not_found": "Animal introuvable.",
+      "dead": "Cet animal est mort.",
+      "unknown_species_generic": "Espèce inconnue.",
+      "pet_cooldown": "Cet animal a eu sa dose d'affection récemment.",
+      "perfect_shape": "{name} est en pleine forme.",
+      "need_two_different": "Il vous faut deux animaux différents.",
+      "same_species_required": "Les deux animaux doivent être de la même espèce.",
+      "cannot_breed": "{name} ne se reproduit pas.",
+      "breed_sick": "Un des deux animaux est malade.",
+      "breed_unhappy": "Les deux animaux doivent avoir au moins 50 de bonheur.",
+      "breed_failed": "La tentative a échoué.",
+      "breeding_cooldown": "{name} doit se reposer avant une autre portée.",
+      "no_space_offspring": "Pas de place libre pour le petit."
+    },
+    "consumable": {
+      "not_directly_usable": "{item} ne peut pas être utilisé directement.",
+      "player_not_found": "Joueur introuvable.",
+      "no_infested_plot": "Aucune parcelle infestée. Gardez votre traitement.",
+      "streak_not_found": "Série introuvable.",
+      "use_fertilize_instead": "{emoji} {name} s'applique avec `/fertilize`, pas avec `/use`.",
+      "auto_consumed_token": "Ce jeton est consommé automatiquement par `/reroll-quest`.",
+      "unknown_effect": "Effet inconnu pour {item}."
+    },
+    "coop": {
+      "not_found": "Coopérative introuvable.",
+      "invalid_name": "Le nom doit faire 3 à 32 caractères (lettres, chiffres, espaces, apostrophes, tirets).",
+      "invalid_tag": "L'étiquette doit faire 2 à 5 caractères alphanumériques.",
+      "creation_min_level": "Créer une coopérative demande le niveau {level}.",
+      "not_found_named": "Aucune coopérative nommée « {query} ».",
+      "invite_only": "Cette coopérative est sur invitation uniquement.",
+      "full_named": "{name} est complète ({limit} membres).",
+      "invite_forbidden": "Seuls les officiers et le chef peuvent inviter.",
+      "target_already_member": "Ce joueur est déjà dans une coopérative.",
+      "own_full": "Votre coopérative est complète.",
+      "leader_must_transfer": "En tant que chef, transmettez d'abord la direction avec `/coop promote`.",
+      "kick_forbidden": "Seuls les officiers et le chef peuvent exclure.",
+      "use_leave_command": "Utilisez `/coop leave` pour partir.",
+      "target_not_member": "Ce joueur n'est pas dans votre coopérative.",
+      "cannot_kick_rank": "Vous ne pouvez pas exclure un membre de rang égal ou supérieur.",
+      "promote_forbidden": "Seul le chef peut changer les rangs.",
+      "withdraw_forbidden": "Votre rang ne permet pas de retirer de la trésorerie.",
+      "treasury_insufficient": "La trésorerie est insuffisante."
+    },
+    "inventory": {
+      "full": "Votre entrepôt est plein ({used}/{capacity}). Vendez avec `/sell` ou améliorez-le avec `/buildings`.",
+      "need_more": "Il vous faut {quantity}× {emoji} {name} (vous en avez {owned})."
+    },
+    "player": {
+      "energy_hint": "Une boisson énergisante restaure 50 ⚡.",
+      "eco_banned": "🚫 Votre accès à l'économie est suspendu jusqu'à {when}.",
+      "level_required": "{what} demande le niveau {required}.",
+      "level_required_hint": "Vous êtes niveau {current}. Récoltez et complétez des quêtes pour progresser.",
+      "prestige_max": "Vous avez atteint le nombre maximum de renaissances ({max}).",
+      "prestige_level": "La renaissance demande le niveau {level} (vous êtes niveau {current}).",
+      "prestige_unavailable": "Renaissance indisponible."
+    },
+    "social": {
+      "help_limit": "Vous avez déjà aidé {max} fermiers aujourd'hui."
+    },
+    "admin": {
+      "specify_item_key": "Indiquez la clé de l'objet.",
+      "unknown_resource": "Ressource inconnue."
+    }
+  },
+  "admin": {
+    "reload_failed": "Rechargement refusé : la configuration est invalide. **L'ancienne reste active.**\n```\n{issues}\n```",
+    "no_announce_channel": "Aucun salon d'annonce configuré (`DISCORD_ANNOUNCE_CHANNEL_ID`).",
+    "announce_channel_invalid": "Le salon d'annonce est introuvable ou n'est pas un salon textuel."
   },
   "world": {
     "weather": {
@@ -241,6 +472,10 @@
       "reference": "référence",
       "legend": "Min {min} 🪙   •   Max {max} 🪙   •   {count} point(s) d'historique"
     }
+  },
+  "profile": {
+    "unknown_timezone": "Fuseau horaire inconnu : `{timezone}`.",
+    "unknown_timezone_hint": "Exemples : Europe/Paris, America/Montreal, Indian/Reunion."
   },
   "settings": {
     "language_title": "Langue",

@@ -149,13 +149,6 @@ export function escapeMarkdown(value: string): string {
   return value.replace(/([*_`~\\|>])/g, '\\$1');
 }
 
-const QUALITY_LABELS: Record<string, string> = {
-  normal: 'Normal',
-  silver: 'Silver',
-  gold: 'Gold',
-  iridium: 'Iridium',
-};
-
 const QUALITY_ICONS: Record<string, string> = {
   normal: '',
   silver: '🥈',
@@ -163,9 +156,9 @@ const QUALITY_ICONS: Record<string, string> = {
   iridium: '💠',
 };
 
-export function qualityLabel(quality: string): string {
-  return QUALITY_LABELS[quality] ?? quality;
-}
+// Les LIBELLÉS de qualité/rareté (contrairement aux icônes ci-dessus) sont
+// traduits via `t('common.quality.…')` / `t('common.rarity.…')` côté appelant,
+// et non ici : ce fichier n'importe pas `i18n/` par choix (cf. en-tête).
 
 export function qualityIcon(quality: string): string {
   return QUALITY_ICONS[quality] ?? '';
@@ -182,15 +175,6 @@ export function mutationIcon(mutation: string): string {
   return MUTATION_ICONS[mutation] ?? '';
 }
 
-const RARITY_LABELS: Record<string, string> = {
-  common: 'Common',
-  uncommon: 'Uncommon',
-  rare: 'Rare',
-  epic: 'Epic',
-  legendary: 'Legendary',
-  mythic: 'Mythic',
-};
-
 export const RARITY_COLORS: Record<string, number> = {
   common: 0x9e9e9e,
   uncommon: 0x4caf50,
@@ -199,10 +183,6 @@ export const RARITY_COLORS: Record<string, number> = {
   legendary: 0xff9800,
   mythic: 0xf44336,
 };
-
-export function rarityLabel(rarity: string): string {
-  return RARITY_LABELS[rarity] ?? rarity;
-}
 
 /** Aligne une valeur à droite dans un tableau en bloc de code. */
 export function padStart(value: string | number, width: number, char = ' '): string {

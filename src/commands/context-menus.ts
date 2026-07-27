@@ -30,9 +30,11 @@ const voirLaFerme: ContextMenuCommand = {
     const target = menu.targetUser;
 
     const bundle = await playerRepo.loadPlayerBundle(target.id);
-    if (!bundle) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
+    if (!bundle) {
+      throw gameError('not_found', context.t('economy.target_no_farm', { name: target.displayName }));
+    }
     if (bundle.settings.privacy === 'private' && target.id !== menu.user.id) {
-      throw gameError('privacy_blocked', `${target.displayName} has made their farm private.`);
+      throw gameError('privacy_blocked', context.t('errors.privacy_blocked'));
     }
 
     const viewContext: CommandContext = {
@@ -71,9 +73,11 @@ const proposerEchange: ContextMenuCommand = {
     await menu.deferReply();
     const target = menu.targetUser;
 
-    if (target.bot) throw gameError('target_invalid', 'Bots do not trade.');
+    if (target.bot) throw gameError('target_invalid', context.t('trade.bots_no_trade'));
     const targetUser = await playerRepo.findUserByDiscordId(target.id);
-    if (!targetUser) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
+    if (!targetUser) {
+      throw gameError('not_found', context.t('economy.target_no_farm', { name: target.displayName }));
+    }
 
     const trade = await tradeService.openTrade(context.player, targetUser.id);
     await menu.editReply(await tradeView(context, trade, target.displayName));

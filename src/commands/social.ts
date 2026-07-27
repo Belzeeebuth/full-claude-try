@@ -167,7 +167,9 @@ const coop: Command = {
       case 'invite': {
         const target = interaction.options.getUser('user', true);
         const targetUser = await playerRepo.findUserByDiscordId(target.id);
-        if (!targetUser) throw gameError('not_found', "This player does not have a farm yet.");
+        if (!targetUser) {
+          throw gameError('not_found', context.t('economy.target_no_farm', { name: target.displayName }));
+        }
         const result = await coopService.inviteMember(context.player, targetUser.id);
         await interaction.editReply({
           embeds: [successEmbed('Invitation accepted', `${target} joined **${result.coopName}**.`)],
@@ -177,7 +179,7 @@ const coop: Command = {
       case 'kick': {
         const target = interaction.options.getUser('user', true);
         const targetUser = await playerRepo.findUserByDiscordId(target.id);
-        if (!targetUser) throw gameError('not_found', 'Player not found.');
+        if (!targetUser) throw gameError('not_found', context.t('errors.player_not_found'));
         const result = await coopService.kickMember(context.player, targetUser.id);
         await interaction.editReply({
           embeds: [successEmbed('Member kicked', `${target} is no longer part of **${result.coopName}**.`)],
@@ -188,7 +190,7 @@ const coop: Command = {
         const target = interaction.options.getUser('user', true);
         const role = interaction.options.getString('rank', true) as 'owner' | 'officer' | 'member';
         const targetUser = await playerRepo.findUserByDiscordId(target.id);
-        if (!targetUser) throw gameError('not_found', 'Player not found.');
+        if (!targetUser) throw gameError('not_found', context.t('errors.player_not_found'));
         const result = await coopService.promoteMember(context.player, targetUser.id, role);
         await interaction.editReply({
           embeds: [successEmbed('Rank changed', `${target} is now **${result.roleLabel}**.`)],
@@ -401,12 +403,14 @@ export async function visitFarm(
   context: CommandContext,
   target: User,
 ): Promise<void> {
-  if (target.bot) throw gameError('target_invalid', 'Bots do not farm.');
+  if (target.bot) throw gameError('target_invalid', context.t('farm.bots_no_farm'));
 
   const bundle = await playerRepo.loadPlayerBundle(target.id);
-  if (!bundle) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
+  if (!bundle) {
+    throw gameError('not_found', context.t('economy.target_no_farm', { name: target.displayName }));
+  }
   if (bundle.settings.privacy === 'private' && target.id !== interaction.user.id) {
-    throw gameError('privacy_blocked', `${target.displayName} has made their farm private.`);
+    throw gameError('privacy_blocked', context.t('errors.privacy_blocked'));
   }
 
   const visitorContext: CommandContext = {
@@ -494,11 +498,13 @@ export async function helpFarmer(
   targetName: string,
 ): Promise<void> {
   if (targetDiscordId === context.player.discordId) {
-    throw gameError('target_invalid', 'You cannot help yourself.');
+    throw gameError('target_invalid', context.t('social.cannot_help_self'));
   }
 
   const bundle = await playerRepo.loadPlayerBundle(targetDiscordId);
-  if (!bundle) throw gameError('not_found', `${targetName} does not have a farm yet.`);
+  if (!bundle) {
+    throw gameError('not_found', context.t('economy.target_no_farm', { name: targetName }));
+  }
 
   const helped = await farmService.helpFarmer(context.player, bundle.farm.id, bundle.user.id);
   const reward = await miscService.recordVisit(

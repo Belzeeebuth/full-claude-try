@@ -27,7 +27,10 @@ const PAGE_SIZE = 10;
 export function requireItem(itemKey: string, locale?: string): ItemConfig {
   const item = getConfig(locale).items.get(itemKey);
   if (!item || !item.enabled) {
-    throw gameError('item_unknown', `Unknown item: \`${itemKey}\`.`);
+    throw gameError('item_unknown', `Unknown item: \`${itemKey}\`.`, {
+      i18nKey: 'errors.item_unknown',
+      params: { item: itemKey },
+    });
   }
   return item;
 }
@@ -100,8 +103,9 @@ export async function addItems(
         'inventory_full',
         `Your warehouse is full (${capacity.used}/${capacity.capacity}).`,
         {
-          hint: 'Sell items with `/sell` or upgrade your warehouse with `/buildings`.',
           context: { needed: total, free: capacity.free },
+          i18nKey: 'errors.inventory.full',
+          params: { used: capacity.used, capacity: capacity.capacity },
           suggestedCommand: 'buildings',
         },
       );
@@ -132,7 +136,11 @@ export async function removeExact(
     throw gameError(
       'insufficient_items',
       `You need ${quantity}× ${item.emoji} ${item.name} (you have ${owned}).`,
-      { context: { itemKey: key.itemKey, quantity, owned } },
+      {
+        context: { itemKey: key.itemKey, quantity, owned },
+        i18nKey: 'errors.inventory.need_more',
+        params: { quantity, emoji: item.emoji, name: item.name, owned },
+      },
     );
   }
 }
@@ -155,7 +163,11 @@ export async function consume(
     throw gameError(
       'insufficient_items',
       `You need ${quantity}× ${item.emoji} ${item.name} (you have ${owned}).`,
-      { context: { itemKey, quantity, owned } },
+      {
+        context: { itemKey, quantity, owned },
+        i18nKey: 'errors.inventory.need_more',
+        params: { quantity, emoji: item.emoji, name: item.name, owned },
+      },
     );
   }
   return result.consumed;

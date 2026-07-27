@@ -177,7 +177,10 @@ export async function doPrestige(player: PlayerContext): Promise<{
   const balance = getBalance();
   const { eligibility, plan, unlockedPlots } = await previewPrestige(player);
   if (!eligibility.eligible) {
-    throw gameError('level_too_low', eligibility.reason ?? 'Prestige unavailable.');
+    throw gameError('level_too_low', 'Prestige unavailable.', {
+      i18nKey: eligibility.reasonKey ?? 'errors.player.prestige_unavailable',
+      params: eligibility.reasonParams,
+    });
   }
 
   return withTransaction(async (tx) => {
@@ -296,6 +299,7 @@ export async function recordVisit(
     throw gameError(
       'forbidden',
       `You have already helped ${balance.social.maxHelpsPerDay} farmers today.`,
+      { i18nKey: 'errors.social.help_limit', params: { max: balance.social.maxHelpsPerDay } },
     );
   }
 
@@ -408,7 +412,9 @@ export async function adminGrant(
   remove = false,
 ): Promise<{ targetId: string; applied: number }> {
   const target = await playerRepo.findUserByDiscordId(input.targetDiscordId);
-  if (!target) throw gameError('not_found', 'Player not found.');
+  if (!target) {
+    throw gameError('not_found', 'Player not found.', { i18nKey: 'errors.player_not_found' });
+  }
   const amount = Math.abs(Math.floor(input.amount));
 
   return withTransaction(async (tx) => {
@@ -457,7 +463,11 @@ export async function adminGrant(
         );
         break;
       case 'item': {
-        if (!input.itemKey) throw gameError('item_unknown', 'Specify the item key.');
+        if (!input.itemKey) {
+          throw gameError('item_unknown', 'Specify the item key.', {
+            i18nKey: 'errors.admin.specify_item_key',
+          });
+        }
         if (remove) {
           await inventoryService.consume(target.id, input.itemKey, amount, tx);
         } else {
@@ -471,7 +481,9 @@ export async function adminGrant(
         break;
       }
       default:
-        throw gameError('target_invalid', 'Unknown resource.');
+        throw gameError('target_invalid', 'Unknown resource.', {
+          i18nKey: 'errors.admin.unknown_resource',
+        });
     }
 
     await systemRepo.audit(
@@ -500,7 +512,9 @@ export async function adminEcoBan(
   reason: string,
 ): Promise<{ until: Date }> {
   const target = await playerRepo.findUserByDiscordId(targetDiscordId);
-  if (!target) throw gameError('not_found', 'Player not found.');
+  if (!target) {
+    throw gameError('not_found', 'Player not found.', { i18nKey: 'errors.player_not_found' });
+  }
   const until = new Date(Date.now() + Math.max(1, durationHours) * 3_600_000);
 
   await playerRepo.setEcoBan(target.id, until, reason);
@@ -525,7 +539,9 @@ export async function adminResetPlayer(
   reason: string,
 ): Promise<void> {
   const target = await playerRepo.findUserByDiscordId(targetDiscordId);
-  if (!target) throw gameError('not_found', 'Player not found.');
+  if (!target) {
+    throw gameError('not_found', 'Player not found.', { i18nKey: 'errors.player_not_found' });
+  }
 
   await withTransaction(async (tx) => {
     const schema = await import('../db/schema');
@@ -608,7 +624,9 @@ export async function adminLookup(targetDiscordId: string, limit = 15) {
     playerRepo.findUserByDiscordId(targetDiscordId),
     systemRepo.listAuditForTarget(targetDiscordId, limit),
   ]);
-  if (!target) throw gameError('not_found', 'Player not found.');
+  if (!target) {
+    throw gameError('not_found', 'Player not found.', { i18nKey: 'errors.player_not_found' });
+  }
   const transactions = await economyRepo.listTransactions(target.id, limit);
   return { target, logs, transactions };
 }

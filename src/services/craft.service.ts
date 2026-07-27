@@ -119,10 +119,16 @@ export async function craft(
   const config = getConfig(player.locale);
   const recipe = config.recipes.get(input.recipeKey);
   if (!recipe || !recipe.enabled) {
-    throw gameError('recipe_unknown', `Unknown recipe: \`${input.recipeKey}\`.`);
+    throw gameError('recipe_unknown', `Unknown recipe: \`${input.recipeKey}\`.`, {
+      i18nKey: 'errors.craft.unknown_recipe',
+      params: { recipeKey: input.recipeKey },
+    });
   }
   if (player.level < recipe.requiredLevel) {
-    throw gameError('level_too_low', `${recipe.name} requires level ${recipe.requiredLevel}.`);
+    throw gameError('level_too_low', `${recipe.name} requires level ${recipe.requiredLevel}.`, {
+      i18nKey: 'errors.level_too_low',
+      params: { name: recipe.name, level: recipe.requiredLevel },
+    });
   }
 
   const quantity = Math.max(1, Math.min(20, input.quantity ?? 1));
@@ -136,7 +142,12 @@ export async function craft(
       throw gameError(
         'building_required',
         `You need a ${buildingConfig?.emoji ?? ''} ${buildingConfig?.name ?? recipe.buildingKey}.`,
-        { hint: 'Build one with `/buildings`.', suggestedCommand: 'buildings' },
+        {
+          i18nKey: 'errors.craft.building_required',
+          hintKey: 'errors.craft.building_required_hint',
+          params: { emoji: buildingConfig?.emoji ?? '', name: buildingConfig?.name ?? recipe.buildingKey },
+          suggestedCommand: 'buildings',
+        },
       );
     }
 
@@ -145,7 +156,12 @@ export async function craft(
       throw gameError(
         'no_crafting_slot',
         `All slots of your ${buildingConfig?.name ?? 'building'} are busy (${building.slots}).`,
-        { hint: 'Collect a finished run with `/production` or upgrade the building.', suggestedCommand: 'production' },
+        {
+          i18nKey: 'errors.craft.no_slot',
+          hintKey: 'errors.craft.no_slot_hint',
+          params: { name: buildingConfig?.name ?? 'building', slots: building.slots },
+          suggestedCommand: 'production',
+        },
       );
     }
 
@@ -267,7 +283,7 @@ export async function collectProduction(
 
     if (ready.length === 0) {
       throw gameError('craft_not_ready', 'No finished production.', {
-        hint: 'Check `/production` for the deadlines.',
+        i18nKey: 'errors.craft.nothing_ready',
         suggestedCommand: 'production',
       });
     }
@@ -318,7 +334,9 @@ export async function collectProduction(
     }
 
     if (lines.length === 0) {
-      throw gameError('busy', 'Those productions were just collected.');
+      throw gameError('busy', 'Those productions were just collected.', {
+        i18nKey: 'errors.craft.just_collected',
+      });
     }
 
     await playerRepo.incrementStats(player.id, { totalCrafts: craftedUnits }, tx);
@@ -352,8 +370,16 @@ export async function cancelProduction(
 ): Promise<{ refunded: Array<{ itemKey: string; quantity: number }> }> {
   return withTransaction(async (tx) => {
     const job = await animalRepo.lockCraftJob(tx, jobId, player.id);
-    if (!job) throw gameError('not_found', 'Production not found.');
-    if (job.collected) throw gameError('invalid_state', 'This production was already collected.');
+    if (!job) {
+      throw gameError('not_found', 'Production not found.', {
+        i18nKey: 'errors.craft.production_not_found',
+      });
+    }
+    if (job.collected) {
+      throw gameError('invalid_state', 'This production was already collected.', {
+        i18nKey: 'errors.craft.already_collected',
+      });
+    }
 
     const consumed = job.consumed as Array<{ itemKey: string; quantity: number }>;
     // Remboursement à 80 % : annuler n'est pas gratuit, sinon la file de
@@ -463,7 +489,10 @@ export async function buildOrUpgrade(
   const config = getConfig(player.locale);
   const building = config.buildings.get(buildingKey);
   if (!building || !building.enabled) {
-    throw gameError('not_found', `Unknown building: \`${buildingKey}\`.`);
+    throw gameError('not_found', `Unknown building: \`${buildingKey}\`.`, {
+      i18nKey: 'errors.craft.unknown_building',
+      params: { buildingKey },
+    });
   }
 
   return withTransaction(async (tx) => {
@@ -476,12 +505,20 @@ export async function buildOrUpgrade(
       throw gameError(
         'building_max_tier',
         `${building.emoji} ${building.name} is already at the maximum tier (${building.maxTier}).`,
+        {
+          i18nKey: 'errors.craft.max_tier',
+          params: { emoji: building.emoji, name: building.name, maxTier: building.maxTier },
+        },
       );
     }
     if (player.level < next.requiredLevel) {
       throw gameError(
         'level_too_low',
         `Tier ${next.tier} of ${building.name} requires level ${next.requiredLevel}.`,
+        {
+          i18nKey: 'errors.craft.tier_level_too_low',
+          params: { tier: next.tier, name: building.name, level: next.requiredLevel },
+        },
       );
     }
 

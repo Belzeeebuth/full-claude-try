@@ -3,8 +3,11 @@
  *
  * Distinction fondamentale :
  *  - `GameError` = erreur ATTENDUE, causée par le joueur (pas assez d'argent,
- *    parcelle occupée, niveau insuffisant). Elle est affichée telle quelle,
- *    en français, et n'est PAS remontée comme incident (log niveau debug).
+ *    parcelle occupée, niveau insuffisant). Elle n'est PAS remontée comme
+ *    incident (log niveau debug). Le texte affiché au joueur vient de
+ *    `i18nKey`/`params` (résolus dans la locale du joueur par `classifyError`) ;
+ *    `message`/`hint` restent des chaînes anglaises de repli — pour les logs,
+ *    et pour l'appelant qui n'a pas encore de clé de traduction dédiée.
  *  - toute autre erreur = incident technique : message générique côté joueur,
  *    stack complète dans les logs + rapport dans le salon d'erreurs.
  *
@@ -12,6 +15,8 @@
  * permet d'attacher des composants de rattrapage (bouton « Boutique » sur une
  * erreur de fonds insuffisants).
  */
+import { discordTimestamp } from './format';
+
 export type GameErrorCode =
   | 'not_registered'
   | 'already_registered'
@@ -75,6 +80,18 @@ export interface GameErrorOptions {
   context?: Record<string, unknown>;
   /** Commande à suggérer au joueur (`/shop`). */
   suggestedCommand?: string;
+  /**
+   * Clé de traduction (`errors.farm.plot_locked`) affichée au joueur à la place
+   * de `message` quand elle est présente. `message` reste la valeur de repli
+   * (clé manquante, appelant sans locale) et alimente toujours `Error.message`
+   * pour les logs — qui restent en anglais/français de dev, jamais montrés tels
+   * quels au joueur une fois `i18nKey` renseignée.
+   */
+  i18nKey?: string;
+  /** Idem pour `hint`. */
+  hintKey?: string;
+  /** Paramètres d'interpolation partagés par `i18nKey` et `hintKey`. */
+  params?: Record<string, string | number>;
 }
 
 export class GameError extends Error {
@@ -82,6 +99,9 @@ export class GameError extends Error {
   public readonly hint?: string;
   public readonly context?: Record<string, unknown>;
   public readonly suggestedCommand?: string;
+  public readonly i18nKey?: string;
+  public readonly hintKey?: string;
+  public readonly params?: Record<string, string | number>;
 
   constructor(code: GameErrorCode, message: string, options: GameErrorOptions = {}) {
     super(message);
@@ -90,6 +110,9 @@ export class GameError extends Error {
     this.hint = options.hint;
     this.context = options.context;
     this.suggestedCommand = options.suggestedCommand;
+    this.i18nKey = options.i18nKey;
+    this.hintKey = options.hintKey;
+    this.params = options.params;
   }
 }
 
@@ -122,6 +145,11 @@ export class CooldownError extends GameError {
   ) {
     super('cooldown', `The \`/${commandName}\` command is on cooldown.`, {
       context: { retryAt: retryAt.toISOString(), commandName },
+      i18nKey: 'common.cooldown',
+      // Un timestamp Discord `<t:epoch:R>` encode l'instant absolu : peu importe
+      // qu'il soit calculé à la levée ou à l'affichage, le rendu (« dans 3 min »)
+      // reste correct et se met à jour tout seul côté client.
+      params: { when: discordTimestamp(retryAt, 'R') },
     });
     this.name = 'CooldownError';
   }

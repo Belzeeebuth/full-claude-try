@@ -14,11 +14,9 @@ import {
   formatNumber,
   mutationIcon,
   qualityIcon,
-  qualityLabel,
-  rarityLabel,
   truncate,
 } from '../utils/format';
-import type { AutocompleteContext, Command, CommandContext } from '../types';
+import type { AutocompleteContext, Command, CommandContext, Translator } from '../types';
 
 /**
  * Commandes d'agriculture : le cœur de la boucle de jeu.
@@ -173,14 +171,16 @@ const recolter: Command = {
     const slot = interaction.options.getInteger('plot') ?? undefined;
 
     const summary = await farmService.harvest(context.player, { slot, all: slot === undefined });
-    await interaction.editReply({ embeds: [buildHarvestEmbed(summary)] });
+    await interaction.editReply({ embeds: [buildHarvestEmbed(summary, context.t)] });
   },
 };
 
-export function buildHarvestEmbed(summary: farmService.HarvestSummary) {
+export function buildHarvestEmbed(summary: farmService.HarvestSummary, t: Translator) {
   const lines = summary.plots.map((plot) => {
     const quality =
-      plot.result.quality === 'normal' ? '' : ` ${qualityIcon(plot.result.quality)} ${qualityLabel(plot.result.quality)}`;
+      plot.result.quality === 'normal'
+        ? ''
+        : ` ${qualityIcon(plot.result.quality)} ${t(`common.quality.${plot.result.quality}`)}`;
     const mutation = plot.result.mutation === 'none' ? '' : ` ${mutationIcon(plot.result.mutation)} **${plot.result.mutation}**`;
     const regrow = plot.regrew && plot.nextReadyAt ? ` 🔁 regrows ${discordTimestamp(plot.nextReadyAt, 'R')}` : '';
     return `\`${String(plot.slot).padStart(2, ' ')}\` ${plot.emoji} **${plot.result.quantity}× ${plot.cropName}**${quality}${mutation} — ~${formatCoins(plot.result.totalValue, true)}${regrow}`;
@@ -468,7 +468,7 @@ const cultures: Command = {
       const perHour = Math.round((profit / crop.growthSeconds) * 3_600);
       const locked = crop.requiredLevel > context.player.level ? '🔒 ' : '';
       return [
-        `${locked}${crop.emoji} **${crop.name}** — ${rarityLabel(crop.rarity)} • lv. ${crop.requiredLevel}`,
+        `${locked}${crop.emoji} **${crop.name}** — ${context.t(`common.rarity.${crop.rarity}`)} • lv. ${crop.requiredLevel}`,
         `   🌱 ${formatNumber(crop.seedPrice)} ${COIN} → 🧺 ${crop.baseYield}× ${formatNumber(crop.sellPrice)} ${COIN} • ⏳ ${formatDuration(crop.growthSeconds * 1000)} • **~${formatNumber(perHour)} ${COIN}/h/plot**${crop.regrowCycles > 0 ? ` • 🔁 ${crop.regrowCycles}` : ''}`,
       ].join('\n');
     });

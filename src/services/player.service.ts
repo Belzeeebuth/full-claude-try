@@ -6,6 +6,7 @@ import { energyCost, hasEnergy, projectEnergy, spendEnergy, type EnergyProjectio
 import { buildModifiers, type FarmModifiers, type ModifierSources } from '../game/modifiers';
 import { coopBonuses } from '../game/coop';
 import { gameError } from '../utils/errors';
+import { discordTimestamp } from '../utils/format';
 import { moduleLogger } from '../utils/logger';
 import * as animalRepo from '../repositories/animal.repo';
 import * as economyRepo from '../repositories/economy.repo';
@@ -220,7 +221,7 @@ export async function grantXp(
 ): Promise<XpGainResult> {
   const balance = getBalance();
   const user = await playerRepo.findUserById(userId, tx);
-  if (!user) throw gameError('not_registered', 'Player not found.');
+  if (!user) throw gameError('not_registered', 'Player not found.', { i18nKey: 'errors.player_not_found' });
 
   const result = addXp({ level: user.level, xp: user.xp }, amount, balance);
   await playerRepo.setLevelAndXp(
@@ -289,7 +290,7 @@ export async function getEnergy(
   executor: Executor = getDb(),
 ): Promise<EnergyProjection> {
   const user = await playerRepo.findUserById(userId, executor);
-  if (!user) throw gameError('not_registered', 'Player not found.');
+  if (!user) throw gameError('not_registered', 'Player not found.', { i18nKey: 'errors.player_not_found' });
   return projectEnergy(
     { energy: user.energy, energyMax: user.energyMax, energyUpdatedAt: user.energyUpdatedAt },
     now,
@@ -319,8 +320,10 @@ export async function consumeEnergy(
       'insufficient_energy',
       `You need ${cost} ⚡ (you have ${projection.current}).`,
       {
-        hint: `Energy regenerates ${balance.energy.regenPerMinute} point/minute. An energy drink restores ${50}.`,
         context: { cost, current: projection.current },
+        i18nKey: 'common.energy_required',
+        hintKey: 'errors.player.energy_hint',
+        params: { cost, current: projection.current },
         suggestedCommand: 'shop',
       },
     );
@@ -479,6 +482,10 @@ export function assertNotEcoBanned(player: PlayerContext, now: Date = new Date()
     throw gameError(
       'eco_banned',
       `Your access to the economy is suspended until ${player.ecoBannedUntil.toLocaleString('en-US')}.`,
+      {
+        i18nKey: 'errors.player.eco_banned',
+        params: { when: discordTimestamp(player.ecoBannedUntil, 'F') },
+      },
     );
   }
 }
@@ -487,8 +494,10 @@ export function assertNotEcoBanned(player: PlayerContext, now: Date = new Date()
 export function assertLevel(player: { level: number }, required: number, what: string): void {
   if (player.level < required) {
     throw gameError('level_too_low', `${what} requires level ${required}.`, {
-      hint: `You are level ${player.level}. Harvest and complete quests to progress.`,
       context: { required, current: player.level },
+      i18nKey: 'errors.player.level_required',
+      hintKey: 'errors.player.level_required_hint',
+      params: { what, required, current: player.level },
     });
   }
 }

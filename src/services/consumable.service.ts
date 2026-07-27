@@ -2,6 +2,7 @@ import { balance as getBalance, getConfig } from '../config';
 import { getRedis, key as redisKey } from '../db/redis';
 import { lockUserRow, withTransaction } from '../db/client';
 import { projectEnergy, restoreEnergy } from '../game/energy';
+import { translate } from '../i18n';
 import { gameError } from '../utils/errors';
 import { moduleLogger } from '../utils/logger';
 import * as farmRepo from '../repositories/farm.repo';
@@ -69,7 +70,10 @@ export async function useConsumable(
   const item = inventoryService.requireItem(itemKey);
   const effect = item.effect;
   if (!effect?.type) {
-    throw gameError('item_unknown', `${item.name} cannot be used directly.`);
+    throw gameError('item_unknown', `${item.name} cannot be used directly.`, {
+      i18nKey: 'errors.consumable.not_directly_usable',
+      params: { item: item.name },
+    });
   }
 
   return withTransaction(async (tx) => {
@@ -79,7 +83,11 @@ export async function useConsumable(
     switch (effect.type) {
       case 'energy': {
         const user = await playerRepo.findUserById(player.id, tx);
-        if (!user) throw gameError('not_registered', 'Player not found.');
+        if (!user) {
+          throw gameError('not_registered', 'Player not found.', {
+            i18nKey: 'errors.consumable.player_not_found',
+          });
+        }
         const projection = projectEnergy(
           { energy: user.energy, energyMax: user.energyMax, energyUpdatedAt: user.energyUpdatedAt },
           new Date(),
@@ -89,7 +97,10 @@ export async function useConsumable(
         await playerRepo.setEnergy(player.id, restored, tx);
         return {
           consumed: quantity,
-          message: `⚡ Energy restored: **${restored.energy}/${projection.max}**.`,
+          message: translate(player.locale, 'consumable.energy', {
+            energy: restored.energy,
+            max: projection.max,
+          }),
         };
       }
 
@@ -102,7 +113,7 @@ export async function useConsumable(
         const watered = await farmRepo.waterCrops(cropIds, new Date(), tx);
         return {
           consumed: quantity,
-          message: `💧 **${watered}** plot(s) watered instantly, without spending energy.`,
+          message: translate(player.locale, 'consumable.water_all', { count: watered }),
         };
       }
 
@@ -122,13 +133,22 @@ export async function useConsumable(
         );
         const label =
           effect.type === 'xp_boost'
-            ? `+${Math.round(((effect.multiplier ?? 1) - 1) * 100)} % XP`
+            ? translate(player.locale, 'consumable.label_xp', {
+                pct: Math.round(((effect.multiplier ?? 1) - 1) * 100),
+              })
             : effect.type === 'growth_boost'
-              ? `×${effect.multiplier ?? 1} growth speed`
-              : `+${Math.round((effect.bonus ?? 0) * 100)} % de chance`;
+              ? translate(player.locale, 'consumable.label_growth', {
+                  multiplier: effect.multiplier ?? 1,
+                })
+              : translate(player.locale, 'consumable.label_luck', {
+                  pct: Math.round((effect.bonus ?? 0) * 100),
+                });
         return {
           consumed: quantity,
-          message: `✨ Bonus active: **${label}** for ${Math.round(duration / 60)} minutes.`,
+          message: translate(player.locale, 'consumable.boost_active', {
+            label,
+            minutes: Math.round(duration / 60),
+          }),
         };
       }
 
@@ -141,7 +161,9 @@ export async function useConsumable(
         );
         return {
           consumed: quantity,
-          message: `🪤 No pest on your farm for ${Math.round(duration / 3_600)} h.`,
+          message: translate(player.locale, 'consumable.pest_repel', {
+            hours: Math.round(duration / 3_600),
+          }),
         };
       }
 
@@ -149,7 +171,9 @@ export async function useConsumable(
         const rows = await farmRepo.listPlots(player.farmId, tx);
         const infested = rows.filter((entry) => entry.plot.pestType).slice(0, quantity);
         if (infested.length === 0) {
-          throw gameError('no_pest', 'No infested plot. Keep your treatment.');
+          throw gameError('no_pest', 'No infested plot. Keep your treatment.', {
+            i18nKey: 'errors.consumable.no_infested_plot',
+          });
         }
         await farmRepo.updatePlots(
           infested.map((entry) => entry.plot.id),
@@ -158,13 +182,17 @@ export async function useConsumable(
         );
         return {
           consumed: quantity,
-          message: `🧯 **${infested.length}** plot(s) cleared.`,
+          message: translate(player.locale, 'consumable.pest_cure', { count: infested.length }),
         };
       }
 
       case 'streak_freeze': {
         const streak = await playerRepo.getDailyStreak(player.id, tx);
-        if (!streak) throw gameError('not_registered', 'Streak not found.');
+        if (!streak) {
+          throw gameError('not_registered', 'Streak not found.', {
+            i18nKey: 'errors.consumable.streak_not_found',
+          });
+        }
         await tx
           .update((await import('../db/schema')).dailyStreaks)
           .set({ freezeTokens: Math.min(5, streak.freezeTokens + quantity) })
@@ -176,7 +204,7 @@ export async function useConsumable(
           );
         return {
           consumed: quantity,
-          message: `🧊 **${quantity}** freeze token(s) added: your streak will survive ${quantity} missed day(s).`,
+          message: translate(player.locale, 'consumable.streak_freeze', { count: quantity }),
         };
       }
 
@@ -191,7 +219,7 @@ export async function useConsumable(
           );
         return {
           consumed: quantity,
-          message: `🎨 Appearance applied: **${effect.value}**. Check \`/profile\`!`,
+          message: translate(player.locale, 'consumable.appearance', { value: effect.value ?? '' }),
         };
       }
 
@@ -199,18 +227,25 @@ export async function useConsumable(
         throw gameError(
           'invalid_state',
           `${item.emoji} ${item.name} is applied with \`/fertilize\`, not with \`/use\`.`,
-          { suggestedCommand: 'farm' },
+          {
+            i18nKey: 'errors.consumable.use_fertilize_instead',
+            params: { emoji: item.emoji, name: item.name },
+            suggestedCommand: 'farm',
+          },
         );
 
       case 'quest_reroll':
         throw gameError(
           'invalid_state',
           'This token is consumed automatically by `/reroll-quest`.',
-          { suggestedCommand: 'quests' },
+          { i18nKey: 'errors.consumable.auto_consumed_token', suggestedCommand: 'quests' },
         );
 
       default:
-        throw gameError('item_unknown', `Unknown effect for ${item.name}.`);
+        throw gameError('item_unknown', `Unknown effect for ${item.name}.`, {
+          i18nKey: 'errors.consumable.unknown_effect',
+          params: { item: item.name },
+        });
     }
   });
 }

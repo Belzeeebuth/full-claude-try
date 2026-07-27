@@ -33,7 +33,9 @@ const profil: Command = {
     await interaction.deferReply();
     const target = interaction.options.getUser('user') ?? interaction.user;
     const profile = await getProfile(target.id);
-    if (!profile) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
+    if (!profile) {
+      throw gameError('not_found', context.t('economy.target_no_farm', { name: target.displayName }));
+    }
 
     const image = await renderProfileImage({
       locale: context.locale,
@@ -133,7 +135,9 @@ const stats: Command = {
     await interaction.deferReply();
     const target = interaction.options.getUser('user') ?? interaction.user;
     const data = await miscService.playerStats(target.id);
-    if (!data) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
+    if (!data) {
+      throw gameError('not_found', context.t('economy.target_no_farm', { name: target.displayName }));
+    }
 
     await interaction.editReply({
       embeds: [
@@ -217,7 +221,9 @@ const solde: Command = {
   async execute(interaction, context): Promise<void> {
     const target = interaction.options.getUser('user') ?? interaction.user;
     const user = await playerRepo.findUserByDiscordId(target.id);
-    if (!user) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
+    if (!user) {
+      throw gameError('not_found', context.t('economy.target_no_farm', { name: target.displayName }));
+    }
     const bank = await playerRepo.getBankAccount(user.id);
 
     await interaction.reply({
@@ -285,8 +291,8 @@ const parametres: Command = {
     if (compact !== null) patch.compactMode = compact;
     if (timezone) {
       if (!isValidTimezone(timezone)) {
-        throw gameError('target_invalid', `Unknown time zone: \`${timezone}\`.`, {
-          hint: 'Examples: Europe/Paris, America/Montreal, Indian/Reunion.',
+        throw gameError('target_invalid', context.t('profile.unknown_timezone', { timezone }), {
+          hint: context.t('profile.unknown_timezone_hint'),
         });
       }
       patch.timezone = timezone;
@@ -381,11 +387,18 @@ const prestige: Command = {
     const { eligibility, plan } = await miscService.previewPrestige(context.player);
 
     if (!eligibility.eligible) {
+      const reason = context.t(
+        eligibility.reasonKey ?? 'errors.player.prestige_unavailable',
+        eligibility.reasonParams,
+      );
       await interaction.editReply({
         embeds: [
           baseEmbed({
-            title: '🌟 Prestige',
-            description: `${eligibility.reason}\n\nPrestige unlocks at **level ${eligibility.requiredLevel}**.`,
+            title: `🌟 ${context.t('progression.prestige_locked_title')}`,
+            description: context.t('progression.prestige_locked_body', {
+              reason,
+              level: eligibility.requiredLevel,
+            }),
             color: COLORS.warning,
           }),
         ],

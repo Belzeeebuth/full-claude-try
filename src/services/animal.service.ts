@@ -159,19 +159,30 @@ export async function buyAnimal(
   const config = getConfig(player.locale);
   const animalConfig = config.animals.get(input.animalKey);
   if (!animalConfig || !animalConfig.enabled) {
-    throw gameError('animal_not_found', `Unknown species: \`${input.animalKey}\`.`);
+    throw gameError('animal_not_found', `Unknown species: \`${input.animalKey}\`.`, {
+      i18nKey: 'errors.animal.unknown_species',
+      params: { animalKey: input.animalKey },
+    });
   }
   if (animalConfig.eventOnly) {
     throw gameError(
       'forbidden',
       `${animalConfig.emoji} ${animalConfig.name} can only be obtained during an event.`,
-      { suggestedCommand: 'event' },
+      {
+        i18nKey: 'errors.animal.event_only',
+        params: { emoji: animalConfig.emoji, name: animalConfig.name },
+        suggestedCommand: 'event',
+      },
     );
   }
   if (player.level < animalConfig.requiredLevel) {
     throw gameError(
       'level_too_low',
       `${animalConfig.emoji} ${animalConfig.name} requires level ${animalConfig.requiredLevel}.`,
+      {
+        i18nKey: 'errors.level_too_low',
+        params: { name: animalConfig.name, level: animalConfig.requiredLevel },
+      },
     );
   }
 
@@ -188,7 +199,15 @@ export async function buyAnimal(
       throw gameError(
         'building_required',
         `You need a ${buildingConfig?.emoji ?? ''} ${buildingConfig?.name ?? animalConfig.buildingKey} to house this animal.`,
-        { hint: 'Build one with `/buildings`.', suggestedCommand: 'buildings' },
+        {
+          i18nKey: 'errors.animal.building_required',
+          hintKey: 'errors.craft.building_required_hint',
+          params: {
+            emoji: buildingConfig?.emoji ?? '',
+            name: buildingConfig?.name ?? animalConfig.buildingKey,
+          },
+          suggestedCommand: 'buildings',
+        },
       );
     }
 
@@ -201,7 +220,11 @@ export async function buyAnimal(
       throw gameError(
         'building_full',
         `Your ${buildingConfig?.name ?? 'building'} is full (${used}/${building.capacity}).`,
-        { hint: 'Upgrade it with `/buildings` or sell an animal.' },
+        {
+          i18nKey: 'errors.animal.building_full',
+          hintKey: 'errors.animal.building_full_hint',
+          params: { name: buildingConfig?.name ?? 'building', used, capacity: building.capacity },
+        },
       );
     }
 
@@ -288,7 +311,9 @@ export async function feed(
     });
 
     if (targets.length === 0) {
-      throw gameError('animal_not_hungry', "No animal is hungry right now.");
+      throw gameError('animal_not_hungry', "No animal is hungry right now.", {
+        i18nKey: 'errors.animal.none_hungry',
+      });
     }
 
     const selected = input.all ? targets : targets.slice(0, 1);
@@ -381,7 +406,8 @@ export async function collect(
 
     if (collectable.length === 0) {
       throw gameError('animal_not_ready', 'No production available.', {
-        hint: 'Feed your animals and come back later — a hungry animal produces half as much.',
+        i18nKey: 'animals.nothing_to_collect',
+        hintKey: 'errors.animal.nothing_to_collect_hint',
         suggestedCommand: 'animals',
       });
     }
@@ -495,17 +521,25 @@ export async function pet(
 
   return withTransaction(async (tx) => {
     const row = await animalRepo.lockAnimal(tx, animalId, player.id);
-    if (!row) throw gameError('animal_not_found', 'Animal not found.');
-    if (!row.isAlive) throw gameError('animal_dead', 'This animal has died.');
+    if (!row) throw gameError('animal_not_found', 'Animal not found.', { i18nKey: 'errors.animal.not_found' });
+    if (!row.isAlive) {
+      throw gameError('animal_dead', 'This animal has died.', { i18nKey: 'errors.animal.dead' });
+    }
 
     const animalConfig = config.animals.get(row.animalKey);
-    if (!animalConfig) throw gameError('animal_not_found', 'Unknown species.');
+    if (!animalConfig) {
+      throw gameError('animal_not_found', 'Unknown species.', {
+        i18nKey: 'errors.animal.unknown_species_generic',
+      });
+    }
 
     if (
       row.lastPettedAt &&
       now.getTime() - row.lastPettedAt.getTime() < balance.animals.petCooldownSeconds * 1_000
     ) {
-      throw gameError('cooldown', 'This animal has had its share of affection recently.');
+      throw gameError('cooldown', 'This animal has had its share of affection recently.', {
+        i18nKey: 'errors.animal.pet_cooldown',
+      });
     }
 
     const status = projectAnimal(toAnimalState(row), animalConfig, now, balance);
@@ -551,15 +585,24 @@ export async function heal(
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const row = await animalRepo.lockAnimal(tx, animalId, player.id);
-    if (!row) throw gameError('animal_not_found', 'Animal not found.');
-    if (!row.isAlive) throw gameError('animal_dead', 'This animal has died.');
+    if (!row) throw gameError('animal_not_found', 'Animal not found.', { i18nKey: 'errors.animal.not_found' });
+    if (!row.isAlive) {
+      throw gameError('animal_dead', 'This animal has died.', { i18nKey: 'errors.animal.dead' });
+    }
 
     const animalConfig = config.animals.get(row.animalKey);
-    if (!animalConfig) throw gameError('animal_not_found', 'Unknown species.');
+    if (!animalConfig) {
+      throw gameError('animal_not_found', 'Unknown species.', {
+        i18nKey: 'errors.animal.unknown_species_generic',
+      });
+    }
 
     const status = projectAnimal(toAnimalState(row), animalConfig, now, balance);
     if (!status.sick && status.health >= 95) {
-      throw gameError('invalid_state', `${animalConfig.name} is in perfect shape.`);
+      throw gameError('invalid_state', `${animalConfig.name} is in perfect shape.`, {
+        i18nKey: 'errors.animal.perfect_shape',
+        params: { name: animalConfig.name },
+      });
     }
 
     const cost = vetCost(animalConfig, balance);
@@ -595,11 +638,17 @@ export async function sellAnimal(
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const row = await animalRepo.lockAnimal(tx, animalId, player.id);
-    if (!row) throw gameError('animal_not_found', 'Animal not found.');
-    if (!row.isAlive) throw gameError('animal_dead', 'This animal has died.');
+    if (!row) throw gameError('animal_not_found', 'Animal not found.', { i18nKey: 'errors.animal.not_found' });
+    if (!row.isAlive) {
+      throw gameError('animal_dead', 'This animal has died.', { i18nKey: 'errors.animal.dead' });
+    }
 
     const animalConfig = config.animals.get(row.animalKey);
-    if (!animalConfig) throw gameError('animal_not_found', 'Unknown species.');
+    if (!animalConfig) {
+      throw gameError('animal_not_found', 'Unknown species.', {
+        i18nKey: 'errors.animal.unknown_species_generic',
+      });
+    }
 
     const status = projectAnimal(toAnimalState(row), animalConfig, now, balance);
     const price = sellValue(animalConfig, status, balance);
@@ -617,13 +666,23 @@ export async function sellAnimal(
 export async function breed(
   player: PlayerContext,
   input: { animalAId: string; animalBId: string },
-): Promise<{ success: boolean; reason?: string; childId?: string; qualityMultiplier?: number; generation?: number; cost: number }> {
+): Promise<{
+  success: boolean;
+  reasonKey?: string;
+  reasonParams?: Record<string, string | number>;
+  childId?: string;
+  qualityMultiplier?: number;
+  generation?: number;
+  cost: number;
+}> {
   const config = getConfig(player.locale);
   const balance = getBalance();
   const now = new Date();
 
   if (input.animalAId === input.animalBId) {
-    throw gameError('breeding_unavailable', 'You need two different animals.');
+    throw gameError('breeding_unavailable', 'You need two different animals.', {
+      i18nKey: 'errors.animal.need_two_different',
+    });
   }
 
   return withTransaction(async (tx) => {
@@ -633,15 +692,26 @@ export async function breed(
     const [firstId, secondId] = [input.animalAId, input.animalBId].sort();
     const first = await animalRepo.lockAnimal(tx, firstId!, player.id);
     const second = await animalRepo.lockAnimal(tx, secondId!, player.id);
-    if (!first || !second) throw gameError('animal_not_found', 'Animal not found.');
+    if (!first || !second) {
+      throw gameError('animal_not_found', 'Animal not found.', { i18nKey: 'errors.animal.not_found' });
+    }
     if (first.animalKey !== second.animalKey) {
-      throw gameError('breeding_unavailable', 'Both animals must be of the same species.');
+      throw gameError('breeding_unavailable', 'Both animals must be of the same species.', {
+        i18nKey: 'errors.animal.same_species_required',
+      });
     }
 
     const animalConfig = config.animals.get(first.animalKey);
-    if (!animalConfig) throw gameError('animal_not_found', 'Unknown species.');
+    if (!animalConfig) {
+      throw gameError('animal_not_found', 'Unknown species.', {
+        i18nKey: 'errors.animal.unknown_species_generic',
+      });
+    }
     if (!animalConfig.breedable) {
-      throw gameError('breeding_unavailable', `${animalConfig.name} does not breed.`);
+      throw gameError('breeding_unavailable', `${animalConfig.name} does not breed.`, {
+        i18nKey: 'errors.animal.cannot_breed',
+        params: { name: animalConfig.name },
+      });
     }
 
     for (const parent of [first, second]) {
@@ -650,14 +720,19 @@ export async function breed(
         now.getTime() - parent.lastBredAt.getTime() <
           animalConfig.breedingCooldownSeconds * 1_000 * (1 - (animalConfig.passiveBonus.breedingSpeed ?? 0))
       ) {
-        throw gameError('cooldown', `${animalConfig.name} must rest before another litter.`);
+        throw gameError('cooldown', `${animalConfig.name} must rest before another litter.`, {
+          i18nKey: 'errors.animal.breeding_cooldown',
+          params: { name: animalConfig.name },
+        });
       }
     }
 
     const building = await animalRepo.getBuilding(player.farmId, animalConfig.buildingKey, tx);
     const used = await animalRepo.countAnimalsInBuilding(player.farmId, animalConfig.buildingKey, tx);
     if (!building || used + 1 > building.capacity) {
-      throw gameError('building_full', 'No free space for the offspring.');
+      throw gameError('building_full', 'No free space for the offspring.', {
+        i18nKey: 'errors.animal.no_space_offspring',
+      });
     }
 
     const cost = balance.animals.breedingCostCoins;
@@ -678,7 +753,7 @@ export async function breed(
     await animalRepo.updateAnimals([first.id, second.id], { lastBredAt: now }, tx);
 
     if (!outcome.success) {
-      return { success: false, reason: outcome.reason, cost };
+      return { success: false, reasonKey: outcome.reasonKey, reasonParams: outcome.reasonParams, cost };
     }
 
     const childId = uuidv7();

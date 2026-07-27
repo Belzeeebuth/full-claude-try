@@ -86,7 +86,11 @@ export async function charge(input: PayInput, tx: Executor): Promise<number> {
       currency === 'coins'
         ? `You are ${missing.toLocaleString('en-US')} 🪙 short.`
         : `You are ${missing.toLocaleString('en-US')} 💎 short.`,
-      { context: { required: input.amount, owned, missing } },
+      {
+        context: { required: input.amount, owned, missing },
+        i18nKey: currency === 'coins' ? 'common.insufficient_funds' : 'common.insufficient_gems',
+        params: { missing },
+      },
     );
   }
 
@@ -123,7 +127,11 @@ export async function bankStatus(userId: string): Promise<BankResult> {
     playerRepo.getBankAccount(userId),
     playerRepo.findUserById(userId),
   ]);
-  if (!account || !user) throw gameError('not_registered', 'Account not found.');
+  if (!account || !user) {
+    throw gameError('not_registered', 'Account not found.', {
+      i18nKey: 'errors.economy.account_not_found',
+    });
+  }
   return {
     balance: account.balance,
     walletBalance: user.coins,
@@ -139,25 +147,39 @@ export async function bankStatus(userId: string): Promise<BankResult> {
  * riche gagnerait passivement plus que tout le reste du jeu réuni.
  */
 export async function deposit(userId: string, amount: number): Promise<BankResult> {
-  if (amount <= 0) throw gameError('quantity_invalid', 'The amount must be positive.');
+  if (amount <= 0) {
+    throw gameError('quantity_invalid', 'The amount must be positive.', {
+      i18nKey: 'errors.economy.amount_must_be_positive',
+    });
+  }
 
   return withTransaction(async (tx) => {
     await lockUserRow(tx, userId);
     const account = await economyRepo.lockBankAccount(tx, userId);
-    if (!account) throw gameError('not_registered', 'Bank account not found.');
+    if (!account) {
+      throw gameError('not_registered', 'Bank account not found.', {
+        i18nKey: 'errors.economy.bank_not_found',
+      });
+    }
 
     if (account.balance + amount > account.capacity) {
       throw gameError(
         'bank_capacity',
         `Your vault can only hold ${account.capacity.toLocaleString('en-US')} 🪙.`,
-        { hint: 'Upgrade your bank with `/bank upgrade`.' },
+        {
+          i18nKey: 'errors.economy.bank_capacity',
+          hintKey: 'errors.economy.bank_capacity_hint',
+          params: { capacity: account.capacity },
+        },
       );
     }
 
     await charge({ userId, amount, type: 'bank_deposit' }, tx);
     const balanceAfter = await economyRepo.updateBankBalance(userId, amount, tx);
     if (balanceAfter === null) {
-      throw gameError('bank_capacity', 'Deposit refused: capacity exceeded.');
+      throw gameError('bank_capacity', 'Deposit refused: capacity exceeded.', {
+        i18nKey: 'errors.economy.deposit_refused',
+      });
     }
 
     const user = await playerRepo.findUserById(userId, tx);
@@ -172,18 +194,27 @@ export async function deposit(userId: string, amount: number): Promise<BankResul
 }
 
 export async function withdraw(userId: string, amount: number): Promise<BankResult> {
-  if (amount <= 0) throw gameError('quantity_invalid', 'The amount must be positive.');
+  if (amount <= 0) {
+    throw gameError('quantity_invalid', 'The amount must be positive.', {
+      i18nKey: 'errors.economy.amount_must_be_positive',
+    });
+  }
 
   return withTransaction(async (tx) => {
     await lockUserRow(tx, userId);
     const account = await economyRepo.lockBankAccount(tx, userId);
-    if (!account) throw gameError('not_registered', 'Bank account not found.');
+    if (!account) {
+      throw gameError('not_registered', 'Bank account not found.', {
+        i18nKey: 'errors.economy.bank_not_found',
+      });
+    }
 
     const balanceAfter = await economyRepo.updateBankBalance(userId, -amount, tx);
     if (balanceAfter === null) {
       throw gameError(
         'insufficient_funds',
         `Your vault only holds ${account.balance.toLocaleString('en-US')} 🪙.`,
+        { i18nKey: 'errors.economy.vault_insufficient', params: { balance: account.balance } },
       );
     }
 
@@ -203,16 +234,23 @@ export async function upgradeBank(userId: string, level: number): Promise<{ tier
   const balance = getBalance();
   return withTransaction(async (tx) => {
     const account = await economyRepo.lockBankAccount(tx, userId);
-    if (!account) throw gameError('not_registered', 'Bank account not found.');
+    if (!account) {
+      throw gameError('not_registered', 'Bank account not found.', {
+        i18nKey: 'errors.economy.bank_not_found',
+      });
+    }
 
     const nextTier = balance.bank.tiers.find((tier) => tier.tier === account.tier + 1);
     if (!nextTier) {
-      throw gameError('invalid_state', 'Your bank is already at the maximum level.');
+      throw gameError('invalid_state', 'Your bank is already at the maximum level.', {
+        i18nKey: 'errors.economy.bank_max_level',
+      });
     }
     if (level < nextTier.requiredLevel) {
       throw gameError(
         'level_too_low',
         `The bank upgrade requires level ${nextTier.requiredLevel}.`,
+        { i18nKey: 'errors.economy.bank_upgrade_level', params: { level: nextTier.requiredLevel } },
       );
     }
 
@@ -239,12 +277,21 @@ export async function gift(
   options: { discordGuildId?: string } = {},
 ): Promise<{ sent: number; tax: number; received: number }> {
   const balance = getBalance();
-  if (amount <= 0) throw gameError('quantity_invalid', 'The amount must be positive.');
-  if (from.id === toUserId) throw gameError('target_invalid', 'You cannot gift yourself.');
+  if (amount <= 0) {
+    throw gameError('quantity_invalid', 'The amount must be positive.', {
+      i18nKey: 'errors.economy.amount_must_be_positive',
+    });
+  }
+  if (from.id === toUserId) {
+    throw gameError('target_invalid', 'You cannot gift yourself.', {
+      i18nKey: 'errors.economy.self_gift',
+    });
+  }
   if (from.level < balance.economy.giftMinLevel) {
     throw gameError(
       'level_too_low',
       `Gifts are available from level ${balance.economy.giftMinLevel}.`,
+      { i18nKey: 'errors.economy.gift_min_level', params: { level: balance.economy.giftMinLevel } },
     );
   }
 
@@ -255,6 +302,10 @@ export async function gift(
       'forbidden',
       `Gift cap reached: ${balance.economy.giftDailyLimit.toLocaleString('en-US')} 🪙 per 24 h ` +
         `(already gifted: ${alreadyGifted.toLocaleString('en-US')} 🪙).`,
+      {
+        i18nKey: 'errors.economy.gift_cap',
+        params: { limit: balance.economy.giftDailyLimit, gifted: alreadyGifted },
+      },
     );
   }
 

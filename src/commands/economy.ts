@@ -131,7 +131,7 @@ const vendre: Command = {
     const quantity = raw === 'tout' || raw === 'all' ? ('all' as const) : Number.parseInt(raw, 10);
 
     if (quantity !== 'all' && (!Number.isFinite(quantity) || quantity <= 0)) {
-      throw gameError('quantity_invalid', 'Invalid quantity: give a number or "all".');
+      throw gameError('quantity_invalid', context.t('economy.invalid_quantity_or_all'));
     }
 
     const result = await marketService.sell(context.player, {
@@ -250,7 +250,7 @@ export async function sendMarketChart(
   const item = inventoryService.requireItem(itemKey);
   const rows = await marketService.getMarket({}, context.locale);
   const row = rows.find((entry) => entry.itemKey === itemKey);
-  if (!row) throw gameError('not_found', `${item.name} is not tracked by the market.`);
+  if (!row) throw gameError('not_found', context.t('market.not_tracked', { item: item.name }));
 
   const points = await marketService.getPriceHistory(itemKey);
   const image = await renderChartImage({
@@ -432,7 +432,10 @@ const utiliser: Command = {
     const item = inventoryService.requireItem(itemKey);
 
     if (!item.effect?.type) {
-      throw gameError('item_unknown', `${item.emoji} ${item.name} cannot be used directly.`);
+      throw gameError(
+        'item_unknown',
+        context.t('errors.consumable.not_directly_usable', { item: item.name }),
+      );
     }
 
     const { useConsumable } = await import('../services/consumable.service');
@@ -614,9 +617,11 @@ const donner: Command = {
     const target = interaction.options.getUser('user', true);
     const amount = interaction.options.getInteger('amount', true);
 
-    if (target.bot) throw gameError('target_invalid', 'Bots do not have a wallet.');
+    if (target.bot) throw gameError('target_invalid', context.t('economy.bots_no_wallet'));
     const targetUser = await playerRepo.findUserByDiscordId(target.id);
-    if (!targetUser) throw gameError('not_found', `${target.displayName} does not have a farm yet.`);
+    if (!targetUser) {
+      throw gameError('not_found', context.t('economy.target_no_farm', { name: target.displayName }));
+    }
 
     const result = await economyService.gift(context.player, targetUser.id, amount, {
       discordGuildId: context.discordGuildId,

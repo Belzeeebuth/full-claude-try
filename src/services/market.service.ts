@@ -103,7 +103,12 @@ export async function effectiveUnitPrice(
   const config = getConfig();
   const balance = getBalance();
   const item = config.items.get(itemKey);
-  if (!item) throw gameError('item_unknown', `Unknown item: ${itemKey}`);
+  if (!item) {
+    throw gameError('item_unknown', `Unknown item: ${itemKey}`, {
+      i18nKey: 'errors.item_unknown',
+      params: { item: itemKey },
+    });
+  }
 
   const world = await getWorldState();
   const market = await economyRepo.getMarketPrice(itemKey, executor);
@@ -183,7 +188,8 @@ export async function sell(
 
     if (targets.length === 0) {
       throw gameError('insufficient_items', "You have nothing matching to sell.", {
-        hint: 'Check `/inventory` to see what you own.',
+        i18nKey: 'errors.market.nothing_to_sell',
+        hintKey: 'errors.market.nothing_to_sell_hint',
         suggestedCommand: 'inventory',
       });
     }
@@ -245,7 +251,9 @@ export async function sell(
     }
 
     if (lines.length === 0 || gross <= 0) {
-      throw gameError('insufficient_items', 'Nothing to sell.');
+      throw gameError('insufficient_items', 'Nothing to sell.', {
+        i18nKey: 'errors.market.nothing_to_sell',
+      });
     }
 
     const { net, tax } = economyService.applySalesTax(gross, player.level);
@@ -499,17 +507,23 @@ export async function buy(
 
     if (!stock) {
       throw gameError('not_found', `${item.emoji} ${item.name} is not on sale today.`, {
-        hint: 'The shop changes every day at midnight UTC. Check `/shop`.',
+        i18nKey: 'errors.market.not_on_sale',
+        hintKey: 'errors.market.not_on_sale_hint',
+        params: { emoji: item.emoji, item: item.name },
         suggestedCommand: 'shop',
       });
     }
     if (player.level < stock.requiredLevel) {
-      throw gameError('level_too_low', `This article requires level ${stock.requiredLevel}.`);
+      throw gameError('level_too_low', `This article requires level ${stock.requiredLevel}.`, {
+        i18nKey: 'errors.market.item_level_too_low',
+        params: { level: stock.requiredLevel },
+      });
     }
     if (stock.perUserLimit > 0 && quantity > stock.perUserLimit) {
       throw gameError(
         'forbidden',
         `Limit of ${stock.perUserLimit} unit(s) per player for this article.`,
+        { i18nKey: 'errors.market.per_user_limit', params: { limit: stock.perUserLimit } },
       );
     }
 
@@ -518,6 +532,7 @@ export async function buy(
       throw gameError(
         'not_found',
         `Not enough stock: only ${stock.stockRemaining} unit(s) left.`,
+        { i18nKey: 'errors.market.out_of_stock', params: { remaining: stock.stockRemaining } },
       );
     }
 

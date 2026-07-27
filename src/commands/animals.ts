@@ -262,11 +262,15 @@ const reproduire: Command = {
     });
 
     if (!result.success) {
+      const reason = context.t(result.reasonKey ?? 'errors.animal.breed_failed', result.reasonParams);
       await interaction.editReply({
         embeds: [
           baseEmbed({
-            title: '💔 No litter this time',
-            description: `${result.reason ?? 'The attempt failed.'}\nCost incurred: ${formatCoins(result.cost)}.`,
+            title: `💔 ${context.t('animals.breed_failed_title')}`,
+            description: context.t('animals.breed_failed_body', {
+              reason,
+              cost: formatCoins(result.cost, false, context.locale),
+            }),
             color: COLORS.warning,
           }),
         ],

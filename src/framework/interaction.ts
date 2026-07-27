@@ -10,10 +10,10 @@ import {
 } from 'discord.js';
 import { balance as getBalance, getConfig } from '../config';
 import { env } from '../config/env';
-import { translatorFor, normalizeLocale } from '../i18n';
+import { translate, translatorFor, normalizeLocale } from '../i18n';
 import { ensurePlayer } from '../services/player.service';
 import { getMaintenance } from '../services/misc.service';
-import { CooldownError, GameError, MaintenanceError, isGameError, toError } from '../utils/errors';
+import { MaintenanceError, isGameError, toError } from '../utils/errors';
 import { LockBusyError } from '../utils/lock';
 import { NotOwnerError } from '../utils/custom-id';
 import { moduleLogger } from '../utils/logger';
@@ -163,41 +163,51 @@ export interface ErrorReport {
   code: string;
 }
 
-export function classifyError(error: unknown, context?: CommandContext): ErrorReport {
+/**
+ * Traducteur de repli quand aucun `CommandContext` n'est encore disponible
+ * (échec de propriété d'un composant, verrou pris avant la résolution du
+ * joueur…) : on retombe sur la locale Discord de l'interaction plutôt que sur
+ * le français fixe, pour qu'un client anglophone ne voie pas du français.
+ */
+function resolveTranslator(context: CommandContext | undefined, fallbackLocale?: string | null) {
+  return context?.t ?? translatorFor(normalizeLocale(fallbackLocale));
+}
+
+export function classifyError(
+  error: unknown,
+  context?: CommandContext,
+  fallbackLocale?: string | null,
+): ErrorReport {
+  const t = resolveTranslator(context, fallbackLocale ?? context?.locale);
+
   if (error instanceof MaintenanceError) {
-    return { userMessage: `🛠️ ${error.message}`, report: false, code: 'maintenance' };
+    return { userMessage: t('common.maintenance', { message: error.message }), report: false, code: 'maintenance' };
   }
   if (error instanceof NotOwnerError) {
     return {
-      userMessage: "This button is not yours — run the command to get your own.",
+      userMessage: t('common.not_your_button'),
       report: false,
       code: 'not_owner',
     };
   }
   if (error instanceof LockBusyError) {
     return {
-      userMessage: '⏳ An action is already running, give it a second.',
+      userMessage: t('common.action_in_progress'),
       report: false,
       code: 'busy',
     };
   }
-  if (error instanceof CooldownError) {
-    return {
-      userMessage: `⏳ Easy! Try again ${discordTimestamp(error.retryAt, 'R')}.`,
-      report: false,
-      code: 'cooldown',
-    };
-  }
   if (isGameError(error)) {
-    const hint = error.hint ? `\n💡 ${error.hint}` : '';
-    return { userMessage: `${error.message}${hint}`, report: false, code: error.code };
+    const message = error.i18nKey ? t(error.i18nKey, error.params) : error.message;
+    const hintText = error.hintKey ? t(error.hintKey, error.params) : error.hint;
+    const hint = hintText ? `\n💡 ${hintText}` : '';
+    return { userMessage: `${message}${hint}`, report: false, code: error.code };
   }
 
   const normalized = toError(error);
   log.error({ err: normalized, userId: context?.player.discordId }, 'erreur non gérée');
   return {
-    userMessage:
-      "😵 Something went wrong. The incident was logged, try again in a moment.",
+    userMessage: t('common.unknown_error'),
     report: true,
     code: 'internal',
   };
@@ -209,10 +219,11 @@ export async function replyError(
   error: unknown,
   context?: CommandContext,
 ): Promise<ErrorReport> {
-  const report = classifyError(error, context);
+  const report = classifyError(error, context, interaction.locale);
+  const t = resolveTranslator(context, interaction.locale);
   const embed = isGameError(error)
-    ? warningEmbed('Action impossible', report.userMessage)
-    : errorEmbed('Oops', report.userMessage);
+    ? warningEmbed(t('common.action_failed_title'), report.userMessage)
+    : errorEmbed(t('common.internal_error_title'), report.userMessage);
 
   const components =
     isGameError(error) && error.suggestedCommand
@@ -226,19 +237,21 @@ export async function replyError(
 }
 
 /** Embed « vous n'avez pas encore de ferme ». */
-export function noAccountEmbed() {
+export function noAccountEmbed(locale?: string | null) {
+  const t = translatorFor(normalizeLocale(locale));
   return baseEmbed({
-    title: '🌱 Welcome!',
-    description:
-      "You do not have a farm yet.\nRun **`/start`** to receive your first plots, " +
-      'your bag of seeds and your 500 🪙 to get going.',
+    title: `🌱 ${t('common.no_account_title')}`,
+    description: t('common.no_account'),
     color: COLORS.info,
   });
 }
 
 /** Message de cooldown lisible. */
-export function cooldownMessage(retryAt: Date): string {
-  return `⏳ Easy! You can use this command again ${discordTimestamp(retryAt, 'R')} (in ${formatDuration(retryAt.getTime() - Date.now())}).`;
+export function cooldownMessage(retryAt: Date, locale?: string | null): string {
+  const normalized = normalizeLocale(locale);
+  return translate(normalized, 'common.cooldown', {
+    when: `${discordTimestamp(retryAt, 'R')} (${formatDuration(retryAt.getTime() - Date.now(), normalized)})`,
+  });
 }
 
 /** Type-guard utilitaire pour les interactions de composant que l'on gère. */

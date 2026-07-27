@@ -60,7 +60,7 @@ export interface CoopInfo {
 export async function getCoopInfo(coopId: string, viewerId?: string): Promise<CoopInfo> {
   const balance = getBalance();
   const coop = await socialRepo.findCoopById(coopId);
-  if (!coop) throw gameError('coop_not_found', 'Co-op not found.');
+  if (!coop) throw gameError('coop_not_found', 'Co-op not found.', { i18nKey: 'errors.coop.not_found' });
 
   const state = coopLevelState({ level: coop.level, xp: coop.xp }, balance);
   const membership = viewerId ? await socialRepo.getMembership(viewerId) : undefined;
@@ -96,7 +96,7 @@ export async function requireMembership(userId: string) {
   const membership = await socialRepo.getMembership(userId);
   if (!membership) {
     throw gameError('coop_not_member', "You are not in a co-op.", {
-      hint: 'Create one with `/coop create` or join one with `/coop join`.',
+      i18nKey: 'coop.not_member',
       suggestedCommand: 'coop',
     });
   }
@@ -115,15 +115,19 @@ export async function createCoop(
     throw gameError(
       'quantity_invalid',
       'The name must be 3 to 32 characters (letters, digits, spaces, apostrophes, hyphens).',
+      { i18nKey: 'errors.coop.invalid_name' },
     );
   }
   if (!TAG_PATTERN.test(tag)) {
-    throw gameError('quantity_invalid', "The tag must be 2 to 5 alphanumeric characters.");
+    throw gameError('quantity_invalid', "The tag must be 2 to 5 alphanumeric characters.", {
+      i18nKey: 'errors.coop.invalid_tag',
+    });
   }
   if (player.level < balance.coop.creationMinLevel) {
     throw gameError(
       'level_too_low',
       `Creating a co-op requires level ${balance.coop.creationMinLevel}.`,
+      { i18nKey: 'errors.coop.creation_min_level', params: { level: balance.coop.creationMinLevel } },
     );
   }
 
@@ -132,14 +136,16 @@ export async function createCoop(
     const existing = await socialRepo.getMembership(player.id, tx);
     if (existing) {
       throw gameError('coop_already_member', 'You are already in a co-op.', {
-        hint: 'Leave it with `/coop leave` before creating one.',
+        i18nKey: 'coop.already_member',
       });
     }
 
     const taken = await socialRepo.findCoopByNameOrTag(name, tx);
     const tagTaken = await socialRepo.findCoopByNameOrTag(tag, tx);
     if (taken || tagTaken) {
-      throw gameError('coop_name_taken', 'That name or tag is already taken.');
+      throw gameError('coop_name_taken', 'That name or tag is already taken.', {
+        i18nKey: 'coop.name_taken',
+      });
     }
 
     await economyService.charge(
@@ -175,23 +181,38 @@ export async function joinCoop(
 ): Promise<CoopInfo> {
   return withTransaction(async (tx) => {
     const existing = await socialRepo.getMembership(player.id, tx);
-    if (existing) throw gameError('coop_already_member', 'You are already in a co-op.');
+    if (existing) {
+      throw gameError('coop_already_member', 'You are already in a co-op.', {
+        i18nKey: 'coop.already_member',
+      });
+    }
 
     const coop = await socialRepo.findCoopByNameOrTag(query, tx);
-    if (!coop) throw gameError('coop_not_found', `No co-op named "${query}".`);
+    if (!coop) {
+      throw gameError('coop_not_found', `No co-op named "${query}".`, {
+        i18nKey: 'errors.coop.not_found_named',
+        params: { query },
+      });
+    }
     if (!coop.isPublic) {
-      throw gameError('coop_forbidden', 'This co-op is invite-only.');
+      throw gameError('coop_forbidden', 'This co-op is invite-only.', {
+        i18nKey: 'errors.coop.invite_only',
+      });
     }
     if (player.level < coop.joinRequirementLevel) {
       throw gameError(
         'level_too_low',
         `${coop.name} requires level ${coop.joinRequirementLevel}.`,
+        { i18nKey: 'errors.level_too_low', params: { name: coop.name, level: coop.joinRequirementLevel } },
       );
     }
 
     const joined = await socialRepo.joinCoop(coop.id, player.id, tx);
     if (!joined) {
-      throw gameError('coop_full', `${coop.name} is full (${coop.memberLimit} members).`);
+      throw gameError('coop_full', `${coop.name} is full (${coop.memberLimit} members).`, {
+        i18nKey: 'errors.coop.full_named',
+        params: { name: coop.name, limit: coop.memberLimit },
+      });
     }
 
     return getCoopInfo(coop.id, player.id);
@@ -208,16 +229,22 @@ export async function inviteMember(
 ): Promise<{ coopName: string }> {
   const membership = await requireMembership(player.id);
   if (!canManageMembers(membership.member.role as CoopRole)) {
-    throw gameError('coop_forbidden', 'Only officers and the leader can invite.');
+    throw gameError('coop_forbidden', 'Only officers and the leader can invite.', {
+      i18nKey: 'errors.coop.invite_forbidden',
+    });
   }
 
   return withTransaction(async (tx) => {
     const targetMembership = await socialRepo.getMembership(targetUserId, tx);
     if (targetMembership) {
-      throw gameError('coop_already_member', 'That player is already in a co-op.');
+      throw gameError('coop_already_member', 'That player is already in a co-op.', {
+        i18nKey: 'errors.coop.target_already_member',
+      });
     }
     const joined = await socialRepo.joinCoop(membership.coop.id, targetUserId, tx);
-    if (!joined) throw gameError('coop_full', 'Your co-op is full.');
+    if (!joined) {
+      throw gameError('coop_full', 'Your co-op is full.', { i18nKey: 'errors.coop.own_full' });
+    }
     return { coopName: membership.coop.name };
   });
 }
@@ -227,7 +254,7 @@ export async function leaveCoop(player: PlayerContext): Promise<{ coopName: stri
 
   return withTransaction(async (tx) => {
     const coop = await socialRepo.lockCoop(tx, membership.coop.id);
-    if (!coop) throw gameError('coop_not_found', 'Co-op not found.');
+    if (!coop) throw gameError('coop_not_found', 'Co-op not found.', { i18nKey: 'errors.coop.not_found' });
 
     // Le chef ne peut pas partir sans transmettre : sinon la trésorerie et les
     // objectifs se retrouveraient sans responsable.
@@ -235,6 +262,7 @@ export async function leaveCoop(player: PlayerContext): Promise<{ coopName: stri
       throw gameError(
         'coop_forbidden',
         'As the leader, hand over the lead first with `/coop promote`.',
+        { i18nKey: 'errors.coop.leader_must_transfer' },
       );
     }
 
@@ -251,19 +279,27 @@ export async function kickMember(
   const membership = await requireMembership(player.id);
   const actorRole = membership.member.role as CoopRole;
   if (!canManageMembers(actorRole)) {
-    throw gameError('coop_forbidden', 'Only officers and the leader can kick.');
+    throw gameError('coop_forbidden', 'Only officers and the leader can kick.', {
+      i18nKey: 'errors.coop.kick_forbidden',
+    });
   }
   if (targetUserId === player.id) {
-    throw gameError('target_invalid', 'Use `/coop leave` to go.');
+    throw gameError('target_invalid', 'Use `/coop leave` to go.', {
+      i18nKey: 'errors.coop.use_leave_command',
+    });
   }
 
   return withTransaction(async (tx) => {
     const target = await socialRepo.getMembership(targetUserId, tx);
     if (!target || target.member.guildId !== membership.coop.id) {
-      throw gameError('coop_not_member', "That player is not in your co-op.");
+      throw gameError('coop_not_member', "That player is not in your co-op.", {
+        i18nKey: 'errors.coop.target_not_member',
+      });
     }
     if (!canActOn(actorRole, target.member.role as CoopRole)) {
-      throw gameError('coop_forbidden', 'You cannot kick a member of equal or higher rank.');
+      throw gameError('coop_forbidden', 'You cannot kick a member of equal or higher rank.', {
+        i18nKey: 'errors.coop.cannot_kick_rank',
+      });
     }
     await socialRepo.leaveCoop(membership.coop.id, targetUserId, tx);
     return { coopName: membership.coop.name };
@@ -277,13 +313,17 @@ export async function promoteMember(
 ): Promise<{ role: CoopRole; roleLabel: string }> {
   const membership = await requireMembership(player.id);
   if (membership.member.role !== 'owner') {
-    throw gameError('coop_forbidden', 'Only the leader can change ranks.');
+    throw gameError('coop_forbidden', 'Only the leader can change ranks.', {
+      i18nKey: 'errors.coop.promote_forbidden',
+    });
   }
 
   return withTransaction(async (tx) => {
     const target = await socialRepo.getMembership(targetUserId, tx);
     if (!target || target.member.guildId !== membership.coop.id) {
-      throw gameError('coop_not_member', "That player is not in your co-op.");
+      throw gameError('coop_not_member', "That player is not in your co-op.", {
+        i18nKey: 'errors.coop.target_not_member',
+      });
     }
 
     await socialRepo.setMemberRole(membership.coop.id, targetUserId, role, tx);
@@ -313,13 +353,17 @@ export async function contribute(
   amount: number,
 ): Promise<{ treasury: number; coopXp: number; level: number; levelsGained: number }> {
   const balance = getBalance();
-  if (amount <= 0) throw gameError('quantity_invalid', 'The amount must be positive.');
+  if (amount <= 0) {
+    throw gameError('quantity_invalid', 'The amount must be positive.', {
+      i18nKey: 'errors.economy.amount_must_be_positive',
+    });
+  }
   const membership = await requireMembership(player.id);
 
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const coop = await socialRepo.lockCoop(tx, membership.coop.id);
-    if (!coop) throw gameError('coop_not_found', 'Co-op not found.');
+    if (!coop) throw gameError('coop_not_found', 'Co-op not found.', { i18nKey: 'errors.coop.not_found' });
 
     await economyService.charge(
       {
@@ -376,7 +420,9 @@ export async function withdrawTreasury(
   const balance = getBalance();
   const membership = await requireMembership(player.id);
   if (!canWithdrawTreasury(membership.member.role as CoopRole, balance)) {
-    throw gameError('coop_forbidden', 'Your rank does not allow withdrawing from the treasury.');
+    throw gameError('coop_forbidden', 'Your rank does not allow withdrawing from the treasury.', {
+      i18nKey: 'errors.coop.withdraw_forbidden',
+    });
   }
 
   return withTransaction(async (tx) => {
@@ -390,7 +436,9 @@ export async function withdrawTreasury(
       tx,
     );
     if (treasury === null) {
-      throw gameError('insufficient_funds', 'The treasury is insufficient.');
+      throw gameError('insufficient_funds', 'The treasury is insufficient.', {
+        i18nKey: 'errors.coop.treasury_insufficient',
+      });
     }
     await economyService.pay(
       {

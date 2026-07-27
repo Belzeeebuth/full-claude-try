@@ -20,7 +20,6 @@ import {
   progressBar,
   qualityIcon,
   mutationIcon,
-  rarityLabel,
   truncate,
 } from '../utils/format';
 import { COLORS, baseEmbed, button, farmShortcutsRow, paginationRow, row, select, selectRow } from './ui';
@@ -499,7 +498,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
             label: `${entry.name} — ${entry.price} 🪙`,
             value: entry.itemKey,
             emoji: entry.emoji,
-            description: `${entry.trendLabel} • ${rarityLabel(entry.rarity)}`,
+            description: `${entry.trendLabel} • ${context.t(`common.rarity.${entry.rarity}`)}`,
           })),
         }),
       ),

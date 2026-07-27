@@ -2,6 +2,7 @@ import { balance as getBalance, getActiveSeasonPass, getConfig, type QuestConfig
 import { lockUserRow, withTransaction, type Executor } from '../db/client';
 import { dailyRng, liveRng } from '../game/rng';
 import { gameError } from '../utils/errors';
+import { discordTimestamp } from '../utils/format';
 import { moduleLogger } from '../utils/logger';
 import * as playerRepo from '../repositories/player.repo';
 import * as progressionRepo from '../repositories/progression.repo';
@@ -305,18 +306,28 @@ export async function claimQuest(player: PlayerContext, questId: string): Promis
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const quest = await progressionRepo.lockQuest(tx, questId, player.id);
-    if (!quest) throw gameError('not_found', 'Quest not found.');
+    if (!quest) {
+      throw gameError('not_found', 'Quest not found.', { i18nKey: 'errors.progression.quest_not_found' });
+    }
     if (quest.status === 'claimed') {
-      throw gameError('invalid_state', 'This reward was already claimed.');
+      throw gameError('invalid_state', 'This reward was already claimed.', {
+        i18nKey: 'errors.progression.reward_already_claimed',
+      });
     }
     if (quest.status !== 'completed' || quest.progress < quest.required) {
       throw gameError('invalid_state', "This quest is not complete.", {
-        hint: `Progression : ${quest.progress}/${quest.required}.`,
+        i18nKey: 'errors.progression.quest_not_complete',
+        hintKey: 'errors.progression.quest_progress_hint',
+        params: { progress: quest.progress, required: quest.required },
       });
     }
 
     const claimed = await progressionRepo.markQuestClaimed(questId, new Date(), tx);
-    if (!claimed) throw gameError('busy', 'Reward already being processed.');
+    if (!claimed) {
+      throw gameError('busy', 'Reward already being processed.', {
+        i18nKey: 'errors.progression.reward_processing',
+      });
+    }
 
     const snapshot = quest.snapshot as QuestSnapshotShape;
     if (snapshot.rewardCoins > 0) {
@@ -387,7 +398,7 @@ export async function claimAllQuests(player: PlayerContext): Promise<ClaimResult
     }
   }
   if (results.length === 0) {
-    throw gameError('invalid_state', 'No reward to claim.');
+    throw gameError('invalid_state', 'No reward to claim.', { i18nKey: 'quests.nothing_to_claim' });
   }
   return results;
 }
@@ -409,12 +420,18 @@ export async function rerollQuest(
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const quest = await progressionRepo.lockQuest(tx, questId, player.id);
-    if (!quest) throw gameError('not_found', 'Quest not found.');
+    if (!quest) {
+      throw gameError('not_found', 'Quest not found.', { i18nKey: 'errors.progression.quest_not_found' });
+    }
     if (quest.type !== 'daily') {
-      throw gameError('forbidden', 'Only daily quests can be rerolled.');
+      throw gameError('forbidden', 'Only daily quests can be rerolled.', {
+        i18nKey: 'errors.progression.only_daily_rerollable',
+      });
     }
     if (quest.status !== 'active') {
-      throw gameError('invalid_state', 'This quest can no longer be rerolled.');
+      throw gameError('invalid_state', 'This quest can no longer be rerolled.', {
+        i18nKey: 'errors.progression.reroll_unavailable',
+      });
     }
 
     const rerolls = await progressionRepo.countRerollsToday(player.id, dailyKey, tx);
@@ -422,6 +439,7 @@ export async function rerollQuest(
       throw gameError(
         'forbidden',
         `Limit of ${balance.quests.maxRerollsPerDay} rerolls per day reached.`,
+        { i18nKey: 'quests.reroll_limit', params: { max: balance.quests.maxRerollsPerDay } },
       );
     }
 
@@ -443,7 +461,11 @@ export async function rerollQuest(
     const rng = liveRng(`reroll:${questId}`);
     const chosen = rng.weighted(candidates.map((entry) => ({ value: entry, weight: entry.weight })));
 
-    if (!chosen) throw gameError('not_found', 'No other quest available at your level.');
+    if (!chosen) {
+      throw gameError('not_found', 'No other quest available at your level.', {
+        i18nKey: 'errors.progression.no_other_quest',
+      });
+    }
 
     const replacement = await progressionRepo.replaceQuest(
       questId,
@@ -461,7 +483,11 @@ export async function rerollQuest(
       tx,
     );
 
-    if (!replacement) throw gameError('busy', 'Reroll failed, try again.');
+    if (!replacement) {
+      throw gameError('busy', 'Reroll failed, try again.', {
+        i18nKey: 'errors.progression.reroll_failed',
+      });
+    }
     const snapshot = replacement.snapshot as QuestSnapshotShape;
 
     return {
@@ -526,11 +552,17 @@ export async function claimDaily(
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const streakRow = await progressionRepo.lockStreak(tx, player.id);
-    if (!streakRow) throw gameError('not_registered', 'Account not found.');
+    if (!streakRow) {
+      throw gameError('not_registered', 'Account not found.', {
+        i18nKey: 'errors.economy.account_not_found',
+      });
+    }
 
     if (streakRow.lastClaimDate === today) {
       throw gameError('cooldown', 'You already claimed your reward today.', {
-        hint: `Come back ${nextMidnight(now, timezone).toLocaleString('en-US')}.`,
+        i18nKey: 'errors.progression.daily_already_claimed',
+        hintKey: 'errors.progression.daily_come_back_hint',
+        params: { when: discordTimestamp(nextMidnight(now, timezone), 'R') },
       });
     }
 
@@ -630,13 +662,19 @@ export async function claimAchievement(
 ): Promise<{ name: string; coins: number; gems: number; title: string | null; items: Array<{ itemKey: string; quantity: number }> }> {
   const config = getConfig(player.locale);
   const achievement = config.achievements.get(achievementKey);
-  if (!achievement) throw gameError('not_found', 'Unknown achievement.');
+  if (!achievement) {
+    throw gameError('not_found', 'Unknown achievement.', {
+      i18nKey: 'errors.progression.unknown_achievement',
+    });
+  }
 
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
     const claimed = await progressionRepo.claimAchievement(player.id, achievementKey, tx);
     if (!claimed) {
-      throw gameError('invalid_state', 'This achievement is not unlocked, or was already claimed.');
+      throw gameError('invalid_state', 'This achievement is not unlocked, or was already claimed.', {
+        i18nKey: 'errors.progression.achievement_not_claimable',
+      });
     }
 
     if (achievement.rewardCoins > 0) {
@@ -731,9 +769,18 @@ export async function claimPassTier(
   premium: boolean,
 ): Promise<{ coins: number; gems: number; items: Array<{ itemKey: string; quantity: number }>; title?: string }> {
   const pass = getActiveSeasonPass();
-  if (!pass) throw gameError('not_found', 'No active season pass.');
+  if (!pass) {
+    throw gameError('not_found', 'No active season pass.', {
+      i18nKey: 'errors.progression.no_season_pass',
+    });
+  }
   const tierConfig = pass.tiers.find((entry) => entry.tier === tier);
-  if (!tierConfig) throw gameError('not_found', `Tier ${tier} does not exist.`);
+  if (!tierConfig) {
+    throw gameError('not_found', `Tier ${tier} does not exist.`, {
+      i18nKey: 'errors.progression.tier_not_found',
+      params: { tier },
+    });
+  }
   const rewards = premium ? tierConfig.premium : tierConfig.free;
 
   return withTransaction(async (tx) => {
@@ -745,6 +792,11 @@ export async function claimPassTier(
         premium
           ? 'Premium tier not unlocked (vote for the bot), or already claimed.'
           : 'Tier not reached, or already claimed.',
+        {
+          i18nKey: premium
+            ? 'errors.progression.premium_tier_locked'
+            : 'errors.progression.tier_locked',
+        },
       );
     }
 
@@ -783,12 +835,22 @@ export async function deliverItems(
 ): Promise<{ delivered: number; progress: number; required: number; completed: boolean }> {
   return withTransaction(async (tx) => {
     const quest = await progressionRepo.lockQuest(tx, input.questId, player.id);
-    if (!quest) throw gameError('not_found', 'Contract not found.');
-    if (quest.status !== 'active') throw gameError('invalid_state', 'This contract is closed.');
+    if (!quest) {
+      throw gameError('not_found', 'Contract not found.', {
+        i18nKey: 'errors.progression.contract_not_found',
+      });
+    }
+    if (quest.status !== 'active') {
+      throw gameError('invalid_state', 'This contract is closed.', {
+        i18nKey: 'errors.progression.contract_closed',
+      });
+    }
 
     const snapshot = quest.snapshot as QuestSnapshotShape;
     if (snapshot.objectiveTarget.itemKey !== input.itemKey) {
-      throw gameError('target_invalid', 'This item does not match the contract.');
+      throw gameError('target_invalid', 'This item does not match the contract.', {
+        i18nKey: 'errors.progression.wrong_item',
+      });
     }
 
     const missing = quest.required - quest.progress;

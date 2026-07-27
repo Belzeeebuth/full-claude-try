@@ -28,10 +28,37 @@
     "rate_limited": "🚦 You're going too fast. Try again in {seconds}s.",
     "eco_banned": "🚫 Your economy access is suspended until {when}. Reason: {reason}",
     "no_account": "You don't have a farm yet. Run `/start` to begin!",
+    "no_account_title": "Welcome!",
     "insufficient_funds": "You need {missing} more 🪙 for this.",
     "insufficient_gems": "You need {missing} more 💎 for this.",
     "level_required": "This requires level {level} (you are level {current}).",
-    "energy_required": "You need {cost} ⚡ (you have {current}). Energy regenerates 1 point per minute."
+    "energy_required": "You need {cost} ⚡ (you have {current}). Energy regenerates 1 point per minute.",
+    "quality": {
+      "normal": "Normal",
+      "silver": "Silver",
+      "gold": "Gold",
+      "iridium": "Iridium"
+    },
+    "rarity": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "mythic": "Mythic"
+    },
+    "action_failed_title": "Action failed",
+    "internal_error_title": "Oops",
+    "rate_limited_title": "Slow down!",
+    "unknown_command_title": "Unknown command",
+    "unknown_command_body": "This command no longer exists. Try again later.",
+    "guild_only_title": "Server required",
+    "guild_only_body": "This command only works inside a server.",
+    "admin_only_title": "Access denied",
+    "admin_only_body": "Reserved for bot administrators.",
+    "component_expired_title": "Component expired",
+    "component_expired_body": "This message comes from an older version of the bot. Run the command again.",
+    "cooldown_title": "On cooldown"
   },
   "start": {
     "welcome_title": "🌾 Welcome to Greendale!",
@@ -53,7 +80,8 @@
     "needs_water": "Needs water",
     "summary": "{ready} ready • {growing} growing • {empty} empty • {locked} locked",
     "nothing_planted": "Nothing planted. Use `/plant` to start.",
-    "render_failed": "Image rendering failed, here is the text version."
+    "render_failed": "Image rendering failed, here is the text version.",
+    "bots_no_farm": "Bots do not farm."
   },
   "harvest": {
     "nothing_ready": "Nothing is ready yet. Check `/farm` for timers.",
@@ -151,6 +179,10 @@
       "legend": "Min {min} 🪙   •   Max {max} 🪙   •   {count} history point(s)"
     }
   },
+  "profile": {
+    "unknown_timezone": "Unknown time zone: `{timezone}`.",
+    "unknown_timezone_hint": "Examples: Europe/Paris, America/Montreal, Indian/Reunion."
+  },
   "settings": {
     "language_title": "Language",
     "language_current": "Your interface is currently set to **{language}**. Pick a language below.",
@@ -217,7 +249,14 @@
     "not_sellable": "{item} cannot be sold.",
     "trend_up": "rising",
     "trend_down": "falling",
-    "trend_flat": "stable"
+    "trend_flat": "stable",
+    "not_tracked": "{item} is not tracked by the market."
+  },
+  "trade": {
+    "bots_no_trade": "Bots do not trade."
+  },
+  "social": {
+    "cannot_help_self": "You cannot help yourself."
   },
   "animals": {
     "title": "🐄 {name}'s livestock",
@@ -230,7 +269,9 @@
     "no_building": "You need a {building} to house this animal.",
     "building_full": "Your {building} is full ({capacity} slots).",
     "not_hungry": "{name} is not hungry right now.",
-    "nothing_to_collect": "Nothing to collect."
+    "nothing_to_collect": "Nothing to collect.",
+    "breed_failed_title": "No litter this time",
+    "breed_failed_body": "{reason}\nCost incurred: {cost}."
   },
   "quests": {
     "title": "📋 {name}'s quests",
@@ -270,6 +311,27 @@
     "season": "Season: {season} ({progress}%)",
     "next_season": "{season} starts {when}"
   },
+  "consumable": {
+    "energy": "⚡ Energy restored: **{energy}/{max}**.",
+    "water_all": "💧 **{count}** plot(s) watered instantly, without spending energy.",
+    "boost_active": "✨ Bonus active: **{label}** for {minutes} minutes.",
+    "label_xp": "+{pct}% XP",
+    "label_growth": "×{multiplier} growth speed",
+    "label_luck": "+{pct}% luck",
+    "pest_repel": "🪤 No pest on your farm for {hours} h.",
+    "pest_cure": "🧯 **{count}** plot(s) cleared.",
+    "streak_freeze": "🧊 **{count}** freeze token(s) added: your streak will survive {count} missed day(s).",
+    "appearance": "🎨 Appearance applied: **{value}**. Check `/profile`!"
+  },
+  "progression": {
+    "prestige_locked_title": "Rebirth",
+    "prestige_locked_body": "{reason}\n\nPrestige unlocks at **level {level}**."
+  },
+  "economy": {
+    "invalid_quantity_or_all": "Invalid quantity: give a number or \"all\".",
+    "bots_no_wallet": "Bots do not have a wallet.",
+    "target_no_farm": "{name} does not have a farm yet."
+  },
   "errors": {
     "plot_locked": "Plot {slot} is locked. Unlock it with `/buy-plot`.",
     "plot_not_found": "Plot {slot} does not exist.",
@@ -277,6 +339,179 @@
     "quantity_invalid": "Invalid quantity.",
     "target_invalid": "Invalid target.",
     "privacy_blocked": "This player has made their farm private.",
-    "not_found": "Not found."
+    "not_found": "Not found.",
+    "level_too_low": "{name} requires level {level}.",
+    "player_not_found": "Player not found.",
+    "farm": {
+      "unknown_crop": "Unknown crop: `{cropKey}`.",
+      "plot_locked_hint": "Unlock it for {cost} 🪙.",
+      "plot_occupied_hint": "Harvest it with `/harvest`, or clear it if the crop withered.",
+      "water_hint": "Check `/farm` to see the next waterings.",
+      "not_a_fertilizer": "{item} is not a fertilizer.",
+      "fully_fertilized": "No plot can be fertilized further.",
+      "no_weeds": "No weeds to pull. Nice work!",
+      "no_pest": "Plot {slot} has no pest.",
+      "all_plots_owned": "You already own all {max} plots. Well done!",
+      "plot_just_unlocked": "That plot was just unlocked."
+    },
+    "market": {
+      "nothing_to_sell": "You have nothing matching to sell.",
+      "nothing_to_sell_hint": "Check `/inventory` to see what you own.",
+      "not_on_sale": "{emoji} {item} is not on sale today.",
+      "not_on_sale_hint": "The shop changes every day at midnight UTC. Check `/shop`.",
+      "item_level_too_low": "This article requires level {level}.",
+      "per_user_limit": "Limit of {limit} unit(s) per player for this article.",
+      "out_of_stock": "Not enough stock: only {remaining} unit(s) left."
+    },
+    "trade": {
+      "item_not_tradable": "{item} cannot be traded.",
+      "too_many_listings": "You already have {active} active listings (maximum {max}).",
+      "price_out_of_bounds": "Price out of bounds: between {min} and {max} 🪙 for this lot.",
+      "price_out_of_bounds_hint": "The bounds protect the market from absurd prices.",
+      "listing_not_found": "Listing not found.",
+      "listing_closed": "This listing is closed.",
+      "cannot_buy_own": "You cannot buy your own listing.",
+      "auction_only": "This listing is auction-only.",
+      "just_sold": "This listing was just sold.",
+      "cannot_bid_own": "You cannot bid on your own listing.",
+      "bid_too_low": "Minimum bid: {minimum} 🪙.",
+      "higher_bid_placed": "A higher bid was just placed.",
+      "cannot_cancel": "Cannot cancel: listing not found, already closed, or a bid was placed.",
+      "self_trade": "You cannot trade with yourself.",
+      "min_level": "Trading is available from level {level}.",
+      "not_found": "Trade not found.",
+      "trade_closed": "This trade is closed.",
+      "not_a_party": "You are not part of this trade.",
+      "max_items": "Maximum {max} items per player.",
+      "not_enough_owned": "You only have {owned}× {item}.",
+      "offer_changed": "The offer changed since you confirmed. Review it and confirm again.",
+      "already_closed": "This trade is already closed."
+    },
+    "craft": {
+      "unknown_recipe": "Unknown recipe: `{recipeKey}`.",
+      "building_required": "You need a {emoji} {name}.",
+      "building_required_hint": "Build one with `/buildings`.",
+      "no_slot": "All slots of your {name} are busy ({slots}).",
+      "no_slot_hint": "Collect a finished run with `/production` or upgrade the building.",
+      "nothing_ready": "No finished production. Check `/production` for the deadlines.",
+      "just_collected": "Those productions were just collected.",
+      "production_not_found": "Production not found.",
+      "already_collected": "This production was already collected.",
+      "unknown_building": "Unknown building: `{buildingKey}`.",
+      "max_tier": "{emoji} {name} is already at the maximum tier ({maxTier}).",
+      "tier_level_too_low": "Tier {tier} of {name} requires level {level}."
+    },
+    "economy": {
+      "account_not_found": "Account not found.",
+      "amount_must_be_positive": "The amount must be positive.",
+      "bank_not_found": "Bank account not found.",
+      "bank_capacity": "Your vault can only hold {capacity} 🪙.",
+      "bank_capacity_hint": "Upgrade your bank with `/bank upgrade`.",
+      "deposit_refused": "Deposit refused: capacity exceeded.",
+      "vault_insufficient": "Your vault only holds {balance} 🪙.",
+      "bank_max_level": "Your bank is already at the maximum level.",
+      "bank_upgrade_level": "The bank upgrade requires level {level}.",
+      "self_gift": "You cannot gift yourself.",
+      "gift_min_level": "Gifts are available from level {level}.",
+      "gift_cap": "Gift cap reached: {limit} 🪙 per 24 h (already gifted: {gifted} 🪙)."
+    },
+    "progression": {
+      "quest_not_found": "Quest not found.",
+      "reward_already_claimed": "This reward was already claimed.",
+      "quest_not_complete": "This quest is not complete.",
+      "quest_progress_hint": "Progress: {progress}/{required}.",
+      "reward_processing": "Reward already being processed.",
+      "only_daily_rerollable": "Only daily quests can be rerolled.",
+      "reroll_unavailable": "This quest can no longer be rerolled.",
+      "no_other_quest": "No other quest available at your level.",
+      "reroll_failed": "Reroll failed, try again.",
+      "daily_already_claimed": "You already claimed your reward today.",
+      "daily_come_back_hint": "Come back {when}.",
+      "unknown_achievement": "Unknown achievement.",
+      "achievement_not_claimable": "This achievement is not unlocked, or was already claimed.",
+      "no_season_pass": "No active season pass.",
+      "tier_not_found": "Tier {tier} does not exist.",
+      "premium_tier_locked": "Premium tier not unlocked (vote for the bot), or already claimed.",
+      "tier_locked": "Tier not reached, or already claimed.",
+      "contract_not_found": "Contract not found.",
+      "contract_closed": "This contract is closed.",
+      "wrong_item": "This item does not match the contract."
+    },
+    "animal": {
+      "unknown_species": "Unknown species: `{animalKey}`.",
+      "event_only": "{emoji} {name} can only be obtained during an event.",
+      "building_required": "You need a {emoji} {name} to house this animal.",
+      "building_full": "Your {name} is full ({used}/{capacity}).",
+      "building_full_hint": "Upgrade it with `/buildings` or sell an animal.",
+      "none_hungry": "No animal is hungry right now.",
+      "nothing_to_collect_hint": "Feed your animals and come back later — a hungry animal produces half as much.",
+      "not_found": "Animal not found.",
+      "dead": "This animal has died.",
+      "unknown_species_generic": "Unknown species.",
+      "pet_cooldown": "This animal has had its share of affection recently.",
+      "perfect_shape": "{name} is in perfect shape.",
+      "need_two_different": "You need two different animals.",
+      "same_species_required": "Both animals must be of the same species.",
+      "cannot_breed": "{name} does not breed.",
+      "breed_sick": "One of the animals is sick.",
+      "breed_unhappy": "Both animals must have at least 50 happiness.",
+      "breed_failed": "Failed attempt.",
+      "breeding_cooldown": "{name} must rest before another litter.",
+      "no_space_offspring": "No free space for the offspring."
+    },
+    "consumable": {
+      "not_directly_usable": "{item} cannot be used directly.",
+      "player_not_found": "Player not found.",
+      "no_infested_plot": "No infested plot. Keep your treatment.",
+      "streak_not_found": "Streak not found.",
+      "use_fertilize_instead": "{emoji} {name} is applied with `/fertilize`, not with `/use`.",
+      "auto_consumed_token": "This token is consumed automatically by `/reroll-quest`.",
+      "unknown_effect": "Unknown effect for {item}."
+    },
+    "coop": {
+      "not_found": "Co-op not found.",
+      "invalid_name": "The name must be 3 to 32 characters (letters, digits, spaces, apostrophes, hyphens).",
+      "invalid_tag": "The tag must be 2 to 5 alphanumeric characters.",
+      "creation_min_level": "Creating a co-op requires level {level}.",
+      "not_found_named": "No co-op named \"{query}\".",
+      "invite_only": "This co-op is invite-only.",
+      "full_named": "{name} is full ({limit} members).",
+      "invite_forbidden": "Only officers and the leader can invite.",
+      "target_already_member": "That player is already in a co-op.",
+      "own_full": "Your co-op is full.",
+      "leader_must_transfer": "As the leader, hand over the lead first with `/coop promote`.",
+      "kick_forbidden": "Only officers and the leader can kick.",
+      "use_leave_command": "Use `/coop leave` to go.",
+      "target_not_member": "That player is not in your co-op.",
+      "cannot_kick_rank": "You cannot kick a member of equal or higher rank.",
+      "promote_forbidden": "Only the leader can change ranks.",
+      "withdraw_forbidden": "Your rank does not allow withdrawing from the treasury.",
+      "treasury_insufficient": "The treasury is insufficient."
+    },
+    "inventory": {
+      "full": "Your warehouse is full ({used}/{capacity}). Sell items with `/sell` or upgrade your warehouse with `/buildings`.",
+      "need_more": "You need {quantity}× {emoji} {name} (you have {owned})."
+    },
+    "player": {
+      "energy_hint": "An energy drink restores 50 ⚡.",
+      "eco_banned": "🚫 Your economy access is suspended until {when}.",
+      "level_required": "{what} requires level {required}.",
+      "level_required_hint": "You are level {current}. Harvest and complete quests to progress.",
+      "prestige_max": "You have reached the maximum number of rebirths ({max}).",
+      "prestige_level": "Prestige requires level {level} (you are level {current}).",
+      "prestige_unavailable": "Prestige unavailable."
+    },
+    "social": {
+      "help_limit": "You have already helped {max} farmers today."
+    },
+    "admin": {
+      "specify_item_key": "Specify the item key.",
+      "unknown_resource": "Unknown resource."
+    }
+  },
+  "admin": {
+    "reload_failed": "Reload refused: the configuration is invalid. **The previous one stays active.**\n```\n{issues}\n```",
+    "no_announce_channel": "No announcement channel configured (`DISCORD_ANNOUNCE_CHANNEL_ID`).",
+    "announce_channel_invalid": "The announcement channel is missing or is not a text channel."
   }
 }

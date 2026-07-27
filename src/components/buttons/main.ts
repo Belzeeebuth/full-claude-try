@@ -78,7 +78,7 @@ const farmButtons: ButtonHandler = {
         await interaction.deferUpdate();
         const summary = await farmService.harvest(context.player, { all: true });
         await interaction.followUp({
-          embeds: [buildHarvestEmbed(summary)],
+          embeds: [buildHarvestEmbed(summary, context.t)],
           flags: MessageFlags.Ephemeral,
         });
         await interaction.editReply(await farmView(context));

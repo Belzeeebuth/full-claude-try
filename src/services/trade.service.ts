@@ -3,6 +3,7 @@ import { lockUserRow, lockUserRows, withTransaction } from '../db/client';
 import { auctionCommission, auctionListingFee, auctionPriceBounds, minimumBid } from '../game/market';
 import { feeOf } from '../game/money';
 import { gameError } from '../utils/errors';
+import { formatNumber } from '../utils/format';
 import { moduleLogger } from '../utils/logger';
 import * as tradeRepo from '../repositories/trade.repo';
 import * as economyRepo from '../repositories/economy.repo';
@@ -109,7 +110,10 @@ export async function createListing(
   const balance = getBalance();
   const item = inventoryService.requireItem(input.itemKey);
   if (!item.tradable) {
-    throw gameError('item_not_tradable', `${item.emoji} ${item.name} cannot be traded.`);
+    throw gameError('item_not_tradable', `${item.emoji} ${item.name} cannot be traded.`, {
+      i18nKey: 'errors.trade.item_not_tradable',
+      params: { item: item.name },
+    });
   }
   const quantity = Math.max(1, Math.floor(input.quantity));
   const duration = balance.auction.durationsHours.includes(input.durationHours ?? 0)
@@ -124,6 +128,10 @@ export async function createListing(
       throw gameError(
         'forbidden',
         `You already have ${active} active listings (maximum ${balance.auction.maxActiveListings}).`,
+        {
+          i18nKey: 'errors.trade.too_many_listings',
+          params: { active, max: balance.auction.maxActiveListings },
+        },
       );
     }
 
@@ -136,7 +144,14 @@ export async function createListing(
       throw gameError(
         'quantity_invalid',
         `Price out of bounds: between ${bounds.min.toLocaleString('en-US')} and ${bounds.max.toLocaleString('en-US')} 🪙 for this lot.`,
-        { hint: 'The bounds protect the market from absurd prices.' },
+        {
+          i18nKey: 'errors.trade.price_out_of_bounds',
+          hintKey: 'errors.trade.price_out_of_bounds_hint',
+          params: {
+            min: formatNumber(bounds.min, player.locale),
+            max: formatNumber(bounds.max, player.locale),
+          },
+        },
       );
     }
 
@@ -197,13 +212,25 @@ export async function buyout(
 
   return withTransaction(async (tx) => {
     const listing = await tradeRepo.lockListing(tx, listingId);
-    if (!listing) throw gameError('auction_not_found', 'Listing not found.');
-    if (listing.status !== 'active') throw gameError('auction_not_found', 'This listing is closed.');
+    if (!listing) {
+      throw gameError('auction_not_found', 'Listing not found.', {
+        i18nKey: 'errors.trade.listing_not_found',
+      });
+    }
+    if (listing.status !== 'active') {
+      throw gameError('auction_not_found', 'This listing is closed.', {
+        i18nKey: 'errors.trade.listing_closed',
+      });
+    }
     if (listing.sellerId === player.id) {
-      throw gameError('auction_own_listing', 'You cannot buy your own listing.');
+      throw gameError('auction_own_listing', 'You cannot buy your own listing.', {
+        i18nKey: 'errors.trade.cannot_buy_own',
+      });
     }
     if (listing.buyoutPrice === null) {
-      throw gameError('invalid_state', 'This listing is auction-only.');
+      throw gameError('invalid_state', 'This listing is auction-only.', {
+        i18nKey: 'errors.trade.auction_only',
+      });
     }
 
     await lockUserRows(tx, [player.id, listing.sellerId]);
@@ -224,7 +251,11 @@ export async function buyout(
     );
 
     const sold = await tradeRepo.markSold(listing.id, player.id, price, tx);
-    if (!sold) throw gameError('busy', 'This listing was just sold.');
+    if (!sold) {
+      throw gameError('busy', 'This listing was just sold.', {
+        i18nKey: 'errors.trade.just_sold',
+      });
+    }
 
     const commission = auctionCommission(price, balance);
     await economyService.pay(
@@ -300,10 +331,20 @@ export async function bid(
 
   return withTransaction(async (tx) => {
     const listing = await tradeRepo.lockListing(tx, listingId);
-    if (!listing) throw gameError('auction_not_found', 'Listing not found.');
-    if (listing.status !== 'active') throw gameError('auction_not_found', 'Listing closed.');
+    if (!listing) {
+      throw gameError('auction_not_found', 'Listing not found.', {
+        i18nKey: 'errors.trade.listing_not_found',
+      });
+    }
+    if (listing.status !== 'active') {
+      throw gameError('auction_not_found', 'Listing closed.', {
+        i18nKey: 'errors.trade.listing_closed',
+      });
+    }
     if (listing.sellerId === player.id) {
-      throw gameError('auction_own_listing', 'You cannot bid on your own listing.');
+      throw gameError('auction_own_listing', 'You cannot bid on your own listing.', {
+        i18nKey: 'errors.trade.cannot_bid_own',
+      });
     }
 
     const minimum = minimumBid(
@@ -314,6 +355,7 @@ export async function bid(
       throw gameError(
         'auction_bid_too_low',
         `Minimum bid: ${minimum.toLocaleString('en-US')} 🪙.`,
+        { i18nKey: 'errors.trade.bid_too_low', params: { minimum: formatNumber(minimum, player.locale) } },
       );
     }
 
@@ -330,7 +372,11 @@ export async function bid(
     );
 
     const result = await tradeRepo.placeBid(listing.id, player.id, amount, minimum, tx);
-    if (!result) throw gameError('busy', 'A higher bid was just placed.');
+    if (!result) {
+      throw gameError('busy', 'A higher bid was just placed.', {
+        i18nKey: 'errors.trade.higher_bid_placed',
+      });
+    }
 
     if (result.previousBidderId && result.previousBid) {
       await economyService.pay(
@@ -376,6 +422,7 @@ export async function cancelListing(
       throw gameError(
         'auction_not_found',
         'Cannot cancel: listing not found, already closed, or a bid was placed.',
+        { i18nKey: 'errors.trade.cannot_cancel' },
       );
     }
 
@@ -527,12 +574,15 @@ export async function openTrade(
 ): Promise<TradeView> {
   const balance = getBalance();
   if (player.id === partnerId) {
-    throw gameError('target_invalid', 'You cannot trade with yourself.');
+    throw gameError('target_invalid', 'You cannot trade with yourself.', {
+      i18nKey: 'errors.trade.self_trade',
+    });
   }
   if (player.level < balance.trade.minLevel) {
     throw gameError(
       'level_too_low',
       `Trading is available from level ${balance.trade.minLevel}.`,
+      { i18nKey: 'errors.trade.min_level', params: { level: balance.trade.minLevel } },
     );
   }
 
@@ -556,7 +606,9 @@ export async function openTrade(
 export async function getTrade(tradeId: string, locale?: string): Promise<TradeView> {
   const config = getConfig(locale);
   const trade = await tradeRepo.findTrade(tradeId);
-  if (!trade) throw gameError('not_found', 'Trade not found.');
+  if (!trade) {
+    throw gameError('not_found', 'Trade not found.', { i18nKey: 'errors.trade.not_found' });
+  }
   const items = await tradeRepo.listTradeItems(tradeId);
 
   return {
@@ -589,26 +641,43 @@ export async function offerItem(
   const balance = getBalance();
   const item = inventoryService.requireItem(input.itemKey);
   if (!item.tradable) {
-    throw gameError('item_not_tradable', `${item.name} cannot be traded.`);
+    throw gameError('item_not_tradable', `${item.name} cannot be traded.`, {
+      i18nKey: 'errors.trade.item_not_tradable',
+      params: { item: item.name },
+    });
   }
 
   return withTransaction(async (tx) => {
     const trade = await tradeRepo.lockTrade(tx, input.tradeId);
-    if (!trade) throw gameError('not_found', 'Trade not found.');
-    if (trade.status !== 'pending') throw gameError('trade_expired', 'This trade is closed.');
+    if (!trade) {
+      throw gameError('not_found', 'Trade not found.', { i18nKey: 'errors.trade.not_found' });
+    }
+    if (trade.status !== 'pending') {
+      throw gameError('trade_expired', 'This trade is closed.', {
+        i18nKey: 'errors.trade.trade_closed',
+      });
+    }
     if (trade.initiatorId !== player.id && trade.partnerId !== player.id) {
-      throw gameError('forbidden', "You are not part of this trade.");
+      throw gameError('forbidden', "You are not part of this trade.", {
+        i18nKey: 'errors.trade.not_a_party',
+      });
     }
 
     const existing = await tradeRepo.listTradeItems(input.tradeId, tx);
     const mine = existing.filter((entry) => entry.item.userId === player.id);
     if (mine.length >= balance.trade.maxItemsPerSide) {
-      throw gameError('forbidden', `Maximum ${balance.trade.maxItemsPerSide} items per player.`);
+      throw gameError('forbidden', `Maximum ${balance.trade.maxItemsPerSide} items per player.`, {
+        i18nKey: 'errors.trade.max_items',
+        params: { max: balance.trade.maxItemsPerSide },
+      });
     }
 
     const owned = await inventoryService.count(player.id, input.itemKey, tx);
     if (owned < input.quantity) {
-      throw gameError('insufficient_items', `You only have ${owned}× ${item.name}.`);
+      throw gameError('insufficient_items', `You only have ${owned}× ${item.name}.`, {
+        i18nKey: 'errors.trade.not_enough_owned',
+        params: { owned, item: item.name },
+      });
     }
 
     await tradeRepo.upsertTradeItem(
@@ -634,17 +703,25 @@ export async function offerCoins(
 ): Promise<TradeView> {
   const balance = getBalance();
   if (input.amount < 0 || input.amount > balance.trade.maxCoinsPerSide) {
-    throw gameError('quantity_invalid', 'Invalid amount.');
+    throw gameError('quantity_invalid', 'Invalid amount.', { i18nKey: 'errors.quantity_invalid' });
   }
 
   return withTransaction(async (tx) => {
     const trade = await tradeRepo.lockTrade(tx, input.tradeId);
-    if (!trade) throw gameError('not_found', 'Trade not found.');
-    if (trade.status !== 'pending') throw gameError('trade_expired', 'This trade is closed.');
+    if (!trade) {
+      throw gameError('not_found', 'Trade not found.', { i18nKey: 'errors.trade.not_found' });
+    }
+    if (trade.status !== 'pending') {
+      throw gameError('trade_expired', 'This trade is closed.', {
+        i18nKey: 'errors.trade.trade_closed',
+      });
+    }
 
     const isInitiator = trade.initiatorId === player.id;
     if (!isInitiator && trade.partnerId !== player.id) {
-      throw gameError('forbidden', "You are not part of this trade.");
+      throw gameError('forbidden', "You are not part of this trade.", {
+        i18nKey: 'errors.trade.not_a_party',
+      });
     }
 
     await tx
@@ -674,6 +751,7 @@ export async function confirmTrade(
       throw gameError(
         'invalid_state',
         "The offer changed since you confirmed. Review it and confirm again.",
+        { i18nKey: 'errors.trade.offer_changed' },
       );
     }
     if (!confirmed.initiatorConfirmed || !confirmed.partnerConfirmed) {
@@ -759,7 +837,11 @@ export async function cancelTrade(
 ): Promise<void> {
   await withTransaction(async (tx) => {
     const cancelled = await tradeRepo.setTradeStatus(tradeId, 'cancelled', player.id, tx);
-    if (!cancelled) throw gameError('invalid_state', 'This trade is already closed.');
+    if (!cancelled) {
+      throw gameError('invalid_state', 'This trade is already closed.', {
+        i18nKey: 'errors.trade.already_closed',
+      });
+    }
   });
 }
 

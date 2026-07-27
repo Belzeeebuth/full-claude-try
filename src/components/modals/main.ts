@@ -10,7 +10,7 @@ import { gameError } from '../../utils/errors';
 import { paramString } from '../../utils/custom-id';
 import { formatCoins, formatNumber } from '../../utils/format';
 import { moduleLogger } from '../../utils/logger';
-import type { ModalHandler } from '../../types';
+import type { ModalHandler, Translator } from '../../types';
 
 const log = moduleLogger('modals');
 
@@ -22,12 +22,12 @@ const log = moduleLogger('modals');
  * quelle chaîne, y compris depuis un script.
  */
 
-function parseQuantity(raw: string, max = 100_000): number {
+function parseQuantity(t: Translator, raw: string, max = 100_000): number {
   const cleaned = raw.trim().toLowerCase().replace(/\s|_/g, '');
   if (cleaned === 'tout' || cleaned === 'all' || cleaned === 'max') return max;
   const value = Number.parseInt(cleaned, 10);
   if (!Number.isFinite(value) || value <= 0) {
-    throw gameError('quantity_invalid', 'Invalid quantity: enter a positive number or "all".');
+    throw gameError('quantity_invalid', t('economy.invalid_quantity_or_all'));
   }
   return Math.min(value, max);
 }
@@ -40,7 +40,7 @@ const shopQuantity: ModalHandler = {
   async execute(interaction: ModalSubmitInteraction, parsed, context): Promise<void> {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const itemKey = paramString(parsed, 0);
-    const quantity = parseQuantity(interaction.fields.getTextInputValue('quantity'), 999);
+    const quantity = parseQuantity(context.t, interaction.fields.getTextInputValue('quantity'), 999);
 
     const result = await marketService.buy(context.player, {
       itemKey,
@@ -95,6 +95,7 @@ const coopContribute: ModalHandler = {
   async execute(interaction: ModalSubmitInteraction, _parsed, context): Promise<void> {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const amount = parseQuantity(
+      context.t,
       interaction.fields.getTextInputValue('quantity'),
       Math.max(1, context.player.coins),
     );
@@ -120,6 +121,7 @@ const tradeCoins: ModalHandler = {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const tradeId = paramString(parsed, 0);
     const amount = parseQuantity(
+      context.t,
       interaction.fields.getTextInputValue('quantity'),
       Math.max(1, context.player.coins),
     );
@@ -145,7 +147,7 @@ const tradeItem: ModalHandler = {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const tradeId = paramString(parsed, 0);
     const itemKey = paramString(parsed, 1);
-    const quantity = parseQuantity(interaction.fields.getTextInputValue('quantity'), 9_999);
+    const quantity = parseQuantity(context.t, interaction.fields.getTextInputValue('quantity'), 9_999);
 
     await tradeService.offerItem(context.player, { tradeId, itemKey, quantity });
     await interaction.editReply({
@@ -169,15 +171,12 @@ const adminAnnounce: ModalHandler = {
     const message = interaction.fields.getTextInputValue('message');
 
     if (!env.DISCORD_ANNOUNCE_CHANNEL_ID) {
-      throw gameError(
-        'invalid_state',
-        'No announcement channel configured (`DISCORD_ANNOUNCE_CHANNEL_ID`).',
-      );
+      throw gameError('invalid_state', context.t('admin.no_announce_channel'));
     }
 
     const channel = await interaction.client.channels.fetch(env.DISCORD_ANNOUNCE_CHANNEL_ID);
     if (!channel?.isTextBased() || !('send' in channel)) {
-      throw gameError('invalid_state', "The announcement channel is missing or is not a text channel.");
+      throw gameError('invalid_state', context.t('admin.announce_channel_invalid'));
     }
 
     await channel.send({

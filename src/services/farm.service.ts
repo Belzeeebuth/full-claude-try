@@ -7,6 +7,7 @@ import { applyFertilizer, describeFertility, fallowRecovery, weedGrowth, type Pe
 import { liveRng } from '../game/rng';
 import { waterMultiplierFor } from '../game/world';
 import { gameError } from '../utils/errors';
+import { formatNumber } from '../utils/format';
 import { moduleLogger } from '../utils/logger';
 import * as economyRepo from '../repositories/economy.repo';
 import * as farmRepo from '../repositories/farm.repo';
@@ -239,13 +240,20 @@ export async function plant(
   const balance = getBalance();
   const crop = config.crops.get(input.cropKey);
   if (!crop || !crop.enabled) {
-    throw gameError('item_unknown', `Unknown crop: \`${input.cropKey}\`.`);
+    throw gameError('item_unknown', `Unknown crop: \`${input.cropKey}\`.`, {
+      i18nKey: 'errors.farm.unknown_crop',
+      params: { cropKey: input.cropKey },
+    });
   }
   if (player.level < crop.requiredLevel) {
     throw gameError(
       'level_too_low',
       `${crop.emoji} ${crop.name} requires level ${crop.requiredLevel}.`,
-      { context: { required: crop.requiredLevel, current: player.level } },
+      {
+        context: { required: crop.requiredLevel, current: player.level },
+        i18nKey: 'plant.wrong_level',
+        params: { crop: crop.name, level: crop.requiredLevel },
+      },
     );
   }
 
@@ -268,7 +276,7 @@ export async function plant(
 
     if (targetSlots.length === 0) {
       throw gameError('plot_empty', 'No free plot.', {
-        hint: 'Harvest your crops or buy a plot with `/buy-plot`.',
+        i18nKey: 'plant.no_free_plot',
         suggestedCommand: 'buy-plot',
       });
     }
@@ -278,15 +286,27 @@ export async function plant(
 
     if (plantable.length === 0) {
       const first = locked[0];
-      if (!first) throw gameError('plot_not_found', `Plot ${targetSlots[0]} not found.`);
+      if (!first) {
+        throw gameError('plot_not_found', `Plot ${targetSlots[0]} not found.`, {
+          i18nKey: 'errors.plot_not_found',
+          params: { slot: targetSlots[0] ?? 0 },
+        });
+      }
       if (first.state === 'locked') {
         throw gameError('plot_locked', `Plot ${first.slot} is locked.`, {
-          hint: `Unlock it for ${plotUnlockCost(first.slot, balance).toLocaleString('en-US')} 🪙 with \`/buy-plot\`.`,
+          i18nKey: 'errors.plot_locked',
+          hintKey: 'errors.farm.plot_locked_hint',
+          params: {
+            slot: first.slot,
+            cost: formatNumber(plotUnlockCost(first.slot, balance), player.locale),
+          },
           suggestedCommand: 'buy-plot',
         });
       }
       throw gameError('plot_occupied', `Plot ${first.slot} is already occupied.`, {
-        hint: 'Harvest it with `/harvest`, or clear it if the crop withered.',
+        i18nKey: 'plant.plot_occupied',
+        hintKey: 'errors.farm.plot_occupied_hint',
+        params: { slot: first.slot },
       });
     }
 
@@ -405,7 +425,8 @@ export async function water(
 
     if (candidates.length === 0) {
       throw gameError('no_water_needed', "No plot needs water right now.", {
-        hint: 'Check `/farm` to see the next waterings.',
+        i18nKey: 'water.nothing_to_water',
+        hintKey: 'errors.farm.water_hint',
       });
     }
 
@@ -496,7 +517,7 @@ export async function harvest(
 
     if (ready.length === 0) {
       throw gameError('crop_not_ready', "Nothing is ready to harvest.", {
-        hint: 'Check `/farm` for the deadlines.',
+        i18nKey: 'harvest.nothing_ready',
         suggestedCommand: 'farm',
       });
     }
@@ -738,7 +759,10 @@ export async function fertilize(
   const balance = getBalance();
   const item = inventoryService.requireItem(input.fertilizerKey);
   if (item.effect?.type !== 'fertilizer') {
-    throw gameError('item_unknown', `${item.name} is not a fertilizer.`);
+    throw gameError('item_unknown', `${item.name} is not a fertilizer.`, {
+      i18nKey: 'errors.farm.not_a_fertilizer',
+      params: { item: item.name },
+    });
   }
 
   const now = new Date();
@@ -753,7 +777,9 @@ export async function fertilize(
       .slice(0, input.all ? 64 : 1);
 
     if (candidates.length === 0) {
-      throw gameError('invalid_state', 'No plot can be fertilized further.');
+      throw gameError('invalid_state', 'No plot can be fertilized further.', {
+        i18nKey: 'errors.farm.fully_fertilized',
+      });
     }
 
     await inventoryService.consume(player.id, input.fertilizerKey, candidates.length, tx);
@@ -815,7 +841,9 @@ export async function weed(
       .slice(0, input.all ? 64 : 1);
 
     if (candidates.length === 0) {
-      throw gameError('invalid_state', 'No weeds to pull. Nice work!');
+      throw gameError('invalid_state', 'No weeds to pull. Nice work!', {
+        i18nKey: 'errors.farm.no_weeds',
+      });
     }
 
     await consumeEnergy(player.id, 'weed', tx, {
@@ -849,9 +877,17 @@ export async function treatPest(
 
   return withTransaction(async (tx) => {
     const plot = await farmRepo.lockPlot(tx, player.farmId, input.slot);
-    if (!plot) throw gameError('plot_not_found', `Plot ${input.slot} not found.`);
+    if (!plot) {
+      throw gameError('plot_not_found', `Plot ${input.slot} not found.`, {
+        i18nKey: 'errors.plot_not_found',
+        params: { slot: input.slot },
+      });
+    }
     if (!plot.pestType) {
-      throw gameError('no_pest', `Plot ${input.slot} has no pest.`);
+      throw gameError('no_pest', `Plot ${input.slot} has no pest.`, {
+        i18nKey: 'errors.farm.no_pest',
+        params: { slot: input.slot },
+      });
     }
 
     // Le traitement bio accélère : s'il n'en a pas, le joueur traite à la main
@@ -914,6 +950,7 @@ export async function buyPlot(player: PlayerContext): Promise<BuyPlotResult> {
       throw gameError(
         'invalid_state',
         `You already own all ${balance.plots.maxPlots} plots. Well done!`,
+        { i18nKey: 'errors.farm.all_plots_owned', params: { max: balance.plots.maxPlots } },
       );
     }
 
@@ -932,7 +969,9 @@ export async function buyPlot(player: PlayerContext): Promise<BuyPlotResult> {
     if (!unlocked) {
       // Un autre clic a déjà débloqué cette parcelle : on annule pour ne pas
       // facturer deux fois.
-      throw gameError('busy', 'That plot was just unlocked.');
+      throw gameError('busy', 'That plot was just unlocked.', {
+        i18nKey: 'errors.farm.plot_just_unlocked',
+      });
     }
 
     const unlockedCount = await farmRepo.countUnlockedPlots(player.farmId, tx);
