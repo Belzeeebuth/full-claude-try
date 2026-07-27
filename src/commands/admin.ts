@@ -129,10 +129,10 @@ const admin: Command = {
           namespace: 'admin',
           action: 'announce',
           ownerId: interaction.user.id,
-          title: 'Global announcement',
+          title: context.t('admin.announce_modal_title'),
           fieldId: 'message',
-          label: 'Message to broadcast',
-          placeholder: 'The Christmas market is now open!',
+          label: context.t('admin.announce_field_label'),
+          placeholder: context.t('admin.announce_placeholder'),
           maxLength: 1800,
           paragraph: true,
         }),
@@ -146,16 +146,17 @@ const admin: Command = {
       case 'give':
       case 'take': {
         const target = interaction.options.getUser('user', true);
+        const resource = interaction.options.getString('resource', true) as
+          | 'coins'
+          | 'gems'
+          | 'xp'
+          | 'item'
+          | 'energy';
         const result = await miscService.adminGrant(
           {
             actor: context.player,
             targetDiscordId: target.id,
-            resource: interaction.options.getString('resource', true) as
-              | 'coins'
-              | 'gems'
-              | 'xp'
-              | 'item'
-              | 'energy',
+            resource,
             amount: interaction.options.getInteger('amount', true),
             itemKey: interaction.options.getString('item') ?? undefined,
             reason: interaction.options.getString('reason') ?? undefined,
@@ -165,8 +166,12 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              sub === 'give' ? '✅ Resource granted' : '✅ Resource removed',
-              `${target} — **${formatNumber(result.applied)}** ${interaction.options.getString('resource', true)}\nAction written to the audit log.`,
+              sub === 'give' ? context.t('admin.grant_title') : context.t('admin.take_title'),
+              context.t('admin.grant_body', {
+                target: `${target}`,
+                amount: formatNumber(result.applied, context.locale),
+                resource: context.t(`common.${resource}`),
+              }),
             ),
           ],
         });
@@ -183,8 +188,8 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '🗑️ Player reset',
-              `${target} has been removed (soft delete: the ledger is preserved).\nThey can start over with \`/start\`.`,
+              context.t('admin.reset_title'),
+              context.t('admin.reset_body', { target: `${target}` }),
             ),
           ],
         });
@@ -202,8 +207,11 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '🚫 Economic ban',
-              `${target} can no longer interact with the economy until ${discordTimestamp(result.until, 'F')}.`,
+              context.t('admin.ecoban_title'),
+              context.t('admin.ecoban_body', {
+                target: `${target}`,
+                date: discordTimestamp(result.until, 'F'),
+              }),
             ),
           ],
         });
@@ -220,10 +228,8 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              enabled ? '🛠️ Maintenance enabled' : '✅ Maintenance disabled',
-              enabled
-                ? 'Only bot administrators can use this bot.'
-                : 'The bot is available to everyone again.',
+              enabled ? context.t('admin.maintenance_on_title') : context.t('admin.maintenance_off_title'),
+              enabled ? context.t('admin.maintenance_on_body') : context.t('admin.maintenance_off_body'),
             ),
           ],
         });
@@ -236,8 +242,14 @@ const admin: Command = {
           await interaction.editReply({
             embeds: [
               successEmbed(
-                '♻️ Configuration reloaded',
-                `${result.crops} crops • ${result.items} items • ${result.recipes} recipes • ${result.quests} quests\nLoaded on ${result.loadedAt.toLocaleString('en-US')}.`,
+                context.t('admin.reload_title'),
+                context.t('admin.reload_body', {
+                  crops: result.crops,
+                  items: result.items,
+                  recipes: result.recipes,
+                  quests: result.quests,
+                  date: discordTimestamp(result.loadedAt, 'F'),
+                }),
               ),
             ],
           });
@@ -262,61 +274,95 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: '📊 Harvester dashboard',
+              title: context.t('admin.stats_title'),
               color: COLORS.info,
               fields: [
                 {
-                  name: '👥 Players',
+                  name: context.t('admin.stats_players_field'),
                   value: [
-                    `Total : **${formatNumber(stats.counts.users)}**`,
-                    `Active 24 h: **${formatNumber(stats.counts.activeToday)}**`,
-                    `Servers: **${formatNumber(stats.counts.guilds)}**`,
+                    context.t('admin.stats_total_line', {
+                      count: formatNumber(stats.counts.users, context.locale),
+                    }),
+                    context.t('admin.stats_active_line', {
+                      count: formatNumber(stats.counts.activeToday, context.locale),
+                    }),
+                    context.t('admin.stats_servers_line', {
+                      count: formatNumber(stats.counts.guilds, context.locale),
+                    }),
                   ].join('\n'),
                   inline: true,
                 },
                 {
-                  name: '💰 Economy',
+                  name: context.t('admin.stats_economy_field'),
                   value: [
-                    `Money supply: **${formatCompact(stats.economy.snapshot?.totalCoins ?? 0)}** 🪙`,
-                    `In the bank: **${formatCompact(stats.economy.snapshot?.totalBankCoins ?? 0)}**`,
-                    `Inflation 24 h : **${formatPercent(stats.economy.inflationRate)}**`,
+                    context.t('admin.stats_supply_line', {
+                      value: formatCompact(stats.economy.snapshot?.totalCoins ?? 0, context.locale),
+                    }),
+                    context.t('admin.stats_bank_line', {
+                      value: formatCompact(stats.economy.snapshot?.totalBankCoins ?? 0, context.locale),
+                    }),
+                    context.t('admin.stats_inflation_line', {
+                      value: formatPercent(stats.economy.inflationRate, undefined, context.locale),
+                    }),
                   ].join('\n'),
                   inline: true,
                 },
                 {
-                  name: '⚙️ Configuration',
+                  name: context.t('admin.stats_config_field'),
                   value: [
-                    `Loaded: ${discordTimestamp(stats.config.loadedAt, 'R')}`,
-                    `${stats.config.crops} crops • ${stats.config.items} items`,
+                    context.t('admin.stats_loaded_line', {
+                      relative: discordTimestamp(stats.config.loadedAt, 'R'),
+                    }),
+                    context.t('admin.stats_counts_line', {
+                      crops: stats.config.crops,
+                      items: stats.config.items,
+                    }),
                   ].join('\n'),
                   inline: true,
                 },
                 {
-                  name: '🔄 Money flows (24 h)',
+                  name: context.t('admin.stats_flows_field'),
                   value:
                     stats.economy.flows
                       .sort((a, b) => Math.abs(b.total) - Math.abs(a.total))
                       .slice(0, 8)
-                      .map((flow) => `${flow.total > 0 ? '➕' : '➖'} \`${flow.type}\` ${formatCompact(Math.abs(flow.total))}`)
-                      .join('\n') || 'No movement.',
+                      .map((flow) =>
+                        context.t('admin.stats_flow_line', {
+                          sign: flow.total > 0 ? '➕' : '➖',
+                          type: flow.type,
+                          amount: formatCompact(Math.abs(flow.total), context.locale),
+                        }),
+                      )
+                      .join('\n') || context.t('admin.stats_no_movement'),
                   inline: false,
                 },
                 {
-                  name: '🗓️ Scheduled tasks',
+                  name: context.t('admin.stats_tasks_field'),
                   value:
                     stats.tasks
                       .slice(0, 6)
-                      .map((task) => `\`${task.taskKey}\` — ${task.status} • ${discordTimestamp(task.runAt, 'R')}`)
-                      .join('\n') || 'No jobs.',
+                      .map((task) =>
+                        context.t('admin.stats_task_line', {
+                          key: task.taskKey,
+                          status: task.status,
+                          relative: discordTimestamp(task.runAt, 'R'),
+                        }),
+                      )
+                      .join('\n') || context.t('admin.stats_no_jobs'),
                   inline: false,
                 },
                 ...(incidents.length > 0
                   ? [
                       {
-                        name: '🚨 Recent incidents',
+                        name: context.t('admin.stats_incidents_field'),
                         value: incidents
                           .slice(0, 5)
-                          .map((incident) => `×${incident.count} — \`${truncate(incident.signature, 80)}\``)
+                          .map((incident) =>
+                            context.t('admin.stats_incident_line', {
+                              count: incident.count,
+                              signature: truncate(incident.signature, 80),
+                            }),
+                          )
                           .join('\n'),
                       },
                     ]
@@ -336,11 +382,17 @@ const admin: Command = {
             baseEmbed({
               title: `🔍 ${result.target.username}`,
               description: [
-                `ID : \`${result.target.id}\``,
-                `Level **${result.target.level}** • ${formatCoins(result.target.coins)} • ${result.target.gems} 💎`,
-                `Score de suspicion : **${result.target.suspicionScore}**`,
+                context.t('admin.lookup_id_line', { id: result.target.id }),
+                context.t('admin.lookup_level_line', {
+                  level: result.target.level,
+                  coins: formatCoins(result.target.coins, false, context.locale),
+                  gems: result.target.gems,
+                }),
+                context.t('admin.lookup_suspicion_line', { score: result.target.suspicionScore }),
                 result.target.ecoBannedUntil
-                  ? `🚫 Banned until ${discordTimestamp(result.target.ecoBannedUntil, 'F')}`
+                  ? context.t('admin.lookup_banned_line', {
+                      date: discordTimestamp(result.target.ecoBannedUntil, 'F'),
+                    })
                   : '',
               ]
                 .filter(Boolean)
@@ -348,23 +400,31 @@ const admin: Command = {
               color: result.target.suspicionScore > 50 ? COLORS.warning : COLORS.info,
               fields: [
                 {
-                  name: "Audit log",
+                  name: context.t('admin.lookup_audit_field'),
                   value:
                     result.logs
-                      .map((entry) => `\`${entry.action}\` — ${discordTimestamp(entry.createdAt, 'R')}`)
-                      .join('\n') || 'No entry.',
+                      .map((entry) =>
+                        context.t('admin.lookup_audit_line', {
+                          action: entry.action,
+                          relative: discordTimestamp(entry.createdAt, 'R'),
+                        }),
+                      )
+                      .join('\n') || context.t('admin.lookup_no_entry'),
                   inline: true,
                 },
                 {
-                  name: 'Latest transactions',
+                  name: context.t('admin.lookup_transactions_field'),
                   value:
                     result.transactions
                       .slice(0, 10)
-                      .map(
-                        (entry) =>
-                          `${entry.amount > 0 ? '➕' : '➖'} ${formatCompact(Math.abs(entry.amount))} \`${entry.type}\``,
+                      .map((entry) =>
+                        context.t('admin.lookup_transaction_line', {
+                          sign: entry.amount > 0 ? '➕' : '➖',
+                          amount: formatCompact(Math.abs(entry.amount), context.locale),
+                          type: entry.type,
+                        }),
                       )
-                      .join('\n') || 'No transactions.',
+                      .join('\n') || context.t('admin.lookup_no_transactions'),
                   inline: true,
                 },
               ],
@@ -380,8 +440,14 @@ const admin: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '📈 Market updated',
-              `${updated} prices recalculated.\n${audit.length === 0 ? '✅ No ledger drift detected.' : `⚠️ **${audit.length} ledger drift(s)** — see the logs.`}`,
+              context.t('admin.market_update_title'),
+              context.t('admin.market_update_body', {
+                count: updated,
+                driftPart:
+                  audit.length === 0
+                    ? context.t('admin.market_no_drift')
+                    : context.t('admin.market_drift', { count: audit.length }),
+              }),
             ),
           ],
         });
@@ -389,7 +455,7 @@ const admin: Command = {
       }
 
       default:
-        await interaction.editReply({ content: 'Unknown subcommand.' });
+        await interaction.editReply({ content: context.t('admin.unknown_subcommand') });
     }
   },
 };
