@@ -92,7 +92,7 @@ const plantSelect: SelectHandler = {
         .filter(Boolean)
         .join('\n'),
     );
-    appendTracking(embed, result.tracking);
+    appendTracking(embed, result.tracking, context.t);
     await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
   },
 };

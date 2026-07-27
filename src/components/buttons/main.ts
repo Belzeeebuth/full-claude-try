@@ -78,7 +78,7 @@ const farmButtons: ButtonHandler = {
         await interaction.deferUpdate();
         const summary = await farmService.harvest(context.player, { all: true });
         await interaction.followUp({
-          embeds: [buildHarvestEmbed(summary, context.t)],
+          embeds: [buildHarvestEmbed(summary, context.t, context.locale)],
           flags: MessageFlags.Ephemeral,
         });
         await interaction.editReply(await farmView(context));
@@ -293,7 +293,7 @@ const animalButtons: ButtonHandler = {
           '🥚 Collection',
           result.lines.map((line) => `${line.emoji} **${line.quantity}× ${line.itemName}**`).join('\n'),
         );
-        appendTracking(embed, result.tracking);
+        appendTracking(embed, result.tracking, context.t);
         await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
         await interaction.editReply(await animalsView(context));
         return;
@@ -486,7 +486,7 @@ const craftButtons: ButtonHandler = {
         '📦 Production collected',
         result.lines.map((line) => `${line.emoji} **${line.quantity}× ${line.itemName}**`).join('\n'),
       );
-      appendTracking(embed, result.tracking);
+      appendTracking(embed, result.tracking, context.t);
       await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
       await interaction.editReply(await productionView(context));
       return;

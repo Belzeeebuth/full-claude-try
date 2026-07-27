@@ -153,7 +153,7 @@ const vendre: Command = {
       name: 'Total',
       value: `Brut **${formatCoins(result.gross)}**${result.tax > 0 ? ` — taxe ${formatCoins(result.tax)}` : ''} → **${formatCoins(result.net)}** received`,
     });
-    appendTracking(embed, result.tracking);
+    appendTracking(embed, result.tracking, context.t);
 
     await interaction.editReply({ embeds: [embed] });
   },

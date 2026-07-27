@@ -136,7 +136,7 @@ const nourrir: Command = {
         .map((entry) => `${entry.quantity}× ${entry.itemKey}`)
         .join(', ')}`,
     );
-    appendTracking(embed, result.tracking);
+    appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
   },
 
@@ -175,7 +175,7 @@ const collecter: Command = {
         result.levelUp ? `\n🎉 Level **${result.levelUp.level}** reached!` : ''
       }`,
     });
-    appendTracking(embed, result.tracking);
+    appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
   },
 
@@ -233,7 +233,7 @@ const caresser: Command = {
       `${result.emoji} ${result.name} is delighted!`,
       `Happiness **+${result.gain}** → ${gaugeBar(result.happiness, 8)} **${result.happiness}%**`,
     );
-    appendTracking(embed, result.tracking);
+    appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
   },
 

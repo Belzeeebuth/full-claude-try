@@ -16,6 +16,7 @@ import {
   qualityIcon,
   truncate,
 } from '../utils/format';
+import { translatorFor } from '../i18n';
 import type { AutocompleteContext, Command, CommandContext, Translator } from '../types';
 
 /**
@@ -110,20 +111,26 @@ const planter: Command = {
     });
 
     const embed = successEmbed(
-      `${result.emoji} ${result.cropName} planted`,
+      context.t('farm.plant_success_title', { emoji: result.emoji, cropName: result.cropName }),
       [
-        `**${result.slots.length}** plot(s) planted: ${result.slots.map((value) => `\`${value}\``).join(' ')}`,
-        `🌱 Harvest ${discordTimestamp(result.readyAt, 'R')} (${discordTimestamp(result.readyAt, 't')})`,
-        result.waterNeeded > 0 ? `💧 ${result.waterNeeded} watering(s) expected` : '',
-        result.offSeason
-          ? '⚠️ *Out of season: slower growth and reduced yield. A greenhouse would cancel this penalty.*'
+        context.t('farm.plant_body_slots', {
+          count: result.slots.length,
+          slots: result.slots.map((value) => `\`${value}\``).join(' '),
+        }),
+        context.t('farm.plant_body_harvest', {
+          relative: discordTimestamp(result.readyAt, 'R'),
+          time: discordTimestamp(result.readyAt, 't'),
+        }),
+        result.waterNeeded > 0
+          ? context.t('farm.plant_body_water', { count: result.waterNeeded })
           : '',
+        result.offSeason ? context.t('farm.plant_body_off_season') : '',
       ]
         .filter(Boolean)
         .join('\n'),
     );
 
-    appendTracking(embed, result.tracking);
+    appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
   },
 
@@ -133,11 +140,17 @@ const planter: Command = {
       await interaction.respond([]);
       return;
     }
+    const t = translatorFor(context.locale);
     const crops = await farmService.plantableCrops(context.playerId, 60, query, context.locale);
     await interaction.respond(
       crops.map((entry) => ({
         name: truncate(
-          `${entry.crop.emoji} ${entry.crop.name} — ${entry.owned} seed(s), ${Math.round(entry.crop.growthSeconds / 60)} min`,
+          t('farm.plant_autocomplete', {
+            emoji: entry.crop.emoji,
+            name: entry.crop.name,
+            owned: entry.owned,
+            minutes: Math.round(entry.crop.growthSeconds / 60),
+          }),
           100,
         ),
         value: entry.crop.key,
@@ -171,42 +184,49 @@ const recolter: Command = {
     const slot = interaction.options.getInteger('plot') ?? undefined;
 
     const summary = await farmService.harvest(context.player, { slot, all: slot === undefined });
-    await interaction.editReply({ embeds: [buildHarvestEmbed(summary, context.t)] });
+    await interaction.editReply({ embeds: [buildHarvestEmbed(summary, context.t, context.locale)] });
   },
 };
 
-export function buildHarvestEmbed(summary: farmService.HarvestSummary, t: Translator) {
+export function buildHarvestEmbed(summary: farmService.HarvestSummary, t: Translator, locale?: string) {
   const lines = summary.plots.map((plot) => {
     const quality =
       plot.result.quality === 'normal'
         ? ''
         : ` ${qualityIcon(plot.result.quality)} ${t(`common.quality.${plot.result.quality}`)}`;
     const mutation = plot.result.mutation === 'none' ? '' : ` ${mutationIcon(plot.result.mutation)} **${plot.result.mutation}**`;
-    const regrow = plot.regrew && plot.nextReadyAt ? ` 🔁 regrows ${discordTimestamp(plot.nextReadyAt, 'R')}` : '';
-    return `\`${String(plot.slot).padStart(2, ' ')}\` ${plot.emoji} **${plot.result.quantity}× ${plot.cropName}**${quality}${mutation} — ~${formatCoins(plot.result.totalValue, true)}${regrow}`;
+    const regrow =
+      plot.regrew && plot.nextReadyAt
+        ? ` ${t('farm.harvest_regrow', { relative: discordTimestamp(plot.nextReadyAt, 'R') })}`
+        : '';
+    return `\`${String(plot.slot).padStart(2, ' ')}\` ${plot.emoji} **${plot.result.quantity}× ${plot.cropName}**${quality}${mutation} — ~${formatCoins(plot.result.totalValue, true, locale)}${regrow}`;
   });
 
   const embed = baseEmbed({
-    title: '🧺 Harvest',
-    description: lines.join('\n') || 'Nothing harvested.',
+    title: t('farm.harvest_title'),
+    description: lines.join('\n') || t('farm.harvest_nothing'),
     color: COLORS.success,
     fields: [
       {
-        name: 'Total',
-        value: `**${formatNumber(summary.totalQuantity)}** unit(s) • estimated value **${formatCoins(summary.estimatedValue)}** • **${formatNumber(summary.xpGained)}** ✨`,
+        name: t('common.total'),
+        value: t('farm.harvest_total_value', {
+          quantity: formatNumber(summary.totalQuantity, locale),
+          value: formatCoins(summary.estimatedValue, false, locale),
+          xp: formatNumber(summary.xpGained, locale),
+        }),
       },
     ],
   });
 
   if (summary.witheredSlots.length > 0) {
     embed.addFields({
-      name: '💀 Withered crops',
-      value: `Plots ${summary.witheredSlots.join(', ')} — harvest sooner next time!`,
+      name: t('farm.harvest_withered_title'),
+      value: t('farm.harvest_withered_body', { slots: summary.witheredSlots.join(', ') }),
     });
   }
   if (summary.seedsRecovered.length > 0) {
     embed.addFields({
-      name: '🫧 Seed store',
+      name: t('farm.harvest_seed_store_title'),
       value: summary.seedsRecovered
         .map((seed) => `${seed.quantity}× ${seed.itemKey.replace('seed_', '')}`)
         .join(', '),
@@ -214,11 +234,16 @@ export function buildHarvestEmbed(summary: farmService.HarvestSummary, t: Transl
   }
   if (summary.levelUp) {
     embed.addFields({
-      name: '🎉 Level up!',
-      value: `You reached **level ${summary.levelUp.level}** (+${summary.levelUp.levelsGained})\nReward: ${formatCoins(summary.levelUp.rewardCoins)}${summary.levelUp.rewardGems > 0 ? ` + ${summary.levelUp.rewardGems} 💎` : ''}`,
+      name: t('common.level_up_title'),
+      value: t('farm.harvest_level_up_body', {
+        level: summary.levelUp.level,
+        gained: summary.levelUp.levelsGained,
+        coins: formatCoins(summary.levelUp.rewardCoins, false, locale),
+        gems: summary.levelUp.rewardGems > 0 ? ` + ${summary.levelUp.rewardGems} 💎` : '',
+      }),
     });
   }
-  appendTracking(embed, summary.tracking);
+  appendTracking(embed, summary.tracking, t);
 
   return embed;
 }
@@ -252,9 +277,8 @@ const arroser: Command = {
       await interaction.editReply({
         embeds: [
           baseEmbed({
-            title: '🌧️ It is raining!',
-            description:
-              'All your plots are watered for free today. Save your energy.',
+            title: context.t('farm.rain_title'),
+            description: context.t('farm.rain_body'),
             color: COLORS.info,
           }),
         ],
@@ -263,10 +287,16 @@ const arroser: Command = {
     }
 
     const embed = successEmbed(
-      '💧 Watering',
-      `**${result.watered}** plot(s) watered.${result.toolPlots > 1 ? `\n*Your watering can covers ${result.toolPlots} plots per action.*` : ''}`,
+      context.t('farm.water_title'),
+      context.t('farm.water_body', {
+        count: result.watered,
+        note:
+          result.toolPlots > 1
+            ? context.t('farm.water_tool_note', { count: result.toolPlots })
+            : '',
+      }),
     );
-    appendTracking(embed, result.tracking);
+    appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
   },
 };
@@ -304,10 +334,14 @@ const fertiliser: Command = {
 
     const result = await farmService.fertilize(context.player, { fertilizerKey, slot, all: !slot });
     const embed = successEmbed(
-      '🧪 Fertilizing',
-      `${result.fertilizer} applied to **${result.slots.length}** plot(s).\nSoil fertility: **${result.fertilityAfter}%**`,
+      context.t('farm.fertilize_title'),
+      context.t('farm.fertilize_body', {
+        fertilizer: result.fertilizer,
+        count: result.slots.length,
+        percent: result.fertilityAfter,
+      }),
     );
-    appendTracking(embed, result.tracking);
+    appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
   },
 };
@@ -331,8 +365,11 @@ const desherber: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🌿 Weeding',
-          `**${result.slots.length}** plot(s) cleared.\nYou collect **${result.weedsCollected}× 🌱 weeds** — enough to make compost at the workshop.`,
+          context.t('farm.weed_title'),
+          context.t('farm.weed_body', {
+            count: result.slots.length,
+            collected: result.weedsCollected,
+          }),
         ),
       ],
     });
@@ -362,12 +399,15 @@ const traiter: Command = {
 
     const { PEST_LABELS } = await import('../game/plot');
     const pest = PEST_LABELS[result.pestType];
+    const pestName = context.t(`farm.pest_${result.pestType}`);
 
     const embed = successEmbed(
-      `${pest.emoji} ${pest.name} cleared`,
-      `Plot **${result.slot}** treated.${result.usedItem ? '\n🧯 An organic treatment was consumed.' : '\n*Without an organic treatment, the job costs more energy.*'}`,
+      context.t('farm.treat_title', { emoji: pest.emoji, pestName }),
+      result.usedItem
+        ? context.t('farm.treat_body_used', { slot: result.slot })
+        : context.t('farm.treat_body_noitem', { slot: result.slot }),
     );
-    appendTracking(embed, result.tracking);
+    appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
   },
 };
@@ -403,14 +443,25 @@ const acheterParcelle: Command = {
     const result = await farmService.buyPlot(context.player);
 
     const embed = successEmbed(
-      '🗺️ New plot!',
+      context.t('farm.new_plot_title'),
       [
-        `Plot **${result.slot}** unlocked for ${formatCoins(result.cost)}.`,
-        `Your farm is now **${result.grid.width}×${result.grid.height}** (${result.unlockedPlots} plots).`,
-        result.nextCost > 0 ? `Next plot: ${formatCoins(result.nextCost)}` : '🏆 Estate complete!',
+        context.t('farm.new_plot_unlocked', {
+          slot: result.slot,
+          cost: formatCoins(result.cost, false, context.locale),
+        }),
+        context.t('farm.new_plot_size', {
+          width: result.grid.width,
+          height: result.grid.height,
+          count: result.unlockedPlots,
+        }),
+        result.nextCost > 0
+          ? context.t('farm.new_plot_next_cost', {
+              cost: formatCoins(result.nextCost, false, context.locale),
+            })
+          : context.t('farm.new_plot_complete'),
       ].join('\n'),
     );
-    appendTracking(embed, result.tracking);
+    appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
   },
 };
@@ -468,18 +519,18 @@ const cultures: Command = {
       const perHour = Math.round((profit / crop.growthSeconds) * 3_600);
       const locked = crop.requiredLevel > context.player.level ? '🔒 ' : '';
       return [
-        `${locked}${crop.emoji} **${crop.name}** — ${context.t(`common.rarity.${crop.rarity}`)} • lv. ${crop.requiredLevel}`,
-        `   🌱 ${formatNumber(crop.seedPrice)} ${COIN} → 🧺 ${crop.baseYield}× ${formatNumber(crop.sellPrice)} ${COIN} • ⏳ ${formatDuration(crop.growthSeconds * 1000)} • **~${formatNumber(perHour)} ${COIN}/h/plot**${crop.regrowCycles > 0 ? ` • 🔁 ${crop.regrowCycles}` : ''}`,
+        `${locked}${crop.emoji} **${crop.name}** — ${context.t(`common.rarity.${crop.rarity}`)} • ${context.t('common.level_abbr', { level: crop.requiredLevel })}`,
+        `   🌱 ${formatNumber(crop.seedPrice, context.locale)} ${COIN} → 🧺 ${crop.baseYield}× ${formatNumber(crop.sellPrice, context.locale)} ${COIN} • ⏳ ${formatDuration(crop.growthSeconds * 1000, context.locale)} • **~${formatNumber(perHour, context.locale)} ${COIN}/h/plot**${crop.regrowCycles > 0 ? ` • 🔁 ${crop.regrowCycles}` : ''}`,
       ].join('\n');
     });
 
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '🌾 Crop encyclopedia',
-          description: lines.join('\n') || 'No crop matches this filter.',
+          title: context.t('farm.crops_title'),
+          description: lines.join('\n') || context.t('farm.crops_empty'),
           color: COLORS.primary,
-          footer: `${crops.length} crop(s) • hourly yield assumes 70% soil, in season`,
+          footer: context.t('farm.crops_footer', { count: crops.length }),
         }),
       ],
     });
@@ -494,20 +545,27 @@ const cultures: Command = {
 export function appendTracking(
   embed: ReturnType<typeof baseEmbed>,
   tracking: { completedQuests: Array<{ title: string }>; unlockedAchievements: Array<{ name: string }>; completedCoopObjectives: string[] },
+  t: Translator,
 ): void {
   const parts: string[] = [];
   if (tracking.completedQuests.length > 0) {
     parts.push(
-      `📋 Quest(s) completed: ${tracking.completedQuests.map((quest) => `**${quest.title}**`).join(', ')} — \`/quests\` to claim`,
+      t('common.tracking_quest_completed', {
+        quests: tracking.completedQuests.map((quest) => `**${quest.title}**`).join(', '),
+      }),
     );
   }
   if (tracking.unlockedAchievements.length > 0) {
     parts.push(
-      `🏆 Achievement(s) unlocked: ${tracking.unlockedAchievements.map((entry) => `**${entry.name}**`).join(', ')}`,
+      t('common.tracking_achievement_unlocked', {
+        achievements: tracking.unlockedAchievements.map((entry) => `**${entry.name}**`).join(', '),
+      }),
     );
   }
   if (tracking.completedCoopObjectives.length > 0) {
-    parts.push(`🤝 Co-op objective reached: **${tracking.completedCoopObjectives.join(', ')}**`);
+    parts.push(
+      t('common.tracking_coop_objective', { objectives: `**${tracking.completedCoopObjectives.join(', ')}**` }),
+    );
   }
   if (parts.length > 0) {
     embed.addFields({ name: '​', value: parts.join('\n') });
