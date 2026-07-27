@@ -1,4 +1,5 @@
 import type { Balance, CropConfig } from '../config/gameplay/schemas';
+import { directSellPrice } from './market';
 import { scaleMoney } from './money';
 import type { FarmModifiers } from './modifiers';
 import {
@@ -61,6 +62,8 @@ export interface HarvestInput {
   marketUnitPrice: number;
   /** Multiplicateur de mutation apporté par l'événement en cours. */
   eventMutationMultiplier?: number;
+  /** Multiplicateur de prix apporté par l'événement en cours. */
+  eventPriceMultiplier?: number;
   balance: Balance;
   rng: Rng;
 }
@@ -217,9 +220,15 @@ export function computeHarvest(input: HarvestInput): HarvestResult {
   );
   const quality = finalQuantity > 0 ? rollQuality(score, balance, rng) : 'normal';
 
+  // La valeur affichée doit refléter ce que `/sell` paiera réellement : même
+  // décote de vente directe et même multiplicateur d'événement que le marché,
+  // sinon l'estimation à la récolte et le montant reçu à la vente divergent.
   const unitValue = scaleMoney(
-    input.marketUnitPrice,
-    qualityMultiplier(quality, balance) * mutationEffect.priceMultiplier * (1 + modifiers.sellBonus),
+    directSellPrice(input.marketUnitPrice, balance),
+    qualityMultiplier(quality, balance) *
+      mutationEffect.priceMultiplier *
+      (input.eventPriceMultiplier ?? 1) *
+      (1 + modifiers.sellBonus),
   );
 
   // XP : proportionnelle à la culture, majorée par la qualité obtenue (récompense

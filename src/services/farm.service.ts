@@ -17,7 +17,7 @@ import * as inventoryService from './inventory.service';
 import * as economyService from './economy.service';
 import { consumeEnergy, getFarmModifiers, grantXp } from './player.service';
 import { grantPassXp, mergeResults, passXpFor, trackAction, trackHarvest, type TrackResult } from './tracker.service';
-import { getWorldState, type WorldState } from './world.service';
+import { eventPriceMultiplier, getWorldState, type WorldState } from './world.service';
 import type { FarmModifiers } from '../game/modifiers';
 import type { PlayerContext } from '../types';
 
@@ -579,8 +579,8 @@ export async function harvest(
         damagePenalty = Math.min(1, damagePenalty + balance.pests.yieldLossIfIgnored);
       }
 
-      const marketPrice =
-        marketPrices.get(harvestKeyOf(crop.cropKey))?.currentPrice ?? cropConfig.sellPrice;
+      const harvestItemKey = harvestKeyOf(crop.cropKey);
+      const marketPrice = marketPrices.get(harvestItemKey)?.currentPrice ?? cropConfig.sellPrice;
 
       const result = computeHarvest({
         crop: cropConfig,
@@ -600,6 +600,11 @@ export async function harvest(
         level: player.level,
         modifiers,
         marketUnitPrice: marketPrice,
+        eventPriceMultiplier: eventPriceMultiplier(
+          world,
+          harvestItemKey,
+          config.items.get(harvestItemKey)?.category ?? 'harvest',
+        ),
         eventMutationMultiplier: world.eventModifiers.mutationMultiplier,
         balance,
         // Graine unique par parcelle et par récolte : un rejeu produirait le
@@ -612,7 +617,7 @@ export async function harvest(
           player.id,
           [
             {
-              itemKey: harvestKeyOf(crop.cropKey),
+              itemKey: harvestItemKey,
               quantity: result.quantity,
               quality: result.quality,
               mutation: result.mutation,
