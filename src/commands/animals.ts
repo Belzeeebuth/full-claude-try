@@ -5,6 +5,7 @@ import * as animalService from '../services/animal.service';
 import * as animalRepo from '../repositories/animal.repo';
 import { gameError } from '../utils/errors';
 import { formatCoins, formatNumber, gaugeBar, truncate } from '../utils/format';
+import { translatorFor } from '../i18n';
 import { appendTracking } from './farm';
 import type { Command } from '../types';
 
@@ -24,6 +25,7 @@ async function autocompleteOwnedAnimals(
     await interaction.respond([]);
     return;
   }
+  const t = translatorFor(context.locale);
   const query = interaction.options.getFocused().toString().toLowerCase();
   const animals = await animalRepo.listAnimals(farm.id);
   await interaction.respond(
@@ -37,7 +39,10 @@ async function autocompleteOwnedAnimals(
       .slice(0, 25)
       .map((entry) => ({
         name: truncate(
-          `${entry.emoji} ${entry.animal.nickname ?? entry.name} — hunger ${entry.animal.hunger}% • happiness ${entry.animal.happiness}%`,
+          `${entry.emoji} ${entry.animal.nickname ?? entry.name} — ${t('animals.autocomplete_status', {
+            hunger: entry.animal.hunger,
+            happiness: entry.animal.happiness,
+          })}`,
           100,
         ),
         value: entry.animal.id,
@@ -85,14 +90,19 @@ const acheterAnimal: Command = {
       embeds: [
         successEmbed(
           `${result.emoji} ${result.quantity}× ${result.name}`,
-          `Purchase completed for **${result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)}**.\n` +
-            'Feed them regularly with `/feed`: a hungry animal produces half as much.',
+          context.t('animals.buy_body', {
+            amount:
+              result.currency === 'gems'
+                ? `${formatNumber(result.total, context.locale)} 💎`
+                : formatCoins(result.total, false, context.locale),
+          }),
         ),
       ],
     });
   },
 
   async autocomplete(interaction, context): Promise<void> {
+    const t = translatorFor(context.locale);
     const query = interaction.options.getFocused().toString();
     const level = context.playerId
       ? ((await (await import('../repositories/player.repo')).findUserById(context.playerId))?.level ?? 1)
@@ -101,7 +111,15 @@ const acheterAnimal: Command = {
     await interaction.respond(
       animals.map((animal) => ({
         name: truncate(
-          `${animal.emoji} ${animal.name} — ${animal.price > 0 ? `${formatNumber(animal.price)} coins` : `${animal.priceGems} gems`} • lv. ${animal.requiredLevel}`,
+          t('animals.buy_autocomplete', {
+            emoji: animal.emoji,
+            name: animal.name,
+            price:
+              animal.price > 0
+                ? `${formatNumber(animal.price, context.locale)} ${t('common.coins')}`
+                : `${animal.priceGems} ${t('common.gems')}`,
+            level: t('common.level_abbr', { level: animal.requiredLevel }),
+          }),
           100,
         ),
         value: animal.key,
@@ -131,10 +149,11 @@ const nourrir: Command = {
     const result = await animalService.feed(context.player, { animalId, all: !animalId });
 
     const embed = successEmbed(
-      '🌾 Meal served',
-      `**${result.fed}** animal(s) fed.\nConsumed: ${result.consumed
-        .map((entry) => `${entry.quantity}× ${entry.itemKey}`)
-        .join(', ')}`,
+      context.t('animals.feed_title'),
+      context.t('animals.feed_body', {
+        count: result.fed,
+        items: result.consumed.map((entry) => `${entry.quantity}× ${entry.itemKey}`).join(', '),
+      }),
     );
     appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
@@ -164,16 +183,20 @@ const collecter: Command = {
     const result = await animalService.collect(context.player, { animalId, all: !animalId });
 
     const embed = successEmbed(
-      '🥚 Collection',
+      context.t('animals.collect_title'),
       result.lines
         .map((line) => `${line.emoji} **${line.quantity}× ${line.itemName}** — ${line.name}`)
         .join('\n'),
     );
     embed.addFields({
-      name: 'Total',
-      value: `**${formatNumber(result.totalQuantity)}** produit(s) • **${formatNumber(result.xpGained)}** ✨${
-        result.levelUp ? `\n🎉 Level **${result.levelUp.level}** reached!` : ''
-      }`,
+      name: context.t('common.total'),
+      value: context.t('animals.collect_total_value', {
+        count: formatNumber(result.totalQuantity, context.locale),
+        xp: formatNumber(result.xpGained, context.locale),
+        levelUp: result.levelUp
+          ? context.t('animals.collect_level_up', { level: result.levelUp.level })
+          : '',
+      }),
     });
     appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
@@ -202,8 +225,8 @@ const soigner: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `${result.emoji} ${result.name} has been treated`,
-          `The vet was paid ${formatCoins(result.cost)}.\nHealth restored to **100%**.`,
+          context.t('animals.heal_title', { emoji: result.emoji, name: result.name }),
+          context.t('animals.heal_body', { cost: formatCoins(result.cost, false, context.locale) }),
         ),
       ],
     });
@@ -230,8 +253,12 @@ const caresser: Command = {
       interaction.options.getString('animal', true),
     );
     const embed = successEmbed(
-      `${result.emoji} ${result.name} is delighted!`,
-      `Happiness **+${result.gain}** → ${gaugeBar(result.happiness, 8)} **${result.happiness}%**`,
+      context.t('animals.pet_title', { emoji: result.emoji, name: result.name }),
+      context.t('animals.pet_body', {
+        gain: result.gain,
+        bar: gaugeBar(result.happiness, 8),
+        happiness: result.happiness,
+      }),
     );
     appendTracking(embed, result.tracking, context.t);
     await interaction.editReply({ embeds: [embed] });
@@ -281,12 +308,14 @@ const reproduire: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🍼 A birth!',
+          context.t('animals.breed_success_title'),
           [
-            `A **generation ${result.generation}** calf was born.`,
-            `Inherited production multiplier: **×${result.qualityMultiplier?.toFixed(3)}**`,
+            context.t('animals.breed_success_line1', { generation: result.generation ?? 1 }),
+            context.t('animals.breed_success_line2', {
+              multiplier: result.qualityMultiplier?.toFixed(3) ?? '1.000',
+            }),
             '',
-            '*Breed your best animals to improve your bloodline generation after generation.*',
+            context.t('animals.breed_success_footer'),
           ].join('\n'),
         ),
       ],
@@ -316,8 +345,8 @@ const vendreAnimal: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `${result.emoji} ${result.name} sold`,
-          `You receive **${formatCoins(result.price)}**.`,
+          context.t('animals.sell_title', { emoji: result.emoji, name: result.name }),
+          context.t('animals.sell_body', { price: formatCoins(result.price, false, context.locale) }),
         ),
       ],
     });
