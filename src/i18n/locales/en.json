@@ -58,7 +58,20 @@
     "admin_only_body": "Reserved for bot administrators.",
     "component_expired_title": "Component expired",
     "component_expired_body": "This message comes from an older version of the bot. Run the command again.",
-    "cooldown_title": "On cooldown"
+    "cooldown_title": "On cooldown",
+    "all": "All",
+    "animals": "Animals",
+    "buildings": "Buildings",
+    "complete": "Complete",
+    "inventory": "Inventory",
+    "level_abbr": "lv. {level}",
+    "members": "Members",
+    "my_farm": "My farm",
+    "plots": "Plots",
+    "progression_field": "Progression",
+    "quests": "Quests",
+    "sell": "Sell",
+    "summary": "Summary"
   },
   "start": {
     "welcome_title": "🌾 Welcome to Greendale!",
@@ -81,7 +94,21 @@
     "summary": "{ready} ready • {growing} growing • {empty} empty • {locked} locked",
     "nothing_planted": "Nothing planted. Use `/plant` to start.",
     "render_failed": "Image rendering failed, here is the text version.",
-    "bots_no_farm": "Bots do not farm."
+    "bots_no_farm": "Bots do not farm.",
+    "free_watering_today": "💧 *Free watering today!*",
+    "pests_warning": "🐛 **{count}** plot(s) infested — `/treat`",
+    "withered_warning": "💀 **{count}** withered crop(s)",
+    "no_plot_unlocked": "No plot unlocked yet.",
+    "plots_title": "Your plots",
+    "no_plot": "No plot.",
+    "expansion_field": "Expansion",
+    "next_plot_cost": "Next plot: **{cost}** ({unlocked}/{max} unlocked)",
+    "all_plots_unlocked": "All plots unlocked ({unlocked}) 🏆",
+    "buy_plot_button": "Buy ({cost} 🪙)",
+    "weed_button": "Weed",
+    "soil_status": "soil {pct}% ({label})",
+    "weeds_status": "🌿 weeds {pct}%",
+    "regrow_count": "🔁 {count} regrow(s)"
   },
   "harvest": {
     "nothing_ready": "Nothing is ready yet. Check `/farm` for timers.",
@@ -107,7 +134,10 @@
       "material": "Materials",
       "cosmetic": "Cosmetics",
       "event": "Event"
-    }
+    },
+    "estimated_value_field": "Estimated value",
+    "filter_placeholder": "Filter by category",
+    "warehouse_field": "Warehouse"
   },
   "world": {
     "weather": {
@@ -240,7 +270,13 @@
     "sold_out": "Sold out",
     "purchased": "✅ Bought {quantity}× {emoji} {item} for {price} 🪙",
     "stock_left": "{remaining}/{total} in stock",
-    "limit_reached": "You have reached the purchase limit for this item."
+    "limit_reached": "You have reached the purchase limit for this item.",
+    "category_daily": "Today's deals",
+    "category_supplies": "Supplies",
+    "refreshed_body": "Stock refreshed {when}.\nUse `/buy` or the menu below.",
+    "empty_body": "The shop is empty for now.",
+    "in_stock": "{remaining} in stock",
+    "buy_placeholder": "Buy an item"
   },
   "market": {
     "title": "📊 Greenvale market",
@@ -252,7 +288,12 @@
     "trend_flat": "stable",
     "not_tracked": "{item} is not tracked by the market.",
     "cheapest_title": "Cheapest",
-    "priciest_title": "Priciest"
+    "priciest_title": "Priciest",
+    "description": "Prices move every hour with what farmers sell.",
+    "featured_field": "Featured products (boosted price)",
+    "chart_placeholder": "View a product's chart",
+    "products_label": "Products",
+    "livestock_label": "Livestock"
   },
   "trade": {
     "bots_no_trade": "Bots do not trade."
@@ -273,7 +314,13 @@
     "not_hungry": "{name} is not hungry right now.",
     "nothing_to_collect": "Nothing to collect.",
     "breed_failed_title": "No litter this time",
-    "breed_failed_body": "{reason}\nCost incurred: {cost}."
+    "breed_failed_body": "{reason}\nCost incurred: {cost}.",
+    "collect_all_button": "Collect all",
+    "feed_all_button": "Feed all",
+    "pet_button": "Pet",
+    "generation_suffix": "gen. {gen}",
+    "no_building_field": "No livestock building.",
+    "summary_line": "🐾 {alive} animal(s) • 🍽️ {hungry} hungry • 🤒 {sick} sick • ✅ {ready} to collect"
   },
   "quests": {
     "title": "📋 {name}'s quests",
@@ -287,7 +334,12 @@
     "claim_success": "🎁 Reward claimed: {rewards}",
     "nothing_to_claim": "No reward to claim.",
     "reroll_success": "🔄 Quest rerolled for {cost} 🪙.",
-    "reroll_limit": "You have reached the limit of {max} rerolls today."
+    "reroll_limit": "You have reached the limit of {max} rerolls today.",
+    "claim_all_button": "Claim all ({count})",
+    "description_default": "Complete quests to earn coins, XP and season pass progress.",
+    "reroll_placeholder": "Reroll a daily quest",
+    "rewards_waiting": "🎁 **{count} reward(s)** waiting for you!",
+    "to_claim_indicator": "to claim"
   },
   "coop": {
     "title": "🤝 {name} co-op",
@@ -301,7 +353,43 @@
     "forbidden": "Your rank does not allow this action.",
     "contributed": "💰 {amount} 🪙 paid into the treasury (+{xp} co-op XP).",
     "objectives": "This week's objectives",
-    "bonuses": "Collective bonuses"
+    "bonuses": "Collective bonuses",
+    "browse_title": "🤝 Co-ops",
+    "browse_intro": "You are not in a co-op.\nJoin one for collective bonuses, weekly objectives and a shared treasury.",
+    "open_coops_field": "Open co-ops",
+    "no_public_coops": "No public co-op right now.",
+    "create_button": "Create a co-op",
+    "join_placeholder": "Join a co-op",
+    "listing_description": "Level {level} • {count} members",
+    "no_description": "*No description.*",
+    "treasury_field": "Treasury",
+    "bonus_growth": "🌱 Growth speed **+{pct}%**",
+    "bonus_sell": "💰 Selling price **+{pct}%**",
+    "bonus_xp": "✨ XP **+{pct}%**",
+    "bonus_quality": "🥇 Quality **+{pct}%**",
+    "no_active_goal": "No active goal.",
+    "top_contributors_field": "👥 Top contributors",
+    "contribute_button": "Contribute",
+    "objectives_button": "Objectives"
+  },
+  "craft": {
+    "queue_title": "🛠️ Production queue",
+    "queue_empty": "*No production running.* Start one with `/craft`.",
+    "ready_indicator": "ready",
+    "collect_all_button": "Collect all ({count})",
+    "recipes_button": "Recipes",
+    "production_button": "Production",
+    "buildings_title": "🏗️ Farm buildings",
+    "buildings_description": "Upgrade your buildings to raise capacity, speed and slots.",
+    "building_category_livestock": "Livestock",
+    "building_category_production": "Transformation",
+    "building_category_storage": "Storage",
+    "building_category_utility": "Utilities",
+    "not_built": "not built",
+    "max_tier_reached": "maximum",
+    "tier_label": "tier {tier}",
+    "tier_progress": "tier {tier}/{max}",
+    "build_upgrade_placeholder": "Build or upgrade"
   },
   "help": {
     "title": "🌾 Harvester help",

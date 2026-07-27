@@ -58,7 +58,20 @@
     "admin_only_body": "Réservé aux administrateurs du bot.",
     "component_expired_title": "Composant expiré",
     "component_expired_body": "Ce message provient d'une ancienne version du bot. Relancez la commande.",
-    "cooldown_title": "Temps de recharge"
+    "cooldown_title": "Temps de recharge",
+    "all": "Tout",
+    "animals": "Animaux",
+    "buildings": "Bâtiments",
+    "complete": "Terminé",
+    "inventory": "Inventaire",
+    "level_abbr": "niv. {level}",
+    "members": "Membres",
+    "my_farm": "Ma ferme",
+    "plots": "Parcelles",
+    "progression_field": "Progression",
+    "quests": "Quêtes",
+    "sell": "Vendre",
+    "summary": "Résumé"
   },
   "start": {
     "welcome_title": "🌾 Bienvenue à Val-Verdoyant !",
@@ -81,7 +94,21 @@
     "summary": "{ready} prête(s) • {growing} en croissance • {empty} vide(s) • {locked} verrouillée(s)",
     "nothing_planted": "Aucune culture en terre. `/plant` pour démarrer.",
     "render_failed": "Le rendu graphique a échoué, voici la version texte.",
-    "bots_no_farm": "Les bots ne cultivent pas."
+    "bots_no_farm": "Les bots ne cultivent pas.",
+    "free_watering_today": "💧 *Arrosage gratuit aujourd'hui !*",
+    "pests_warning": "🐛 **{count}** parcelle(s) infestée(s) — `/treat`",
+    "withered_warning": "💀 **{count}** culture(s) fanée(s)",
+    "no_plot_unlocked": "Aucune parcelle débloquée pour l'instant.",
+    "plots_title": "Vos parcelles",
+    "no_plot": "Aucune parcelle.",
+    "expansion_field": "Extension",
+    "next_plot_cost": "Prochaine parcelle : **{cost}** ({unlocked}/{max} débloquées)",
+    "all_plots_unlocked": "Toutes les parcelles débloquées ({unlocked}) 🏆",
+    "buy_plot_button": "Acheter ({cost} 🪙)",
+    "weed_button": "Désherber",
+    "soil_status": "sol {pct}% ({label})",
+    "weeds_status": "🌿 mauvaises herbes {pct}%",
+    "regrow_count": "🔁 {count} repousse(s)"
   },
   "plant": {
     "success": "🌱 {emoji} **{crop}** planté sur la parcelle {slot}. Récolte {when}.",
@@ -111,7 +138,13 @@
     "sold_out": "Épuisé",
     "purchased": "✅ {quantity}× {emoji} {item} acheté(s) pour {price} 🪙",
     "stock_left": "{remaining}/{total} en stock",
-    "limit_reached": "Vous avez atteint la limite d'achat pour cet article."
+    "limit_reached": "Vous avez atteint la limite d'achat pour cet article.",
+    "category_daily": "Offres du jour",
+    "category_supplies": "Fournitures",
+    "refreshed_body": "Stock renouvelé {when}.\nUtilisez `/buy` ou le menu ci-dessous.",
+    "empty_body": "La boutique est vide pour l'instant.",
+    "in_stock": "{remaining} en stock",
+    "buy_placeholder": "Acheter un objet"
   },
   "market": {
     "title": "📊 Marché de Val-Verdoyant",
@@ -123,7 +156,12 @@
     "trend_flat": "stable",
     "not_tracked": "{item} n'est pas suivi par le marché.",
     "cheapest_title": "Moins chers",
-    "priciest_title": "Plus chers"
+    "priciest_title": "Plus chers",
+    "description": "Les prix bougent chaque heure selon ce que les fermiers vendent.",
+    "featured_field": "Produits vedettes (prix majoré)",
+    "chart_placeholder": "Voir le graphique d'un produit",
+    "products_label": "Produits",
+    "livestock_label": "Élevage"
   },
   "trade": {
     "bots_no_trade": "Les bots ne peuvent pas échanger."
@@ -144,7 +182,13 @@
     "not_hungry": "{name} n'a pas faim pour le moment.",
     "nothing_to_collect": "Aucune production disponible.",
     "breed_failed_title": "Pas de portée cette fois",
-    "breed_failed_body": "{reason}\nCoût engagé : {cost}."
+    "breed_failed_body": "{reason}\nCoût engagé : {cost}.",
+    "collect_all_button": "Tout collecter",
+    "feed_all_button": "Tout nourrir",
+    "pet_button": "Caresser",
+    "generation_suffix": "gén. {gen}",
+    "no_building_field": "Aucun bâtiment d'élevage.",
+    "summary_line": "🐾 {alive} animal(aux) • 🍽️ {hungry} affamé(s) • 🤒 {sick} malade(s) • ✅ {ready} à collecter"
   },
   "inventory": {
     "title": "🎒 Inventaire de {name}",
@@ -162,7 +206,10 @@
       "material": "Matériaux",
       "cosmetic": "Cosmétiques",
       "event": "Événement"
-    }
+    },
+    "estimated_value_field": "Valeur estimée",
+    "filter_placeholder": "Filtrer par catégorie",
+    "warehouse_field": "Entrepôt"
   },
   "quests": {
     "title": "📋 Quêtes de {name}",
@@ -176,7 +223,12 @@
     "claim_success": "🎁 Récompense perçue : {rewards}",
     "nothing_to_claim": "Aucune récompense à percevoir.",
     "reroll_success": "🔄 Quête remplacée pour {cost} 🪙.",
-    "reroll_limit": "Vous avez atteint la limite de {max} relances aujourd'hui."
+    "reroll_limit": "Vous avez atteint la limite de {max} relances aujourd'hui.",
+    "claim_all_button": "Tout réclamer ({count})",
+    "description_default": "Complétez des quêtes pour gagner pièces, XP et progression du passe saisonnier.",
+    "reroll_placeholder": "Relancer une quête journalière",
+    "rewards_waiting": "🎁 **{count} récompense(s)** vous attend(ent) !",
+    "to_claim_indicator": "à réclamer"
   },
   "coop": {
     "title": "🤝 Coopérative {name}",
@@ -190,7 +242,43 @@
     "forbidden": "Votre rang ne permet pas cette action.",
     "contributed": "💰 {amount} 🪙 versés à la trésorerie (+{xp} XP de coopérative).",
     "objectives": "Objectifs de la semaine",
-    "bonuses": "Bonus collectifs"
+    "bonuses": "Bonus collectifs",
+    "browse_title": "🤝 Coopératives",
+    "browse_intro": "Vous n'êtes dans aucune coopérative.\nRejoignez-en une pour des bonus collectifs, des objectifs hebdomadaires et une trésorerie commune.",
+    "open_coops_field": "Coopératives ouvertes",
+    "no_public_coops": "Aucune coopérative publique pour l'instant.",
+    "create_button": "Créer une coopérative",
+    "join_placeholder": "Rejoindre une coopérative",
+    "listing_description": "Niveau {level} • {count} membres",
+    "no_description": "*Aucune description.*",
+    "treasury_field": "Trésorerie",
+    "bonus_growth": "🌱 Vitesse de pousse **+{pct} %**",
+    "bonus_sell": "💰 Prix de vente **+{pct} %**",
+    "bonus_xp": "✨ XP **+{pct}%**",
+    "bonus_quality": "🥇 Qualité **+{pct}%**",
+    "no_active_goal": "Aucun objectif actif.",
+    "top_contributors_field": "👥 Meilleurs contributeurs",
+    "contribute_button": "Contribuer",
+    "objectives_button": "Objectifs"
+  },
+  "craft": {
+    "queue_title": "🛠️ File de production",
+    "queue_empty": "*Aucune production en cours.* Lancez-en une avec `/craft`.",
+    "ready_indicator": "prêt",
+    "collect_all_button": "Tout collecter ({count})",
+    "recipes_button": "Recettes",
+    "production_button": "Production",
+    "buildings_title": "🏗️ Bâtiments de la ferme",
+    "buildings_description": "Améliorez vos bâtiments pour augmenter capacité, vitesse et emplacements.",
+    "building_category_livestock": "Élevage",
+    "building_category_production": "Transformation",
+    "building_category_storage": "Stockage",
+    "building_category_utility": "Utilitaires",
+    "not_built": "non construit",
+    "max_tier_reached": "maximum",
+    "tier_label": "palier {tier}",
+    "tier_progress": "palier {tier}/{max}",
+    "build_upgrade_placeholder": "Construire ou améliorer"
   },
   "help": {
     "title": "🌾 Aide de Harvester",

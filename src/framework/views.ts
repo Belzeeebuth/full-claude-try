@@ -46,6 +46,8 @@ export async function farmView(
   options: { targetName?: string; avatarUrl?: string | null; readOnly?: boolean } = {},
 ): Promise<View> {
   const player = context.player;
+  const t = context.t;
+  const locale = context.locale;
   const coopLevel = await coopLevelOf(player.coopId);
   const view = await farmService.getFarmView(player, { coopLevel, now: context.now });
   const herd = await animalService.getHerd(player, context.now);
@@ -75,13 +77,13 @@ export async function farmView(
     title: `🌾 ${view.name}`,
     description: [
       `**${view.world.weather.emoji} ${view.world.weather.label}** — ${view.world.weather.description}`,
-      view.world.weather.freeWatering ? '💧 *Free watering today!*' : '',
+      view.world.weather.freeWatering ? t('farm.free_watering_today') : '',
       '',
-      `✅ **${counts.ready}** ready • 🌱 **${counts.growing}** growing • ⬜ **${counts.empty}** empty • 🔒 **${counts.locked}** locked`,
-      counts.pests > 0 ? `🐛 **${counts.pests}** plot(s) infested — \`/treat\`` : '',
-      counts.withered > 0 ? `💀 **${counts.withered}** withered crop(s)` : '',
+      t('farm.summary', { ready: counts.ready, growing: counts.growing, empty: counts.empty, locked: counts.locked }),
+      counts.pests > 0 ? t('farm.pests_warning', { count: counts.pests }) : '',
+      counts.withered > 0 ? t('farm.withered_warning', { count: counts.withered }) : '',
       view.nextReadyAt
-        ? `⏳ Next harvest ${discordTimestamp(view.nextReadyAt, 'R')}`
+        ? t('render.farm.next_harvest', { duration: discordTimestamp(view.nextReadyAt, 'R') })
         : '',
     ]
       .filter(Boolean)
@@ -103,21 +105,21 @@ export async function farmView(
   // Repli texte : si le rendu a échoué, on liste les parcelles.
   if (!image.attachment) {
     embed.addFields({
-      name: 'Plots',
+      name: t('common.plots'),
       value:
         view.plots
           .filter((plot) => plot.state !== 'locked')
           .slice(0, 20)
           .map((plot) => {
-            if (!plot.crop) return `\`${String(plot.slot).padStart(2, ' ')}\` ⬜ empty`;
+            if (!plot.crop) return `\`${String(plot.slot).padStart(2, ' ')}\` ⬜ ${t('farm.plot_empty')}`;
             const status = plot.crop.growth.withered
-              ? '💀 withered'
+              ? `💀 ${t('farm.plot_withered')}`
               : plot.crop.growth.ready
-                ? '✅ ready'
-                : `⏳ ${formatDuration(plot.crop.growth.msRemaining)}`;
+                ? `✅ ${t('farm.plot_ready')}`
+                : `⏳ ${formatDuration(plot.crop.growth.msRemaining, locale)}`;
             return `\`${String(plot.slot).padStart(2, ' ')}\` ${plot.crop.emoji} ${plot.crop.name} — ${status}${plot.crop.growth.needsWater ? ' 💧' : ''}`;
           })
-          .join('\n') || 'No plot unlocked yet.',
+          .join('\n') || t('farm.no_plot_unlocked'),
     });
   }
 
@@ -139,28 +141,28 @@ export async function farmView(
           namespace: 'farm',
           action: 'plots',
           ownerId: player.discordId,
-          label: 'Plots',
+          label: t('common.plots'),
           emoji: '🗺️',
         }),
         button({
           namespace: 'animal',
           action: 'open',
           ownerId: player.discordId,
-          label: 'Animals',
+          label: t('common.animals'),
           emoji: '🐄',
         }),
         button({
           namespace: 'inv',
           action: 'open',
           ownerId: player.discordId,
-          label: 'Inventory',
+          label: t('common.inventory'),
           emoji: '🎒',
         }),
         button({
           namespace: 'quest',
           action: 'open',
           ownerId: player.discordId,
-          label: 'Quests',
+          label: t('common.quests'),
           emoji: '📋',
         }),
       ),
@@ -174,6 +176,8 @@ export async function farmView(
 
 export async function plotsView(context: CommandContext, page = 1): Promise<View> {
   const player = context.player;
+  const t = context.t;
+  const locale = context.locale;
   const view = await farmService.getFarmView(player, { now: context.now });
   const pageSize = 12;
   const totalPages = Math.max(1, Math.ceil(view.plots.length / pageSize));
@@ -182,34 +186,38 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
 
   const lines = slice.map((plot) => {
     if (plot.state === 'locked') {
-      return `\`${String(plot.slot).padStart(2, ' ')}\` 🔒 Locked — ${formatCoins(plot.unlockCost)}`;
+      return `\`${String(plot.slot).padStart(2, ' ')}\` 🔒 ${t('farm.plot_locked')} — ${formatCoins(plot.unlockCost, false, locale)}`;
     }
-    const soil = `soil ${plot.fertility}% (${plot.fertilityLabel})`;
+    const soil = t('farm.soil_status', { pct: plot.fertility, label: plot.fertilityLabel });
     if (!plot.crop) {
-      return `\`${String(plot.slot).padStart(2, ' ')}\` ⬜ Empty — ${soil}${plot.weedLevel > 30 ? ` • 🌿 weeds ${plot.weedLevel}%` : ''}`;
+      return `\`${String(plot.slot).padStart(2, ' ')}\` ⬜ ${t('farm.plot_empty')} — ${soil}${plot.weedLevel > 30 ? ` • ${t('farm.weeds_status', { pct: plot.weedLevel })}` : ''}`;
     }
     const status = plot.crop.growth.withered
-      ? '💀 withered'
+      ? `💀 ${t('farm.plot_withered')}`
       : plot.crop.growth.ready
-        ? '✅ **ready**'
+        ? `✅ **${t('farm.plot_ready')}**`
         : `⏳ ${discordTimestamp(plot.crop.growth.readyAt, 'R')}`;
     return [
       `\`${String(plot.slot).padStart(2, ' ')}\` ${plot.crop.emoji} **${plot.crop.name}** — ${status}`,
-      `      ${soil} • 💧 ${plot.crop.waterGiven}/${plot.crop.waterNeeded}${plot.pestType ? ' • 🐛 pests!' : ''}${plot.crop.regrowRemaining > 0 ? ` • 🔁 ${plot.crop.regrowRemaining} regrow(s)` : ''}`,
+      `      ${soil} • 💧 ${plot.crop.waterGiven}/${plot.crop.waterNeeded}${plot.pestType ? ` • 🐛 ${t('farm.plot_pest')}` : ''}${plot.crop.regrowRemaining > 0 ? ` • ${t('farm.regrow_count', { count: plot.crop.regrowRemaining })}` : ''}`,
     ].join('\n');
   });
 
   const embed = baseEmbed({
-    title: '🗺️ Your plots',
-    description: lines.join('\n') || 'No plot.',
+    title: `🗺️ ${t('farm.plots_title')}`,
+    description: lines.join('\n') || t('farm.no_plot'),
     color: COLORS.primary,
     fields: [
       {
-        name: 'Expansion',
+        name: t('farm.expansion_field'),
         value:
           view.nextPlotCost > 0
-            ? `Next plot: **${formatCoins(view.nextPlotCost)}** (${view.unlockedPlots}/${context.balance.plots.maxPlots} unlocked)`
-            : `All plots unlocked (${view.unlockedPlots}) 🏆`,
+            ? t('farm.next_plot_cost', {
+                cost: formatCoins(view.nextPlotCost, false, locale),
+                unlocked: view.unlockedPlots,
+                max: context.balance.plots.maxPlots,
+              })
+            : t('farm.all_plots_unlocked', { unlocked: view.unlockedPlots }),
       },
     ],
   });
@@ -228,7 +236,10 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
           namespace: 'farm',
           action: 'buy_plot',
           ownerId: player.discordId,
-          label: view.nextPlotCost > 0 ? `Buy (${formatCompact(view.nextPlotCost)} 🪙)` : 'Complete',
+          label:
+            view.nextPlotCost > 0
+              ? t('farm.buy_plot_button', { cost: formatCompact(view.nextPlotCost, locale) })
+              : t('common.complete'),
           emoji: '🛒',
           style: ButtonStyle.Success,
           disabled: view.nextPlotCost === 0,
@@ -237,7 +248,7 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
           namespace: 'farm',
           action: 'weed_all',
           ownerId: player.discordId,
-          label: 'Weed',
+          label: t('farm.weed_button'),
           emoji: '🌿',
         }),
         button({ namespace: 'farm', action: 'refresh', ownerId: player.discordId, emoji: '🔄' }),
@@ -250,48 +261,65 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
 // INVENTAIRE
 // ---------------------------------------------------------------------------
 
-const CATEGORY_LABELS: Record<string, { label: string; emoji: string }> = {
-  seed: { label: 'Seeds', emoji: '🌱' },
-  harvest: { label: 'Harvests', emoji: '🌾' },
-  animal_product: { label: 'Animal products', emoji: '🥚' },
-  product: { label: 'Processed goods', emoji: '🧀' },
-  tool: { label: 'Tools', emoji: '🛠️' },
-  consumable: { label: 'Consumables', emoji: '🧪' },
-  material: { label: 'Materials', emoji: '🪵' },
-  cosmetic: { label: 'Cosmetics', emoji: '🎨' },
-  event: { label: 'Event', emoji: '🎉' },
-};
+const INVENTORY_CATEGORY_KEYS = [
+  'seed',
+  'harvest',
+  'animal_product',
+  'product',
+  'tool',
+  'consumable',
+  'material',
+  'cosmetic',
+  'event',
+] as const;
 
 export async function inventoryView(
   context: CommandContext,
   options: { category?: string; page?: number } = {},
 ): Promise<View> {
   const player = context.player;
+  const t = context.t;
+  const locale = context.locale;
   const page = await inventoryService.getPage(
     player.id,
     { category: options.category, page: options.page },
     context.locale,
   );
 
+  const categoryChoice = (key: string): { label: string; emoji: string } => {
+    const emojis: Record<string, string> = {
+      seed: '🌱',
+      harvest: '🌾',
+      animal_product: '🥚',
+      product: '🧀',
+      tool: '🛠️',
+      consumable: '🧪',
+      material: '🪵',
+      cosmetic: '🎨',
+      event: '🎉',
+    };
+    return { label: t(`inventory.categories.${key}`), emoji: emojis[key] ?? '📦' };
+  };
+
   const lines = page.entries.map((entry) => {
     const icons = `${qualityIcon(entry.quality)}${mutationIcon(entry.mutation)}`;
-    const value = entry.sellable ? ` — ${formatCoins(entry.sellPrice * entry.quantity, true)}` : '';
-    return `${entry.emoji} **${entry.name}**${icons} ×${formatNumber(entry.quantity)}${value}`;
+    const value = entry.sellable ? ` — ${formatCoins(entry.sellPrice * entry.quantity, true, locale)}` : '';
+    return `${entry.emoji} **${entry.name}**${icons} ×${formatNumber(entry.quantity, locale)}${value}`;
   });
 
   const embed = baseEmbed({
-    title: `🎒 ${player.username}’s inventory`,
-    description: lines.join('\n') || '*No item in this category.*',
+    title: t('inventory.title', { name: `${player.username}’s` }),
+    description: lines.join('\n') || `*${t('inventory.empty_category')}*`,
     color: COLORS.info,
     fields: [
       {
-        name: 'Warehouse',
-        value: `${progressBar(page.used, page.capacity, 12)} ${formatNumber(page.used)}/${formatNumber(page.capacity)}`,
+        name: t('inventory.warehouse_field'),
+        value: `${progressBar(page.used, page.capacity, 12)} ${formatNumber(page.used, locale)}/${formatNumber(page.capacity, locale)}`,
         inline: true,
       },
       {
-        name: 'Estimated value',
-        value: formatCoins(page.totalValue, true),
+        name: t('inventory.estimated_value_field'),
+        value: formatCoins(page.totalValue, true, locale),
         inline: true,
       },
     ],
@@ -305,15 +333,18 @@ export async function inventoryView(
           namespace: 'inv',
           action: 'category',
           ownerId: player.discordId,
-          placeholder: 'Filter by category',
+          placeholder: t('inventory.filter_placeholder'),
           choices: [
-            { label: 'All', value: 'all', emoji: '📦', default: !options.category },
-            ...Object.entries(CATEGORY_LABELS).map(([value, meta]) => ({
-              label: meta.label,
-              value,
-              emoji: meta.emoji,
-              default: options.category === value,
-            })),
+            { label: t('common.all'), value: 'all', emoji: '📦', default: !options.category },
+            ...INVENTORY_CATEGORY_KEYS.map((value) => {
+              const meta = categoryChoice(value);
+              return {
+                label: meta.label,
+                value,
+                emoji: meta.emoji,
+                default: options.category === value,
+              };
+            }),
           ],
         }),
       ),
@@ -329,7 +360,7 @@ export async function inventoryView(
           namespace: 'inv',
           action: 'sell_menu',
           ownerId: player.discordId,
-          label: 'Sell',
+          label: t('common.sell'),
           emoji: '💰',
           style: ButtonStyle.Success,
         }),
@@ -337,7 +368,7 @@ export async function inventoryView(
           namespace: 'farm',
           action: 'refresh',
           ownerId: player.discordId,
-          label: 'My farm',
+          label: t('common.my_farm'),
           emoji: '🌾',
         }),
       ),
@@ -351,6 +382,8 @@ export async function inventoryView(
 
 export async function shopView(context: CommandContext, category?: string): Promise<View> {
   const player = context.player;
+  const t = context.t;
+  const locale = context.locale;
   const entries = await marketService.getShop(context.now, context.locale);
   const filtered = category ? entries.filter((entry) => entry.category === category) : entries;
 
@@ -361,26 +394,27 @@ export async function shopView(context: CommandContext, category?: string): Prom
     grouped.set(entry.category, list);
   }
 
-  const CATEGORY_TITLES: Record<string, string> = {
-    daily: "✨ Today's deals",
-    seeds: '🌱 Seeds',
-    supplies: '📦 Supplies',
+  const categoryTitle = (key: string): string => {
+    if (key === 'daily') return `✨ ${t('shop.category_daily')}`;
+    if (key === 'seeds') return `🌱 ${t('inventory.categories.seed')}`;
+    if (key === 'supplies') return `📦 ${t('shop.category_supplies')}`;
+    return key;
   };
 
   const fields = [...grouped.entries()].map(([key, list]) => ({
-    name: CATEGORY_TITLES[key] ?? key,
+    name: categoryTitle(key),
     value: list
       .slice(0, 10)
       .map((entry) => {
-        const price = `${formatNumber(entry.price)} ${entry.currency === 'gems' ? '💎' : COIN}`;
+        const price = `${formatNumber(entry.price, locale)} ${entry.currency === 'gems' ? '💎' : COIN}`;
         const discount = entry.discountPercent > 0 ? ` ~~-${entry.discountPercent}%~~` : '';
         const stock =
           entry.stockRemaining >= 999
             ? ''
             : entry.stockRemaining <= 0
-              ? ' — **sold out**'
-              : ` — ${entry.stockRemaining} in stock`;
-        const level = entry.requiredLevel > player.level ? ` 🔒 lv. ${entry.requiredLevel}` : '';
+              ? ` — **${t('shop.sold_out')}**`
+              : ` — ${t('shop.in_stock', { remaining: entry.stockRemaining })}`;
+        const level = entry.requiredLevel > player.level ? ` 🔒 ${t('common.level_abbr', { level: entry.requiredLevel })}` : '';
         return `${entry.emoji} **${entry.name}** — ${price}${discount}${stock}${level}`;
       })
       .join('\n'),
@@ -388,10 +422,10 @@ export async function shopView(context: CommandContext, category?: string): Prom
 
   const first = entries[0];
   const embed = baseEmbed({
-    title: '🏪 Village shop',
+    title: t('shop.title'),
     description: first
-      ? `Stock refreshed ${discordTimestamp(first.expiresAt, 'R')}.\nUse \`/buy\` or the menu below.`
-      : 'The shop is empty for now.',
+      ? t('shop.refreshed_body', { when: discordTimestamp(first.expiresAt, 'R') })
+      : t('shop.empty_body'),
     color: COLORS.gold,
     fields,
   });
@@ -408,9 +442,9 @@ export async function shopView(context: CommandContext, category?: string): Prom
           namespace: 'shop',
           action: 'buy',
           ownerId: player.discordId,
-          placeholder: 'Buy an item',
+          placeholder: t('shop.buy_placeholder'),
           choices: buyable.slice(0, 25).map((entry) => ({
-            label: `${entry.name} — ${entry.price} ${entry.currency === 'gems' ? 'gems' : 'coins'}`,
+            label: `${entry.name} — ${entry.price} ${entry.currency === 'gems' ? t('common.gems') : t('common.coins')}`,
             value: entry.itemKey,
             emoji: entry.emoji,
             description: truncate(entry.description ?? '', 100),
@@ -424,7 +458,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
           action: 'filter',
           ownerId: player.discordId,
           params: ['all'],
-          label: 'All',
+          label: t('common.all'),
           emoji: '📦',
         }),
         button({
@@ -432,7 +466,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
           action: 'filter',
           ownerId: player.discordId,
           params: ['daily'],
-          label: "Today's deals",
+          label: t('shop.category_daily'),
           emoji: '✨',
         }),
         button({
@@ -440,7 +474,7 @@ export async function shopView(context: CommandContext, category?: string): Prom
           action: 'filter',
           ownerId: player.discordId,
           params: ['seeds'],
-          label: 'Seeds',
+          label: t('inventory.categories.seed'),
           emoji: '🌱',
         }),
         button({ namespace: 'shop', action: 'open', ownerId: player.discordId, emoji: '🔄' }),
@@ -454,6 +488,8 @@ export async function shopView(context: CommandContext, category?: string): Prom
 // ---------------------------------------------------------------------------
 
 export async function marketView(context: CommandContext, category?: string): Promise<View> {
+  const t = context.t;
+  const locale = context.locale;
   const rows = await marketService.getMarket({ category }, context.locale);
   // Ne classer « en hausse »/« en baisse » que les objets dont la variation
   // dépasse le seuil de `describeTrend` (2 %) : sinon un marché stable (toutes
@@ -471,7 +507,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
   const alphabetical = [...rows].sort((a, b) => a.name.localeCompare(b.name));
 
   const format = (entry: (typeof rows)[number]): string =>
-    `${entry.trendEmoji} ${entry.emoji} **${entry.name}** — ${formatNumber(entry.price)} ${COIN} (${formatPercent(entry.trend)})`;
+    `${entry.trendEmoji} ${entry.emoji} **${entry.name}** — ${formatNumber(entry.price, locale)} ${COIN} (${formatPercent(entry.trend, 1, locale)})`;
 
   // Marché entièrement plat (aucun objet ne franchit le seuil de mouvement) :
   // plutôt que deux champs vides, on affiche un repère par prix. Pas de
@@ -479,31 +515,31 @@ export async function marketView(context: CommandContext, category?: string): Pr
   // reproduirait exactement la confusion d'origine.
   const byPrice = [...rows].sort((a, b) => a.price - b.price);
   const formatPriceOnly = (entry: (typeof rows)[number]): string =>
-    `${entry.emoji} **${entry.name}** — ${formatNumber(entry.price)} ${COIN}`;
+    `${entry.emoji} **${entry.name}** — ${formatNumber(entry.price, locale)} ${COIN}`;
   const fields =
     rising.length > 0 || falling.length > 0
       ? [
-          { name: '📈 Rising', value: rising.map(format).join('\n') || '—', inline: false },
-          { name: '📉 Falling', value: falling.map(format).join('\n') || '—', inline: false },
+          { name: `📈 ${t('market.trend_up')}`, value: rising.map(format).join('\n') || '—', inline: false },
+          { name: `📉 ${t('market.trend_down')}`, value: falling.map(format).join('\n') || '—', inline: false },
         ]
       : [
           {
-            name: `💰 ${context.t('market.cheapest_title')}`,
+            name: `💰 ${t('market.cheapest_title')}`,
             value: byPrice.slice(0, 8).map(formatPriceOnly).join('\n') || '—',
             inline: false,
           },
           {
-            name: `💎 ${context.t('market.priciest_title')}`,
+            name: `💎 ${t('market.priciest_title')}`,
             value: [...byPrice].reverse().slice(0, 8).map(formatPriceOnly).join('\n') || '—',
             inline: false,
           },
         ];
 
   const embed = baseEmbed({
-    title: '📊 Greenvale market',
+    title: t('market.title'),
     description: [
-      'Prices move every hour with what farmers sell.',
-      rows[0] ? `Next update ${discordTimestamp(rows[0].nextUpdateAt, 'R')}.` : '',
+      t('market.description'),
+      rows[0] ? t('market.next_update', { when: discordTimestamp(rows[0].nextUpdateAt, 'R') }) : '',
     ]
       .filter(Boolean)
       .join('\n'),
@@ -514,7 +550,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
   const featured = rows.filter((entry) => entry.featured);
   if (featured.length > 0) {
     embed.addFields({
-      name: '⭐ Featured products (boosted price)',
+      name: `⭐ ${t('market.featured_field')}`,
       value: featured.map((entry) => `${entry.emoji} ${entry.name}`).join(' • '),
     });
   }
@@ -527,12 +563,12 @@ export async function marketView(context: CommandContext, category?: string): Pr
           namespace: 'market',
           action: 'chart',
           ownerId: context.player.discordId,
-          placeholder: 'View a product\'s chart',
+          placeholder: t('market.chart_placeholder'),
           choices: alphabetical.slice(0, 25).map((entry) => ({
             label: `${entry.name} — ${entry.price} 🪙`,
             value: entry.itemKey,
             emoji: entry.emoji,
-            description: `${entry.trendLabel} • ${context.t(`common.rarity.${entry.rarity}`)}`,
+            description: `${entry.trendLabel} • ${t(`common.rarity.${entry.rarity}`)}`,
           })),
         }),
       ),
@@ -542,7 +578,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
           action: 'filter',
           ownerId: context.player.discordId,
           params: ['harvest'],
-          label: 'Harvests',
+          label: t('inventory.categories.harvest'),
           emoji: '🌾',
         }),
         button({
@@ -550,7 +586,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
           action: 'filter',
           ownerId: context.player.discordId,
           params: ['product'],
-          label: 'Products',
+          label: t('market.products_label'),
           emoji: '🧀',
         }),
         button({
@@ -558,7 +594,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
           action: 'filter',
           ownerId: context.player.discordId,
           params: ['animal_product'],
-          label: 'Livestock',
+          label: t('market.livestock_label'),
           emoji: '🥚',
         }),
         button({
@@ -578,6 +614,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
 
 export async function animalsView(context: CommandContext, page = 1): Promise<View> {
   const player = context.player;
+  const t = context.t;
   const herd = await animalService.getHerd(player, context.now);
   const pageSize = 8;
   const totalPages = Math.max(1, Math.ceil(herd.animals.length / pageSize));
@@ -593,28 +630,31 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
     return [
       `${animal.emoji} **${animal.nickname ?? animal.name}** — ${animal.status.mood}`,
       `   🍽️ ${gaugeBar(animal.status.hunger, 5)} ${animal.status.hunger}%  💛 ${gaugeBar(animal.status.happiness, 5)} ${animal.status.happiness}%  ❤️ ${animal.status.health}%`,
-      `   ${production}${animal.generation > 1 ? ` • gen. ${animal.generation}` : ''}${animal.qualityMultiplier !== 1 ? ` • ×${animal.qualityMultiplier.toFixed(2)}` : ''}`,
+      `   ${production}${animal.generation > 1 ? ` • ${t('animals.generation_suffix', { gen: animal.generation })}` : ''}${animal.qualityMultiplier !== 1 ? ` • ×${animal.qualityMultiplier.toFixed(2)}` : ''}`,
     ].join('\n');
   });
 
   const embed = baseEmbed({
-    title: `🐄 ${player.username}’s herd`,
-    description:
-      lines.join('\n\n') ||
-      "*No animal.*\nBuild a coop with `/buildings`, then buy a hen with `/buy-animal`.",
+    title: t('animals.title', { name: `${player.username}’s` }),
+    description: lines.join('\n\n') || t('animals.empty'),
     color: herd.totals.readyToCollect > 0 ? COLORS.success : COLORS.primary,
     fields: [
       {
-        name: 'Buildings',
+        name: t('common.buildings'),
         value:
           herd.capacityByBuilding
-            .map((entry) => `${entry.emoji} ${entry.name} — ${entry.used}/${entry.capacity} (tier ${entry.tier})`)
-            .join('\n') || 'No livestock building.',
+            .map((entry) => `${entry.emoji} ${entry.name} — ${entry.used}/${entry.capacity} (${t('craft.tier_label', { tier: entry.tier })})`)
+            .join('\n') || t('animals.no_building_field'),
         inline: false,
       },
       {
-        name: 'Summary',
-        value: `🐾 ${herd.totals.alive} animal(s) • 🍽️ ${herd.totals.hungry} hungry • 🤒 ${herd.totals.sick} sick • ✅ ${herd.totals.readyToCollect} to collect`,
+        name: t('common.summary'),
+        value: t('animals.summary_line', {
+          alive: herd.totals.alive,
+          hungry: herd.totals.hungry,
+          sick: herd.totals.sick,
+          ready: herd.totals.readyToCollect,
+        }),
         inline: false,
       },
     ],
@@ -628,7 +668,7 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
           namespace: 'animal',
           action: 'collect_all',
           ownerId: player.discordId,
-          label: 'Collect all',
+          label: t('animals.collect_all_button'),
           emoji: '🥚',
           style: ButtonStyle.Success,
           disabled: herd.totals.readyToCollect === 0,
@@ -637,7 +677,7 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
           namespace: 'animal',
           action: 'feed_all',
           ownerId: player.discordId,
-          label: 'Feed all',
+          label: t('animals.feed_all_button'),
           emoji: '🌾',
           style: ButtonStyle.Primary,
           disabled: herd.totals.alive === 0,
@@ -646,7 +686,7 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
           namespace: 'animal',
           action: 'pet_menu',
           ownerId: player.discordId,
-          label: 'Pet',
+          label: t('animals.pet_button'),
           emoji: '🤍',
           disabled: herd.totals.alive === 0,
         }),
@@ -668,14 +708,16 @@ export async function questsView(
   type?: 'daily' | 'weekly' | 'story' | 'contract',
 ): Promise<View> {
   const player = context.player;
+  const t = context.t;
+  const locale = context.locale;
   const quests = await progressionService.listQuests(player, { type });
   const resets = progressionService.questResetTimes();
 
   const allSections: Array<{ key: 'daily' | 'weekly' | 'story' | 'contract'; title: string }> = [
-    { key: 'daily', title: `📅 Daily — resets ${discordTimestamp(resets.daily, 'R')}` },
-    { key: 'weekly', title: `🗓️ Weekly — resets ${discordTimestamp(resets.weekly, 'R')}` },
-    { key: 'story', title: '📖 Village history' },
-    { key: 'contract', title: '📦 Delivery contracts' },
+    { key: 'daily', title: `📅 ${t('quests.daily')} — ${t('quests.resets', { when: discordTimestamp(resets.daily, 'R') })}` },
+    { key: 'weekly', title: `🗓️ ${t('quests.weekly')} — ${t('quests.resets', { when: discordTimestamp(resets.weekly, 'R') })}` },
+    { key: 'story', title: `📖 ${t('quests.story')}` },
+    { key: 'contract', title: `📦 ${t('quests.contract')}` },
   ];
   const sections = allSections.filter((section) => !type || section.key === type);
 
@@ -689,14 +731,14 @@ export async function questsView(
           .map((quest) => {
             const status =
               quest.status === 'claimed'
-                ? '✅ claimed'
+                ? `✅ ${t('quests.claimed')}`
                 : quest.status === 'completed'
-                  ? '🎁 **to claim**'
+                  ? `🎁 **${t('quests.to_claim_indicator')}**`
                   : `${progressBar(quest.progress, quest.required, 8)} ${quest.progress}/${quest.required}`;
             const rewards = [
-              quest.rewards.coins ? `${formatCompact(quest.rewards.coins)} 🪙` : '',
+              quest.rewards.coins ? `${formatCompact(quest.rewards.coins, locale)} 🪙` : '',
               quest.rewards.gems ? `${quest.rewards.gems} 💎` : '',
-              quest.rewards.xp ? `${formatCompact(quest.rewards.xp)} ✨` : '',
+              quest.rewards.xp ? `${formatCompact(quest.rewards.xp, locale)} ✨` : '',
             ]
               .filter(Boolean)
               .join(' • ');
@@ -710,11 +752,11 @@ export async function questsView(
   const claimable = quests.filter((quest) => quest.status === 'completed');
 
   const embed = baseEmbed({
-    title: `📋 ${player.username}'s quests`,
+    title: t('quests.title', { name: `${player.username}'s` }),
     description:
       claimable.length > 0
-        ? `🎁 **${claimable.length} reward(s)** waiting for you!`
-        : 'Complete quests to earn coins, XP and season pass progress.',
+        ? t('quests.rewards_waiting', { count: claimable.length })
+        : t('quests.description_default'),
     color: claimable.length > 0 ? COLORS.gold : COLORS.primary,
     fields,
   });
@@ -729,7 +771,7 @@ export async function questsView(
           namespace: 'quest',
           action: 'claim_all',
           ownerId: player.discordId,
-          label: `Claim all (${claimable.length})`,
+          label: t('quests.claim_all_button', { count: claimable.length }),
           emoji: '🎁',
           style: ButtonStyle.Success,
           disabled: claimable.length === 0,
@@ -739,7 +781,7 @@ export async function questsView(
           action: 'filter',
           ownerId: player.discordId,
           params: ['daily'],
-          label: 'Daily',
+          label: t('quests.daily'),
           emoji: '📅',
         }),
         button({
@@ -747,7 +789,7 @@ export async function questsView(
           action: 'filter',
           ownerId: player.discordId,
           params: ['weekly'],
-          label: 'Weekly',
+          label: t('quests.weekly'),
           emoji: '🗓️',
         }),
         button({
@@ -764,7 +806,7 @@ export async function questsView(
                 namespace: 'quest',
                 action: 'reroll',
                 ownerId: player.discordId,
-                placeholder: 'Reroll a daily quest',
+                placeholder: t('quests.reroll_placeholder'),
                 choices: rerollable.slice(0, 25).map((quest) => ({
                   label: truncate(quest.title, 90),
                   value: quest.id,
@@ -785,26 +827,26 @@ export async function questsView(
 
 export async function coopView(context: CommandContext): Promise<View> {
   const player = context.player;
+  const t = context.t;
+  const locale = context.locale;
   if (!player.coopId) {
     const publics = await coopService.listPublicCoops(8);
     return {
       embeds: [
         baseEmbed({
-          title: '🤝 Co-ops',
-          description:
-            "You are not in a co-op.\n" +
-            'Join one for collective bonuses, weekly objectives and a shared treasury.',
+          title: t('coop.browse_title'),
+          description: t('coop.browse_intro'),
           color: COLORS.info,
           fields: [
             {
-              name: 'Open co-ops',
+              name: t('coop.open_coops_field'),
               value:
                 publics
                   .map(
                     (coop) =>
-                      `${coop.emblem} **${coop.name}** \`[${coop.tag}]\` — lvl ${coop.level} • ${coop.memberCount}/${coop.memberLimit} members`,
+                      `${coop.emblem} **${coop.name}** \`[${coop.tag}]\` — lvl ${coop.level} • ${coop.memberCount}/${coop.memberLimit} ${t('common.members').toLowerCase()}`,
                   )
-                  .join('\n') || 'No public co-op right now.',
+                  .join('\n') || t('coop.no_public_coops'),
             },
           ],
         }),
@@ -815,7 +857,7 @@ export async function coopView(context: CommandContext): Promise<View> {
             namespace: 'coop',
             action: 'create',
             ownerId: player.discordId,
-            label: 'Create a co-op',
+            label: t('coop.create_button'),
             emoji: '➕',
             style: ButtonStyle.Success,
           }),
@@ -827,13 +869,13 @@ export async function coopView(context: CommandContext): Promise<View> {
                   namespace: 'coop',
                   action: 'join',
                   ownerId: player.discordId,
-                  placeholder: 'Join a co-op',
+                  placeholder: t('coop.join_placeholder'),
                   choices: publics.map((coop) => ({
                     label: `${coop.name} [${coop.tag}]`,
                     value: coop.tag,
                     emoji: coop.emblem,
                     description: truncate(
-                      coop.description ?? `Level ${coop.level} • ${coop.memberCount} members`,
+                      coop.description ?? t('coop.listing_description', { level: coop.level, count: coop.memberCount }),
                       100,
                     ),
                   })),
@@ -851,53 +893,53 @@ export async function coopView(context: CommandContext): Promise<View> {
 
   const embed = baseEmbed({
     title: `${info.emblem} ${info.name} [${info.tag}]`,
-    description: info.description ?? '*No description.*',
+    description: info.description ?? t('coop.no_description'),
     color: COLORS.primary,
     fields: [
       {
-        name: 'Progression',
-        value: `Level **${info.level}**\n${progressBar(info.xp, info.xpForNext || 1, 12)} ${formatCompact(info.xp)}/${formatCompact(info.xpForNext)}`,
+        name: t('common.progression_field'),
+        value: `${t('common.level')} **${info.level}**\n${progressBar(info.xp, info.xpForNext || 1, 12)} ${formatCompact(info.xp, locale)}/${formatCompact(info.xpForNext, locale)}`,
         inline: true,
       },
       {
-        name: 'Treasury',
-        value: formatCoins(info.treasury, true),
+        name: t('coop.treasury_field'),
+        value: formatCoins(info.treasury, true, locale),
         inline: true,
       },
       {
-        name: 'Members',
+        name: t('common.members'),
         value: `${info.memberCount}/${info.memberLimit}`,
         inline: true,
       },
       {
-        name: '🎁 Collective bonuses',
+        name: `🎁 ${t('coop.bonuses')}`,
         value: [
-          `🌱 Growth speed **+${(info.bonuses.growthSpeed * 100).toFixed(1)} %**`,
-          `💰 Selling price **+${(info.bonuses.sellBonus * 100).toFixed(1)} %**`,
-          `✨ XP **+${(info.bonuses.xpBonus * 100).toFixed(1)}%**`,
-          `🥇 Quality **+${(info.bonuses.qualityBonus * 100).toFixed(1)}%**`,
+          t('coop.bonus_growth', { pct: (info.bonuses.growthSpeed * 100).toFixed(1) }),
+          t('coop.bonus_sell', { pct: (info.bonuses.sellBonus * 100).toFixed(1) }),
+          t('coop.bonus_xp', { pct: (info.bonuses.xpBonus * 100).toFixed(1) }),
+          t('coop.bonus_quality', { pct: (info.bonuses.qualityBonus * 100).toFixed(1) }),
         ].join('\n'),
         inline: false,
       },
       {
-        name: '🎯 This week\'s goals',
+        name: `🎯 ${t('coop.objectives')}`,
         value:
           objectives
             .map(
               (objective) =>
-                `**${objective.title}** ${objective.status === 'completed' ? '✅' : ''}\n${progressBar(objective.progress, objective.target, 10)} ${formatCompact(objective.progress)}/${formatCompact(objective.target)} — ${formatCompact(objective.rewardCoins)} 🪙`,
+                `**${objective.title}** ${objective.status === 'completed' ? '✅' : ''}\n${progressBar(objective.progress, objective.target, 10)} ${formatCompact(objective.progress, locale)}/${formatCompact(objective.target, locale)} — ${formatCompact(objective.rewardCoins, locale)} 🪙`,
             )
-            .join('\n') || 'No active goal.',
+            .join('\n') || t('coop.no_active_goal'),
         inline: false,
       },
       {
-        name: '👥 Top contributors',
+        name: t('coop.top_contributors_field'),
         value:
           members
             .slice(0, 5)
             .map(
               (member, index) =>
-                `${index + 1}. **${member.username}** (${coopService.ROLE_LABELS[member.member.role as 'owner' | 'officer' | 'member']}) — ${formatCompact(member.member.weeklyContribution)} 🪙`,
+                `${index + 1}. **${member.username}** (${coopService.ROLE_LABELS[member.member.role as 'owner' | 'officer' | 'member']}) — ${formatCompact(member.member.weeklyContribution, locale)} 🪙`,
             )
             .join('\n') || '—',
         inline: false,
@@ -913,7 +955,7 @@ export async function coopView(context: CommandContext): Promise<View> {
           namespace: 'coop',
           action: 'contribute',
           ownerId: player.discordId,
-          label: 'Contribute',
+          label: t('coop.contribute_button'),
           emoji: '💰',
           style: ButtonStyle.Success,
         }),
@@ -921,14 +963,14 @@ export async function coopView(context: CommandContext): Promise<View> {
           namespace: 'coop',
           action: 'members',
           ownerId: player.discordId,
-          label: 'Members',
+          label: t('common.members'),
           emoji: '👥',
         }),
         button({
           namespace: 'coop',
           action: 'objectives',
           ownerId: player.discordId,
-          label: 'Objectives',
+          label: t('coop.objectives_button'),
           emoji: '🎯',
         }),
         button({ namespace: 'coop', action: 'open', ownerId: player.discordId, emoji: '🔄' }),
@@ -943,20 +985,21 @@ export async function coopView(context: CommandContext): Promise<View> {
 
 export async function productionView(context: CommandContext): Promise<View> {
   const player = context.player;
+  const t = context.t;
   const lines = await craftService.listProduction(player);
   const ready = lines.filter((line) => line.ready);
 
   const embed = baseEmbed({
-    title: '🛠️ Production queue',
+    title: t('craft.queue_title'),
     description:
       lines
         .map(
           (line) =>
             `${line.buildingEmoji} **${line.recipeName}** ×${line.quantity} — ${
-              line.ready ? '✅ **ready**' : `⏳ ${discordTimestamp(line.finishAt, 'R')}`
+              line.ready ? `✅ **${t('craft.ready_indicator')}**` : `⏳ ${discordTimestamp(line.finishAt, 'R')}`
             }\n   → ${line.outputQuantity}× ${line.outputName}`,
         )
-        .join('\n') || '*No production running.* Start one with `/craft`.',
+        .join('\n') || t('craft.queue_empty'),
     color: ready.length > 0 ? COLORS.success : COLORS.primary,
   });
 
@@ -968,7 +1011,7 @@ export async function productionView(context: CommandContext): Promise<View> {
           namespace: 'craft',
           action: 'collect_all',
           ownerId: player.discordId,
-          label: `Collect all (${ready.length})`,
+          label: t('craft.collect_all_button', { count: ready.length }),
           emoji: '📦',
           style: ButtonStyle.Success,
           disabled: ready.length === 0,
@@ -977,14 +1020,14 @@ export async function productionView(context: CommandContext): Promise<View> {
           namespace: 'craft',
           action: 'recipes',
           ownerId: player.discordId,
-          label: 'Recipes',
+          label: t('craft.recipes_button'),
           emoji: '📜',
         }),
         button({
           namespace: 'build',
           action: 'open',
           ownerId: player.discordId,
-          label: 'Buildings',
+          label: t('common.buildings'),
           emoji: '🏗️',
         }),
         button({ namespace: 'craft', action: 'queue', ownerId: player.discordId, emoji: '🔄' }),
@@ -995,6 +1038,7 @@ export async function productionView(context: CommandContext): Promise<View> {
 
 export async function buildingsView(context: CommandContext): Promise<View> {
   const player = context.player;
+  const t = context.t;
   const buildings = await craftService.listBuildings(player);
 
   const groups = new Map<string, typeof buildings>();
@@ -1004,31 +1048,32 @@ export async function buildingsView(context: CommandContext): Promise<View> {
     groups.set(building.category, list);
   }
 
-  const CATEGORY_TITLES: Record<string, string> = {
-    livestock: '🐄 Livestock',
-    production: '🏭 Transformation',
-    storage: '📦 Storage',
-    utility: '🔧 Utilities',
+  const categoryTitle = (key: string): string => {
+    if (key === 'livestock') return `🐄 ${t('craft.building_category_livestock')}`;
+    if (key === 'production') return `🏭 ${t('craft.building_category_production')}`;
+    if (key === 'storage') return `📦 ${t('craft.building_category_storage')}`;
+    if (key === 'utility') return `🔧 ${t('craft.building_category_utility')}`;
+    return key;
   };
 
   const embed = baseEmbed({
-    title: '🏗️ Farm buildings',
-    description: 'Upgrade your buildings to raise capacity, speed and slots.',
+    title: t('craft.buildings_title'),
+    description: t('craft.buildings_description'),
     color: COLORS.primary,
     fields: [...groups.entries()].map(([category, list]) => ({
-      name: CATEGORY_TITLES[category] ?? category,
+      name: categoryTitle(category),
       value: list
         .map((building) => {
           const state = building.owned
-            ? `tier **${building.tier}**/${building.maxTier}`
-            : '*not built*';
+            ? `${t('craft.tier_progress', { tier: building.tier, max: building.maxTier })}`
+            : `*${t('craft.not_built')}*`;
           const next = building.nextTier
-            ? ` → ${formatCompact(building.nextTier.costCoins)} 🪙${
+            ? ` → ${formatCompact(building.nextTier.costCoins, context.locale)} 🪙${
                 building.nextTier.costItems.length > 0
                   ? ` + ${building.nextTier.costItems.map((cost) => `${cost.quantity}× ${cost.emoji}`).join(' ')}`
                   : ''
-              }${building.nextTier.requiredLevel > player.level ? ` 🔒 lv. ${building.nextTier.requiredLevel}` : ''}`
-            : ' ✅ maximum';
+              }${building.nextTier.requiredLevel > player.level ? ` 🔒 ${t('common.level_abbr', { level: building.nextTier.requiredLevel })}` : ''}`
+            : ` ✅ ${t('craft.max_tier_reached')}`;
           return `${building.emoji} **${building.name}** — ${state}${next}`;
         })
         .join('\n'),
@@ -1047,12 +1092,12 @@ export async function buildingsView(context: CommandContext): Promise<View> {
           namespace: 'build',
           action: 'upgrade',
           ownerId: player.discordId,
-          placeholder: 'Build or upgrade',
+          placeholder: t('craft.build_upgrade_placeholder'),
           choices: upgradable.slice(0, 25).map((building) => ({
-            label: `${building.name} → tier ${building.nextTier!.tier}`,
+            label: `${building.name} → ${t('craft.tier_progress', { tier: building.nextTier!.tier, max: building.maxTier })}`,
             value: building.key,
             emoji: building.emoji,
-            description: `${formatCompact(building.nextTier!.costCoins)} coins`,
+            description: `${formatCompact(building.nextTier!.costCoins, context.locale)} ${t('common.coins')}`,
           })),
           disabled: upgradable.length === 0,
         }),
@@ -1062,7 +1107,7 @@ export async function buildingsView(context: CommandContext): Promise<View> {
           namespace: 'craft',
           action: 'queue',
           ownerId: player.discordId,
-          label: 'Production',
+          label: t('craft.production_button'),
           emoji: '🛠️',
         }),
         button({ namespace: 'build', action: 'open', ownerId: player.discordId, emoji: '🔄' }),
