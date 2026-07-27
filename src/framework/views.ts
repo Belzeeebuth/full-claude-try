@@ -472,7 +472,32 @@ export async function marketView(context: CommandContext, category?: string): Pr
 
   const format = (entry: (typeof rows)[number]): string =>
     `${entry.trendEmoji} ${entry.emoji} **${entry.name}** — ${formatNumber(entry.price)} ${COIN} (${formatPercent(entry.trend)})`;
-  const noMovement = context.t('market.no_movement');
+
+  // Marché entièrement plat (aucun objet ne franchit le seuil de mouvement) :
+  // plutôt que deux champs vides, on affiche un repère par prix. Pas de
+  // pourcentage ici — en montrer un après avoir expliqué que rien ne bouge
+  // reproduirait exactement la confusion d'origine.
+  const byPrice = [...rows].sort((a, b) => a.price - b.price);
+  const formatPriceOnly = (entry: (typeof rows)[number]): string =>
+    `${entry.emoji} **${entry.name}** — ${formatNumber(entry.price)} ${COIN}`;
+  const fields =
+    rising.length > 0 || falling.length > 0
+      ? [
+          { name: '📈 Rising', value: rising.map(format).join('\n') || '—', inline: false },
+          { name: '📉 Falling', value: falling.map(format).join('\n') || '—', inline: false },
+        ]
+      : [
+          {
+            name: `💰 ${context.t('market.cheapest_title')}`,
+            value: byPrice.slice(0, 8).map(formatPriceOnly).join('\n') || '—',
+            inline: false,
+          },
+          {
+            name: `💎 ${context.t('market.priciest_title')}`,
+            value: [...byPrice].reverse().slice(0, 8).map(formatPriceOnly).join('\n') || '—',
+            inline: false,
+          },
+        ];
 
   const embed = baseEmbed({
     title: '📊 Greenvale market',
@@ -483,10 +508,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
       .filter(Boolean)
       .join('\n'),
     color: COLORS.info,
-    fields: [
-      { name: '📈 Rising', value: rising.map(format).join('\n') || noMovement, inline: false },
-      { name: '📉 Falling', value: falling.map(format).join('\n') || noMovement, inline: false },
-    ],
+    fields,
   });
 
   const featured = rows.filter((entry) => entry.featured);

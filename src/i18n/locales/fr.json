@@ -122,7 +122,8 @@
     "trend_down": "en baisse",
     "trend_flat": "stable",
     "not_tracked": "{item} n'est pas suivi par le marché.",
-    "no_movement": "Aucun mouvement significatif pour le moment."
+    "cheapest_title": "Moins chers",
+    "priciest_title": "Plus chers"
   },
   "trade": {
     "bots_no_trade": "Les bots ne peuvent pas échanger."
