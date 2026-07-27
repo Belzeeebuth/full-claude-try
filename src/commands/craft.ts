@@ -3,6 +3,7 @@ import { COLORS, baseEmbed, successEmbed } from '../framework/ui';
 import { buildingsView, productionView } from '../framework/views';
 import * as craftService from '../services/craft.service';
 import { discordTimestamp, formatCoins, formatNumber, truncate } from '../utils/format';
+import { translatorFor } from '../i18n';
 import { appendTracking } from './farm';
 import type { Command } from '../types';
 
@@ -32,13 +33,21 @@ const crafter: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `${result.emoji} ${result.recipeName} en production`,
+          context.t('craft.start_title', { emoji: result.emoji, recipeName: result.recipeName }),
           [
-            `Building: **${result.buildingName}** (slot ${result.slotIndex + 1})`,
-            `Quantity: **${result.quantity}** batch(es)`,
-            `Ready ${discordTimestamp(result.finishAt, 'R')} (${discordTimestamp(result.finishAt, 't')})`,
+            context.t('craft.start_building_line', {
+              name: result.buildingName,
+              slot: result.slotIndex + 1,
+            }),
+            context.t('craft.start_quantity_line', { quantity: result.quantity }),
+            context.t('craft.start_ready_line', {
+              relative: discordTimestamp(result.finishAt, 'R'),
+              time: discordTimestamp(result.finishAt, 't'),
+            }),
             '',
-            `Ingredients consumed: ${result.consumed.map((entry) => `${entry.quantity}× \`${entry.itemKey}\``).join(', ')}`,
+            context.t('craft.start_ingredients_line', {
+              ingredients: result.consumed.map((entry) => `${entry.quantity}× \`${entry.itemKey}\``).join(', '),
+            }),
           ].join('\n'),
         ),
       ],
@@ -46,6 +55,7 @@ const crafter: Command = {
   },
 
   async autocomplete(interaction, context): Promise<void> {
+    const t = translatorFor(context.locale);
     const query = interaction.options.getFocused().toString();
     const level = context.playerId
       ? ((await (await import('../repositories/player.repo')).findUserById(context.playerId))?.level ?? 1)
@@ -54,7 +64,12 @@ const crafter: Command = {
     await interaction.respond(
       recipes.map((recipe) => ({
         name: truncate(
-          `${recipe.emoji} ${recipe.name} — ${Math.round(recipe.durationSeconds / 60)} min • lv. ${recipe.requiredLevel}`,
+          t('craft.autocomplete_line', {
+            emoji: recipe.emoji,
+            name: recipe.name,
+            minutes: Math.round(recipe.durationSeconds / 60),
+            level: t('common.level_abbr', { level: recipe.requiredLevel }),
+          }),
           100,
         ),
         value: recipe.key,
@@ -93,28 +108,34 @@ const recettes: Command = {
 
     const lines = recipes.slice(0, 20).map((entry) => {
       const lock = !entry.unlocked
-        ? `🔒 lv. ${entry.recipe.requiredLevel}`
+        ? context.t('craft.lock_level', { level: context.t('common.level_abbr', { level: entry.recipe.requiredLevel }) })
         : !entry.hasBuilding
-          ? `🏗️ ${entry.building?.name ?? entry.recipe.buildingKey} required`
+          ? context.t('craft.lock_building', { building: entry.building?.name ?? entry.recipe.buildingKey })
           : entry.craftableCount > 0
-            ? `✅ ${entry.craftableCount} craftable`
-            : '⚠️ missing ingredients';
+            ? context.t('craft.lock_craftable', { count: entry.craftableCount })
+            : context.t('craft.lock_missing');
       const ingredients = entry.ingredients
         .map((ingredient) => `${ingredient.needed}× ${ingredient.emoji}${ingredient.owned < ingredient.needed ? `(${ingredient.owned})` : ''}`)
         .join(' + ');
       return [
         `${entry.recipe.emoji} **${entry.recipe.name}** — ${lock}`,
-        `   ${ingredients} → ${entry.recipe.outputQuantity}× ${entry.outputEmoji} (**×${entry.margin.toFixed(2)}** de valeur, ${Math.round(entry.recipe.durationSeconds / 60)} min)`,
+        `   ${context.t('craft.recipe_line2', {
+          ingredients,
+          quantity: entry.recipe.outputQuantity,
+          emoji: entry.outputEmoji,
+          margin: entry.margin.toFixed(2),
+          minutes: Math.round(entry.recipe.durationSeconds / 60),
+        })}`,
       ].join('\n');
     });
 
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: '📜 Processing recipes',
-          description: lines.join('\n') || 'No recipe in this category.',
+          title: context.t('craft.recipes_title'),
+          description: lines.join('\n') || context.t('craft.recipes_empty'),
           color: COLORS.primary,
-          footer: 'Processing roughly doubles the value of the ingredients — that is where the profit is.',
+          footer: context.t('craft.recipes_footer'),
         }),
       ],
     });
@@ -159,11 +180,23 @@ const batiments: Command = {
       await interaction.editReply({
         embeds: [
           successEmbed(
-            `${result.emoji} ${result.name} — ${result.built ? 'built' : `tier ${result.tier}`}`,
+            context.t('craft.build_title', {
+              emoji: result.emoji,
+              name: result.name,
+              status: result.built
+                ? context.t('craft.build_status_built')
+                : context.t('craft.build_status_tier', { tier: result.tier }),
+            }),
             [
-              `Cost: ${formatCoins(result.costCoins)}`,
-              result.capacity > 0 ? `Capacity: **${formatNumber(result.capacity)}**` : '',
-              result.slots > 0 ? `Emplacements de production : **${result.slots}**` : '',
+              context.t('craft.build_cost_line', {
+                cost: formatCoins(result.costCoins, false, context.locale),
+              }),
+              result.capacity > 0
+                ? context.t('craft.build_capacity_line', {
+                    capacity: formatNumber(result.capacity, context.locale),
+                  })
+                : '',
+              result.slots > 0 ? context.t('craft.build_slots_line', { slots: result.slots }) : '',
             ]
               .filter(Boolean)
               .join('\n'),
