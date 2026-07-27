@@ -488,6 +488,72 @@ export async function shopView(context: CommandContext, category?: string): Prom
   };
 }
 
+export async function blackMarketView(context: CommandContext): Promise<View> {
+  const player = context.player;
+  const t = context.t;
+  const locale = context.locale;
+  const entries = await marketService.getBlackMarket(context.now, context.locale);
+
+  const fields =
+    entries.length > 0
+      ? [
+          {
+            name: t('blackmarket.stock_field'),
+            value: entries
+              .map((entry) => {
+                const price = `${formatNumber(entry.price, locale)} ${COIN}`;
+                const stock =
+                  entry.stockRemaining <= 0
+                    ? ` — **${t('shop.sold_out')}**`
+                    : ` — ${t('shop.in_stock', { remaining: entry.stockRemaining })}`;
+                const level =
+                  entry.requiredLevel > player.level
+                    ? ` 🔒 ${t('common.level_abbr', { level: entry.requiredLevel })}`
+                    : '';
+                return `${entry.emoji} **${entry.name}** — ${price}${stock}${level}`;
+              })
+              .join('\n'),
+          },
+        ]
+      : [];
+
+  const first = entries[0];
+  const embed = baseEmbed({
+    title: t('blackmarket.title'),
+    description: first
+      ? t('blackmarket.intro_body', { when: discordTimestamp(first.expiresAt, 'R') })
+      : t('blackmarket.empty_body'),
+    color: COLORS.danger,
+    fields,
+  });
+
+  const buyable = entries.filter(
+    (entry) => entry.stockRemaining > 0 && entry.requiredLevel <= player.level,
+  );
+
+  return {
+    embeds: [embed],
+    components: [
+      selectRow(
+        select({
+          namespace: 'shop',
+          action: 'buy',
+          ownerId: player.discordId,
+          placeholder: t('shop.buy_placeholder'),
+          choices: buyable.slice(0, 25).map((entry) => ({
+            label: `${entry.name} — ${formatNumber(entry.price, locale)} ${t('common.coins')}`,
+            value: entry.itemKey,
+            emoji: entry.emoji,
+            description: truncate(entry.description ?? '', 100),
+          })),
+          disabled: buyable.length === 0,
+        }),
+      ),
+      row(button({ namespace: 'blackmarket', action: 'open', ownerId: player.discordId, emoji: '🔄' })),
+    ],
+  };
+}
+
 // ---------------------------------------------------------------------------
 // MARCHÉ
 // ---------------------------------------------------------------------------

@@ -496,6 +496,12 @@
     "buy_qty_modal_placeholder": "Ex. 10",
     "buy_qty_result_body": "{quantity}× {emoji} **{name}** for **{amount}**."
   },
+  "blackmarket": {
+    "title": "🕵️ Black market",
+    "intro_body": "Rare goods, no questions asked. Stock refreshes {when} — whatever's left, take it or leave it.",
+    "empty_body": "No one's selling anything shady right now. Check back after the next rotation.",
+    "stock_field": "On offer"
+  },
   "market": {
     "title": "📊 Greenvale market",
     "next_update": "Next update {when}",

@@ -248,6 +248,12 @@
     "buy_qty_modal_placeholder": "Ex. 10",
     "buy_qty_result_body": "{quantity}× {emoji} **{name}** pour **{amount}**."
   },
+  "blackmarket": {
+    "title": "🕵️ Marché noir",
+    "intro_body": "Marchandise rare, sans question. Stock renouvelé {when} — ce qu'il reste, c'est à prendre ou à laisser.",
+    "empty_body": "Personne ne vend rien de louche pour l'instant. Repassez après la prochaine rotation.",
+    "stock_field": "Au programme"
+  },
   "market": {
     "title": "📊 Marché de Val-Verdoyant",
     "next_update": "Prochaine mise à jour {when}",

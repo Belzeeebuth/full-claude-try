@@ -58,14 +58,22 @@ Le rendu isométrique existe déjà ; il s'agit d'ajouter une couche de placemen
 - **Impact base** : 2 tables (`villagers_config`, `villager_relations`).
 - **Effort** : 2 semaines.
 
-### v2.4 — Marché noir et contrebande
+### v2.4 — Marché noir et contrebande — ✅ Livré
 
 - Boutique tournante à contenu rare, prix élevés, stock très limité, accessible aux
   niveaux élevés.
 - Un **puits monétaire supplémentaire** dont le besoin apparaîtra quand les joueurs
   de fin de partie auront terminé les parcelles : c'est la vraie raison d'être de la
   fonctionnalité.
-- **Impact base** : réutilise `shop_stock` avec un discriminant.
+- **Impact base** : réutilise `shop_stock` avec un discriminant (`category =
+  'black_market'`), aucune migration de table nécessaire.
+- **Implémentation retenue** : `/black-market`, alimenté par
+  `rotateBlackMarket()`/`getBlackMarket()` dans `market.service.ts`, rotation
+  quotidienne dans le job `shop:rotate`. Contenu tiré des objets `product` et
+  `animal_product` déjà existants de rareté épique et au-delà (aucun nouvel
+  objet créé), prix = `sellPrice × blackMarket.priceMultiplier` (config
+  `balance.blackMarket`), niveau 30 minimum, stock 1-2 unités, achat via le
+  `/buy` générique.
 - **Effort** : 1 semaine.
 
 ### v2.5 — Compétitions de coopératives

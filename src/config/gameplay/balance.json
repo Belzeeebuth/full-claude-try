@@ -365,6 +365,15 @@
     "featuredCount": 1,
     "seedStockMultiplier": 4
   },
+  "blackMarket": {
+    "minLevel": 30,
+    "slots": 3,
+    "priceMultiplier": 6,
+    "stockRange": [
+      1,
+      2
+    ]
+  },
   "auction": {
     "commissionRate": 0.05,
     "listingFeeRate": 0.02,

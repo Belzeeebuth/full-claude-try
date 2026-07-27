@@ -63,10 +63,11 @@ export const jobs: JobDefinition[] = [
   {
     key: 'shop:rotate',
     cron: '5 0 * * *',
-    description: 'Generates the daily shop',
+    description: 'Generates the daily shop and the black market',
     async run() {
       const entries = await marketService.rotateShop();
-      return `${entries} shop articles`;
+      const blackMarketEntries = await marketService.rotateBlackMarket();
+      return `${entries} shop articles, ${blackMarketEntries} black market`;
     },
   },
 

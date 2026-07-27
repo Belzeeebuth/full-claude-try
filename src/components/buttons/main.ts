@@ -7,6 +7,7 @@ import { applyLocale, isSupported } from '../../commands/language';
 import { COLORS, baseEmbed, button, quantityModal, row, successEmbed, textModal } from '../../framework/ui';
 import {
   animalsView,
+  blackMarketView,
   buildingsView,
   coopView,
   farmView,
@@ -295,6 +296,16 @@ const shopButtons: ButtonHandler = {
     await interaction.deferUpdate();
     const category = parsed.action === 'filter' ? paramString(parsed, 0, 'all') : 'all';
     await interaction.editReply(await shopView(context, category === 'all' ? undefined : category));
+  },
+};
+
+const blackMarketButtons: ButtonHandler = {
+  namespace: 'blackmarket',
+  actions: ['open'],
+
+  async execute(interaction: ButtonInteraction, _parsed, context): Promise<void> {
+    await interaction.deferUpdate();
+    await interaction.editReply(await blackMarketView(context));
   },
 };
 
@@ -837,6 +848,7 @@ export const handlers: ButtonHandler[] = [
   farmButtons,
   inventoryButtons,
   shopButtons,
+  blackMarketButtons,
   marketButtons,
   animalButtons,
   questButtons,

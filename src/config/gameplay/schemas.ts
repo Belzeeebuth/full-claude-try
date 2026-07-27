@@ -582,6 +582,14 @@ export const balanceSchema = z.object({
     featuredCount: nonNegativeInt,
     seedStockMultiplier: positiveInt,
   }),
+  blackMarket: z.object({
+    /** Niveau requis pour tout article, quel que soit le niveau propre de l'objet. */
+    minLevel: positiveInt,
+    slots: positiveInt,
+    /** Applié au `sellPrice` de l'objet : c'est un prix d'achat, pas une référence de vente. */
+    priceMultiplier: z.number().min(1),
+    stockRange: z.tuple([positiveInt, positiveInt]),
+  }),
   auction: z.object({
     commissionRate: ratio,
     listingFeeRate: ratio,

@@ -332,19 +332,13 @@ export interface ShopEntry {
   expiresAt: Date;
 }
 
-export async function getShop(now: Date = new Date(), locale?: string): Promise<ShopEntry[]> {
-  const config = getConfig(locale);
-  const rotationDate = toSqlDate(now);
-  let rows = await economyRepo.listShopStock(rotationDate);
+/** Catégorie réservée au marché noir dans `shop_stock` — exclue de la boutique normale. */
+const BLACK_MARKET_CATEGORY = 'black_market';
 
-  // Auto-réparation : si le job de rotation n'a pas tourné (démarrage à froid,
-  // panne), on génère le stock du jour à la demande. Le joueur ne voit jamais
-  // une boutique vide.
-  if (rows.length === 0) {
-    await rotateShop(now);
-    rows = await economyRepo.listShopStock(rotationDate);
-  }
-
+function toShopEntries(
+  rows: Awaited<ReturnType<typeof economyRepo.listShopStock>>,
+  config: ReturnType<typeof getConfig>,
+): ShopEntry[] {
   return rows.map((row) => ({
     id: row.id,
     itemKey: row.itemKey,
@@ -362,6 +356,90 @@ export async function getShop(now: Date = new Date(), locale?: string): Promise<
     description: config.items.get(row.itemKey)?.description ?? row.description,
     expiresAt: row.expiresAt,
   }));
+}
+
+export async function getShop(now: Date = new Date(), locale?: string): Promise<ShopEntry[]> {
+  const config = getConfig(locale);
+  const rotationDate = toSqlDate(now);
+  const dailyRows = (row: { category: string }): boolean => row.category !== BLACK_MARKET_CATEGORY;
+  let rows = (await economyRepo.listShopStock(rotationDate)).filter(dailyRows);
+
+  // Auto-réparation : si le job de rotation n'a pas tourné (démarrage à froid,
+  // panne), on génère le stock du jour à la demande. Le joueur ne voit jamais
+  // une boutique vide.
+  if (rows.length === 0) {
+    await rotateShop(now);
+    rows = (await economyRepo.listShopStock(rotationDate)).filter(dailyRows);
+  }
+
+  return toShopEntries(rows, config);
+}
+
+/**
+ * Boutique de contrebande : contenu rare (produits transformés et animaliers
+ * épiques et au-delà), stock symbolique, prix très au-dessus du prix de vente —
+ * c'est un puits monétaire pour les joueurs de fin de partie qui n'ont plus
+ * rien à acheter, pas une bonne affaire.
+ */
+export async function getBlackMarket(now: Date = new Date(), locale?: string): Promise<ShopEntry[]> {
+  const config = getConfig(locale);
+  const rotationDate = toSqlDate(now);
+  const blackMarketRows = (row: { category: string }): boolean => row.category === BLACK_MARKET_CATEGORY;
+  let rows = (await economyRepo.listShopStock(rotationDate)).filter(blackMarketRows);
+
+  if (rows.length === 0) {
+    await rotateBlackMarket(now);
+    rows = (await economyRepo.listShopStock(rotationDate)).filter(blackMarketRows);
+  }
+
+  return toShopEntries(rows, config);
+}
+
+/** Génère la rotation du jour pour le marché noir (voir `rotateShop` pour la boutique normale). */
+export async function rotateBlackMarket(now: Date = new Date()): Promise<number> {
+  const config = getConfig();
+  const balance = getBalance();
+  const bm = balance.blackMarket;
+  const rotationDate = toSqlDate(now);
+  const rng = dailyRng('black_market', rotationDate);
+  const expiresAt = new Date(`${rotationDate}T23:59:59.000Z`);
+
+  // Produits transformés et animaliers rares : jamais vendus autrement contre
+  // pièces, ce qui garantit qu'un même objet ne peut pas apparaître à la fois
+  // ici et dans la boutique du jour le même jour.
+  const pool = config.itemList.filter(
+    (item) =>
+      item.enabled &&
+      ['product', 'animal_product'].includes(item.category) &&
+      ['epic', 'legendary', 'mythic'].includes(item.rarity) &&
+      item.sellPrice > 0,
+  );
+
+  const [minStock, maxStock] = bm.stockRange;
+  const picked = rng.shuffle(pool).slice(0, bm.slots);
+
+  const rows: Array<Parameters<typeof economyRepo.insertShopStock>[0][number]> = picked.map((item) => {
+    const stockTotal = rng.int(minStock, maxStock);
+    return {
+      id: uuidv7(),
+      itemKey: item.key,
+      rotationDate,
+      category: BLACK_MARKET_CATEGORY,
+      price: Math.max(1, Math.round(item.sellPrice * bm.priceMultiplier)),
+      currency: 'coins' as const,
+      discountPercent: 0,
+      stockTotal,
+      stockRemaining: stockTotal,
+      perUserLimit: 1,
+      requiredLevel: Math.max(item.requiredLevel, bm.minLevel),
+      featured: false,
+      expiresAt,
+    };
+  });
+
+  await economyRepo.insertShopStock(rows);
+  log.info({ rotationDate, entries: rows.length }, 'black market generated');
+  return rows.length;
 }
 
 /**

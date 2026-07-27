@@ -367,6 +367,7 @@ contextuels. Détail complet dans le [README](../README.md#commandes) et dans
 | `profile.ts` | `/profile`, `/stats`, `/balance`, `/settings`, `/prestige` |
 | `animals.ts` | `/animals`, `/buy-animal`, `/feed`, `/collect`, `/heal`, `/pet`, `/breed`, `/sell-animal` |
 | `economy.ts` | `/shop`, `/buy`, `/sell`, `/market`, `/market-history`, `/inventory`, `/item`, `/use`, `/discard`, `/bank`, `/gift` |
+| `blackmarket.ts` | `/black-market` |
 | `craft.ts` | `/craft`, `/recipes`, `/production`, `/buildings`, `/build` |
 | `progression.ts` | `/quests`, `/reroll-quest`, `/achievements`, `/pass`, `/daily`, `/vote` |
 | `social.ts` | `/coop`, `/leaderboard`, `/visit`, `/assist`, `/referral` |
