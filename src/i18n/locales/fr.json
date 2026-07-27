@@ -238,7 +238,8 @@
     "buy_body": "{quantity}× {emoji} **{name}** pour **{amount}**.\nStock restant : {stock}",
     "buy_qty_modal_title": "Quantité à acheter",
     "buy_qty_modal_label": "Combien en voulez-vous ?",
-    "buy_qty_modal_placeholder": "Ex. 10"
+    "buy_qty_modal_placeholder": "Ex. 10",
+    "buy_qty_result_body": "{quantity}× {emoji} **{name}** pour **{amount}**."
   },
   "market": {
     "title": "📊 Marché de Val-Verdoyant",
@@ -321,7 +322,11 @@
     "cancelled_body": "Aucun objet n'a changé de main.",
     "item_qty_modal_title": "Quantité à offrir",
     "item_qty_modal_label": "Combien ?",
-    "item_qty_modal_placeholder": "Ex. 5"
+    "item_qty_modal_placeholder": "Ex. 5",
+    "coins_updated_title": "🪙 Offre mise à jour",
+    "coins_updated_body": "Vous offrez **{amount}**.\n⚠️ Les deux confirmations ont été réinitialisées : chaque joueur doit valider à nouveau.",
+    "item_updated_title": "📦 Offre mise à jour",
+    "item_updated_body": "Objet ajouté à l'échange.\n⚠️ Les deux confirmations ont été réinitialisées."
   },
   "social": {
     "cannot_help_self": "Vous ne pouvez pas vous aider vous-même.",
@@ -459,6 +464,7 @@
     "objectives_button": "Objectifs",
     "create_title": "{emblem} {name} [{tag}] fondée !",
     "create_body": "Coût : {cost}\nInvitez vos amis avec `/coop invite` et accomplissez les objectifs hebdomadaires ensemble.",
+    "create_modal_result_body": "Coût : {cost}\nInvitez des amis avec `/coop invite`.",
     "join_title": "Bienvenue chez {emblem} {name} !",
     "join_body": "Vous profitez immédiatement des bonus de niveau {level}.",
     "leave_title": "Départ enregistré",
@@ -897,6 +903,9 @@
     "announce_modal_title": "Annonce globale",
     "announce_field_label": "Message à diffuser",
     "announce_placeholder": "Le marché de Noël est ouvert !",
+    "announce_posted_title": "📢 Annonce de Val-Verdoyant",
+    "announce_posted_footer": "Publié par {username}",
+    "announce_posted_content": "✅ Annonce publiée.",
     "grant_title": "✅ Ressource accordée",
     "take_title": "✅ Ressource retirée",
     "grant_body": "{target} — **{amount}** {resource}\nAction inscrite dans le journal d'audit.",

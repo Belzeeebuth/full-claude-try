@@ -486,7 +486,8 @@
     "buy_body": "{quantity}× {emoji} **{name}** for **{amount}**.\nStock remaining: {stock}",
     "buy_qty_modal_title": "Quantity to buy",
     "buy_qty_modal_label": "How many do you want?",
-    "buy_qty_modal_placeholder": "Ex. 10"
+    "buy_qty_modal_placeholder": "Ex. 10",
+    "buy_qty_result_body": "{quantity}× {emoji} **{name}** for **{amount}**."
   },
   "market": {
     "title": "📊 Greenvale market",
@@ -569,7 +570,11 @@
     "cancelled_body": "No item changed hands.",
     "item_qty_modal_title": "Quantity to offer",
     "item_qty_modal_label": "How many?",
-    "item_qty_modal_placeholder": "Ex. 5"
+    "item_qty_modal_placeholder": "Ex. 5",
+    "coins_updated_title": "🪙 Offer updated",
+    "coins_updated_body": "You are offering **{amount}**.\n⚠️ Both confirmations were reset: each player must validate again.",
+    "item_updated_title": "📦 Offer updated",
+    "item_updated_body": "Item added to the trade.\n⚠️ Both confirmations were reset."
   },
   "social": {
     "cannot_help_self": "You cannot help yourself.",
@@ -686,6 +691,7 @@
     "objectives_button": "Objectives",
     "create_title": "{emblem} {name} [{tag}] founded!",
     "create_body": "Cost: {cost}\nInvite your friends with `/coop invite` and complete the weekly goals together.",
+    "create_modal_result_body": "Cost: {cost}\nInvite friends with `/coop invite`.",
     "join_title": "Welcome to {emblem} {name}!",
     "join_body": "You immediately benefit from the level {level} bonuses.",
     "leave_title": "Departure recorded",
@@ -1124,6 +1130,9 @@
     "announce_modal_title": "Global announcement",
     "announce_field_label": "Message to broadcast",
     "announce_placeholder": "The Christmas market is now open!",
+    "announce_posted_title": "📢 Greenvale announcement",
+    "announce_posted_footer": "Posted by {username}",
+    "announce_posted_content": "✅ Announcement posted.",
     "grant_title": "✅ Resource granted",
     "take_title": "✅ Resource removed",
     "grant_body": "{target} — **{amount}** {resource}\nAction written to the audit log.",

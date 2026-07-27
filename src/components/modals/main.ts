@@ -51,10 +51,16 @@ const shopQuantity: ModalHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🛒 Purchase complete',
-          `${result.quantity}× ${result.emoji} **${result.name}** for **${
-            result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)
-          }**.`,
+          context.t('shop.purchase_title'),
+          context.t('shop.buy_qty_result_body', {
+            quantity: result.quantity,
+            emoji: result.emoji,
+            name: result.name,
+            amount:
+              result.currency === 'gems'
+                ? `${formatNumber(result.total, context.locale)} 💎`
+                : formatCoins(result.total, false, context.locale),
+          }),
         ),
       ],
     });
@@ -79,8 +85,10 @@ const coopCreate: ModalHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `${info.emblem} ${info.name} [${info.tag}] founded!`,
-          `Cost: ${formatCoins(context.balance.coop.creationCostCoins)}\nInvite friends with \`/coop invite\`.`,
+          context.t('coop.create_title', { emblem: info.emblem, name: info.name, tag: info.tag }),
+          context.t('coop.create_modal_result_body', {
+            cost: formatCoins(context.balance.coop.creationCostCoins, false, context.locale),
+          }),
         ),
       ],
     });
@@ -104,8 +112,16 @@ const coopContribute: ModalHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '💰 Contribution',
-          `${formatCoins(amount)} paid in.\nTreasury: **${formatCoins(result.treasury)}**\n+${formatNumber(result.coopXp)} co-op XP${result.levelsGained > 0 ? ` — 🎉 level **${result.level}**!` : ''}`,
+          context.t('coop.contribute_title'),
+          context.t('coop.contribute_body', {
+            amount: formatCoins(amount, false, context.locale),
+            treasury: formatCoins(result.treasury, false, context.locale),
+            xp: formatNumber(result.coopXp, context.locale),
+            levelUp:
+              result.levelsGained > 0
+                ? context.t('coop.contribute_level_up', { level: result.level })
+                : '',
+          }),
         ),
       ],
     });
@@ -130,8 +146,8 @@ const tradeCoins: ModalHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🪙 Offer updated',
-          `You are offering **${formatCoins(amount)}**.\n⚠️ Both confirmations were reset: each player must validate again.`,
+          context.t('trade.coins_updated_title'),
+          context.t('trade.coins_updated_body', { amount: formatCoins(amount, false, context.locale) }),
         ),
       ],
     });
@@ -151,12 +167,7 @@ const tradeItem: ModalHandler = {
 
     await tradeService.offerItem(context.player, { tradeId, itemKey, quantity });
     await interaction.editReply({
-      embeds: [
-        successEmbed(
-          '📦 Offer updated',
-          `Item added to the trade.\n⚠️ Both confirmations were reset.`,
-        ),
-      ],
+      embeds: [successEmbed(context.t('trade.item_updated_title'), context.t('trade.item_updated_body'))],
     });
   },
 };
@@ -182,16 +193,16 @@ const adminAnnounce: ModalHandler = {
     await channel.send({
       embeds: [
         baseEmbed({
-          title: '📢 Greenvale announcement',
+          title: context.t('admin.announce_posted_title'),
           description: message,
           color: COLORS.gold,
-          footer: `Posted by ${interaction.user.username}`,
+          footer: context.t('admin.announce_posted_footer', { username: interaction.user.username }),
         }),
       ],
     });
 
     log.warn({ actor: interaction.user.id, length: message.length }, 'annonce globale publiée');
-    await interaction.editReply({ content: '✅ Announcement posted.' });
+    await interaction.editReply({ content: context.t('admin.announce_posted_content') });
   },
 };
 
