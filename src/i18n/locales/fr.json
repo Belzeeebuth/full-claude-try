@@ -71,7 +71,25 @@
     "progression_field": "Progression",
     "quests": "Quêtes",
     "sell": "Vendre",
-    "summary": "Résumé"
+    "summary": "Résumé",
+    "rewards_field": "Récompenses",
+    "harvest_all": "Tout récolter",
+    "water_all": "Tout arroser",
+    "plant": "Planter",
+    "quantity": "Quantité",
+    "quantity_placeholder": "ex. 10, ou « tout »"
+  },
+  "suggestion": {
+    "shop": "Ouvrir la boutique",
+    "farm": "Voir ma ferme",
+    "inventory": "Mon inventaire",
+    "buildings": "Bâtiments",
+    "quests": "Mes quêtes",
+    "production": "Production",
+    "animals": "Mes animaux",
+    "buy_plot": "Acheter une parcelle",
+    "coop": "Ma coopérative",
+    "event": "Événement en cours"
   },
   "start": {
     "welcome_title": "🌾 Bienvenue à Val-Verdoyant !",

@@ -71,7 +71,25 @@
     "progression_field": "Progression",
     "quests": "Quests",
     "sell": "Sell",
-    "summary": "Summary"
+    "summary": "Summary",
+    "rewards_field": "Rewards",
+    "harvest_all": "Harvest all",
+    "water_all": "Water all",
+    "plant": "Plant",
+    "quantity": "Quantity",
+    "quantity_placeholder": "e.g. 10, or \"all\""
+  },
+  "suggestion": {
+    "shop": "Open the shop",
+    "farm": "View my farm",
+    "inventory": "My inventory",
+    "buildings": "Buildings",
+    "quests": "My quests",
+    "production": "Production",
+    "animals": "My animals",
+    "buy_plot": "Buy a plot",
+    "coop": "My co-op",
+    "event": "Current event"
   },
   "start": {
     "welcome_title": "🌾 Welcome to Greendale!",

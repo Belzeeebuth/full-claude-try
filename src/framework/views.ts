@@ -131,11 +131,16 @@ export async function farmView(
     embeds: [embed],
     files: image.attachment ? [image.attachment] : [],
     components: [
-      farmShortcutsRow(player.discordId, {
-        canHarvest: counts.ready > 0 || counts.withered > 0,
-        canWater: counts.growing > 0,
-        canPlant: counts.empty > 0,
-      }),
+      farmShortcutsRow(
+        player.discordId,
+        {
+          canHarvest: counts.ready > 0 || counts.withered > 0,
+          canWater: counts.growing > 0,
+          canPlant: counts.empty > 0,
+        },
+        locale,
+        t,
+      ),
       row(
         button({
           namespace: 'farm',

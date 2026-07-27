@@ -12,6 +12,8 @@ import {
 } from 'discord.js';
 import { buildCustomId, PUBLIC_OWNER } from '../utils/custom-id';
 import { COIN, GEM, XP, formatCoins, formatNumber, truncate } from '../utils/format';
+import { translatorFor, DEFAULT_LOCALE } from '../i18n';
+import type { Translator } from '../types';
 
 /**
  * Fabriques d'embeds et de composants.
@@ -75,19 +77,23 @@ export function warningEmbed(title: string, description?: string): EmbedBuilder 
 }
 
 /** Bloc de récompenses homogène, utilisé après chaque action rémunératrice. */
-export function rewardsField(rewards: {
-  coins?: number;
-  gems?: number;
-  xp?: number;
-  items?: string;
-}): APIEmbedField | undefined {
+export function rewardsField(
+  rewards: {
+    coins?: number;
+    gems?: number;
+    xp?: number;
+    items?: string;
+  },
+  locale?: string,
+  t: Translator = translatorFor(locale ?? DEFAULT_LOCALE),
+): APIEmbedField | undefined {
   const parts: string[] = [];
-  if (rewards.coins) parts.push(`${formatNumber(rewards.coins)} ${COIN}`);
-  if (rewards.gems) parts.push(`${formatNumber(rewards.gems)} ${GEM}`);
-  if (rewards.xp) parts.push(`${formatNumber(rewards.xp)} ${XP}`);
+  if (rewards.coins) parts.push(`${formatNumber(rewards.coins, locale)} ${COIN}`);
+  if (rewards.gems) parts.push(`${formatNumber(rewards.gems, locale)} ${GEM}`);
+  if (rewards.xp) parts.push(`${formatNumber(rewards.xp, locale)} ${XP}`);
   if (rewards.items) parts.push(rewards.items);
   if (parts.length === 0) return undefined;
-  return { name: '🎁 Rewards', value: parts.join(' • '), inline: false };
+  return { name: `🎁 ${t('common.rewards_field')}`, value: parts.join(' • '), inline: false };
 }
 
 // ---------------------------------------------------------------------------
@@ -190,22 +196,26 @@ export function paginationRow(options: {
 }
 
 /** Rangée de confirmation pour une action destructive ou irréversible. */
-export function confirmRow(options: {
-  namespace: string;
-  action: string;
-  ownerId: string;
-  params?: Array<string | number>;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  danger?: boolean;
-}): ActionRowBuilder<ButtonBuilder> {
+export function confirmRow(
+  options: {
+    namespace: string;
+    action: string;
+    ownerId: string;
+    params?: Array<string | number>;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    danger?: boolean;
+  },
+  locale?: string,
+  t: Translator = translatorFor(locale ?? DEFAULT_LOCALE),
+): ActionRowBuilder<ButtonBuilder> {
   return row(
     button({
       namespace: options.namespace,
       action: options.action,
       ownerId: options.ownerId,
       params: ['yes', ...(options.params ?? [])],
-      label: options.confirmLabel ?? 'Confirmer',
+      label: options.confirmLabel ?? t('common.confirm'),
       emoji: '✅',
       style: options.danger ? ButtonStyle.Danger : ButtonStyle.Success,
     }),
@@ -214,7 +224,7 @@ export function confirmRow(options: {
       action: options.action,
       ownerId: options.ownerId,
       params: ['no', ...(options.params ?? [])],
-      label: options.cancelLabel ?? 'Cancel',
+      label: options.cancelLabel ?? t('common.cancel'),
       emoji: '✖️',
       style: ButtonStyle.Secondary,
     }),
@@ -222,17 +232,22 @@ export function confirmRow(options: {
 }
 
 /** Raccourcis contextuels affichés sous la plupart des embeds de ferme. */
-export function farmShortcutsRow(ownerId: string, options: {
-  canHarvest?: boolean;
-  canWater?: boolean;
-  canPlant?: boolean;
-} = {}): ActionRowBuilder<ButtonBuilder> {
+export function farmShortcutsRow(
+  ownerId: string,
+  options: {
+    canHarvest?: boolean;
+    canWater?: boolean;
+    canPlant?: boolean;
+  } = {},
+  locale?: string,
+  t: Translator = translatorFor(locale ?? DEFAULT_LOCALE),
+): ActionRowBuilder<ButtonBuilder> {
   return row(
     button({
       namespace: 'farm',
       action: 'harvest_all',
       ownerId,
-      label: 'Harvest all',
+      label: t('common.harvest_all'),
       emoji: '🧺',
       style: ButtonStyle.Success,
       disabled: options.canHarvest === false,
@@ -241,7 +256,7 @@ export function farmShortcutsRow(ownerId: string, options: {
       namespace: 'farm',
       action: 'water_all',
       ownerId,
-      label: 'Water all',
+      label: t('common.water_all'),
       emoji: '💧',
       style: ButtonStyle.Primary,
       disabled: options.canWater === false,
@@ -250,7 +265,7 @@ export function farmShortcutsRow(ownerId: string, options: {
       namespace: 'farm',
       action: 'plant_menu',
       ownerId,
-      label: 'Plant',
+      label: t('common.plant'),
       emoji: '🌱',
       disabled: options.canPlant === false,
     }),
@@ -294,15 +309,19 @@ export function select(options: {
 }
 
 /** Modal de saisie d'une quantité personnalisée. */
-export function quantityModal(options: {
-  namespace: string;
-  action: string;
-  ownerId: string;
-  params?: Array<string | number>;
-  title: string;
-  label?: string;
-  placeholder?: string;
-}): ModalBuilder {
+export function quantityModal(
+  options: {
+    namespace: string;
+    action: string;
+    ownerId: string;
+    params?: Array<string | number>;
+    title: string;
+    label?: string;
+    placeholder?: string;
+  },
+  locale?: string,
+  t: Translator = translatorFor(locale ?? DEFAULT_LOCALE),
+): ModalBuilder {
   return new ModalBuilder()
     .setCustomId(
       buildCustomId(options.namespace, options.action, options.ownerId, ...(options.params ?? [])),
@@ -312,8 +331,8 @@ export function quantityModal(options: {
       new ActionRowBuilder<TextInputBuilder>().addComponents(
         new TextInputBuilder()
           .setCustomId('quantity')
-          .setLabel(truncate(options.label ?? 'Quantity', 45))
-          .setPlaceholder(options.placeholder ?? 'e.g. 10, or "all"')
+          .setLabel(truncate(options.label ?? t('common.quantity'), 45))
+          .setPlaceholder(options.placeholder ?? t('common.quantity_placeholder'))
           .setStyle(TextInputStyle.Short)
           .setRequired(true)
           .setMaxLength(12),
@@ -366,22 +385,27 @@ export function disableAll(
 }
 
 /** Bouton « boutique » proposé automatiquement sur les erreurs de fonds. */
-export function suggestionRow(command: string, ownerId = PUBLIC_OWNER): ActionRowBuilder<ButtonBuilder> | undefined {
+export function suggestionRow(
+  command: string,
+  ownerId = PUBLIC_OWNER,
+  locale?: string,
+  t: Translator = translatorFor(locale ?? DEFAULT_LOCALE),
+): ActionRowBuilder<ButtonBuilder> | undefined {
   const suggestions: Record<string, { label: string; emoji: string; namespace: string; action: string }> = {
     // ⚠ Les clés doivent correspondre EXACTEMENT aux valeurs `suggestedCommand`
     // des erreurs (src/utils/errors.ts). Elles étaient restées en français après
     // le renommage des commandes : la table ne matchait plus rien et le bouton
     // de suggestion disparaissait silencieusement.
-    shop: { label: 'Open the shop', emoji: '🏪', namespace: 'shop', action: 'open' },
-    farm: { label: 'View my farm', emoji: '🌾', namespace: 'farm', action: 'refresh' },
-    inventory: { label: 'My inventory', emoji: '🎒', namespace: 'inv', action: 'open' },
-    buildings: { label: 'Buildings', emoji: '🏗️', namespace: 'build', action: 'open' },
-    quests: { label: 'My quests', emoji: '📋', namespace: 'quest', action: 'open' },
-    production: { label: 'Production', emoji: '🛠️', namespace: 'craft', action: 'queue' },
-    animals: { label: 'My animals', emoji: '🐄', namespace: 'animal', action: 'open' },
-    'buy-plot': { label: 'Buy a plot', emoji: '🗺️', namespace: 'farm', action: 'buy_plot' },
-    coop: { label: 'My co-op', emoji: '🤝', namespace: 'coop', action: 'open' },
-    event: { label: 'Current event', emoji: '🎉', namespace: 'world', action: 'event' },
+    shop: { label: t('suggestion.shop'), emoji: '🏪', namespace: 'shop', action: 'open' },
+    farm: { label: t('suggestion.farm'), emoji: '🌾', namespace: 'farm', action: 'refresh' },
+    inventory: { label: t('suggestion.inventory'), emoji: '🎒', namespace: 'inv', action: 'open' },
+    buildings: { label: t('suggestion.buildings'), emoji: '🏗️', namespace: 'build', action: 'open' },
+    quests: { label: t('suggestion.quests'), emoji: '📋', namespace: 'quest', action: 'open' },
+    production: { label: t('suggestion.production'), emoji: '🛠️', namespace: 'craft', action: 'queue' },
+    animals: { label: t('suggestion.animals'), emoji: '🐄', namespace: 'animal', action: 'open' },
+    'buy-plot': { label: t('suggestion.buy_plot'), emoji: '🗺️', namespace: 'farm', action: 'buy_plot' },
+    coop: { label: t('suggestion.coop'), emoji: '🤝', namespace: 'coop', action: 'open' },
+    event: { label: t('suggestion.event'), emoji: '🎉', namespace: 'world', action: 'event' },
   };
   const suggestion = suggestions[command];
   if (!suggestion) return undefined;

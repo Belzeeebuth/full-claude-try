@@ -227,7 +227,7 @@ export async function replyError(
 
   const components =
     isGameError(error) && error.suggestedCommand
-      ? [suggestionRow(error.suggestedCommand, interaction.user.id)].filter(
+      ? [suggestionRow(error.suggestedCommand, interaction.user.id, undefined, t)].filter(
           (component): component is NonNullable<typeof component> => component !== undefined,
         )
       : [];
