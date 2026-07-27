@@ -77,7 +77,7 @@ const saison: Command = {
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const world = await getWorldState(context.now);
+    const world = await getWorldState(context.now, context.locale);
     const next = describeNextSeason(context.now);
     const current = world.season.season;
 
@@ -148,7 +148,7 @@ const evenement: Command = {
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const world = await getWorldState(context.now);
+    const world = await getWorldState(context.now, context.locale);
 
     if (world.activeEvents.length === 0) {
       await interaction.editReply({

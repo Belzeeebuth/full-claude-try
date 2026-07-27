@@ -181,7 +181,11 @@ export function classifyError(
   const t = resolveTranslator(context, fallbackLocale ?? context?.locale);
 
   if (error instanceof MaintenanceError) {
-    return { userMessage: t('common.maintenance', { message: error.message }), report: false, code: 'maintenance' };
+    return {
+      userMessage: t('common.maintenance', { message: error.message }).trim(),
+      report: false,
+      code: 'maintenance',
+    };
   }
   if (error instanceof NotOwnerError) {
     return {

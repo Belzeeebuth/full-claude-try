@@ -119,8 +119,11 @@ export const jobs: JobDefinition[] = [
           await systemRepo.enqueueNotification({
             userId: candidate.userId,
             type: 'crop_withering',
-            title: '🐛 Pests!',
-            body: `Pests are attacking your plot ${candidate.slot}. Use \`/treat plot:${candidate.slot}\` within ${balance.pests.deadlineHours} h.`,
+            payload: {
+              titleKey: 'notifications.pest_title',
+              bodyKey: 'notifications.pest_body',
+              params: { slot: candidate.slot, hours: balance.pests.deadlineHours },
+            },
             dedupeKey: `pest:${candidate.plotId}:${toSqlDate(new Date())}`,
           });
         }
@@ -243,8 +246,11 @@ export const jobs: JobDefinition[] = [
           await systemRepo.enqueueNotification({
             userId: row.animal.userId,
             type: 'animal_sick',
-            title: '🪦 An animal has died',
-            body: `Your ${row.name} did not survive the neglect. Feed your animals with \`/feed\`.`,
+            payload: {
+              titleKey: 'notifications.animal_death_title',
+              bodyKey: 'notifications.animal_death_body',
+              params: { name: row.name },
+            },
             dedupeKey: `death:${row.animal.id}`,
           });
           continue;
@@ -263,8 +269,11 @@ export const jobs: JobDefinition[] = [
           const enqueued = await systemRepo.enqueueNotification({
             userId: row.animal.userId,
             type: 'animal_hungry',
-            title: '🍽️ Your animals are hungry',
-            body: `Your ${row.name} is hungry (${status.hunger}%). A hungry animal produces half as much.`,
+            payload: {
+              titleKey: 'notifications.animal_hungry_title',
+              bodyKey: 'notifications.animal_hungry_body',
+              params: { name: row.name, hunger: status.hunger },
+            },
             dedupeKey: `hungry:${row.animal.id}:${toSqlDate(now)}`,
           });
           if (enqueued) notified += 1;
@@ -286,8 +295,11 @@ export const jobs: JobDefinition[] = [
         const enqueued = await systemRepo.enqueueNotification({
           userId: crop.userId,
           type: 'crop_ready',
-          title: '🌾 Harvest ready!',
-          body: `Your plot ${crop.plotSlot} is ready. Use \`/harvest\` before it withers.`,
+          payload: {
+            titleKey: 'notifications.crop_ready_title',
+            bodyKey: 'notifications.crop_ready_body',
+            params: { slot: crop.plotSlot },
+          },
           dedupeKey: `ready:${crop.userId}:${crop.plotSlot}:${crop.readyAt.toISOString()}`,
         });
         if (enqueued) queued += 1;

@@ -285,9 +285,11 @@ const coop: Command = {
                 objectives
                   .map((objective) =>
                     context.t('coop.objectives_line', {
-                      title: objective.title,
+                      title: context.t(`coop.objective.${objective.objectiveKey}.title`),
                       check: objective.status === 'completed' ? '✅' : '',
-                      description: objective.description,
+                      description: context.t(`coop.objective.${objective.objectiveKey}.description`, {
+                        target: objective.target,
+                      }),
                       bar: progressBar(Number(objective.progress), Number(objective.target), 12),
                       progress: formatCompact(Number(objective.progress), context.locale),
                       target: formatCompact(Number(objective.target), context.locale),

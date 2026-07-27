@@ -53,6 +53,13 @@
       "officer": "Officier",
       "member": "Membre"
     },
+    "fertility": {
+      "excellent": "Excellent",
+      "good": "Bon",
+      "average": "Moyen",
+      "depleted": "Épuisé",
+      "barren": "Stérile"
+    },
     "action_failed_title": "Action impossible",
     "internal_error_title": "Oups",
     "rate_limited_title": "Doucement !",
@@ -486,6 +493,32 @@
     "treasury_body": "**{treasury}**\n\nSeuls le chef et les officiers peuvent retirer des fonds.",
     "objectives_title": "🎯 Objectifs de {name}",
     "objectives_line": "**{title}** {check}\n{description}\n{bar} {progress}/{target}\n🎁 {coins} partagés + {gems} 💎 chacun",
+    "objective": {
+      "harvest_total": {
+        "title": "Récolte collective",
+        "description": "Récoltez {target} unités, tous membres confondus."
+      },
+      "craft_total": {
+        "title": "Chaîne coopérative",
+        "description": "Fabriquez {target} produits transformés."
+      },
+      "collect_total": {
+        "title": "Grande traite",
+        "description": "Collectez {target} productions animales."
+      },
+      "sell_value_total": {
+        "title": "Marché coopératif",
+        "description": "Vendez pour {target} pièces de marchandises."
+      },
+      "help_total": {
+        "title": "Entraide",
+        "description": "Aidez {target} fermiers, membres ou non."
+      },
+      "treasury_total": {
+        "title": "Trésorerie commune",
+        "description": "Versez {target} pièces dans la trésorerie."
+      }
+    },
     "create_modal_title": "Créer une coopérative",
     "create_modal_label": "Nom de la coopérative",
     "create_modal_placeholder": "Les Amis du Blé",
@@ -954,6 +987,18 @@
     "market_no_drift": "✅ Aucune dérive du grand livre détectée.",
     "market_drift": "⚠️ **{count} dérive(s) du grand livre** — voir les journaux.",
     "unknown_subcommand": "Sous-commande inconnue."
+  },
+  "notifications": {
+    "default_title": "🌾 Harvester",
+    "footer": "Gérez vos alertes avec /settings",
+    "pest_title": "🐛 Nuisibles !",
+    "pest_body": "Des nuisibles attaquent votre parcelle {slot}. Utilisez `/treat plot:{slot}` dans les {hours} h.",
+    "animal_death_title": "🪦 Un animal est mort",
+    "animal_death_body": "Votre {name} n'a pas survécu à la négligence. Nourrissez vos animaux avec `/feed`.",
+    "animal_hungry_title": "🍽️ Vos animaux ont faim",
+    "animal_hungry_body": "Votre {name} a faim ({hunger}%). Un animal affamé produit deux fois moins.",
+    "crop_ready_title": "🌾 Récolte prête !",
+    "crop_ready_body": "Votre parcelle {slot} est prête. Utilisez `/harvest` avant qu'elle ne flétrisse."
   },
   "world": {
     "weather": {

@@ -201,9 +201,14 @@ export function buildCoopObjective(
   const levelFactor = 1 + 0.05 * Math.max(0, level - 1);
   const target = Math.round(template.basePerMember * members * levelFactor);
   return {
+    // `title`/`description` sont conservés en anglais brut : colonnes historiques
+    // NOT NULL en base, jamais affichées telles quelles. L'affichage résout
+    // toujours le texte depuis `objectiveKey` via `coop.objective.<clé>.*`, dans
+    // la langue de CHAQUE membre — une coopérative est partagée entre joueurs
+    // qui peuvent avoir des langues différentes.
     objectiveKey: template.objectiveKey,
     title: template.title,
-    description: template.description.replace('{target}', target.toLocaleString('fr-FR')),
+    description: template.description.replace('{target}', String(target)),
     target,
     rewardCoins: template.rewardCoinsPerMember * members,
     rewardGems: template.rewardGems,

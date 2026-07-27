@@ -65,7 +65,7 @@ export async function getWorldState(now: Date = new Date(), locale?: string): Pr
     }
   }
 
-  const activeEvents = getActiveEvents(now);
+  const activeEvents = getActiveEvents(now, locale);
   return { season, weather, activeEvents, eventModifiers: aggregateEventModifiers(activeEvents) };
 }
 

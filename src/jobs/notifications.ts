@@ -1,6 +1,7 @@
 import { EmbedBuilder, type Client } from 'discord.js';
 import { balance as getBalance } from '../config';
 import { COLORS } from '../framework/ui';
+import { translatorFor, DEFAULT_LOCALE } from '../i18n';
 import * as playerRepo from '../repositories/player.repo';
 import * as systemRepo from '../repositories/system.repo';
 import { moduleLogger } from '../utils/logger';
@@ -76,14 +77,21 @@ export async function dispatchBatch(client: Client, limit: number): Promise<numb
         continue;
       }
 
+      const t = translatorFor(settings.locale ?? DEFAULT_LOCALE);
+      const payload = notification.payload as
+        | { titleKey?: string; bodyKey?: string; params?: Record<string, string | number> }
+        | undefined;
+      const title = payload?.titleKey ? t(payload.titleKey, payload.params) : notification.title ?? t('notifications.default_title');
+      const body = payload?.bodyKey ? t(payload.bodyKey, payload.params) : notification.body ?? '';
+
       const user = await client.users.fetch(entry.discordId);
       await user.send({
         embeds: [
           new EmbedBuilder()
             .setColor(COLORS.primary)
-            .setTitle(notification.title ?? '🌾 Harvester')
-            .setDescription(notification.body ?? '')
-            .setFooter({ text: 'Manage your alerts with /settings' }),
+            .setTitle(title)
+            .setDescription(body)
+            .setFooter({ text: t('notifications.footer') }),
         ],
       });
 

@@ -193,7 +193,7 @@ export async function plotsView(context: CommandContext, page = 1): Promise<View
     if (plot.state === 'locked') {
       return `\`${String(plot.slot).padStart(2, ' ')}\` 🔒 ${t('farm.plot_locked')} — ${formatCoins(plot.unlockCost, false, locale)}`;
     }
-    const soil = t('farm.soil_status', { pct: plot.fertility, label: plot.fertilityLabel });
+    const soil = t('farm.soil_status', { pct: plot.fertility, label: t(plot.fertilityLabel) });
     if (!plot.crop) {
       return `\`${String(plot.slot).padStart(2, ' ')}\` ⬜ ${t('farm.plot_empty')} — ${soil}${plot.weedLevel > 30 ? ` • ${t('farm.weeds_status', { pct: plot.weedLevel })}` : ''}`;
     }
@@ -932,7 +932,7 @@ export async function coopView(context: CommandContext): Promise<View> {
           objectives
             .map(
               (objective) =>
-                `**${objective.title}** ${objective.status === 'completed' ? '✅' : ''}\n${progressBar(objective.progress, objective.target, 10)} ${formatCompact(objective.progress, locale)}/${formatCompact(objective.target, locale)} — ${formatCompact(objective.rewardCoins, locale)} 🪙`,
+                `**${t(`coop.objective.${objective.objectiveKey}.title`)}** ${objective.status === 'completed' ? '✅' : ''}\n${progressBar(objective.progress, objective.target, 10)} ${formatCompact(objective.progress, locale)}/${formatCompact(objective.target, locale)} — ${formatCompact(objective.rewardCoins, locale)} 🪙`,
             )
             .join('\n') || t('coop.no_active_goal'),
         inline: false,

@@ -564,7 +564,11 @@ export function appendTracking(
   }
   if (tracking.completedCoopObjectives.length > 0) {
     parts.push(
-      t('common.tracking_coop_objective', { objectives: `**${tracking.completedCoopObjectives.join(', ')}**` }),
+      t('common.tracking_coop_objective', {
+        objectives: tracking.completedCoopObjectives
+          .map((key) => `**${t(`coop.objective.${key}.title`)}**`)
+          .join(', '),
+      }),
     );
   }
   if (parts.length > 0) {

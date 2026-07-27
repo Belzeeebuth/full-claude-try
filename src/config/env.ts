@@ -87,9 +87,7 @@ const envSchema = z.object({
   LOG_PRETTY: booleanish.default(false),
   HTTP_PORT: intFromEnv(0, 65_535, 3_001),
   MAINTENANCE_MODE: booleanish.default(false),
-  MAINTENANCE_MESSAGE: z
-    .string()
-    .default('Harvester est en maintenance, revenez dans quelques minutes.'),
+  MAINTENANCE_MESSAGE: z.string().default(''),
   // ⚠ NE JAMAIS nommer ces variables SHARD_COUNT ni SHARDS : ces deux noms
   // appartiennent au protocole interne de discord.js. `ShardingManager` les
   // pose sur l'environnement de chaque processus enfant, et `new Client()` les

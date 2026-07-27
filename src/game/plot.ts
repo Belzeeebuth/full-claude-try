@@ -129,11 +129,11 @@ export function applyFertilizer(
   };
 }
 
-/** Libellé d'état d'une parcelle pour l'affichage. */
+/** Clé i18n d'état d'une parcelle pour l'affichage (résolue par l'appelant). */
 export function describeFertility(fertility: number, balance: Balance): string {
-  if (fertility >= 85) return 'Excellent';
-  if (fertility >= balance.fertility.start) return 'Good';
-  if (fertility >= balance.fertility.lowThreshold) return 'Average';
-  if (fertility > 0) return 'Depleted';
-  return 'Barren';
+  if (fertility >= 85) return 'common.fertility.excellent';
+  if (fertility >= balance.fertility.start) return 'common.fertility.good';
+  if (fertility >= balance.fertility.lowThreshold) return 'common.fertility.average';
+  if (fertility > 0) return 'common.fertility.depleted';
+  return 'common.fertility.barren';
 }

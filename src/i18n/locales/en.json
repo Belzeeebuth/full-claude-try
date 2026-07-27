@@ -53,6 +53,13 @@
       "officer": "Officer",
       "member": "Member"
     },
+    "fertility": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "average": "Average",
+      "depleted": "Depleted",
+      "barren": "Barren"
+    },
     "action_failed_title": "Action failed",
     "internal_error_title": "Oops",
     "rate_limited_title": "Slow down!",
@@ -713,6 +720,32 @@
     "treasury_body": "**{treasury}**\n\nOnly the leader and officers can withdraw.",
     "objectives_title": "🎯 Goals of {name}",
     "objectives_line": "**{title}** {check}\n{description}\n{bar} {progress}/{target}\n🎁 {coins} shared + {gems} 💎 each",
+    "objective": {
+      "harvest_total": {
+        "title": "Collective harvest",
+        "description": "Harvest {target} units across all members."
+      },
+      "craft_total": {
+        "title": "Co-op chain",
+        "description": "Craft {target} processed goods."
+      },
+      "collect_total": {
+        "title": "Great milking",
+        "description": "Collect {target} animal productions."
+      },
+      "sell_value_total": {
+        "title": "Co-op market",
+        "description": "Sell {target} coins worth of goods."
+      },
+      "help_total": {
+        "title": "Mutual aid",
+        "description": "Help {target} farmers, members or not."
+      },
+      "treasury_total": {
+        "title": "Common treasury",
+        "description": "Pay {target} coins into the treasury."
+      }
+    },
     "create_modal_title": "Create a co-op",
     "create_modal_label": "Co-op name",
     "create_modal_placeholder": "The Wheat Friends",
@@ -1181,5 +1214,17 @@
     "market_no_drift": "✅ No ledger drift detected.",
     "market_drift": "⚠️ **{count} ledger drift(s)** — see the logs.",
     "unknown_subcommand": "Unknown subcommand."
+  },
+  "notifications": {
+    "default_title": "🌾 Harvester",
+    "footer": "Manage your alerts with /settings",
+    "pest_title": "🐛 Pests!",
+    "pest_body": "Pests are attacking your plot {slot}. Use `/treat plot:{slot}` within {hours} h.",
+    "animal_death_title": "🪦 An animal has died",
+    "animal_death_body": "Your {name} did not survive the neglect. Feed your animals with `/feed`.",
+    "animal_hungry_title": "🍽️ Your animals are hungry",
+    "animal_hungry_body": "Your {name} is hungry ({hunger}%). A hungry animal produces half as much.",
+    "crop_ready_title": "🌾 Harvest ready!",
+    "crop_ready_body": "Your plot {slot} is ready. Use `/harvest` before it withers."
   }
 }

@@ -1,6 +1,5 @@
 import { balance as getBalance, getActiveSeasonPass, getConfig } from '../config';
 import type { Executor } from '../db/client';
-import { COOP_OBJECTIVE_TEMPLATES } from '../game/coop';
 import * as progressionRepo from '../repositories/progression.repo';
 import * as socialRepo from '../repositories/social.repo';
 import { currentWeekStart } from '../utils/time';
@@ -148,10 +147,10 @@ export async function trackAction(
         tx,
       );
       if (progressed?.completed) {
-        const template = COOP_OBJECTIVE_TEMPLATES.find(
-          (entry) => entry.objectiveKey === objectiveKey,
-        );
-        result.completedCoopObjectives.push(template?.title ?? objectiveKey);
+        // On pousse la CLÉ, pas un libellé : l'objectif est partagé entre membres
+        // de langues potentiellement différentes, donc seul l'affichage (avec le
+        // traducteur du joueur qui consulte) peut choisir le bon texte.
+        result.completedCoopObjectives.push(objectiveKey);
       }
     }
 
