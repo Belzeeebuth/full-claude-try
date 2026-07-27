@@ -111,12 +111,6 @@ export function canActOn(actor: CoopRole, target: CoopRole): boolean {
   return ROLE_RANK[actor] > ROLE_RANK[target];
 }
 
-export const ROLE_LABELS: Record<CoopRole, string> = {
-  owner: 'Leader',
-  officer: 'Officer',
-  member: 'Member',
-};
-
 /**
  * Objectifs hebdomadaires générés pour une coopérative.
  * La cible est proportionnelle au nombre de membres ET au niveau, de sorte

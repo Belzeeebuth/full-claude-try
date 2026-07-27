@@ -47,6 +47,11 @@
       "legendary": "Légendaire",
       "mythic": "Mythique"
     },
+    "role": {
+      "owner": "Chef",
+      "officer": "Officier",
+      "member": "Membre"
+    },
     "action_failed_title": "Action impossible",
     "internal_error_title": "Oups",
     "rate_limited_title": "Doucement !",
@@ -242,7 +247,19 @@
     "bots_no_trade": "Les bots ne peuvent pas échanger."
   },
   "social": {
-    "cannot_help_self": "Vous ne pouvez pas vous aider vous-même."
+    "cannot_help_self": "Vous ne pouvez pas vous aider vous-même.",
+    "visit_reward_footer": "Visite récompensée : +{coins} 🪙 et +{xp} XP",
+    "help_button": "Aider (arroser ses parcelles)",
+    "help_title": "🤝 Coup de main donné",
+    "help_watered_line": "Vous avez arrosé **{count}** parcelle(s) de {name}.",
+    "help_reward_line": "Récompense : {coins} et +{xp} ✨\n{name} reçoit aussi un petit bonus.",
+    "help_no_reward_line": "*Vous avez déjà aidé {name} aujourd'hui : pas de récompense supplémentaire.*",
+    "help_footer_line": "Les cultures arrosées par un ami donnent à leur propriétaire un **bonus de rendement**.",
+    "referral_title": "🎟️ Parrainage",
+    "referral_code_line": "Votre code : **`{code}`**",
+    "referral_bonus_line": "Un nouveau joueur qui lance `/start code:{code}` reçoit **{bonus}** en bonus de départ.",
+    "referral_reward_line": "Quand il atteint le **niveau {level}**, vous recevez **{coins}** et **{gems} 💎**.",
+    "referral_was_referred": "✅ Vous avez été parrainé — merci de faire grandir le village !"
   },
   "animals": {
     "title": "🐄 Cheptel de {name}",
@@ -334,7 +351,30 @@
     "no_active_goal": "Aucun objectif actif.",
     "top_contributors_field": "👥 Meilleurs contributeurs",
     "contribute_button": "Contribuer",
-    "objectives_button": "Objectifs"
+    "objectives_button": "Objectifs",
+    "create_title": "{emblem} {name} [{tag}] fondée !",
+    "create_body": "Coût : {cost}\nInvitez vos amis avec `/coop invite` et accomplissez les objectifs hebdomadaires ensemble.",
+    "join_title": "Bienvenue chez {emblem} {name} !",
+    "join_body": "Vous profitez immédiatement des bonus de niveau {level}.",
+    "leave_title": "Départ enregistré",
+    "leave_dissolved": "**{name}** a été dissoute (vous étiez le dernier membre).",
+    "leave_body": "Vous avez quitté **{name}**.",
+    "members_title": "👥 Membres de {name}",
+    "members_line": "{index}. **{username}** — {role} • {level}\n     Contribution hebdo : {weekly} • total : {total}",
+    "members_footer": "{count}/{limit} membres",
+    "invite_title": "Invitation acceptée",
+    "invite_body": "{target} a rejoint **{name}**.",
+    "kick_title": "Membre exclu",
+    "kick_body": "{target} ne fait plus partie de **{name}**.",
+    "promote_title": "Rang modifié",
+    "promote_body": "{target} est maintenant **{role}**.",
+    "contribute_title": "💰 Contribution",
+    "contribute_body": "{amount} versés.\nTrésorerie : **{treasury}**\n+{xp} XP de coopérative{levelUp}",
+    "contribute_level_up": " — 🎉 **niveau {level} atteint !**",
+    "treasury_title": "💰 Trésorerie de {name}",
+    "treasury_body": "**{treasury}**\n\nSeuls le chef et les officiers peuvent retirer des fonds.",
+    "objectives_title": "🎯 Objectifs de {name}",
+    "objectives_line": "**{title}** {check}\n{description}\n{bar} {progress}/{target}\n🎁 {coins} partagés + {gems} 💎 chacun"
   },
   "craft": {
     "queue_title": "🛠️ File de production",
@@ -710,6 +750,8 @@
       "global": "Global"
     },
     "entry_level": "Niveau {level}",
-    "entry_members": "{count} membres"
+    "entry_members": "{count} membres",
+    "empty": "Aucun classement disponible.",
+    "footer_with_rank": "Votre rang : #{rank} • {scope}"
   }
 }

@@ -944,7 +944,7 @@ export async function coopView(context: CommandContext): Promise<View> {
             .slice(0, 5)
             .map(
               (member, index) =>
-                `${index + 1}. **${member.username}** (${coopService.ROLE_LABELS[member.member.role as 'owner' | 'officer' | 'member']}) — ${formatCompact(member.member.weeklyContribution, locale)} 🪙`,
+                `${index + 1}. **${member.username}** (${t(`common.role.${member.member.role}`)}) — ${formatCompact(member.member.weeklyContribution, locale)} 🪙`,
             )
             .join('\n') || '—',
         inline: false,

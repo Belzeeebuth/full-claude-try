@@ -1,7 +1,6 @@
 import { balance as getBalance } from '../config';
 import { lockUserRow, withTransaction } from '../db/client';
 import {
-  ROLE_LABELS,
   addCoopXp,
   buildCoopObjective,
   canActOn,
@@ -54,7 +53,6 @@ export interface CoopInfo {
   joinRequirementLevel: number;
   bonuses: ReturnType<typeof coopBonuses>;
   role?: CoopRole;
-  roleLabel?: string;
 }
 
 export async function getCoopInfo(coopId: string, viewerId?: string): Promise<CoopInfo> {
@@ -84,10 +82,7 @@ export async function getCoopInfo(coopId: string, viewerId?: string): Promise<Co
     joinRequirementLevel: coop.joinRequirementLevel,
     bonuses: coopBonuses(coop.level, balance),
     ...(membership?.member.guildId === coopId
-      ? {
-          role: membership.member.role as CoopRole,
-          roleLabel: ROLE_LABELS[membership.member.role as CoopRole],
-        }
+      ? { role: membership.member.role as CoopRole }
       : {}),
   };
 }
@@ -310,7 +305,7 @@ export async function promoteMember(
   player: PlayerContext,
   targetUserId: string,
   role: CoopRole,
-): Promise<{ role: CoopRole; roleLabel: string }> {
+): Promise<{ role: CoopRole }> {
   const membership = await requireMembership(player.id);
   if (membership.member.role !== 'owner') {
     throw gameError('coop_forbidden', 'Only the leader can change ranks.', {
@@ -332,7 +327,7 @@ export async function promoteMember(
     if (role === 'owner') {
       await socialRepo.setMemberRole(membership.coop.id, player.id, 'officer', tx);
     }
-    return { role, roleLabel: ROLE_LABELS[role] };
+    return { role };
   });
 }
 
@@ -568,5 +563,3 @@ export async function weeklyReset(): Promise<void> {
   await socialRepo.resetWeeklyCoopScores();
   log.info('weekly co-op scores reset');
 }
-
-export { ROLE_LABELS };

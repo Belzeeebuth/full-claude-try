@@ -47,6 +47,11 @@
       "legendary": "Legendary",
       "mythic": "Mythic"
     },
+    "role": {
+      "owner": "Leader",
+      "officer": "Officer",
+      "member": "Member"
+    },
     "action_failed_title": "Action failed",
     "internal_error_title": "Oops",
     "rate_limited_title": "Slow down!",
@@ -310,7 +315,9 @@
       "global": "Global"
     },
     "entry_level": "Level {level}",
-    "entry_members": "{count} members"
+    "entry_members": "{count} members",
+    "empty": "No leaderboard available.",
+    "footer_with_rank": "Your rank: #{rank} • {scope}"
   },
   "plant": {
     "success": "🌱 {emoji} **{crop}** planted on plot {slot}. Harvest {when}.",
@@ -374,7 +381,19 @@
     "bots_no_trade": "Bots do not trade."
   },
   "social": {
-    "cannot_help_self": "You cannot help yourself."
+    "cannot_help_self": "You cannot help yourself.",
+    "visit_reward_footer": "Visit rewarded: +{coins} 🪙 and +{xp} XP",
+    "help_button": "Help (water their plots)",
+    "help_title": "🤝 Helping hand given",
+    "help_watered_line": "You watered **{count}** of {name}'s plot(s).",
+    "help_reward_line": "Reward: {coins} and +{xp} ✨\n{name} also gets a small bonus.",
+    "help_no_reward_line": "*You already helped {name} today: no extra reward.*",
+    "help_footer_line": "Crops watered by a friend give their owner a **yield bonus**.",
+    "referral_title": "🎟️ Referrals",
+    "referral_code_line": "Your code: **`{code}`**",
+    "referral_bonus_line": "A new player who runs `/start code:{code}` receives **{bonus}** as a starting bonus.",
+    "referral_reward_line": "When they reach **level {level}**, you receive **{coins}** and **{gems} 💎**.",
+    "referral_was_referred": "✅ You were referred — thanks for growing the village!"
   },
   "animals": {
     "title": "🐄 {name}'s livestock",
@@ -445,7 +464,30 @@
     "no_active_goal": "No active goal.",
     "top_contributors_field": "👥 Top contributors",
     "contribute_button": "Contribute",
-    "objectives_button": "Objectives"
+    "objectives_button": "Objectives",
+    "create_title": "{emblem} {name} [{tag}] founded!",
+    "create_body": "Cost: {cost}\nInvite your friends with `/coop invite` and complete the weekly goals together.",
+    "join_title": "Welcome to {emblem} {name}!",
+    "join_body": "You immediately benefit from the level {level} bonuses.",
+    "leave_title": "Departure recorded",
+    "leave_dissolved": "**{name}** was disbanded (you were the last member).",
+    "leave_body": "You left **{name}**.",
+    "members_title": "👥 Members of {name}",
+    "members_line": "{index}. **{username}** — {role} • {level}\n     Weekly contribution: {weekly} • total: {total}",
+    "members_footer": "{count}/{limit} members",
+    "invite_title": "Invitation accepted",
+    "invite_body": "{target} joined **{name}**.",
+    "kick_title": "Member kicked",
+    "kick_body": "{target} is no longer part of **{name}**.",
+    "promote_title": "Rank changed",
+    "promote_body": "{target} is now **{role}**.",
+    "contribute_title": "💰 Contribution",
+    "contribute_body": "{amount} paid in.\nTreasury: **{treasury}**\n+{xp} co-op XP{levelUp}",
+    "contribute_level_up": " — 🎉 **level {level} reached!**",
+    "treasury_title": "💰 {name} treasury",
+    "treasury_body": "**{treasury}**\n\nOnly the leader and officers can withdraw.",
+    "objectives_title": "🎯 Goals of {name}",
+    "objectives_line": "**{title}** {check}\n{description}\n{bar} {progress}/{target}\n🎁 {coins} shared + {gems} 💎 each"
   },
   "craft": {
     "queue_title": "🛠️ Production queue",

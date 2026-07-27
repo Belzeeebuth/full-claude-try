@@ -110,9 +110,10 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              `${info.emblem} ${info.name} [${info.tag}] founded!`,
-              `Cost: ${formatCoins(context.balance.coop.creationCostCoins)}\n` +
-                `Invite your friends with \`/coop invite\` and complete the weekly goals together.`,
+              context.t('coop.create_title', { emblem: info.emblem, name: info.name, tag: info.tag }),
+              context.t('coop.create_body', {
+                cost: formatCoins(context.balance.coop.creationCostCoins, false, context.locale),
+              }),
             ),
           ],
         });
@@ -123,8 +124,8 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              `Welcome to ${info.emblem} ${info.name}!`,
-              `You immediately benefit from the level ${info.level} bonuses.`,
+              context.t('coop.join_title', { emblem: info.emblem, name: info.name }),
+              context.t('coop.join_body', { level: info.level }),
             ),
           ],
         });
@@ -135,10 +136,10 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              'Departure recorded',
+              context.t('coop.leave_title'),
               result.dissolved
-                ? `**${result.coopName}** was disbanded (you were the last member).`
-                : `You left **${result.coopName}**.`,
+                ? context.t('coop.leave_dissolved', { name: result.coopName })
+                : context.t('coop.leave_body', { name: result.coopName }),
             ),
           ],
         });
@@ -150,15 +151,24 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: `👥 Members of ${membership.coop.name}`,
+              title: context.t('coop.members_title', { name: membership.coop.name }),
               description: members
-                .map(
-                  (member, index) =>
-                    `${index + 1}. **${member.username}** — ${coopService.ROLE_LABELS[member.member.role as 'owner' | 'officer' | 'member']} • lv. ${member.level}\n     Weekly contribution: ${formatCoins(member.member.weeklyContribution, true)} • total: ${formatCoins(member.member.contributedCoins, true)}`,
+                .map((member, index) =>
+                  context.t('coop.members_line', {
+                    index: index + 1,
+                    username: member.username,
+                    role: context.t(`common.role.${member.member.role}`),
+                    level: context.t('common.level_abbr', { level: member.level }),
+                    weekly: formatCoins(member.member.weeklyContribution, true, context.locale),
+                    total: formatCoins(member.member.contributedCoins, true, context.locale),
+                  }),
                 )
                 .join('\n'),
               color: COLORS.primary,
-              footer: `${members.length}/${membership.coop.memberLimit} members`,
+              footer: context.t('coop.members_footer', {
+                count: members.length,
+                limit: membership.coop.memberLimit,
+              }),
             }),
           ],
         });
@@ -172,7 +182,12 @@ const coop: Command = {
         }
         const result = await coopService.inviteMember(context.player, targetUser.id);
         await interaction.editReply({
-          embeds: [successEmbed('Invitation accepted', `${target} joined **${result.coopName}**.`)],
+          embeds: [
+            successEmbed(
+              context.t('coop.invite_title'),
+              context.t('coop.invite_body', { target: `${target}`, name: result.coopName }),
+            ),
+          ],
         });
         break;
       }
@@ -182,7 +197,12 @@ const coop: Command = {
         if (!targetUser) throw gameError('not_found', context.t('errors.player_not_found'));
         const result = await coopService.kickMember(context.player, targetUser.id);
         await interaction.editReply({
-          embeds: [successEmbed('Member kicked', `${target} is no longer part of **${result.coopName}**.`)],
+          embeds: [
+            successEmbed(
+              context.t('coop.kick_title'),
+              context.t('coop.kick_body', { target: `${target}`, name: result.coopName }),
+            ),
+          ],
         });
         break;
       }
@@ -193,7 +213,15 @@ const coop: Command = {
         if (!targetUser) throw gameError('not_found', context.t('errors.player_not_found'));
         const result = await coopService.promoteMember(context.player, targetUser.id, role);
         await interaction.editReply({
-          embeds: [successEmbed('Rank changed', `${target} is now **${result.roleLabel}**.`)],
+          embeds: [
+            successEmbed(
+              context.t('coop.promote_title'),
+              context.t('coop.promote_body', {
+                target: `${target}`,
+                role: context.t(`common.role.${result.role}`),
+              }),
+            ),
+          ],
         });
         break;
       }
@@ -203,9 +231,16 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '💰 Contribution',
-              `${formatCoins(amount)} paid in.\nTreasury: **${formatCoins(result.treasury)}**\n` +
-                `+${formatNumber(result.coopXp)} co-op XP${result.levelsGained > 0 ? ` — 🎉 **level ${result.level} reached!**` : ''}`,
+              context.t('coop.contribute_title'),
+              context.t('coop.contribute_body', {
+                amount: formatCoins(amount, false, context.locale),
+                treasury: formatCoins(result.treasury, false, context.locale),
+                xp: formatNumber(result.coopXp, context.locale),
+                levelUp:
+                  result.levelsGained > 0
+                    ? context.t('coop.contribute_level_up', { level: result.level })
+                    : '',
+              }),
             ),
           ],
         });
@@ -217,8 +252,10 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: `💰 ${info.name} treasury`,
-              description: `**${formatCoins(info.treasury)}**\n\nOnly the leader and officers can withdraw.`,
+              title: context.t('coop.treasury_title', { name: info.name }),
+              description: context.t('coop.treasury_body', {
+                treasury: formatCoins(info.treasury, false, context.locale),
+              }),
               color: COLORS.gold,
             }),
           ],
@@ -228,7 +265,7 @@ const coop: Command = {
                 namespace: 'coop',
                 action: 'contribute',
                 ownerId: context.player.discordId,
-                label: 'Contribute',
+                label: context.t('coop.contribute_button'),
                 emoji: '💰',
                 style: ButtonStyle.Success,
               }),
@@ -243,14 +280,22 @@ const coop: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: `🎯 Goals of ${membership.coop.name}`,
+              title: context.t('coop.objectives_title', { name: membership.coop.name }),
               description:
                 objectives
-                  .map(
-                    (objective) =>
-                      `**${objective.title}** ${objective.status === 'completed' ? '✅' : ''}\n${objective.description}\n${progressBar(Number(objective.progress), Number(objective.target), 12)} ${formatCompact(Number(objective.progress))}/${formatCompact(Number(objective.target))}\n🎁 ${formatCoins(objective.rewardCoins)} shared + ${objective.rewardGems} 💎 each`,
+                  .map((objective) =>
+                    context.t('coop.objectives_line', {
+                      title: objective.title,
+                      check: objective.status === 'completed' ? '✅' : '',
+                      description: objective.description,
+                      bar: progressBar(Number(objective.progress), Number(objective.target), 12),
+                      progress: formatCompact(Number(objective.progress), context.locale),
+                      target: formatCompact(Number(objective.target), context.locale),
+                      coins: formatCoins(objective.rewardCoins, false, context.locale),
+                      gems: objective.rewardGems,
+                    }),
                   )
-                  .join('\n\n') || 'No goal this week.',
+                  .join('\n\n') || context.t('coop.no_active_goal'),
               color: COLORS.primary,
             }),
           ],
@@ -362,12 +407,14 @@ export async function sendLeaderboard(
           (entry) =>
             `${entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `\`#${entry.rank}\``} **${entry.name}** — ${formatCompact(entry.score, context.locale)} ${meta.unit}`,
         )
-        .join('\n') || 'No leaderboard available.',
+        .join('\n') || t('leaderboard.empty'),
     color: COLORS.gold,
     // Image laissée en pièce jointe libre, hors de l'embed : voir la note
     // détaillée dans `farmView` (src/framework/views.ts). Un embed rend
     // l'image à sa propre largeur (~400 px) ; celle-ci en fait 900 px.
-    footer: viewerRank ? `Your rank: #${viewerRank.rank} • ${scopeLabel}` : scopeLabel,
+    footer: viewerRank
+      ? t('leaderboard.footer_with_rank', { rank: viewerRank.rank, scope: scopeLabel })
+      : scopeLabel,
   });
 
   await interaction.editReply({
@@ -447,7 +494,7 @@ export async function visitFarm(
   const embed = view.embeds?.[0] as EmbedBuilder | undefined;
   if (embed && reward.rewarded) {
     embed.setFooter({
-      text: `Visit rewarded: +${reward.coins} 🪙 and +${reward.xp} XP`,
+      text: context.t('social.visit_reward_footer', { coins: reward.coins, xp: reward.xp }),
     });
   }
 
@@ -464,7 +511,7 @@ export async function visitFarm(
                 action: 'help',
                 ownerId: interaction.user.id,
                 params: [target.id],
-                label: 'Help (water their plots)',
+                label: context.t('social.help_button'),
                 emoji: '🤝',
                 style: ButtonStyle.Success,
               }),
@@ -517,13 +564,17 @@ export async function helpFarmer(
   await interaction.editReply({
     embeds: [
       successEmbed(
-        '🤝 Helping hand given',
+        context.t('social.help_title'),
         [
-          `You watered **${helped.plotsWatered}** of ${targetName}'s plot(s).`,
+          context.t('social.help_watered_line', { count: helped.plotsWatered, name: targetName }),
           reward.rewarded
-            ? `Reward: ${formatCoins(reward.coins)} and +${reward.xp} ✨\n${targetName} also gets a small bonus.`
-            : `*You already helped ${targetName} today: no extra reward.*`,
-          `Crops watered by a friend give their owner a **yield bonus**.`,
+            ? context.t('social.help_reward_line', {
+                coins: formatCoins(reward.coins, false, context.locale),
+                xp: reward.xp,
+                name: targetName,
+              })
+            : context.t('social.help_no_reward_line', { name: targetName }),
+          context.t('social.help_footer_line'),
         ].join('\n'),
       ),
     ],
@@ -547,14 +598,21 @@ const parrainage: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '🎟️ Referrals',
+          title: context.t('social.referral_title'),
           description: [
-            `Your code: **\`${status.code}\`**`,
+            context.t('social.referral_code_line', { code: status.code }),
             '',
-            `A new player who runs \`/start code:${status.code}\` receives **${formatCoins(context.balance.social.referredStartBonusCoins)}** as a starting bonus.`,
-            `When they reach **level ${status.qualifyLevel}**, you receive **${formatCoins(status.rewardCoins)}** and **${status.rewardGems} 💎**.`,
+            context.t('social.referral_bonus_line', {
+              code: status.code,
+              bonus: formatCoins(context.balance.social.referredStartBonusCoins, false, context.locale),
+            }),
+            context.t('social.referral_reward_line', {
+              level: status.qualifyLevel,
+              coins: formatCoins(status.rewardCoins, false, context.locale),
+              gems: status.rewardGems,
+            }),
             '',
-            status.referredBy ? '✅ You were referred — thanks for growing the village!' : '',
+            status.referredBy ? context.t('social.referral_was_referred') : '',
           ]
             .filter(Boolean)
             .join('\n'),
