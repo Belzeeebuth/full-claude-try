@@ -371,8 +371,15 @@ export const jobs: JobDefinition[] = [
     description: 'Captures an economic snapshot and checks the ledger',
     async run() {
       const snapshot = await economyRepo.captureEconomySnapshot(new Date(Date.now() - 3_600_000));
-      const mismatches = await economyService.auditLedger(20);
-      return `supply ${snapshot.totalCoins} 🪙, ${mismatches.length} drift(s)`;
+      const mismatches = await economyService.auditLedger(100);
+      const suspiciousUsers = await economyRepo.countSuspiciousUsers(
+        getBalance().economy.suspicionThresholds.review,
+      );
+      await economyRepo.recordSnapshotHealth(snapshot.id, {
+        ledgerMismatches: mismatches.length,
+        suspiciousUsers,
+      });
+      return `supply ${snapshot.totalCoins} 🪙, ${mismatches.length} drift(s), ${suspiciousUsers} flagged`;
     },
   },
 

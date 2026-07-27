@@ -5,6 +5,7 @@ import { pingDatabase } from '../db/client';
 import { pingRedis } from '../db/redis';
 import { getConfig } from '../config';
 import { getRegistry } from '../framework/registry';
+import * as economyRepo from '../repositories/economy.repo';
 import { moduleLogger } from '../utils/logger';
 
 const log = moduleLogger('http');
@@ -65,8 +66,7 @@ export function startHealthServer(client: Client): Server | undefined {
     }
 
     if (url === '/metrics') {
-      response.writeHead(200, { 'content-type': 'text/plain; version=0.0.4' });
-      response.end(renderMetrics(client));
+      void handleMetrics(client, response);
       return;
     }
 
@@ -113,7 +113,12 @@ async function handleHealth(client: Client, response: import('node:http').Server
   );
 }
 
-function renderMetrics(client: Client): string {
+async function handleMetrics(client: Client, response: import('node:http').ServerResponse): Promise<void> {
+  response.writeHead(200, { 'content-type': 'text/plain; version=0.0.4' });
+  response.end(await renderMetrics(client));
+}
+
+async function renderMetrics(client: Client): Promise<string> {
   const config = getConfig();
   const lines = [
     '# HELP harvester_uptime_seconds Temps depuis le démarrage',
@@ -138,6 +143,64 @@ function renderMetrics(client: Client): string {
     '# TYPE harvester_config_items gauge',
     `harvester_config_items ${config.itemList.length}`,
   ];
+
+  // Dérivées de l'instantané horaire (`economy:snapshot`), jamais recalculées
+  // à la volée : une jointure sur `transactions` à chaque scrape Prometheus,
+  // multipliée par le nombre de shards, serait une charge inutile sur la base.
+  try {
+    const [snapshot] = await economyRepo.lastEconomySnapshots(1);
+    if (snapshot) {
+      const ageSeconds = Math.max(
+        0,
+        Math.round((Date.now() - snapshot.capturedAt.getTime()) / 1_000),
+      );
+      const ratio =
+        snapshot.coinsDestroyed > 0
+          ? (snapshot.coinsCreated / snapshot.coinsDestroyed).toFixed(4)
+          : snapshot.coinsCreated > 0
+            ? '+Inf'
+            : '0';
+
+      lines.push(
+        '# HELP harvester_economy_total_coins Masse monétaire totale en portefeuille',
+        '# TYPE harvester_economy_total_coins gauge',
+        `harvester_economy_total_coins ${snapshot.totalCoins}`,
+        '# HELP harvester_economy_total_bank_coins Masse monétaire en banque',
+        '# TYPE harvester_economy_total_bank_coins gauge',
+        `harvester_economy_total_bank_coins ${snapshot.totalBankCoins}`,
+        '# HELP harvester_economy_total_gems Gemmes en circulation',
+        '# TYPE harvester_economy_total_gems gauge',
+        `harvester_economy_total_gems ${snapshot.totalGems}`,
+        '# HELP harvester_economy_coins_created Pièces créées (faucets) sur la fenêtre de l\'instantané',
+        '# TYPE harvester_economy_coins_created gauge',
+        `harvester_economy_coins_created ${snapshot.coinsCreated}`,
+        '# HELP harvester_economy_coins_destroyed Pièces détruites (sinks) sur la fenêtre de l\'instantané',
+        '# TYPE harvester_economy_coins_destroyed gauge',
+        `harvester_economy_coins_destroyed ${snapshot.coinsDestroyed}`,
+        '# HELP harvester_economy_faucet_sink_ratio Ratio création/destruction (> 1 = inflation nette)',
+        '# TYPE harvester_economy_faucet_sink_ratio gauge',
+        `harvester_economy_faucet_sink_ratio ${ratio}`,
+        '# HELP harvester_economy_active_users_24h Joueurs actifs sur les dernières 24h',
+        '# TYPE harvester_economy_active_users_24h gauge',
+        `harvester_economy_active_users_24h ${snapshot.activeUsers24h}`,
+        '# HELP harvester_economy_total_users Joueurs enregistrés',
+        '# TYPE harvester_economy_total_users gauge',
+        `harvester_economy_total_users ${snapshot.totalUsers}`,
+        '# HELP harvester_economy_ledger_mismatches Écarts détectés entre solde et journal comptable',
+        '# TYPE harvester_economy_ledger_mismatches gauge',
+        `harvester_economy_ledger_mismatches ${snapshot.ledgerMismatches}`,
+        '# HELP harvester_economy_suspicious_users Joueurs au-dessus du seuil de revue anti-triche',
+        '# TYPE harvester_economy_suspicious_users gauge',
+        `harvester_economy_suspicious_users ${snapshot.suspiciousUsers}`,
+        '# HELP harvester_economy_snapshot_age_seconds Ancienneté du dernier instantané économique',
+        '# TYPE harvester_economy_snapshot_age_seconds gauge',
+        `harvester_economy_snapshot_age_seconds ${ageSeconds}`,
+      );
+    }
+  } catch (error) {
+    log.warn({ err: error }, "lecture de l'instantané économique impossible pour /metrics");
+  }
+
   return `${lines.join('\n')}\n`;
 }
 

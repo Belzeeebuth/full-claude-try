@@ -323,6 +323,10 @@ export const economySnapshots = pgTable(
     activeUsers24h: integer('active_users_24h').notNull().default(0),
     totalUsers: integer('total_users').notNull().default(0),
     topItems: jsonb('top_items').notNull().default(sql`'[]'::jsonb`),
+    /** Écarts solde/journal détectés par l'audit qui accompagne cet instantané. */
+    ledgerMismatches: integer('ledger_mismatches').notNull().default(0),
+    /** Joueurs au-dessus du seuil de suspicion « à revoir » au moment de l'instantané. */
+    suspiciousUsers: integer('suspicious_users').notNull().default(0),
     notes: text('notes'),
   },
   (t) => [index('economy_snapshots_time_idx').on(t.capturedAt.desc())],

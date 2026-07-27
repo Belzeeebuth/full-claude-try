@@ -569,6 +569,38 @@ export async function lastEconomySnapshots(limit: number, executor: Executor = g
     .limit(limit);
 }
 
+/** Nombre de joueurs au-dessus d'un seuil de suspicion (anti-triche). */
+export async function countSuspiciousUsers(
+  threshold: number,
+  executor: Executor = getDb(),
+): Promise<number> {
+  const [row] = await executor
+    .select({ count: sql<number>`COUNT(*)::int` })
+    .from(users)
+    .where(gte(users.suspicionScore, threshold));
+  return row?.count ?? 0;
+}
+
+/**
+ * Complète un instantané déjà inséré avec les compteurs de santé (dérive du
+ * journal, joueurs suspects). Séparé de `captureEconomySnapshot` car ces deux
+ * comptages viennent d'un audit potentiellement plus coûteux (jointure sur
+ * `transactions`), déjà effectué par ailleurs dans le même job.
+ */
+export async function recordSnapshotHealth(
+  snapshotId: number,
+  health: { ledgerMismatches: number; suspiciousUsers: number },
+  executor: Executor = getDb(),
+): Promise<void> {
+  await executor
+    .update(economySnapshots)
+    .set({
+      ledgerMismatches: health.ledgerMismatches,
+      suspiciousUsers: health.suspiciousUsers,
+    })
+    .where(eq(economySnapshots.id, snapshotId));
+}
+
 /** Détecte un écart entre le solde d'un joueur et son journal (anti-triche). */
 export async function findLedgerMismatches(limit: number, executor: Executor = getDb()) {
   const rows = await executor.execute<{

@@ -8,6 +8,13 @@
       "when": 1785081671827,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785185497816,
+      "tag": "0003_economy_snapshot_health",
+      "breakpoints": true
     }
   ]
 }
