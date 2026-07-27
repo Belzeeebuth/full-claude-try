@@ -37,7 +37,7 @@ export interface WorldState {
 
 const CACHE_TTL_SECONDS = 300;
 
-export async function getWorldState(now: Date = new Date()): Promise<WorldState> {
+export async function getWorldState(now: Date = new Date(), locale?: string): Promise<WorldState> {
   const balance = getBalance();
   const season = seasonAt(now, balance);
   const day = toSqlDate(now);
@@ -51,6 +51,18 @@ export async function getWorldState(now: Date = new Date()): Promise<WorldState>
   } else {
     weather = await resolveWeather(day, season, now);
     await cacheSet(cacheKey, { weather }, CACHE_TTL_SECONDS);
+  }
+
+  // Le libellé/la description mis en cache sont toujours en français (`balance`
+  // n'a pas de notion de langue). On les réécrit ici, après lecture du cache,
+  // pour ne pas dupliquer l'entrée Redis par langue.
+  if (locale?.startsWith('en')) {
+    const localized = getConfig(locale).balance.weather.table.find(
+      (entry) => entry.weather === weather.weather,
+    );
+    if (localized) {
+      weather = { ...weather, label: localized.label, description: localized.description };
+    }
   }
 
   const activeEvents = getActiveEvents(now);

@@ -94,7 +94,7 @@ export async function getFarmView(
   const [rows, farm, world, modifiers] = await Promise.all([
     farmRepo.listPlots(player.farmId),
     playerRepo.getFarmByUserId(player.id),
-    getWorldState(now),
+    getWorldState(now, player.locale),
     getFarmModifiers(player, { coopLevel: options.coopLevel, now }),
   ]);
 

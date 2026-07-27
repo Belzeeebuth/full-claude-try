@@ -18,7 +18,7 @@ const meteo: Command = {
 
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
-    const world = await getWorldState(context.now);
+    const world = await getWorldState(context.now, context.locale);
     const weather = world.weather;
 
     await interaction.editReply({
@@ -29,25 +29,37 @@ const meteo: Command = {
           color: weather.damageChance > 0 ? COLORS.warning : COLORS.info,
           fields: [
             {
-              name: 'Today\'s effects',
+              name: context.t('world.weather_effects_field'),
               value: [
-                `🌾 Yield: **${formatPercent(weather.yieldModifier - 1)}**`,
-                `⏳ Growth speed: **${formatPercent(weather.growthModifier - 1)}**`,
-                weather.freeWatering ? '💧 **Free watering** — no need to use `/water`' : '',
+                context.t('world.weather_yield_line', {
+                  percent: formatPercent(weather.yieldModifier - 1, undefined, context.locale),
+                }),
+                context.t('world.weather_growth_line', {
+                  percent: formatPercent(weather.growthModifier - 1, undefined, context.locale),
+                }),
+                weather.freeWatering ? context.t('world.weather_free_watering_line') : '',
                 weather.damageChance > 0
-                  ? `⚠️ Damage risk: **${(weather.damageChance * 100).toFixed(0)}%** per plot`
+                  ? context.t('world.weather_damage_line', {
+                      percent: (weather.damageChance * 100).toFixed(0),
+                    })
                   : '',
-                `🐛 Pest risk: ${(weather.pestChance * 100).toFixed(0)} %`,
+                context.t('world.weather_pest_line', { percent: (weather.pestChance * 100).toFixed(0) }),
               ]
                 .filter(Boolean)
                 .join('\n'),
             },
             {
-              name: 'Season',
-              value: `${SEASON_LABELS[world.season.season].emoji} **${SEASON_LABELS[world.season.season].name}** (an ${world.season.gameYear})\n${progressBar(world.season.progress * 100, 100, 12)} ${Math.round(world.season.progress * 100)} %`,
+              name: context.t('world.weather_season_field'),
+              value: context.t('world.weather_season_value', {
+                emoji: SEASON_LABELS[world.season.season].emoji,
+                name: context.t(`world.season.${world.season.season}`),
+                year: world.season.gameYear,
+                bar: progressBar(world.season.progress * 100, 100, 12),
+                percent: Math.round(world.season.progress * 100),
+              }),
             },
           ],
-          footer: 'Weather is the same for the whole village and changes daily at midnight UTC.',
+          footer: context.t('world.weather_footer'),
         }),
       ],
     });
@@ -79,25 +91,40 @@ const saison: Command = {
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: `${SEASON_LABELS[current].emoji} ${SEASON_LABELS[current].name} — an ${world.season.gameYear}`,
+          title: context.t('world.season_title', {
+            emoji: SEASON_LABELS[current].emoji,
+            name: context.t(`world.season.${current}`),
+            year: world.season.gameYear,
+          }),
           description: [
-            `${progressBar(world.season.progress * 100, 100, 16)} ${Math.round(world.season.progress * 100)} %`,
-            `Next season: ${SEASON_LABELS[next.season].emoji} **${SEASON_LABELS[next.season].name}** ${discordTimestamp(next.startsAt, 'R')}`,
+            context.t('world.season_progress_line', {
+              bar: progressBar(world.season.progress * 100, 100, 16),
+              percent: Math.round(world.season.progress * 100),
+            }),
+            context.t('world.season_next_line', {
+              emoji: SEASON_LABELS[next.season].emoji,
+              name: context.t(`world.season.${next.season}`),
+              relative: discordTimestamp(next.startsAt, 'R'),
+            }),
             '',
-            `In season: **+${(context.balance.seasons.inSeasonYieldBonus * 100).toFixed(0)} %** yield.`,
-            `Off season: **−${(context.balance.seasons.offSeasonYieldPenalty * 100).toFixed(0)} %** yield and slower growth (the greenhouse cancels this penalty).`,
+            context.t('world.season_bonus_line', {
+              percent: (context.balance.seasons.inSeasonYieldBonus * 100).toFixed(0),
+            }),
+            context.t('world.season_penalty_line', {
+              percent: (context.balance.seasons.offSeasonYieldPenalty * 100).toFixed(0),
+            }),
           ].join('\n'),
           color: COLORS.primary,
           fields: [
             {
-              name: '✅ Seasonal crops',
+              name: context.t('world.season_crops_field'),
               value: truncate(
                 inSeason.map((crop) => `${crop.emoji} ${crop.name}`).join(' • ') || '—',
                 1000,
               ),
             },
             {
-              name: '⏭️ Coming into season',
+              name: context.t('world.season_coming_field'),
               value: truncate(
                 comingSoon.map((crop) => `${crop.emoji} ${crop.name}`).join(' • ') || '—',
                 1000,
@@ -127,14 +154,18 @@ const evenement: Command = {
       await interaction.editReply({
         embeds: [
           baseEmbed({
-            title: '🎪 No event running',
-            description:
-              'The village is preparing its next festivities.\n\n' +
-              '**On the calendar this year:**\n' +
-              context.config.eventList
+            title: context.t('world.event_none_title'),
+            description: context.t('world.event_none_body', {
+              list: context.config.eventList
                 .filter((event) => event.enabled)
-                .map((event) => `• **${event.name}** — ${event.description}`)
+                .map((event) =>
+                  context.t('world.event_calendar_line', {
+                    name: event.name,
+                    description: event.description,
+                  }),
+                )
                 .join('\n'),
+            }),
             color: COLORS.info,
           }),
         ],
@@ -155,32 +186,42 @@ const evenement: Command = {
           color: COLORS.gold,
           fields: [
             {
-              name: 'Active modifiers',
+              name: context.t('world.event_modifiers_field'),
               value:
                 [
-                  event.modifiers.xpMultiplier ? `✨ XP ×${event.modifiers.xpMultiplier}` : '',
+                  event.modifiers.xpMultiplier
+                    ? context.t('world.event_xp_line', { multiplier: event.modifiers.xpMultiplier })
+                    : '',
                   event.modifiers.growthMultiplier
-                    ? `🌱 Growth speed ×${event.modifiers.growthMultiplier}`
+                    ? context.t('world.event_growth_line', {
+                        multiplier: event.modifiers.growthMultiplier,
+                      })
                     : '',
                   event.modifiers.globalPriceMultiplier
-                    ? `💰 Prices ×${event.modifiers.globalPriceMultiplier}`
+                    ? context.t('world.event_prices_line', {
+                        multiplier: event.modifiers.globalPriceMultiplier,
+                      })
                     : '',
                   event.modifiers.mutationMultiplier
-                    ? `🌈 Mutations ×${event.modifiers.mutationMultiplier}`
+                    ? context.t('world.event_mutations_line', {
+                        multiplier: event.modifiers.mutationMultiplier,
+                      })
                     : '',
                   event.modifiers.waterMultiplier
-                    ? `💧 Water need ×${event.modifiers.waterMultiplier}`
+                    ? context.t('world.event_water_line', {
+                        multiplier: event.modifiers.waterMultiplier,
+                      })
                     : '',
                 ]
                   .filter(Boolean)
-                  .join('\n') || 'None',
+                  .join('\n') || context.t('world.event_modifiers_none'),
             },
             {
-              name: 'Your progress',
-              value: `**${progress?.points ?? 0}** event point(s)`,
+              name: context.t('world.event_progress_field'),
+              value: context.t('world.event_points_value', { points: progress?.points ?? 0 }),
             },
             {
-              name: '🎁 Reward tiers',
+              name: context.t('world.event_reward_tiers_field'),
               value:
                 event.rewardTiers
                   .map((tier) => {
@@ -188,13 +229,15 @@ const evenement: Command = {
                     const rewards = [
                       tier.rewards.coins ? `${tier.rewards.coins} 🪙` : '',
                       tier.rewards.gems ? `${tier.rewards.gems} 💎` : '',
-                      tier.rewards.title ? `titre « ${tier.rewards.title} »` : '',
+                      tier.rewards.title
+                        ? context.t('world.event_reward_title_part', { title: tier.rewards.title })
+                        : '',
                     ]
                       .filter(Boolean)
                       .join(' • ');
                     return `${claimed ? '✅' : (progress?.points ?? 0) >= tier.points ? '🎁' : '🔒'} **${tier.points} pts** — ${rewards}`;
                   })
-                  .join('\n') || 'No tier.',
+                  .join('\n') || context.t('world.event_no_tier'),
             },
           ],
         }),
@@ -230,19 +273,28 @@ const encyclopedie: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: `📖 Encyclopedia — "${term}"`,
-          description: total === 0 ? 'No result.' : `${total} result(s).`,
+          title: context.t('world.encyclopedia_title', { term }),
+          description:
+            total === 0
+              ? context.t('world.encyclopedia_no_result')
+              : context.t('world.encyclopedia_result_count', { count: total }),
           color: COLORS.info,
           fields: [
             ...(crops.length > 0
               ? [
                   {
-                    name: '🌾 Cultures',
+                    name: context.t('world.encyclopedia_crops_field'),
                     value: crops
                       .slice(0, 5)
-                      .map(
-                        (crop) =>
-                          `${crop.emoji} **${crop.name}** — lv. ${crop.requiredLevel}, ${Math.round(crop.growthSeconds / 60)} min, ${crop.baseYield}× ${crop.sellPrice} 🪙`,
+                      .map((crop) =>
+                        context.t('world.encyclopedia_crop_line', {
+                          emoji: crop.emoji,
+                          name: crop.name,
+                          level: context.t('common.level_abbr', { level: crop.requiredLevel }),
+                          minutes: Math.round(crop.growthSeconds / 60),
+                          yield: crop.baseYield,
+                          price: crop.sellPrice,
+                        }),
                       )
                       .join('\n'),
                   },
@@ -251,12 +303,18 @@ const encyclopedie: Command = {
             ...(animals.length > 0
               ? [
                   {
-                    name: '🐄 Animals',
+                    name: context.t('world.encyclopedia_animals_field'),
                     value: animals
                       .slice(0, 5)
-                      .map(
-                        (animal) =>
-                          `${animal.emoji} **${animal.name}** — lv. ${animal.requiredLevel}, ${animal.price} 🪙, produces ${animal.productQuantity}× every ${Math.round(animal.productionSeconds / 60)} min`,
+                      .map((animal) =>
+                        context.t('world.encyclopedia_animal_line', {
+                          emoji: animal.emoji,
+                          name: animal.name,
+                          level: context.t('common.level_abbr', { level: animal.requiredLevel }),
+                          price: animal.price,
+                          quantity: animal.productQuantity,
+                          minutes: Math.round(animal.productionSeconds / 60),
+                        }),
                       )
                       .join('\n'),
                   },
@@ -265,10 +323,16 @@ const encyclopedie: Command = {
             ...(items.length > 0
               ? [
                   {
-                    name: '📦 Items',
+                    name: context.t('world.encyclopedia_items_field'),
                     value: items
                       .slice(0, 6)
-                      .map((item) => `${item.emoji} **${item.name}** — ${item.description ?? item.category}`)
+                      .map((item) =>
+                        context.t('world.encyclopedia_item_line', {
+                          emoji: item.emoji,
+                          name: item.name,
+                          description: item.description ?? item.category,
+                        }),
+                      )
                       .join('\n'),
                   },
                 ]
@@ -276,12 +340,17 @@ const encyclopedie: Command = {
             ...(recipes.length > 0
               ? [
                   {
-                    name: '🛠️ Recipes',
+                    name: context.t('world.encyclopedia_recipes_field'),
                     value: recipes
                       .slice(0, 5)
-                      .map(
-                        (recipe) =>
-                          `${recipe.emoji} **${recipe.name}** — ${(recipe.ingredients as Array<{ itemKey: string; quantity: number }>).map((ingredient) => `${ingredient.quantity}× ${ingredient.itemKey}`).join(' + ')}`,
+                      .map((recipe) =>
+                        context.t('world.encyclopedia_recipe_line', {
+                          emoji: recipe.emoji,
+                          name: recipe.name,
+                          ingredients: (recipe.ingredients as Array<{ itemKey: string; quantity: number }>)
+                            .map((ingredient) => `${ingredient.quantity}× ${ingredient.itemKey}`)
+                            .join(' + '),
+                        }),
                       )
                       .join('\n'),
                   },
@@ -290,10 +359,16 @@ const encyclopedie: Command = {
             ...(buildings.length > 0
               ? [
                   {
-                    name: '🏗️ Buildings',
+                    name: context.t('world.encyclopedia_buildings_field'),
                     value: buildings
                       .slice(0, 5)
-                      .map((building) => `${building.emoji} **${building.name}** — ${building.description ?? ''}`)
+                      .map((building) =>
+                        context.t('world.encyclopedia_building_line', {
+                          emoji: building.emoji,
+                          name: building.name,
+                          description: building.description ?? '',
+                        }),
+                      )
                       .join('\n'),
                   },
                 ]
