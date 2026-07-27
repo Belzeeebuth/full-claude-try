@@ -168,7 +168,7 @@ export async function craft(
     const consumed: Array<{ itemKey: string; quantity: number }> = [];
     for (const ingredient of recipe.ingredients as Array<{ itemKey: string; quantity: number }>) {
       const total = ingredient.quantity * quantity;
-      await inventoryService.consume(player.id, ingredient.itemKey, total, tx);
+      await inventoryService.consume(player.id, ingredient.itemKey, total, tx, player.locale);
       consumed.push({ itemKey: ingredient.itemKey, quantity: total });
     }
 
@@ -535,7 +535,7 @@ export async function buildOrUpgrade(
       );
     }
     for (const cost of next.costItems) {
-      await inventoryService.consume(player.id, cost.itemKey, cost.quantity, tx);
+      await inventoryService.consume(player.id, cost.itemKey, cost.quantity, tx, player.locale);
     }
 
     await animalRepo.upsertBuilding(

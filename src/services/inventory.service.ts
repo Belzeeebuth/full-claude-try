@@ -128,8 +128,9 @@ export async function removeExact(
   key: StackKey,
   quantity: number,
   tx: Executor,
+  locale?: string,
 ): Promise<void> {
-  const item = requireItem(key.itemKey);
+  const item = requireItem(key.itemKey, locale);
   const removed = await inventoryRepo.removeItem(userId, key, quantity, tx);
   if (!removed) {
     const owned = await inventoryRepo.countItem(userId, key.itemKey, tx);
@@ -155,8 +156,9 @@ export async function consume(
   itemKey: string,
   quantity: number,
   tx: Executor,
+  locale?: string,
 ): Promise<Array<{ quality: Quality; mutation: Mutation; quantity: number }>> {
-  const item = requireItem(itemKey);
+  const item = requireItem(itemKey, locale);
   const result = await inventoryRepo.removeItemAnyQuality(userId, itemKey, quantity, tx);
   if (!result.removed) {
     const owned = await inventoryRepo.countItem(userId, itemKey, tx);

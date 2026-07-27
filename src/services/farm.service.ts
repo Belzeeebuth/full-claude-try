@@ -312,7 +312,7 @@ export async function plant(
 
     const quantity = plantable.length;
     // Les graines sont consommées d'un bloc : soit tout, soit rien.
-    await inventoryService.consume(player.id, seedKey, quantity, tx);
+    await inventoryService.consume(player.id, seedKey, quantity, tx, player.locale);
     await consumeEnergy(player.id, 'plant', tx, {
       quantity,
       costReduction: modifiers.energyCostReduction,
@@ -757,7 +757,7 @@ export async function fertilize(
   input: { fertilizerKey: string; slot?: number; all?: boolean },
 ): Promise<{ slots: number[]; fertilizer: string; fertilityAfter: number; tracking: TrackResult }> {
   const balance = getBalance();
-  const item = inventoryService.requireItem(input.fertilizerKey);
+  const item = inventoryService.requireItem(input.fertilizerKey, player.locale);
   if (item.effect?.type !== 'fertilizer') {
     throw gameError('item_unknown', `${item.name} is not a fertilizer.`, {
       i18nKey: 'errors.farm.not_a_fertilizer',
@@ -782,7 +782,7 @@ export async function fertilize(
       });
     }
 
-    await inventoryService.consume(player.id, input.fertilizerKey, candidates.length, tx);
+    await inventoryService.consume(player.id, input.fertilizerKey, candidates.length, tx, player.locale);
     await consumeEnergy(player.id, 'fertilize', tx, {
       quantity: 1,
       costReduction: modifiers.energyCostReduction,
@@ -894,7 +894,7 @@ export async function treatPest(
     // pour un coût d'énergie plus élevé. On ne bloque jamais l'action.
     const hasPesticide = await inventoryService.has(player.id, 'pesticide', 1, tx);
     if (hasPesticide) {
-      await inventoryService.consume(player.id, 'pesticide', 1, tx);
+      await inventoryService.consume(player.id, 'pesticide', 1, tx, player.locale);
     }
     await consumeEnergy(player.id, 'treat', tx, {
       quantity: hasPesticide ? 1 : 2,

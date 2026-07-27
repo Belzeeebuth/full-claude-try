@@ -108,7 +108,7 @@ export async function createListing(
   input: CreateListingInput,
 ): Promise<{ id: string; fee: number; expiresAt: Date; price: number; quantity: number }> {
   const balance = getBalance();
-  const item = inventoryService.requireItem(input.itemKey);
+  const item = inventoryService.requireItem(input.itemKey, player.locale);
   if (!item.tradable) {
     throw gameError('item_not_tradable', `${item.emoji} ${item.name} cannot be traded.`, {
       i18nKey: 'errors.trade.item_not_tradable',
@@ -161,6 +161,7 @@ export async function createListing(
       { itemKey: input.itemKey, quality: input.quality, mutation: input.mutation },
       quantity,
       tx,
+      player.locale,
     );
 
     const fee = auctionListingFee(input.price, balance);
@@ -639,7 +640,7 @@ export async function offerItem(
   input: { tradeId: string; itemKey: string; quantity: number; quality?: Quality },
 ): Promise<TradeView> {
   const balance = getBalance();
-  const item = inventoryService.requireItem(input.itemKey);
+  const item = inventoryService.requireItem(input.itemKey, player.locale);
   if (!item.tradable) {
     throw gameError('item_not_tradable', `${item.name} cannot be traded.`, {
       i18nKey: 'errors.trade.item_not_tradable',
@@ -774,6 +775,7 @@ export async function confirmTrade(
         },
         entry.item.quantity,
         tx,
+        player.locale,
       );
       await inventoryService.addItems(
         to,

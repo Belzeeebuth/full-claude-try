@@ -228,6 +228,7 @@ export async function sell(
         { itemKey: stack.itemKey, quality: stack.quality, mutation: stack.mutation },
         quantity,
         tx,
+        player.locale,
       );
 
       // Le volume vendu alimente la pression sur le marché : vendre en masse
@@ -497,7 +498,7 @@ export async function buy(
   input: { itemKey: string; quantity: number; discordGuildId?: string },
 ): Promise<BuyResult> {
   const config = getConfig(player.locale);
-  const item = inventoryService.requireItem(input.itemKey);
+  const item = inventoryService.requireItem(input.itemKey, player.locale);
   const quantity = Math.max(1, Math.floor(input.quantity));
   const rotationDate = toSqlDate(new Date());
 

@@ -329,7 +329,7 @@ export async function feed(
     }
 
     for (const [itemKey, quantity] of needs) {
-      await inventoryService.consume(player.id, itemKey, quantity, tx);
+      await inventoryService.consume(player.id, itemKey, quantity, tx, player.locale);
     }
 
     await consumeEnergy(player.id, 'feed', tx, {

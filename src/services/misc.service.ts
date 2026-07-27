@@ -469,7 +469,7 @@ export async function adminGrant(
           });
         }
         if (remove) {
-          await inventoryService.consume(target.id, input.itemKey, amount, tx);
+          await inventoryService.consume(target.id, input.itemKey, amount, tx, input.actor.locale);
         } else {
           await inventoryService.addItems(
             target.id,

@@ -67,7 +67,7 @@ export async function useConsumable(
   quantity = 1,
 ): Promise<UseResult> {
   const balance = getBalance();
-  const item = inventoryService.requireItem(itemKey);
+  const item = inventoryService.requireItem(itemKey, player.locale);
   const effect = item.effect;
   if (!effect?.type) {
     throw gameError('item_unknown', `${item.name} cannot be used directly.`, {
@@ -78,7 +78,7 @@ export async function useConsumable(
 
   return withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
-    await inventoryService.consume(player.id, itemKey, quantity, tx);
+    await inventoryService.consume(player.id, itemKey, quantity, tx, player.locale);
 
     switch (effect.type) {
       case 'energy': {

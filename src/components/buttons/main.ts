@@ -247,7 +247,7 @@ const inventoryButtons: ButtonHandler = {
 
       const { withTransaction } = await import('../../db/client');
       await withTransaction(async (tx) => {
-        await inventoryService.consume(context.player.id, itemKey, quantity, tx);
+        await inventoryService.consume(context.player.id, itemKey, quantity, tx, context.locale);
       });
       const item = inventoryService.requireItem(itemKey, context.locale);
       await interaction.update({

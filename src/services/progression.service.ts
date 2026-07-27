@@ -449,7 +449,7 @@ export async function rerollQuest(
       : Math.round(balance.quests.rerollCostCoins * balance.quests.rerollCostGrowth ** rerolls);
 
     if (usedToken) {
-      await inventoryService.consume(player.id, 'quest_reroll_token', 1, tx);
+      await inventoryService.consume(player.id, 'quest_reroll_token', 1, tx, player.locale);
     } else {
       await economyService.charge({ userId: player.id, amount: cost, type: 'reroll_cost' }, tx);
     }
@@ -855,7 +855,7 @@ export async function deliverItems(
 
     const missing = quest.required - quest.progress;
     const delivered = Math.min(missing, Math.max(1, input.quantity));
-    await inventoryService.consume(player.id, input.itemKey, delivered, tx);
+    await inventoryService.consume(player.id, input.itemKey, delivered, tx, player.locale);
 
     const completed = await progressionRepo.progressQuests(
       player.id,
