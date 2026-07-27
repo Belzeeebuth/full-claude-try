@@ -455,12 +455,24 @@ export async function shopView(context: CommandContext, category?: string): Prom
 
 export async function marketView(context: CommandContext, category?: string): Promise<View> {
   const rows = await marketService.getMarket({ category }, context.locale);
-  const sorted = [...rows].sort((a, b) => b.trend - a.trend);
-  const top = sorted.slice(0, 8);
-  const bottom = sorted.slice(-8).reverse();
+  // Ne classer « en hausse »/« en baisse » que les objets dont la variation
+  // dépasse le seuil de `describeTrend` (2 %) : sinon un marché stable (toutes
+  // les tendances à 0, par exemple avant le premier cycle horaire) finissait
+  // par répartir arbitrairement des objets ➡️ « stables » dans les deux
+  // colonnes, juste par ordre du catalogue.
+  const rising = rows
+    .filter((entry) => entry.trend >= 0.02)
+    .sort((a, b) => b.trend - a.trend)
+    .slice(0, 8);
+  const falling = rows
+    .filter((entry) => entry.trend <= -0.02)
+    .sort((a, b) => a.trend - b.trend)
+    .slice(0, 8);
+  const alphabetical = [...rows].sort((a, b) => a.name.localeCompare(b.name));
 
   const format = (entry: (typeof rows)[number]): string =>
     `${entry.trendEmoji} ${entry.emoji} **${entry.name}** — ${formatNumber(entry.price)} ${COIN} (${formatPercent(entry.trend)})`;
+  const noMovement = context.t('market.no_movement');
 
   const embed = baseEmbed({
     title: '📊 Greenvale market',
@@ -472,8 +484,8 @@ export async function marketView(context: CommandContext, category?: string): Pr
       .join('\n'),
     color: COLORS.info,
     fields: [
-      { name: '📈 Rising', value: top.map(format).join('\n') || '—', inline: false },
-      { name: '📉 Falling', value: bottom.map(format).join('\n') || '—', inline: false },
+      { name: '📈 Rising', value: rising.map(format).join('\n') || noMovement, inline: false },
+      { name: '📉 Falling', value: falling.map(format).join('\n') || noMovement, inline: false },
     ],
   });
 
@@ -494,7 +506,7 @@ export async function marketView(context: CommandContext, category?: string): Pr
           action: 'chart',
           ownerId: context.player.discordId,
           placeholder: 'View a product\'s chart',
-          choices: sorted.slice(0, 25).map((entry) => ({
+          choices: alphabetical.slice(0, 25).map((entry) => ({
             label: `${entry.name} — ${entry.price} 🪙`,
             value: entry.itemKey,
             emoji: entry.emoji,

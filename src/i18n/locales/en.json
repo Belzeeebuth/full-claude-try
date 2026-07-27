@@ -250,7 +250,8 @@
     "trend_up": "rising",
     "trend_down": "falling",
     "trend_flat": "stable",
-    "not_tracked": "{item} is not tracked by the market."
+    "not_tracked": "{item} is not tracked by the market.",
+    "no_movement": "No significant movement right now."
   },
   "trade": {
     "bots_no_trade": "Bots do not trade."
