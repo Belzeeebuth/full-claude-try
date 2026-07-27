@@ -69,15 +69,17 @@ const rerollQuete: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🔄 Quest rerolled',
+          context.t('quests.reroll_result_title'),
           [
             result.usedToken
-              ? '🎫 A reroll token was used.'
-              : `Cost: ${formatCoins(result.cost)}`,
+              ? context.t('quests.reroll_token_used')
+              : context.t('quests.reroll_cost_line', {
+                  cost: formatCoins(result.cost, false, context.locale),
+                }),
             '',
             `**${result.newQuest.title}**`,
             result.newQuest.description,
-            `Goal: 0/${result.newQuest.required}`,
+            context.t('quests.reroll_goal_line', { required: result.newQuest.required }),
           ].join('\n'),
         ),
       ],
@@ -142,18 +144,25 @@ const succes: Command = {
       const status = entry.unlocked
         ? entry.claimed
           ? '✅'
-          : '🎁 **to claim**'
-        : `${progressBar(progress, target, 8)} ${formatCompact(progress)}/${formatCompact(target)}`;
+          : context.t('progression.achievements_to_claim')
+        : `${progressBar(progress, target, 8)} ${formatCompact(progress, context.locale)}/${formatCompact(target, context.locale)}`;
       return `${entry.icon} **${entry.name}** — ${status}\n   *${entry.description}*`;
     });
 
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: '🏆 Achievements',
-          description: lines.join('\n') || 'No achievement in this category.',
+          title: context.t('progression.achievements_title'),
+          description: lines.join('\n') || context.t('progression.achievements_empty'),
           color: COLORS.gold,
-          footer: `${unlocked.length}/${achievements.length} unlocked${claimable.length > 0 ? ` • ${claimable.length} reward(s) to claim` : ''}`,
+          footer: context.t('progression.achievements_footer', {
+            unlocked: unlocked.length,
+            total: achievements.length,
+            claimablePart:
+              claimable.length > 0
+                ? context.t('progression.achievements_claimable_part', { count: claimable.length })
+                : '',
+          }),
         }),
       ],
       components:
@@ -164,7 +173,7 @@ const succes: Command = {
                   namespace: 'achv',
                   action: 'claim_all',
                   ownerId: interaction.user.id,
-                  label: `Claim (${claimable.length})`,
+                  label: context.t('progression.achievements_claim_button', { count: claimable.length }),
                   emoji: '🎁',
                   style: ButtonStyle.Success,
                 }),
@@ -191,8 +200,8 @@ const passe: Command = {
       await interaction.editReply({
         embeds: [
           baseEmbed({
-            title: '🎟️ Season pass',
-            description: 'No active pass right now. The next one arrives when the season changes!',
+            title: context.t('progression.pass_title'),
+            description: context.t('progression.pass_inactive_body'),
             color: COLORS.info,
           }),
         ],
@@ -205,13 +214,16 @@ const passe: Command = {
       .slice(0, 3)
       .map((tier) => {
         const free = tier.free as { coins?: number; gems?: number; items?: Array<{ itemKey: string; quantity: number }> };
-        return `**Tier ${tier.tier}** — ${[
-          free.coins ? `${formatCompact(free.coins)} 🪙` : '',
-          free.gems ? `${free.gems} 💎` : '',
-          free.items ? describeItems(free.items, context.locale) : '',
-        ]
-          .filter(Boolean)
-          .join(' • ')}`;
+        return context.t('progression.pass_tier_line', {
+          tier: tier.tier,
+          rewards: [
+            free.coins ? `${formatCompact(free.coins, context.locale)} 🪙` : '',
+            free.gems ? `${free.gems} 💎` : '',
+            free.items ? describeItems(free.items, context.locale) : '',
+          ]
+            .filter(Boolean)
+            .join(' • '),
+        });
       });
 
     const claimable = pass.tiers.filter(
@@ -221,26 +233,35 @@ const passe: Command = {
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: `🎟️ ${pass.name}`,
+          title: context.t('progression.pass_active_title', { name: pass.name }),
           description: [
-            `Tier **${pass.tier}**/${pass.maxTier}`,
-            `${progressBar(pass.passXp % pass.xpPerTier, pass.xpPerTier, 14)} ${formatNumber(pass.passXp % pass.xpPerTier)}/${formatNumber(pass.xpPerTier)} XP de passe`,
-            `Season ends ${discordTimestamp(pass.endsAt, 'R')}`,
+            context.t('progression.pass_tier_progress', { tier: pass.tier, max: pass.maxTier }),
+            context.t('progression.pass_xp_line', {
+              bar: progressBar(pass.passXp % pass.xpPerTier, pass.xpPerTier, 14),
+              xp: formatNumber(pass.passXp % pass.xpPerTier, context.locale),
+              max: formatNumber(pass.xpPerTier, context.locale),
+            }),
+            context.t('progression.pass_ends_line', { relative: discordTimestamp(pass.endsAt, 'R') }),
             '',
             pass.premium
-              ? '⭐ **Premium track unlocked** (thanks for voting!)'
-              : `⭐ Premium track: vote for the bot ${context.balance.seasonPass.premiumVotesRequired} times with \`/vote\` to unlock it — never real money.`,
+              ? context.t('progression.pass_premium_unlocked')
+              : context.t('progression.pass_premium_locked', {
+                  count: context.balance.seasonPass.premiumVotesRequired,
+                }),
           ].join('\n'),
           color: COLORS.xp,
           fields: [
             {
-              name: '🎁 To claim',
+              name: context.t('progression.pass_claim_field'),
               value:
                 claimable.length > 0
-                  ? `**${claimable.length}** tier(s) available`
-                  : 'No tier pending.',
+                  ? context.t('progression.pass_claim_available', { count: claimable.length })
+                  : context.t('progression.pass_claim_none'),
             },
-            { name: '⏭️ Next tiers', value: nextTiers.join('\n') || 'Pass completed 🏆' },
+            {
+              name: context.t('progression.pass_next_field'),
+              value: nextTiers.join('\n') || context.t('progression.pass_completed'),
+            },
           ],
         }),
       ],
@@ -252,7 +273,7 @@ const passe: Command = {
                   namespace: 'pass',
                   action: 'claim_all',
                   ownerId: interaction.user.id,
-                  label: `Claim ${claimable.length} tier(s)`,
+                  label: context.t('progression.pass_claim_button', { count: claimable.length }),
                   emoji: '🎁',
                   style: ButtonStyle.Success,
                 }),
@@ -278,17 +299,31 @@ const daily: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `📅 Daily reward — day ${result.streak}`,
+          context.t('progression.daily_title', { day: result.streak }),
           [
-            `${formatCoins(result.coins)} • ${formatNumber(result.xp)} ✨${result.gems > 0 ? ` • ${result.gems} 💎` : ''}`,
-            result.items.length > 0 ? `🎁 Bonus: ${describeItems(result.items, context.locale)}` : '',
+            context.t('progression.daily_reward_line', {
+              coins: formatCoins(result.coins, false, context.locale),
+              xp: formatNumber(result.xp, context.locale),
+              gemsPart:
+                result.gems > 0 ? context.t('progression.daily_gems_part', { gems: result.gems }) : '',
+            }),
+            result.items.length > 0
+              ? context.t('progression.daily_bonus_line', {
+                  items: describeItems(result.items, context.locale),
+                })
+              : '',
             '',
             result.streakBroken
-              ? '💔 Your streak was reset. Come back every day to grow it!'
+              ? context.t('progression.daily_streak_broken')
               : result.usedFreeze
-                ? '🧊 A freeze token saved your streak.'
-                : `🔥 Streak of **${result.streak}** day(s) — best: ${result.longestStreak}`,
-            `Next reward ${discordTimestamp(result.nextClaimAt, 'R')}`,
+                ? context.t('progression.daily_freeze_used')
+                : context.t('progression.daily_streak_line', {
+                    count: result.streak,
+                    best: result.longestStreak,
+                  }),
+            context.t('progression.daily_next_line', {
+              relative: discordTimestamp(result.nextClaimAt, 'R'),
+            }),
           ]
             .filter(Boolean)
             .join('\n'),
@@ -300,14 +335,14 @@ const daily: Command = {
             namespace: 'quest',
             action: 'open',
             ownerId: interaction.user.id,
-            label: 'My quests',
+            label: context.t('suggestion.quests'),
             emoji: '📋',
           }),
           button({
             namespace: 'farm',
             action: 'refresh',
             ownerId: interaction.user.id,
-            label: 'My farm',
+            label: context.t('common.my_farm'),
             emoji: '🌾',
           }),
         ),
@@ -331,22 +366,27 @@ const vote: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '🗳️ Vote for Harvester',
+          title: context.t('progression.vote_title'),
           description: [
-            `Each vote earns you **${info.rewardGems} 💎** and **${formatCoins(info.rewardCoins)}**.`,
-            `On weekends, rewards are **×${info.weekendMultiplier}**.`,
-            `You can vote every **${info.cooldownHours} h**.`,
+            context.t('progression.vote_reward_line', {
+              gems: info.rewardGems,
+              coins: formatCoins(info.rewardCoins, false, context.locale),
+            }),
+            context.t('progression.vote_weekend_line', { multiplier: info.weekendMultiplier }),
+            context.t('progression.vote_cooldown_line', { hours: info.cooldownHours }),
             '',
             cooldown.active
-              ? `⏳ Next vote available ${discordTimestamp(cooldown.retryAt, 'R')}`
-              : '✅ You can vote now!',
+              ? context.t('progression.vote_wait_line', {
+                  relative: discordTimestamp(cooldown.retryAt, 'R'),
+                })
+              : context.t('progression.vote_ready_line'),
             '',
-            '*Gems cannot be bought with real money: voting is the fastest way to get them.*',
+            context.t('progression.vote_footer_line'),
           ].join('\n'),
           color: COLORS.info,
         }),
       ],
-      components: [row(linkButton('Vote on top.gg', info.url, '🗳️'))],
+      components: [row(linkButton(context.t('progression.vote_button'), info.url, '🗳️'))],
       flags: MessageFlags.Ephemeral,
     });
   },
