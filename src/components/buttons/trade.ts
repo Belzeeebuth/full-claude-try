@@ -28,15 +28,19 @@ const tradeButtons: ButtonHandler = {
     switch (parsed.action) {
       case 'add_coins': {
         await interaction.showModal(
-          quantityModal({
-            namespace: 'trade',
-            action: 'coins_qty',
-            ownerId: interaction.user.id,
-            params: [tradeId],
-            title: 'Coins to offer',
-            label: 'Amount in coins',
-            placeholder: 'Ex. 2500',
-          }),
+          quantityModal(
+            {
+              namespace: 'trade',
+              action: 'coins_qty',
+              ownerId: interaction.user.id,
+              params: [tradeId],
+              title: context.t('trade.add_coins_modal_title'),
+              label: context.t('trade.add_coins_modal_label'),
+              placeholder: context.t('trade.add_coins_modal_placeholder'),
+            },
+            context.locale,
+            context.t,
+          ),
         );
         return;
       }
@@ -48,8 +52,8 @@ const tradeButtons: ButtonHandler = {
           await replyEphemeral(interaction, {
             embeds: [
               baseEmbed({
-                title: '📦 Nothing to trade',
-                description: 'Your inventory holds no tradable item.',
+                title: context.t('trade.no_item_title'),
+                description: context.t('trade.no_item_body'),
                 color: COLORS.warning,
               }),
             ],
@@ -58,7 +62,7 @@ const tradeButtons: ButtonHandler = {
         }
 
         await replyEphemeral(interaction, {
-          embeds: [baseEmbed({ title: '📦 Which item do you want to offer?', color: COLORS.info })],
+          embeds: [baseEmbed({ title: context.t('trade.pick_item_title'), color: COLORS.info })],
           components: [
             selectRow(
               select({
@@ -66,7 +70,7 @@ const tradeButtons: ButtonHandler = {
                 action: 'pick_item',
                 ownerId: interaction.user.id,
                 params: [tradeId],
-                placeholder: 'Pick an item',
+                placeholder: context.t('trade.pick_item_placeholder'),
                 choices: tradable.map((entry) => ({
                   label: truncate(`${entry.name}${qualityIcon(entry.quality)} ×${entry.quantity}`, 90),
                   value: entry.itemKey,
@@ -86,12 +90,7 @@ const tradeButtons: ButtonHandler = {
 
         if (result.completed) {
           await interaction.editReply({
-            embeds: [
-              successEmbed(
-                '🤝 Trade completed',
-                'Items and coins have been transferred. A transfer tax was taken on the coins exchanged.',
-              ),
-            ],
+            embeds: [successEmbed(context.t('trade.completed_title'), context.t('trade.completed_body'))],
             components: [],
           });
           return;
@@ -103,10 +102,10 @@ const tradeButtons: ButtonHandler = {
             : result.trade.initiatorId;
         const partner = await playerRepo.findUserById(partnerId);
         await interaction.editReply(
-          await tradeView(context, result.trade, partner?.username ?? 'your partner'),
+          await tradeView(context, result.trade, partner?.username ?? context.t('trade.partner_fallback')),
         );
         await interaction.followUp({
-          content: '✅ Your confirmation is recorded. Waiting for your partner.',
+          content: context.t('trade.confirm_recorded'),
           flags: MessageFlags.Ephemeral,
         });
         return;
@@ -118,8 +117,8 @@ const tradeButtons: ButtonHandler = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: '✖️ Trade cancelled',
-              description: 'No item changed hands.',
+              title: context.t('trade.cancelled_title'),
+              description: context.t('trade.cancelled_body'),
               color: COLORS.neutral,
             }),
           ],

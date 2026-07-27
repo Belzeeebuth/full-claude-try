@@ -92,11 +92,14 @@ const farmButtons: ButtonHandler = {
           embeds: [
             result.freeRain
               ? baseEmbed({
-                  title: '🌧️ It is raining!',
-                  description: 'Your plots are watered for free today.',
+                  title: context.t('farm.rain_title'),
+                  description: context.t('farm.rain_body'),
                   color: COLORS.info,
                 })
-              : successEmbed('💧 Watering', `**${result.watered}** plot(s) watered.`),
+              : successEmbed(
+                  context.t('farm.water_title'),
+                  context.t('farm.water_body', { count: result.watered, note: '' }),
+                ),
           ],
           flags: MessageFlags.Ephemeral,
         });
@@ -110,8 +113,11 @@ const farmButtons: ButtonHandler = {
         await interaction.followUp({
           embeds: [
             successEmbed(
-              '🌿 Weeding',
-              `**${result.slots.length}** plot(s) cleared, **${result.weedsCollected}** weeds collected.`,
+              context.t('farm.weed_title'),
+              context.t('farm.weed_all_body', {
+                count: result.slots.length,
+                collected: result.weedsCollected,
+              }),
             ),
           ],
           flags: MessageFlags.Ephemeral,
@@ -126,8 +132,19 @@ const farmButtons: ButtonHandler = {
         await interaction.followUp({
           embeds: [
             successEmbed(
-              '🗺️ Plot unlocked',
-              `Plot **${result.slot}** for ${formatCoins(result.cost)}.\nFarm: ${result.grid.width}×${result.grid.height}${result.nextCost > 0 ? `\nProchaine : ${formatCoins(result.nextCost)}` : ''}`,
+              context.t('farm.plot_unlocked_title'),
+              context.t('farm.plot_unlocked_body', {
+                slot: result.slot,
+                cost: formatCoins(result.cost, false, context.locale),
+                width: result.grid.width,
+                height: result.grid.height,
+                nextPart:
+                  result.nextCost > 0
+                    ? context.t('farm.plot_unlocked_next', {
+                        cost: formatCoins(result.nextCost, false, context.locale),
+                      })
+                    : '',
+              }),
             ),
           ],
           flags: MessageFlags.Ephemeral,
@@ -143,8 +160,8 @@ const farmButtons: ButtonHandler = {
           await replyEphemeral(interaction, {
             embeds: [
               baseEmbed({
-                title: '🌱 No seeds',
-                description: 'Buy some with `/shop` or `/buy item:seed_wheat`.',
+                title: context.t('farm.no_seeds_title'),
+                description: context.t('farm.no_seeds_body'),
                 color: COLORS.warning,
               }),
             ],
@@ -156,8 +173,8 @@ const farmButtons: ButtonHandler = {
         await replyEphemeral(interaction, {
           embeds: [
             baseEmbed({
-              title: '🌱 What do you want to plant?',
-              description: 'The chosen crop will be sown on every empty plot.',
+              title: context.t('farm.plant_menu_title'),
+              description: context.t('farm.plant_menu_body'),
               color: COLORS.primary,
             }),
           ],
@@ -167,12 +184,20 @@ const farmButtons: ButtonHandler = {
                 namespace: 'farm',
                 action: 'plant',
                 ownerId: interaction.user.id,
-                placeholder: 'Pick a crop',
+                placeholder: context.t('farm.plant_menu_placeholder'),
                 choices: seeds.map((entry) => ({
-                  label: `${entry.crop.name} — ${entry.owned} seed(s)`,
+                  label: context.t('farm.plant_menu_choice_label', {
+                    name: entry.crop.name,
+                    owned: entry.owned,
+                  }),
                   value: entry.crop.key,
                   emoji: entry.crop.emoji,
-                  description: `${Math.round(entry.crop.growthSeconds / 60)} min • ${entry.crop.baseYield}× ${entry.crop.sellPrice} coins`,
+                  description: context.t('farm.plant_menu_choice_desc', {
+                    minutes: Math.round(entry.crop.growthSeconds / 60),
+                    yield: entry.crop.baseYield,
+                    price: entry.crop.sellPrice,
+                    coins: context.t('common.coins'),
+                  }),
                 })),
               }),
             ),
@@ -208,7 +233,13 @@ const inventoryButtons: ButtonHandler = {
 
       if (decision !== 'yes') {
         await interaction.update({
-          embeds: [baseEmbed({ title: '↩️ Cancelled', description: 'Nothing was discarded.', color: COLORS.neutral })],
+          embeds: [
+            baseEmbed({
+              title: context.t('economy.discard_cancelled_title'),
+              description: context.t('economy.discard_cancelled_body'),
+              color: COLORS.neutral,
+            }),
+          ],
           components: [],
         });
         return;
@@ -218,9 +249,14 @@ const inventoryButtons: ButtonHandler = {
       await withTransaction(async (tx) => {
         await inventoryService.consume(context.player.id, itemKey, quantity, tx);
       });
-      const item = inventoryService.requireItem(itemKey);
+      const item = inventoryService.requireItem(itemKey, context.locale);
       await interaction.update({
-        embeds: [successEmbed('🗑️ Items discarded', `${quantity}× ${item.emoji} ${item.name} discarded.`)],
+        embeds: [
+          successEmbed(
+            context.t('economy.discard_done_title'),
+            context.t('economy.discard_done_body', { quantity, emoji: item.emoji, name: item.name }),
+          ),
+        ],
         components: [],
       });
       return;
@@ -230,10 +266,8 @@ const inventoryButtons: ButtonHandler = {
       await replyEphemeral(interaction, {
         embeds: [
           baseEmbed({
-            title: '💰 Sell',
-            description:
-              'Use `/sell item:… quantity:all` to sell to the village,\n' +
-              'or `/auction sell` to offer your stack to other players (full price, 5% commission).',
+            title: context.t('economy.sell_menu_title'),
+            description: context.t('economy.sell_menu_body'),
             color: COLORS.gold,
           }),
         ],
@@ -290,7 +324,7 @@ const animalButtons: ButtonHandler = {
         await interaction.deferUpdate();
         const result = await animalService.collect(context.player, { all: true });
         const embed = successEmbed(
-          '🥚 Collection',
+          context.t('animals.collect_title'),
           result.lines.map((line) => `${line.emoji} **${line.quantity}× ${line.itemName}**`).join('\n'),
         );
         appendTracking(embed, result.tracking, context.t);
@@ -302,7 +336,12 @@ const animalButtons: ButtonHandler = {
         await interaction.deferUpdate();
         const result = await animalService.feed(context.player, { all: true });
         await interaction.followUp({
-          embeds: [successEmbed('🌾 Meal served', `**${result.fed}** animal(s) fed.`)],
+          embeds: [
+            successEmbed(
+              context.t('animals.feed_title'),
+              context.t('animals.feed_all_body', { count: result.fed }),
+            ),
+          ],
           flags: MessageFlags.Ephemeral,
         });
         await interaction.editReply(await animalsView(context));
@@ -315,8 +354,8 @@ const animalButtons: ButtonHandler = {
           await replyEphemeral(interaction, {
             embeds: [
               baseEmbed({
-                title: '🤍 Nobody to pet',
-                description: 'All your animals have had their share of affection recently.',
+                title: context.t('animals.no_pet_title'),
+                description: context.t('animals.no_pet_body'),
                 color: COLORS.info,
               }),
             ],
@@ -325,16 +364,19 @@ const animalButtons: ButtonHandler = {
         }
         const { select, selectRow } = await import('../../framework/ui');
         await replyEphemeral(interaction, {
-          embeds: [baseEmbed({ title: '🤍 Which one do you want to pet?', color: COLORS.primary })],
+          embeds: [baseEmbed({ title: context.t('animals.pet_menu_title'), color: COLORS.primary })],
           components: [
             selectRow(
               select({
                 namespace: 'animal',
                 action: 'pet',
                 ownerId: interaction.user.id,
-                placeholder: 'Pick an animal',
+                placeholder: context.t('animals.pet_menu_placeholder'),
                 choices: petable.slice(0, 25).map((animal) => ({
-                  label: `${animal.nickname ?? animal.name} — happiness ${animal.status.happiness}%`,
+                  label: context.t('animals.pet_menu_choice_label', {
+                    name: animal.nickname ?? animal.name,
+                    happiness: animal.status.happiness,
+                  }),
                   value: animal.id,
                   emoji: animal.emoji,
                 })),
@@ -377,8 +419,13 @@ const questButtons: ButtonHandler = {
       await interaction.followUp({
         embeds: [
           successEmbed(
-            `🎁 ${results.length} reward(s) claimed`,
-            `${formatCoins(totals.coins)} • ${totals.gems} 💎 • ${formatNumber(totals.xp)} ✨\n\n${results.map((result) => `• ${result.title}`).join('\n')}`,
+            context.t('progression.quest_claim_title', { count: results.length }),
+            context.t('progression.quest_claim_body', {
+              coins: formatCoins(totals.coins, false, context.locale),
+              gems: totals.gems,
+              xp: formatNumber(totals.xp, context.locale),
+              list: results.map((result) => `• ${result.title}`).join('\n'),
+            }),
           ),
         ],
         flags: MessageFlags.Ephemeral,
@@ -421,10 +468,14 @@ const achievementButtons: ButtonHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `🏆 ${names.length} achievement(s) claimed`,
+          context.t('progression.achv_claim_title', { count: names.length }),
           names.length > 0
-            ? `${formatCoins(coins)} • ${gems} 💎\n\n${names.map((name) => `• ${name}`).join('\n')}`
-            : 'No reward pending.',
+            ? context.t('progression.achv_claim_body', {
+                coins: formatCoins(coins, false, context.locale),
+                gems,
+                list: names.map((name) => `• ${name}`).join('\n'),
+              })
+            : context.t('progression.achv_claim_none'),
         ),
       ],
     });
@@ -439,7 +490,7 @@ const passButtons: ButtonHandler = {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const pass = await progressionService.getSeasonPass(context.player.id);
     if (!pass) {
-      await interaction.editReply({ content: 'No active pass.' });
+      await interaction.editReply({ content: context.t('progression.pass_none_content') });
       return;
     }
 
@@ -461,8 +512,13 @@ const passButtons: ButtonHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `🎟️ ${claimed} tier(s) claimed`,
-          claimed > 0 ? `${formatCoins(coins)} • ${gems} 💎` : 'No tier available.',
+          context.t('progression.pass_claim_result_title', { count: claimed }),
+          claimed > 0
+            ? context.t('progression.pass_claim_result_body', {
+                coins: formatCoins(coins, false, context.locale),
+                gems,
+              })
+            : context.t('progression.pass_claim_result_none'),
         ),
       ],
     });
@@ -483,7 +539,7 @@ const craftButtons: ButtonHandler = {
       await interaction.deferUpdate();
       const result = await craftService.collectProduction(context.player, { all: true });
       const embed = successEmbed(
-        '📦 Production collected',
+        context.t('craft.collect_title'),
         result.lines.map((line) => `${line.emoji} **${line.quantity}× ${line.itemName}**`).join('\n'),
       );
       appendTracking(embed, result.tracking, context.t);
@@ -494,7 +550,7 @@ const craftButtons: ButtonHandler = {
 
     if (parsed.action === 'recipes') {
       await replyEphemeral(interaction, {
-        content: 'Use `/recipes` for the full list and `/craft` to start a production run.',
+        content: context.t('craft.recipes_hint'),
       });
       return;
     }
@@ -529,10 +585,10 @@ const coopButtons: ButtonHandler = {
           namespace: 'coop',
           action: 'create',
           ownerId: interaction.user.id,
-          title: 'Create a co-op',
+          title: context.t('coop.create_modal_title'),
           fieldId: 'name',
-          label: 'Co-op name',
-          placeholder: 'The Wheat Friends',
+          label: context.t('coop.create_modal_label'),
+          placeholder: context.t('coop.create_modal_placeholder'),
           maxLength: 32,
         }),
       );
@@ -541,14 +597,18 @@ const coopButtons: ButtonHandler = {
 
     if (parsed.action === 'contribute') {
       await interaction.showModal(
-        quantityModal({
-          namespace: 'coop',
-          action: 'contribute',
-          ownerId: interaction.user.id,
-          title: 'Contribute to the treasury',
-          label: 'Amount in coins',
-          placeholder: 'Ex. 5000',
-        }),
+        quantityModal(
+          {
+            namespace: 'coop',
+            action: 'contribute',
+            ownerId: interaction.user.id,
+            title: context.t('coop.contribute_modal_title'),
+            label: context.t('coop.contribute_modal_label'),
+            placeholder: context.t('coop.contribute_modal_placeholder'),
+          },
+          context.locale,
+          context.t,
+        ),
       );
       return;
     }
@@ -633,7 +693,7 @@ const settingsButtons: ButtonHandler = {
     const field = paramString(parsed, 0);
     const allowed = ['notifyCrops', 'notifyAnimals', 'notifyEnergy', 'notifyMarket', 'dailyReminder', 'dmNotifications'];
     if (!allowed.includes(field)) {
-      await replyEphemeral(interaction, { content: 'Unknown setting.' });
+      await replyEphemeral(interaction, { content: context.t('settings.unknown_field') });
       return;
     }
 
@@ -644,11 +704,12 @@ const settingsButtons: ButtonHandler = {
     await replyEphemeral(interaction, {
       embeds: [
         successEmbed(
-          '⚙️ Setting updated',
-          `\`${field}\` is now **${!current ? 'enabled' : 'disabled'}**.` +
-            (!settings?.dmNotifications && !current
-              ? "\n\n⚠️ Also enable **direct message notifications** to receive alerts."
-              : ''),
+          context.t('settings.toggle_title'),
+          context.t('settings.toggle_body', {
+            field,
+            state: !current ? context.t('common.enabled') : context.t('common.disabled'),
+          }) +
+            (!settings?.dmNotifications && !current ? context.t('settings.toggle_dm_warning') : ''),
         ),
       ],
     });
@@ -665,8 +726,8 @@ const prestigeButtons: ButtonHandler = {
       await interaction.update({
         embeds: [
           baseEmbed({
-            title: '↩️ Rebirth cancelled',
-            description: 'Your farm is untouched.',
+            title: context.t('progression.prestige_cancelled_title'),
+            description: context.t('progression.prestige_cancelled_body'),
             color: COLORS.neutral,
           }),
         ],
@@ -680,14 +741,18 @@ const prestigeButtons: ButtonHandler = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          `🌟 Renaissance ${result.newPrestige}`,
+          context.t('progression.prestige_done_title', { prestige: result.newPrestige }),
           [
-            `Permanent multiplier: **×${result.multiplier.toFixed(2)}** on yield and XP.`,
-            `Plots kept: **${result.plotsKept}**`,
-            `Coins kept: **${formatCoins(result.coinsKept)}**`,
-            `Prestige points gained: **${result.pointsGained}**`,
+            context.t('progression.prestige_done_multiplier', {
+              multiplier: result.multiplier.toFixed(2),
+            }),
+            context.t('progression.prestige_done_plots', { count: result.plotsKept }),
+            context.t('progression.prestige_done_coins', {
+              value: formatCoins(result.coinsKept, false, context.locale),
+            }),
+            context.t('progression.prestige_done_points', { count: result.pointsGained }),
             '',
-            'A new adventure begins. Good luck, farmer!',
+            context.t('progression.prestige_done_footer'),
           ].join('\n'),
         ),
       ],
@@ -737,9 +802,9 @@ const profileButtons: ButtonHandler = {
   namespace: 'profile',
   actions: ['stats'],
 
-  async execute(interaction: ButtonInteraction, parsed): Promise<void> {
+  async execute(interaction: ButtonInteraction, parsed, context): Promise<void> {
     await replyEphemeral(interaction, {
-      content: `Use \`/stats user:<@${paramString(parsed, 0)}>\` for the full breakdown.`,
+      content: context.t('profile.stats_hint', { id: paramString(parsed, 0) }),
     });
   },
 };
@@ -756,7 +821,7 @@ const langButtons: ButtonHandler = {
   async execute(interaction: ButtonInteraction, parsed, context): Promise<void> {
     const requested = paramString(parsed, 0);
     if (!isSupported(requested)) {
-      await replyEphemeral(interaction, { content: 'Unknown language.' });
+      await replyEphemeral(interaction, { content: context.t('settings.unknown_language_content') });
       return;
     }
 

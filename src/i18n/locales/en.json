@@ -183,7 +183,18 @@
     "new_plot_complete": "🏆 Estate complete!",
     "crops_title": "🌾 Crop encyclopedia",
     "crops_empty": "No crop matches this filter.",
-    "crops_footer": "{count} crop(s) • hourly yield assumes 70% soil, in season"
+    "crops_footer": "{count} crop(s) • hourly yield assumes 70% soil, in season",
+    "weed_all_body": "**{count}** plot(s) cleared, **{collected}** weeds collected.",
+    "plot_unlocked_title": "🗺️ Plot unlocked",
+    "plot_unlocked_body": "Plot **{slot}** for {cost}.\nFarm: {width}×{height}{nextPart}",
+    "plot_unlocked_next": "\nNext: {cost}",
+    "no_seeds_title": "🌱 No seeds",
+    "no_seeds_body": "Buy some with `/shop` or `/buy item:seed_wheat`.",
+    "plant_menu_title": "🌱 What do you want to plant?",
+    "plant_menu_body": "The chosen crop will be sown on every empty plot.",
+    "plant_menu_placeholder": "Pick a crop",
+    "plant_menu_choice_label": "{name} — {owned} seed(s)",
+    "plant_menu_choice_desc": "{minutes} min • {yield}× {price} {coins}"
   },
   "harvest": {
     "nothing_ready": "Nothing is ready yet. Check `/farm` for timers.",
@@ -371,7 +382,8 @@
     "balance_coins_line": "{coin} **{coins}** coins on hand",
     "balance_gems_line": "{gem} **{gems}** gems",
     "balance_bank_line": "🏦 **{bank}** in the bank (capacity {capacity})",
-    "balance_networth_line": "Total net worth: **{total}**"
+    "balance_networth_line": "Total net worth: **{total}**",
+    "stats_hint": "Use `/stats user:<@{id}>` for the full breakdown."
   },
   "settings": {
     "language_title": "Language",
@@ -404,7 +416,12 @@
     "trades_refused": "❌ refused",
     "crop_alerts_button": "Crop alerts",
     "animal_alerts_button": "Animal alerts",
-    "daily_reminder_button": "Daily reminder"
+    "daily_reminder_button": "Daily reminder",
+    "unknown_field": "Unknown setting.",
+    "unknown_language_content": "Unknown language.",
+    "toggle_title": "⚙️ Setting updated",
+    "toggle_body": "`{field}` is now **{state}**.",
+    "toggle_dm_warning": "\n\n⚠️ Also enable **direct message notifications** to receive alerts."
   },
   "leaderboard": {
     "wealth": "Wealth",
@@ -530,7 +547,20 @@
     "nothing_yet": "*nothing yet*",
     "coins_line": "🪙 {coins} coins",
     "add_item_button": "Add an item",
-    "add_coins_button": "Add coins"
+    "add_coins_button": "Add coins",
+    "add_coins_modal_title": "Coins to offer",
+    "add_coins_modal_label": "Amount in coins",
+    "add_coins_modal_placeholder": "Ex. 2500",
+    "no_item_title": "📦 Nothing to trade",
+    "no_item_body": "Your inventory holds no tradable item.",
+    "pick_item_title": "📦 Which item do you want to offer?",
+    "pick_item_placeholder": "Pick an item",
+    "completed_title": "🤝 Trade completed",
+    "completed_body": "Items and coins have been transferred. A transfer tax was taken on the coins exchanged.",
+    "partner_fallback": "your partner",
+    "confirm_recorded": "✅ Your confirmation is recorded. Waiting for your partner.",
+    "cancelled_title": "✖️ Trade cancelled",
+    "cancelled_body": "No item changed hands."
   },
   "social": {
     "cannot_help_self": "You cannot help yourself.",
@@ -584,7 +614,13 @@
     "breed_success_line2": "Inherited production multiplier: **×{multiplier}**",
     "breed_success_footer": "*Breed your best animals to improve your bloodline generation after generation.*",
     "sell_title": "{emoji} {name} sold",
-    "sell_body": "You receive **{price}**."
+    "sell_body": "You receive **{price}**.",
+    "feed_all_body": "**{count}** animal(s) fed.",
+    "no_pet_title": "🤍 Nobody to pet",
+    "no_pet_body": "All your animals have had their share of affection recently.",
+    "pet_menu_title": "🤍 Which one do you want to pet?",
+    "pet_menu_placeholder": "Pick an animal",
+    "pet_menu_choice_label": "{name} — happiness {happiness}%"
   },
   "quests": {
     "title": "📋 {name}'s quests",
@@ -661,7 +697,13 @@
     "treasury_title": "💰 {name} treasury",
     "treasury_body": "**{treasury}**\n\nOnly the leader and officers can withdraw.",
     "objectives_title": "🎯 Goals of {name}",
-    "objectives_line": "**{title}** {check}\n{description}\n{bar} {progress}/{target}\n🎁 {coins} shared + {gems} 💎 each"
+    "objectives_line": "**{title}** {check}\n{description}\n{bar} {progress}/{target}\n🎁 {coins} shared + {gems} 💎 each",
+    "create_modal_title": "Create a co-op",
+    "create_modal_label": "Co-op name",
+    "create_modal_placeholder": "The Wheat Friends",
+    "contribute_modal_title": "Contribute to the treasury",
+    "contribute_modal_label": "Amount in coins",
+    "contribute_modal_placeholder": "Ex. 5000"
   },
   "craft": {
     "queue_title": "🛠️ Production queue",
@@ -700,7 +742,9 @@
     "build_status_tier": "tier {tier}",
     "build_cost_line": "Cost: {cost}",
     "build_capacity_line": "Capacity: **{capacity}**",
-    "build_slots_line": "Production slots: **{slots}**"
+    "build_slots_line": "Production slots: **{slots}**",
+    "collect_title": "📦 Production collected",
+    "recipes_hint": "Use `/recipes` for the full list and `/craft` to start a production run."
   },
   "help": {
     "title": "🌾 Harvester help",
@@ -824,7 +868,24 @@
     "vote_wait_line": "⏳ Next vote available {relative}",
     "vote_ready_line": "✅ You can vote now!",
     "vote_footer_line": "*Gems cannot be bought with real money: voting is the fastest way to get them.*",
-    "vote_button": "Vote on top.gg"
+    "vote_button": "Vote on top.gg",
+    "quest_claim_title": "🎁 {count} reward(s) claimed",
+    "quest_claim_body": "{coins} • {gems} 💎 • {xp} ✨\n\n{list}",
+    "achv_claim_title": "🏆 {count} achievement(s) claimed",
+    "achv_claim_body": "{coins} • {gems} 💎\n\n{list}",
+    "achv_claim_none": "No reward pending.",
+    "pass_none_content": "No active pass.",
+    "pass_claim_result_title": "🎟️ {count} tier(s) claimed",
+    "pass_claim_result_body": "{coins} • {gems} 💎",
+    "pass_claim_result_none": "No tier available.",
+    "prestige_cancelled_title": "↩️ Rebirth cancelled",
+    "prestige_cancelled_body": "Your farm is untouched.",
+    "prestige_done_title": "🌟 Rebirth {prestige}",
+    "prestige_done_multiplier": "Permanent multiplier: **×{multiplier}** on yield and XP.",
+    "prestige_done_plots": "Plots kept: **{count}**",
+    "prestige_done_coins": "Coins kept: **{value}**",
+    "prestige_done_points": "Prestige points gained: **{count}**",
+    "prestige_done_footer": "A new adventure begins. Good luck, farmer!"
   },
   "economy": {
     "invalid_quantity_or_all": "Invalid quantity: give a number or \"all\".",
@@ -862,7 +923,13 @@
     "bank_next_tier": "Next tier: level {level} required, {cost} → capacity {capacity}",
     "bank_max_tier": "🏆 Maximum tier reached.",
     "gift_title": "🎁 Gift sent",
-    "gift_body": "{target} receives **{received}**.\n*Transfer tax: {tax} ({rate}%).*"
+    "gift_body": "{target} receives **{received}**.\n*Transfer tax: {tax} ({rate}%).*",
+    "discard_cancelled_title": "↩️ Cancelled",
+    "discard_cancelled_body": "Nothing was discarded.",
+    "discard_done_title": "🗑️ Items discarded",
+    "discard_done_body": "{quantity}× {emoji} {name} discarded.",
+    "sell_menu_title": "💰 Sell",
+    "sell_menu_body": "Use `/sell item:… quantity:all` to sell to the village,\nor `/auction sell` to offer your stack to other players (full price, 5% commission)."
   },
   "errors": {
     "plot_locked": "Plot {slot} is locked. Unlock it with `/buy-plot`.",

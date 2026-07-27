@@ -183,7 +183,18 @@
     "new_plot_complete": "🏆 Domaine complet !",
     "crops_title": "🌾 Encyclopédie des cultures",
     "crops_empty": "Aucune culture ne correspond à ce filtre.",
-    "crops_footer": "{count} culture(s) • rendement horaire estimé à 70% de sol, en saison"
+    "crops_footer": "{count} culture(s) • rendement horaire estimé à 70% de sol, en saison",
+    "weed_all_body": "**{count}** parcelle(s) nettoyée(s), **{collected}** mauvaises herbes récoltées.",
+    "plot_unlocked_title": "🗺️ Parcelle débloquée",
+    "plot_unlocked_body": "Parcelle **{slot}** pour {cost}.\nFerme : {width}×{height}{nextPart}",
+    "plot_unlocked_next": "\nProchaine : {cost}",
+    "no_seeds_title": "🌱 Aucune graine",
+    "no_seeds_body": "Achetez-en avec `/shop` ou `/buy item:seed_wheat`.",
+    "plant_menu_title": "🌱 Que voulez-vous planter ?",
+    "plant_menu_body": "La culture choisie sera semée sur chaque parcelle vide.",
+    "plant_menu_placeholder": "Choisir une culture",
+    "plant_menu_choice_label": "{name} — {owned} graine(s)",
+    "plant_menu_choice_desc": "{minutes} min • {yield}× {price} {coins}"
   },
   "plant": {
     "success": "🌱 {emoji} **{crop}** planté sur la parcelle {slot}. Récolte {when}.",
@@ -288,7 +299,20 @@
     "nothing_yet": "*rien pour l'instant*",
     "coins_line": "🪙 {coins} pièces",
     "add_item_button": "Ajouter un objet",
-    "add_coins_button": "Ajouter des pièces"
+    "add_coins_button": "Ajouter des pièces",
+    "add_coins_modal_title": "Pièces à offrir",
+    "add_coins_modal_label": "Montant en pièces",
+    "add_coins_modal_placeholder": "Ex. 2500",
+    "no_item_title": "📦 Rien à échanger",
+    "no_item_body": "Votre inventaire ne contient aucun objet échangeable.",
+    "pick_item_title": "📦 Quel objet voulez-vous offrir ?",
+    "pick_item_placeholder": "Choisir un objet",
+    "completed_title": "🤝 Échange terminé",
+    "completed_body": "Les objets et les pièces ont été transférés. Une taxe de transfert a été prélevée sur les pièces échangées.",
+    "partner_fallback": "votre partenaire",
+    "confirm_recorded": "✅ Votre confirmation est enregistrée. En attente de votre partenaire.",
+    "cancelled_title": "✖️ Échange annulé",
+    "cancelled_body": "Aucun objet n'a changé de main."
   },
   "social": {
     "cannot_help_self": "Vous ne pouvez pas vous aider vous-même.",
@@ -342,7 +366,13 @@
     "breed_success_line2": "Multiplicateur de production hérité : **×{multiplier}**",
     "breed_success_footer": "*Croisez vos meilleurs animaux pour améliorer votre lignée génération après génération.*",
     "sell_title": "{emoji} {name} vendu",
-    "sell_body": "Vous recevez **{price}**."
+    "sell_body": "Vous recevez **{price}**.",
+    "feed_all_body": "**{count}** animal(aux) nourri(s).",
+    "no_pet_title": "🤍 Personne à caresser",
+    "no_pet_body": "Tous vos animaux ont reçu leur dose d'affection récemment.",
+    "pet_menu_title": "🤍 Lequel voulez-vous caresser ?",
+    "pet_menu_placeholder": "Choisir un animal",
+    "pet_menu_choice_label": "{name} — bonheur {happiness}%"
   },
   "inventory": {
     "title": "🎒 Inventaire de {name}",
@@ -440,7 +470,13 @@
     "treasury_title": "💰 Trésorerie de {name}",
     "treasury_body": "**{treasury}**\n\nSeuls le chef et les officiers peuvent retirer des fonds.",
     "objectives_title": "🎯 Objectifs de {name}",
-    "objectives_line": "**{title}** {check}\n{description}\n{bar} {progress}/{target}\n🎁 {coins} partagés + {gems} 💎 chacun"
+    "objectives_line": "**{title}** {check}\n{description}\n{bar} {progress}/{target}\n🎁 {coins} partagés + {gems} 💎 chacun",
+    "create_modal_title": "Créer une coopérative",
+    "create_modal_label": "Nom de la coopérative",
+    "create_modal_placeholder": "Les Amis du Blé",
+    "contribute_modal_title": "Contribuer à la trésorerie",
+    "contribute_modal_label": "Montant en pièces",
+    "contribute_modal_placeholder": "Ex. 5000"
   },
   "craft": {
     "queue_title": "🛠️ File de production",
@@ -479,7 +515,9 @@
     "build_status_tier": "palier {tier}",
     "build_cost_line": "Coût : {cost}",
     "build_capacity_line": "Capacité : **{capacity}**",
-    "build_slots_line": "Emplacements de production : **{slots}**"
+    "build_slots_line": "Emplacements de production : **{slots}**",
+    "collect_title": "📦 Production collectée",
+    "recipes_hint": "Utilisez `/recipes` pour la liste complète et `/craft` pour démarrer une production."
   },
   "help": {
     "title": "🌾 Aide de Harvester",
@@ -603,7 +641,24 @@
     "vote_wait_line": "⏳ Prochain vote disponible {relative}",
     "vote_ready_line": "✅ Vous pouvez voter maintenant !",
     "vote_footer_line": "*Les gemmes ne s'achètent pas avec de l'argent réel : voter est le moyen le plus rapide d'en obtenir.*",
-    "vote_button": "Voter sur top.gg"
+    "vote_button": "Voter sur top.gg",
+    "quest_claim_title": "🎁 {count} récompense(s) réclamée(s)",
+    "quest_claim_body": "{coins} • {gems} 💎 • {xp} ✨\n\n{list}",
+    "achv_claim_title": "🏆 {count} succès réclamé(s)",
+    "achv_claim_body": "{coins} • {gems} 💎\n\n{list}",
+    "achv_claim_none": "Aucune récompense en attente.",
+    "pass_none_content": "Aucun passe actif.",
+    "pass_claim_result_title": "🎟️ {count} palier(s) réclamé(s)",
+    "pass_claim_result_body": "{coins} • {gems} 💎",
+    "pass_claim_result_none": "Aucun palier disponible.",
+    "prestige_cancelled_title": "↩️ Renaissance annulée",
+    "prestige_cancelled_body": "Votre ferme n'a pas été modifiée.",
+    "prestige_done_title": "🌟 Renaissance {prestige}",
+    "prestige_done_multiplier": "Multiplicateur permanent : **×{multiplier}** sur le rendement et l'XP.",
+    "prestige_done_plots": "Parcelles conservées : **{count}**",
+    "prestige_done_coins": "Pièces conservées : **{value}**",
+    "prestige_done_points": "Points de prestige gagnés : **{count}**",
+    "prestige_done_footer": "Une nouvelle aventure commence. Bonne chance, fermier !"
   },
   "economy": {
     "invalid_quantity_or_all": "Quantité invalide : indiquez un nombre ou « all ».",
@@ -641,7 +696,13 @@
     "bank_next_tier": "Palier suivant : niveau {level} requis, {cost} → capacité {capacity}",
     "bank_max_tier": "🏆 Palier maximum atteint.",
     "gift_title": "🎁 Cadeau envoyé",
-    "gift_body": "{target} reçoit **{received}**.\n*Taxe de transfert : {tax} ({rate} %).*"
+    "gift_body": "{target} reçoit **{received}**.\n*Taxe de transfert : {tax} ({rate} %).*",
+    "discard_cancelled_title": "↩️ Annulé",
+    "discard_cancelled_body": "Rien n'a été jeté.",
+    "discard_done_title": "🗑️ Objets jetés",
+    "discard_done_body": "{quantity}× {emoji} {name} jeté(s).",
+    "sell_menu_title": "💰 Vendre",
+    "sell_menu_body": "Utilisez `/sell item:… quantity:all` pour vendre au village,\nou `/auction sell` pour proposer votre lot à d'autres joueurs (plein prix, 5% de commission)."
   },
   "errors": {
     "plot_locked": "La parcelle {slot} est verrouillée. Débloquez-la avec `/buy-plot`.",
@@ -1033,7 +1094,8 @@
     "balance_coins_line": "{coin} **{coins}** pièces en poche",
     "balance_gems_line": "{gem} **{gems}** gemmes",
     "balance_bank_line": "🏦 **{bank}** en banque (capacité {capacity})",
-    "balance_networth_line": "Fortune totale : **{total}**"
+    "balance_networth_line": "Fortune totale : **{total}**",
+    "stats_hint": "Utilisez `/stats user:<@{id}>` pour le détail complet."
   },
   "settings": {
     "language_title": "Langue",
@@ -1066,7 +1128,12 @@
     "trades_refused": "❌ refusés",
     "crop_alerts_button": "Alertes récoltes",
     "animal_alerts_button": "Alertes animaux",
-    "daily_reminder_button": "Rappel quotidien"
+    "daily_reminder_button": "Rappel quotidien",
+    "unknown_field": "Paramètre inconnu.",
+    "unknown_language_content": "Langue inconnue.",
+    "toggle_title": "⚙️ Paramètre mis à jour",
+    "toggle_body": "`{field}` est maintenant **{state}**.",
+    "toggle_dm_warning": "\n\n⚠️ Activez aussi les **notifications par message privé** pour recevoir les alertes."
   },
   "leaderboard": {
     "wealth": "Richesse",
