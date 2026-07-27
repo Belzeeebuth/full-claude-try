@@ -11,21 +11,25 @@ const tradeItemSelect: SelectHandler = {
   namespace: 'trade',
   actions: ['pick_item'],
 
-  async execute(interaction, parsed): Promise<void> {
+  async execute(interaction, parsed, context): Promise<void> {
     const tradeId = paramString(parsed, 0);
     const itemKey = interaction.values[0];
     if (!itemKey) return;
 
     await interaction.showModal(
-      quantityModal({
-        namespace: 'trade',
-        action: 'item_qty',
-        ownerId: interaction.user.id,
-        params: [tradeId, itemKey],
-        title: 'Quantity to offer',
-        label: 'How many?',
-        placeholder: 'Ex. 5',
-      }),
+      quantityModal(
+        {
+          namespace: 'trade',
+          action: 'item_qty',
+          ownerId: interaction.user.id,
+          params: [tradeId, itemKey],
+          title: context.t('trade.item_qty_modal_title'),
+          label: context.t('trade.item_qty_modal_label'),
+          placeholder: context.t('trade.item_qty_modal_placeholder'),
+        },
+        context.locale,
+        context.t,
+      ),
     );
   },
 };

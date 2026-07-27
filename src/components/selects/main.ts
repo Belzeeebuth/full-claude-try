@@ -46,15 +46,19 @@ const shopBuy: SelectHandler = {
     // Une quantité personnalisée est demandée par modal : plus souple qu'une
     // liste figée de boutons 1/5/10.
     await interaction.showModal(
-      quantityModal({
-        namespace: 'shop',
-        action: 'buy_qty',
-        ownerId: interaction.user.id,
-        params: [itemKey],
-        title: 'Quantity to buy',
-        label: 'How many do you want?',
-        placeholder: 'Ex. 10',
-      }),
+      quantityModal(
+        {
+          namespace: 'shop',
+          action: 'buy_qty',
+          ownerId: interaction.user.id,
+          params: [itemKey],
+          title: context.t('shop.buy_qty_modal_title'),
+          label: context.t('shop.buy_qty_modal_label'),
+          placeholder: context.t('shop.buy_qty_modal_placeholder'),
+        },
+        context.locale,
+        context.t,
+      ),
     );
   },
 };
@@ -83,11 +87,14 @@ const plantSelect: SelectHandler = {
 
     const result = await farmService.plant(context.player, { cropKey, quantity: 64 });
     const embed = successEmbed(
-      `${result.emoji} ${result.cropName} planted`,
+      context.t('farm.plant_success_title', { emoji: result.emoji, cropName: result.cropName }),
       [
-        `**${result.slots.length}** plot(s): ${result.slots.map((slot) => `\`${slot}\``).join(' ')}`,
-        `Harvest ${discordTimestamp(result.readyAt, 'R')}`,
-        result.offSeason ? '⚠️ *Out of season: reduced yield.*' : '',
+        context.t('farm.plant_select_slots', {
+          count: result.slots.length,
+          slots: result.slots.map((slot) => `\`${slot}\``).join(' '),
+        }),
+        context.t('farm.plant_select_harvest', { relative: discordTimestamp(result.readyAt, 'R') }),
+        result.offSeason ? context.t('farm.plant_select_off_season') : '',
       ]
         .filter(Boolean)
         .join('\n'),
@@ -111,8 +118,12 @@ const animalPet: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          `${result.emoji} ${result.name} is delighted!`,
-          `Happiness +${result.gain} → ${gaugeBar(result.happiness, 8)} ${result.happiness}%`,
+          context.t('animals.pet_title', { emoji: result.emoji, name: result.name }),
+          context.t('animals.pet_body', {
+            gain: result.gain,
+            bar: gaugeBar(result.happiness, 8),
+            happiness: result.happiness,
+          }),
         ),
       ],
       flags: MessageFlags.Ephemeral,
@@ -134,11 +145,21 @@ const buildingUpgrade: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          `${result.emoji} ${result.name} — ${result.built ? 'built!' : `tier ${result.tier}`}`,
+          context.t('craft.build_title', {
+            emoji: result.emoji,
+            name: result.name,
+            status: result.built
+              ? context.t('craft.build_status_built')
+              : context.t('craft.build_status_tier', { tier: result.tier }),
+          }),
           [
-            `Cost: ${formatCoins(result.costCoins)}`,
-            result.capacity > 0 ? `Capacity: **${formatNumber(result.capacity)}**` : '',
-            result.slots > 0 ? `Emplacements : **${result.slots}**` : '',
+            context.t('craft.build_cost_line', { cost: formatCoins(result.costCoins, false, context.locale) }),
+            result.capacity > 0
+              ? context.t('craft.build_capacity_line', {
+                  capacity: formatNumber(result.capacity, context.locale),
+                })
+              : '',
+            result.slots > 0 ? context.t('craft.build_slots_line', { slots: result.slots }) : '',
           ]
             .filter(Boolean)
             .join('\n'),
@@ -164,8 +185,12 @@ const questReroll: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          '🔄 Quest rerolled',
-          `${result.usedToken ? '🎫 Token used.' : `Cost: ${formatCoins(result.cost)}`}\n\n**${result.newQuest.title}**\n${result.newQuest.description}`,
+          context.t('quests.reroll_result_title'),
+          `${
+            result.usedToken
+              ? context.t('quests.reroll_token_used')
+              : context.t('quests.reroll_cost_line', { cost: formatCoins(result.cost, false, context.locale) })
+          }\n\n**${result.newQuest.title}**\n${result.newQuest.description}`,
         ),
       ],
       flags: MessageFlags.Ephemeral,
@@ -189,8 +214,8 @@ const coopJoin: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          `Welcome to ${info.emblem} ${info.name}!`,
-          `You immediately benefit from the level ${info.level} bonuses.`,
+          context.t('coop.join_title', { emblem: info.emblem, name: info.name }),
+          context.t('coop.join_body', { level: info.level }),
         ),
       ],
       flags: MessageFlags.Ephemeral,
@@ -213,8 +238,13 @@ const auctionBuy: SelectHandler = {
     await interaction.followUp({
       embeds: [
         successEmbed(
-          '🛍️ Purchase completed',
-          `**${result.quantity}× ${result.emoji} ${result.itemName}** for ${formatCoins(result.price)}.`,
+          context.t('trade.buy_title'),
+          context.t('trade.buy_body', {
+            quantity: result.quantity,
+            emoji: result.emoji,
+            name: result.itemName,
+            price: formatCoins(result.price, false, context.locale),
+          }),
         ),
       ],
       flags: MessageFlags.Ephemeral,

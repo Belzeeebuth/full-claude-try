@@ -194,7 +194,10 @@
     "plant_menu_body": "La culture choisie sera semée sur chaque parcelle vide.",
     "plant_menu_placeholder": "Choisir une culture",
     "plant_menu_choice_label": "{name} — {owned} graine(s)",
-    "plant_menu_choice_desc": "{minutes} min • {yield}× {price} {coins}"
+    "plant_menu_choice_desc": "{minutes} min • {yield}× {price} {coins}",
+    "plant_select_slots": "**{count}** parcelle(s) : {slots}",
+    "plant_select_harvest": "Récolte {relative}",
+    "plant_select_off_season": "⚠️ *Hors saison : rendement réduit.*"
   },
   "plant": {
     "success": "🌱 {emoji} **{crop}** planté sur la parcelle {slot}. Récolte {when}.",
@@ -232,7 +235,10 @@
     "in_stock": "{remaining} en stock",
     "buy_placeholder": "Acheter un objet",
     "purchase_title": "🛒 Achat effectué",
-    "buy_body": "{quantity}× {emoji} **{name}** pour **{amount}**.\nStock restant : {stock}"
+    "buy_body": "{quantity}× {emoji} **{name}** pour **{amount}**.\nStock restant : {stock}",
+    "buy_qty_modal_title": "Quantité à acheter",
+    "buy_qty_modal_label": "Combien en voulez-vous ?",
+    "buy_qty_modal_placeholder": "Ex. 10"
   },
   "market": {
     "title": "📊 Marché de Val-Verdoyant",
@@ -312,7 +318,10 @@
     "partner_fallback": "votre partenaire",
     "confirm_recorded": "✅ Votre confirmation est enregistrée. En attente de votre partenaire.",
     "cancelled_title": "✖️ Échange annulé",
-    "cancelled_body": "Aucun objet n'a changé de main."
+    "cancelled_body": "Aucun objet n'a changé de main.",
+    "item_qty_modal_title": "Quantité à offrir",
+    "item_qty_modal_label": "Combien ?",
+    "item_qty_modal_placeholder": "Ex. 5"
   },
   "social": {
     "cannot_help_self": "Vous ne pouvez pas vous aider vous-même.",

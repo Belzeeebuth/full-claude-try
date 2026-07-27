@@ -194,7 +194,10 @@
     "plant_menu_body": "The chosen crop will be sown on every empty plot.",
     "plant_menu_placeholder": "Pick a crop",
     "plant_menu_choice_label": "{name} — {owned} seed(s)",
-    "plant_menu_choice_desc": "{minutes} min • {yield}× {price} {coins}"
+    "plant_menu_choice_desc": "{minutes} min • {yield}× {price} {coins}",
+    "plant_select_slots": "**{count}** plot(s): {slots}",
+    "plant_select_harvest": "Harvest {relative}",
+    "plant_select_off_season": "⚠️ *Out of season: reduced yield.*"
   },
   "harvest": {
     "nothing_ready": "Nothing is ready yet. Check `/farm` for timers.",
@@ -480,7 +483,10 @@
     "in_stock": "{remaining} in stock",
     "buy_placeholder": "Buy an item",
     "purchase_title": "🛒 Purchase complete",
-    "buy_body": "{quantity}× {emoji} **{name}** for **{amount}**.\nStock remaining: {stock}"
+    "buy_body": "{quantity}× {emoji} **{name}** for **{amount}**.\nStock remaining: {stock}",
+    "buy_qty_modal_title": "Quantity to buy",
+    "buy_qty_modal_label": "How many do you want?",
+    "buy_qty_modal_placeholder": "Ex. 10"
   },
   "market": {
     "title": "📊 Greenvale market",
@@ -560,7 +566,10 @@
     "partner_fallback": "your partner",
     "confirm_recorded": "✅ Your confirmation is recorded. Waiting for your partner.",
     "cancelled_title": "✖️ Trade cancelled",
-    "cancelled_body": "No item changed hands."
+    "cancelled_body": "No item changed hands.",
+    "item_qty_modal_title": "Quantity to offer",
+    "item_qty_modal_label": "How many?",
+    "item_qty_modal_placeholder": "Ex. 5"
   },
   "social": {
     "cannot_help_self": "You cannot help yourself.",
