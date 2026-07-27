@@ -120,13 +120,13 @@ export function salesTax(amount: number, level: number, balance: Balance): numbe
   return Math.ceil(amount * balance.economy.salesTaxRate);
 }
 
-/** Tendance lisible : symbole et libellé. */
-export function describeTrend(trend: number): { emoji: string; label: string } {
-  if (trend >= 0.1) return { emoji: '📈', label: 'forte hausse' };
-  if (trend >= 0.02) return { emoji: '↗️', label: 'hausse' };
-  if (trend <= -0.1) return { emoji: '📉', label: 'sharp drop' };
-  if (trend <= -0.02) return { emoji: '↘️', label: 'baisse' };
-  return { emoji: '➡️', label: 'stable' };
+/** Tendance lisible : symbole et clé de libellé (résolue par l'appelant via son traducteur). */
+export function describeTrend(trend: number): { emoji: string; labelKey: string } {
+  if (trend >= 0.1) return { emoji: '📈', labelKey: 'market.trend_strong_rise' };
+  if (trend >= 0.02) return { emoji: '↗️', labelKey: 'market.trend_rise' };
+  if (trend <= -0.1) return { emoji: '📉', labelKey: 'market.trend_strong_drop' };
+  if (trend <= -0.02) return { emoji: '↘️', labelKey: 'market.trend_drop' };
+  return { emoji: '➡️', labelKey: 'market.trend_stable' };
 }
 
 /**

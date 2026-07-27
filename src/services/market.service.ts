@@ -12,6 +12,7 @@ import {
 import { qualityMultiplier } from '../game/quality';
 import { dailyRng, liveRng } from '../game/rng';
 import { gameError } from '../utils/errors';
+import { translatorFor, DEFAULT_LOCALE } from '../i18n';
 import { moduleLogger } from '../utils/logger';
 import * as economyRepo from '../repositories/economy.repo';
 import * as inventoryRepo from '../repositories/inventory.repo';
@@ -58,6 +59,7 @@ export async function getMarket(
   locale?: string,
 ): Promise<MarketRow[]> {
   const config = getConfig(locale);
+  const t = translatorFor(locale ?? DEFAULT_LOCALE);
   const world = await getWorldState();
   const rows = await economyRepo.listMarket({ category: options.category });
 
@@ -77,7 +79,7 @@ export async function getMarket(
       basePrice: row.basePrice,
       previousPrice: row.previousPrice,
       trend,
-      trendLabel: described.label,
+      trendLabel: t(described.labelKey),
       trendEmoji: described.emoji,
       demandIndex: Number(row.demandIndex),
       featured: row.featured,

@@ -7,7 +7,6 @@ import * as marketService from '../services/market.service';
 import * as inventoryService from '../services/inventory.service';
 import * as inventoryRepo from '../repositories/inventory.repo';
 import * as playerRepo from '../repositories/player.repo';
-import { describeTrend } from '../game/market';
 import { gameError } from '../utils/errors';
 import {
   COIN,
@@ -20,6 +19,7 @@ import {
   truncate,
 } from '../utils/format';
 import { appendTracking } from './farm';
+import { translatorFor } from '../i18n';
 import type { Command } from '../types';
 
 /** Boutique, marché, vente, banque, dons et inventaire. */
@@ -79,16 +79,24 @@ const acheter: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🛒 Purchase complete',
-          `${result.quantity}× ${result.emoji} **${result.name}** for **${
-            result.currency === 'gems' ? `${formatNumber(result.total)} 💎` : formatCoins(result.total)
-          }**.\nStock restant : ${result.stockRemaining >= 999 ? 'unlimited' : result.stockRemaining}`,
+          context.t('shop.purchase_title'),
+          context.t('shop.buy_body', {
+            quantity: result.quantity,
+            emoji: result.emoji,
+            name: result.name,
+            amount:
+              result.currency === 'gems'
+                ? `${formatNumber(result.total, context.locale)} 💎`
+                : formatCoins(result.total, false, context.locale),
+            stock: result.stockRemaining >= 999 ? context.t('common.unlimited') : result.stockRemaining,
+          }),
         ),
       ],
     });
   },
 
   async autocomplete(interaction, context): Promise<void> {
+    const t = translatorFor(context.locale);
     const query = interaction.options.getFocused().toString().toLowerCase();
     const entries = await marketService.getShop(new Date(), context.locale);
     await interaction.respond(
@@ -97,7 +105,7 @@ const acheter: Command = {
         .slice(0, 25)
         .map((entry) => ({
           name: truncate(
-            `${entry.emoji} ${entry.name} — ${formatNumber(entry.price)} ${entry.currency === 'gems' ? 'gems' : 'coins'}`,
+            `${entry.emoji} ${entry.name} — ${formatNumber(entry.price, context.locale)} ${entry.currency === 'gems' ? t('common.gems') : t('common.coins')}`,
             100,
           ),
           value: entry.itemKey,
@@ -141,17 +149,24 @@ const vendre: Command = {
     });
 
     const embed = successEmbed(
-      '💰 Sale completed',
+      context.t('economy.sell_title'),
       result.lines
         .map(
           (line) =>
-            `${line.emoji} **${formatNumber(line.quantity)}× ${line.name}**${qualityIcon(line.quality)} — ${formatNumber(line.unitPrice)} ${COIN}/u`,
+            `${line.emoji} **${formatNumber(line.quantity, context.locale)}× ${line.name}**${qualityIcon(line.quality)} — ${formatNumber(line.unitPrice, context.locale)} ${COIN}/u`,
         )
         .join('\n'),
     );
     embed.addFields({
-      name: 'Total',
-      value: `Brut **${formatCoins(result.gross)}**${result.tax > 0 ? ` — taxe ${formatCoins(result.tax)}` : ''} → **${formatCoins(result.net)}** received`,
+      name: context.t('common.total'),
+      value: context.t('economy.sell_total', {
+        gross: formatCoins(result.gross, false, context.locale),
+        taxPart:
+          result.tax > 0
+            ? context.t('economy.sell_tax_part', { tax: formatCoins(result.tax, false, context.locale) })
+            : '',
+        net: formatCoins(result.net, false, context.locale),
+      }),
     });
     appendTracking(embed, result.tracking, context.t);
 
@@ -171,7 +186,7 @@ const vendre: Command = {
         .slice(0, 25)
         .map((entry) => ({
           name: truncate(
-            `${entry.emoji} ${entry.name}${qualityIcon(entry.quality)} ×${entry.quantity} — ~${formatNumber(entry.sellPrice)} 🪙/u`,
+            `${entry.emoji} ${entry.name}${qualityIcon(entry.quality)} ×${entry.quantity} — ~${formatNumber(entry.sellPrice, context.locale)} 🪙/u`,
             100,
           ),
           value: entry.itemKey,
@@ -234,7 +249,7 @@ const marcheHistorique: Command = {
         .filter((row) => !query || row.name.toLowerCase().includes(query))
         .slice(0, 25)
         .map((row) => ({
-          name: truncate(`${row.emoji} ${row.name} — ${formatNumber(row.price)} 🪙 (${row.trendLabel})`, 100),
+          name: truncate(`${row.emoji} ${row.name} — ${formatNumber(row.price, context.locale)} 🪙 (${row.trendLabel})`, 100),
           value: row.itemKey,
         })),
     );
@@ -247,7 +262,7 @@ export async function sendMarketChart(
   context: import('../types').CommandContext,
   itemKey: string,
 ): Promise<void> {
-  const item = inventoryService.requireItem(itemKey);
+  const item = inventoryService.requireItem(itemKey, context.locale);
   const rows = await marketService.getMarket({}, context.locale);
   const row = rows.find((entry) => entry.itemKey === itemKey);
   if (!row) throw gameError('not_found', context.t('market.not_tracked', { item: item.name }));
@@ -264,16 +279,30 @@ export async function sendMarketChart(
     demandIndex: row.demandIndex,
   });
 
-  const trend = describeTrend(row.trend);
   await interaction.editReply({
     embeds: [
       baseEmbed({
-        title: `${item.emoji} ${item.name} — market`,
+        title: context.t('market.chart_title', { emoji: item.emoji, name: item.name }),
         description: [
-          `Current price: **${formatNumber(row.price)} ${COIN}** ${trend.emoji} ${trend.label} (${formatPercent(row.trend)})`,
-          `Base price: ${formatNumber(row.basePrice)} ${COIN}`,
-          `Demand index: **${row.demandIndex.toFixed(2)}** ${row.demandIndex > 1 ? '(shortage — sell!)' : '(saturated — wait)'}`,
-          `Next update ${discordTimestamp(row.nextUpdateAt, 'R')}`,
+          context.t('market.chart_current_price', {
+            price: formatNumber(row.price, context.locale),
+            coin: COIN,
+            emoji: row.trendEmoji,
+            label: row.trendLabel,
+            percent: formatPercent(row.trend, undefined, context.locale),
+          }),
+          context.t('market.chart_base_price', {
+            price: formatNumber(row.basePrice, context.locale),
+            coin: COIN,
+          }),
+          context.t('market.chart_demand_index', {
+            index: row.demandIndex.toFixed(2),
+            status:
+              row.demandIndex > 1
+                ? context.t('market.demand_shortage')
+                : context.t('market.demand_saturated'),
+          }),
+          context.t('market.next_update', { when: discordTimestamp(row.nextUpdateAt, 'R') }),
         ].join('\n'),
         color: row.trend >= 0 ? COLORS.success : COLORS.danger,
         // Image laissée en pièce jointe libre, hors de l'embed : voir la note
@@ -338,7 +367,10 @@ const objet: Command = {
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
-    const item = inventoryService.requireItem(interaction.options.getString('name', true));
+    const item = inventoryService.requireItem(
+      interaction.options.getString('name', true),
+      context.locale,
+    );
     const market = await marketService.getMarket({}, context.locale);
     const price = market.find((row) => row.itemKey === item.key);
     const owned = context.player.farmId
@@ -356,18 +388,30 @@ const objet: Command = {
       embeds: [
         baseEmbed({
           title: `${item.emoji} ${item.name}`,
-          description: item.description ?? '*No description.*',
+          description: item.description ?? context.t('economy.item_no_description'),
           color: COLORS.info,
           fields: [
             {
-              name: 'Informations',
+              name: context.t('economy.item_info_field'),
               value: [
-                `Category: **${item.category}**`,
-                `Rarity: **${item.rarity}**`,
-                item.basePrice > 0 ? `Buy: **${formatNumber(item.basePrice)} ${COIN}**` : '',
-                item.sellable ? `Sell: **${formatNumber(price?.price ?? item.sellPrice)} ${COIN}**` : 'Not sellable',
-                item.tradable ? 'Tradable ✅' : 'Not tradable ❌',
-                `You own: **${formatNumber(owned)}**`,
+                context.t('economy.item_category_line', {
+                  category: context.t(`inventory.categories.${item.category}`),
+                }),
+                context.t('economy.item_rarity_line', {
+                  rarity: context.t(`common.rarity.${item.rarity}`),
+                }),
+                item.basePrice > 0
+                  ? context.t('economy.item_buy_line', {
+                      price: `${formatNumber(item.basePrice, context.locale)} ${COIN}`,
+                    })
+                  : '',
+                item.sellable
+                  ? context.t('economy.item_sell_line', {
+                      price: `${formatNumber(price?.price ?? item.sellPrice, context.locale)} ${COIN}`,
+                    })
+                  : context.t('economy.item_not_sellable'),
+                item.tradable ? context.t('economy.item_tradable') : context.t('economy.item_not_tradable'),
+                context.t('economy.item_owned_line', { owned: formatNumber(owned, context.locale) }),
               ]
                 .filter(Boolean)
                 .join('\n'),
@@ -376,7 +420,7 @@ const objet: Command = {
             ...(producedBy.length > 0
               ? [
                   {
-                    name: 'Crafted by',
+                    name: context.t('economy.item_crafted_by_field'),
                     value: producedBy.map((recipe) => `${recipe.emoji} \`${recipe.name}\``).join('\n'),
                     inline: true,
                   },
@@ -385,7 +429,7 @@ const objet: Command = {
             ...(usedIn.length > 0
               ? [
                   {
-                    name: 'Used in',
+                    name: context.t('economy.item_used_in_field'),
                     value: usedIn
                       .slice(0, 8)
                       .map((recipe) => `${recipe.emoji} \`${recipe.name}\``)
@@ -429,7 +473,7 @@ const utiliser: Command = {
     await interaction.deferReply();
     const itemKey = interaction.options.getString('item', true);
     const quantity = interaction.options.getInteger('quantity') ?? 1;
-    const item = inventoryService.requireItem(itemKey);
+    const item = inventoryService.requireItem(itemKey, context.locale);
 
     if (!item.effect?.type) {
       throw gameError(
@@ -442,7 +486,12 @@ const utiliser: Command = {
     const result = await useConsumable(context.player, itemKey, quantity);
 
     await interaction.editReply({
-      embeds: [successEmbed(`${item.emoji} ${item.name} used`, result.message)],
+      embeds: [
+        successEmbed(
+          context.t('economy.use_title', { emoji: item.emoji, name: item.name }),
+          result.message,
+        ),
+      ],
     });
   },
 
@@ -482,25 +531,33 @@ const jeter: Command = {
   async execute(interaction, context): Promise<void> {
     const itemKey = interaction.options.getString('item', true);
     const quantity = interaction.options.getInteger('quantity', true);
-    const item = inventoryService.requireItem(itemKey);
+    const item = inventoryService.requireItem(itemKey, context.locale);
 
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '🗑️ Confirmation',
-          description: `Discard **${quantity}× ${item.emoji} ${item.name}**? This cannot be undone and earns you nothing.\n\n*Tip: \`/sell\` pays coins.*`,
+          title: context.t('economy.discard_confirm_title'),
+          description: context.t('economy.discard_confirm_body', {
+            quantity,
+            emoji: item.emoji,
+            name: item.name,
+          }),
           color: COLORS.warning,
         }),
       ],
       components: [
-        (await import('../framework/ui')).confirmRow({
-          namespace: 'inv',
-          action: 'discard',
-          ownerId: interaction.user.id,
-          params: [itemKey, quantity],
-          confirmLabel: 'Discard',
-          danger: true,
-        }),
+        (await import('../framework/ui')).confirmRow(
+          {
+            namespace: 'inv',
+            action: 'discard',
+            ownerId: interaction.user.id,
+            params: [itemKey, quantity],
+            confirmLabel: context.t('economy.discard_button'),
+            danger: true,
+          },
+          context.locale,
+          context.t,
+        ),
       ],
       flags: MessageFlags.Ephemeral,
     });
@@ -553,8 +610,14 @@ const banque: Command = {
       await interaction.editReply({
         embeds: [
           successEmbed(
-            sub === 'deposit' ? '🏦 Deposit complete' : '🏦 Withdrawal complete',
-            `Account: **${formatCoins(result.balance)}** / ${formatCompact(result.capacity)}\nIn hand: **${formatCoins(result.walletBalance)}**`,
+            sub === 'deposit'
+              ? context.t('economy.bank_deposit_title')
+              : context.t('economy.bank_withdraw_title'),
+            context.t('economy.bank_result_body', {
+              balance: formatCoins(result.balance, false, context.locale),
+              capacity: formatCompact(result.capacity, context.locale),
+              wallet: formatCoins(result.walletBalance, false, context.locale),
+            }),
           ),
         ],
       });
@@ -566,8 +629,11 @@ const banque: Command = {
       await interaction.editReply({
         embeds: [
           successEmbed(
-            '🏦 Bank upgraded',
-            `Tier **${result.tier}** — capacity raised to **${formatCoins(result.capacity)}**.`,
+            context.t('economy.bank_upgrade_title'),
+            context.t('economy.bank_upgrade_body', {
+              tier: result.tier,
+              capacity: formatCoins(result.capacity, false, context.locale),
+            }),
           ),
         ],
       });
@@ -580,16 +646,27 @@ const banque: Command = {
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: '🏦 Greenvale bank',
+          title: context.t('economy.bank_status_title'),
           description: [
-            `Account: **${formatCoins(status.balance)}** / ${formatCompact(status.capacity)}`,
-            `En poche : **${formatCoins(status.walletBalance)}**`,
-            `Interest: **${(status.interestRate * 100).toFixed(2)}%/day** (capped)`,
+            context.t('economy.bank_account_line', {
+              balance: formatCoins(status.balance, false, context.locale),
+              capacity: formatCompact(status.capacity, context.locale),
+            }),
+            context.t('economy.bank_wallet_line', {
+              wallet: formatCoins(status.walletBalance, false, context.locale),
+            }),
+            context.t('economy.bank_interest_line', {
+              rate: (status.interestRate * 100).toFixed(2),
+            }),
             '',
-            "Money in the bank is protected and earns daily interest.",
+            context.t('economy.bank_status_footer_line'),
             nextTier
-              ? `\nNext tier: level ${nextTier.requiredLevel} required, ${formatCoins(nextTier.upgradeCost)} → capacity ${formatCompact(nextTier.capacity)}`
-              : '\n🏆 Maximum tier reached.',
+              ? `\n${context.t('economy.bank_next_tier', {
+                  level: nextTier.requiredLevel,
+                  cost: formatCoins(nextTier.upgradeCost, false, context.locale),
+                  capacity: formatCompact(nextTier.capacity, context.locale),
+                })}`
+              : `\n${context.t('economy.bank_max_tier')}`,
           ].join('\n'),
           color: COLORS.gold,
         }),
@@ -630,9 +707,13 @@ const donner: Command = {
     await interaction.editReply({
       embeds: [
         successEmbed(
-          '🎁 Gift sent',
-          `${target} receives **${formatCoins(result.received)}**.\n` +
-            `*Transfer tax: ${formatCoins(result.tax)} (${(context.balance.economy.giftTaxRate * 100).toFixed(0)} %).*`,
+          context.t('economy.gift_title'),
+          context.t('economy.gift_body', {
+            target: `${target}`,
+            received: formatCoins(result.received, false, context.locale),
+            tax: formatCoins(result.tax, false, context.locale),
+            rate: (context.balance.economy.giftTaxRate * 100).toFixed(0),
+          }),
         ),
       ],
     });
