@@ -567,9 +567,11 @@ const helpButtons: ButtonHandler = {
   actions: ['category'],
   checkOwner: false,
 
-  async execute(interaction: ButtonInteraction, parsed): Promise<void> {
+  async execute(interaction: ButtonInteraction, parsed, context): Promise<void> {
     await interaction.deferUpdate();
-    await interaction.editReply({ embeds: [helpEmbed(paramString(parsed, 0) as never)] });
+    await interaction.editReply({
+      embeds: [helpEmbed(paramString(parsed, 0) as never, context.locale, context.t)],
+    });
   },
 };
 
@@ -578,17 +580,17 @@ const tutorialButtons: ButtonHandler = {
   actions: ['step'],
   requiresAccount: false,
 
-  async execute(interaction: ButtonInteraction, parsed): Promise<void> {
+  async execute(interaction: ButtonInteraction, parsed, context): Promise<void> {
     const index = paramInt(parsed, 0, { min: 1, max: TUTORIAL_STEPS.length, fallback: 1 });
     const step = TUTORIAL_STEPS[index - 1]!;
 
     await interaction.update({
       embeds: [
         baseEmbed({
-          title: `🎓 ${step.title}`,
-          description: step.body,
+          title: `🎓 ${context.t(step.titleKey)}`,
+          description: context.t(step.bodyKey),
           color: COLORS.info,
-          footer: 'Use the buttons to navigate',
+          footer: context.t('tutorial.footer'),
         }),
       ],
       components: [
@@ -606,7 +608,7 @@ const tutorialButtons: ButtonHandler = {
             action: 'step',
             ownerId: interaction.user.id,
             params: [Math.min(TUTORIAL_STEPS.length, index + 1)],
-            label: 'Next',
+            label: context.t('tutorial.next_button'),
             emoji: '▶️',
             disabled: index >= TUTORIAL_STEPS.length,
           }),
@@ -614,7 +616,7 @@ const tutorialButtons: ButtonHandler = {
             namespace: 'farm',
             action: 'refresh',
             ownerId: interaction.user.id,
-            label: 'My farm',
+            label: context.t('common.my_farm'),
             emoji: '🌾',
           }),
         ),

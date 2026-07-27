@@ -106,9 +106,14 @@
   },
   "start": {
     "welcome_title": "🌾 Bienvenue à Val-Verdoyant !",
-    "welcome_body": "Le maire vous confie une parcelle de terre en friche, {coins} 🪙 et un sac de graines.\n\nVotre objectif est simple : **faire pousser, récolter, vendre, réinvestir**.\n\n**Trois commandes pour commencer :**\n• `/plant` — mettre une graine en terre\n• `/farm` — voir votre exploitation\n• `/harvest` — encaisser votre travail\n\nUne question ? `/help` répond à tout, et `/tutorial` vous prend par la main.",
+    "welcome_body": "Le maire vous confie une parcelle de terre en friche et **{coins}**.\n\nVotre objectif est simple : **faire pousser, récolter, vendre, réinvestir**.\n\n**Trois commandes pour commencer :**\n🌱 `/plant seed:Wheat` — semer une graine\n🌾 `/farm` — voir votre exploitation\n🧺 `/harvest` — encaisser votre travail\n\nUne question ? `/help` répond à tout, et `/tutorial` vous prend par la main.",
     "already_registered": "Vous avez déjà une ferme ! Utilisez `/farm` pour la consulter.",
+    "already_title": "🌾 Vous avez déjà une ferme !",
+    "already_body": "Utilisez `/farm` pour la consulter, `/quests` pour les objectifs du jour, ou `/help` si vous êtes perdu.",
     "starter_kit": "Sac de départ",
+    "starter_kit_body": "• 10× 🌾 graines de blé\n• 5× 🥕 graines de carotte\n• 2× 💩 engrais basique\n• 1× 🪣 arrosoir en bois\n• 10× 🌰 grain (pour vos futurs animaux)",
+    "estate_field": "🗺️ Votre domaine",
+    "estate_body": "• {plots} parcelles (3×3)\n• 📦 Entrepôt niveau 1\n• 🏠 Maison niveau 1 (100 ⚡)",
     "button_tutorial": "Lancer le tutoriel",
     "button_farm": "Voir ma ferme",
     "button_plant": "Planter maintenant"
@@ -422,7 +427,52 @@
   "help": {
     "title": "🌾 Aide de Harvester",
     "intro": "Harvester est un jeu de ferme : plantez, élevez, transformez, vendez, progressez.\nChoisissez une catégorie dans le menu ci-dessous.",
-    "select_placeholder": "Choisissez une catégorie d'aide"
+    "select_placeholder": "Choisissez une catégorie d'aide",
+    "getting_started_field": "🚀 Pour commencer",
+    "getting_started_value": "`/start` → `/plant` → `/water` → `/harvest` → `/sell`",
+    "categories_field": "📚 Catégories",
+    "categories_line": "{emoji} **{label}** — {count} commandes",
+    "tips_field": "💡 Le saviez-vous ?",
+    "tips_value": "• La météo est commune à tout le village : les jours de pluie, l'arrosage est gratuit.\n• Les prix du marché baissent quand tout le monde vend la même chose.\n• Une coopérative accorde des bonus permanents à tous ses membres.",
+    "category": {
+      "demarrage": { "label": "Démarrage", "description": "Créez et configurez votre ferme" },
+      "agriculture": { "label": "Agriculture", "description": "Planter, arroser, récolter" },
+      "elevage": { "label": "Élevage", "description": "Animaux, bâtiments, production" },
+      "inventaire": { "label": "Inventaire", "description": "Objets, artisanat, transformation" },
+      "economie": { "label": "Économie", "description": "Boutique, marché, banque, échanges" },
+      "progression": { "label": "Progression", "description": "Quêtes, succès, passe, prestige" },
+      "social": { "label": "Social", "description": "Coopératives, classements, visites" },
+      "monde": { "label": "Monde", "description": "Météo, saisons, événements" },
+      "admin": { "label": "Administration", "description": "Commandes réservées au staff" }
+    }
+  },
+  "tutorial": {
+    "footer": "Utilisez les boutons pour naviguer",
+    "next_button": "Suivant",
+    "step1": {
+      "title": "1/6 — Planter",
+      "body": "Tout commence par une graine.\n\n`/plant seed:Wheat`\n\nSans numéro de parcelle, le bot remplit vos parcelles vides automatiquement. Ajoutez `quantity:9` pour toutes les semer d'un coup."
+    },
+    "step2": {
+      "title": "2/6 — Arroser",
+      "body": "Chaque culture attend un ou plusieurs arrosages pendant sa croissance.\n\n`/water`\n\nUn arrosage manqué coûte 8 % du rendement (jusqu'à −40 %). Les jours de pluie, c'est gratuit !"
+    },
+    "step3": {
+      "title": "3/6 — Récolter",
+      "body": "Quand une culture est prête, encaissez-la :\n\n`/harvest`\n\nVotre récolte peut sortir en **argent**, **or** ou **iridium** — jusqu'à ×3 sur le prix. Un bon sol et un engrais de qualité améliorent vos chances."
+    },
+    "step4": {
+      "title": "4/6 — Vendre",
+      "body": "Le village achète tout :\n\n`/sell item:Wheat quantity:all`\n\nLes prix bougent chaque heure selon ce que les autres joueurs vendent : vérifiez `/market` avant de tout écouler."
+    },
+    "step5": {
+      "title": "5/6 — Réinvestir",
+      "body": "Vos pièces sont faites pour grandir :\n\n• `/buy-plot` — plus de terrain\n• `/shop` — graines, engrais, outils\n• `/buildings` — poulailler, moulin, entrepôt\n• `/buy-animal` — production passive"
+    },
+    "step6": {
+      "title": "6/6 — Progresser",
+      "body": "Chaque jour :\n\n• `/daily` — récompense quotidienne et série\n• `/quests` — 4 quêtes journalières + 3 hebdomadaires\n• `/coop` — rejoignez une coopérative pour des bonus permanents\n\nBonne chance, fermier ! 🌾"
+    }
   },
   "weather": {
     "title": "{emoji} Météo du jour",

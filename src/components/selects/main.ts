@@ -227,9 +227,11 @@ const helpCategory: SelectHandler = {
   namespace: 'help',
   actions: ['category'],
 
-  async execute(interaction: StringSelectMenuInteraction): Promise<void> {
+  async execute(interaction: StringSelectMenuInteraction, _parsed, context): Promise<void> {
     await interaction.deferUpdate();
-    await interaction.editReply({ embeds: [helpEmbed(interaction.values[0] as never)] });
+    await interaction.editReply({
+      embeds: [helpEmbed(interaction.values[0] as never, context.locale, context.t)],
+    });
   },
 };
 

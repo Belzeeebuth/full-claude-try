@@ -1,8 +1,9 @@
 import { ButtonStyle, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { CATEGORY_LABELS, type Command, type CommandCategory } from '../types';
+import { CATEGORY_LABELS, type Command, type CommandCategory, type Translator } from '../types';
 import { COLORS, baseEmbed, button, row, select, selectRow } from '../framework/ui';
 import { getRegistry } from '../framework/registry';
 import { formatCoins } from '../utils/format';
+import { translatorFor, DEFAULT_LOCALE } from '../i18n';
 
 /** Onboarding, tutoriel et aide. */
 
@@ -28,9 +29,8 @@ const start: Command = {
       await interaction.reply({
         embeds: [
           baseEmbed({
-            title: '🌾 You already have a farm!',
-            description:
-              'Use `/farm` to check on it, `/quests` for today\'s goals, or `/help` if you are lost.',
+            title: context.t('start.already_title'),
+            description: context.t('start.already_body'),
             color: COLORS.info,
           }),
         ],
@@ -40,7 +40,7 @@ const start: Command = {
               namespace: 'farm',
               action: 'refresh',
               ownerId: interaction.user.id,
-              label: 'View my farm',
+              label: context.t('suggestion.farm'),
               emoji: '🌾',
               style: ButtonStyle.Success,
             }),
@@ -48,7 +48,7 @@ const start: Command = {
               namespace: 'quest',
               action: 'open',
               ownerId: interaction.user.id,
-              label: 'My quests',
+              label: context.t('suggestion.quests'),
               emoji: '📋',
             }),
           ),
@@ -61,30 +61,20 @@ const start: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '🌾 Welcome to Greenvale!',
-          description: [
-            `The mayor grants you a patch of fallow land and **${formatCoins(context.player.coins)}**.`,
-            '',
-            'Your goal is simple: **grow, harvest, sell, reinvest.**',
-            '',
-            '**Three commands to get going:**',
-            '🌱 `/plant seed:Wheat` — sow a seed',
-            '🌾 `/farm` — view your holding',
-            '🧺 `/harvest` — cash in your work',
-            '',
-            "Stuck? `/help` answers everything, and `/tutorial` walks you through it.",
-          ].join('\n'),
+          title: context.t('start.welcome_title'),
+          description: context.t('start.welcome_body', {
+            coins: formatCoins(context.player.coins, false, context.locale),
+          }),
           color: COLORS.success,
           fields: [
             {
-              name: '🎒 Starter bag',
-              value:
-                '• 10× 🌾 wheat seeds\n• 5× 🥕 carrot seeds\n• 2× 💩 basic fertilizer\n• 1× 🪣 wooden watering can\n• 10× 🌰 grain (for your future animals)',
+              name: `🎒 ${context.t('start.starter_kit')}`,
+              value: context.t('start.starter_kit_body'),
               inline: true,
             },
             {
-              name: '🗺️ Your estate',
-              value: `• ${context.balance.plots.startingUnlocked} plots (3×3)\n• 📦 Warehouse level 1\n• 🏠 House level 1 (100 ⚡)`,
+              name: context.t('start.estate_field'),
+              value: context.t('start.estate_body', { plots: context.balance.plots.startingUnlocked }),
               inline: true,
             },
           ],
@@ -97,7 +87,7 @@ const start: Command = {
             action: 'step',
             ownerId: interaction.user.id,
             params: [1],
-            label: 'Start the tutorial',
+            label: context.t('start.button_tutorial'),
             emoji: '🎓',
             style: ButtonStyle.Primary,
           }),
@@ -105,7 +95,7 @@ const start: Command = {
             namespace: 'farm',
             action: 'refresh',
             ownerId: interaction.user.id,
-            label: 'View my farm',
+            label: context.t('start.button_farm'),
             emoji: '🌾',
             style: ButtonStyle.Success,
           }),
@@ -113,7 +103,7 @@ const start: Command = {
             namespace: 'farm',
             action: 'plant_menu',
             ownerId: interaction.user.id,
-            label: 'Plant now',
+            label: context.t('start.button_plant'),
             emoji: '🌱',
           }),
         ),
@@ -127,49 +117,12 @@ const start: Command = {
 // ---------------------------------------------------------------------------
 
 export const TUTORIAL_STEPS = [
-  {
-    title: '1/6 — Planting',
-    body:
-      'Everything starts with a seed.\n\n`/plant seed:Wheat`\n\nWithout a plot number, the bot fills your empty plots automatically. ' +
-      'Add `quantity:9` to sow them all at once.',
-  },
-  {
-    title: '2/6 — Watering',
-    body:
-      'Every crop expects one or more waterings while it grows.\n\n`/water`\n\n' +
-      'A missed watering costs 8% of the yield (up to −40%). On rainy days it is free!',
-  },
-  {
-    title: '3/6 — Harvesting',
-    body:
-      "When a crop is ready, cash it in:\n\n`/harvest`\n\n" +
-      'Your harvest can come out **silver**, **gold** or **iridium** — up to ×3 on the price. ' +
-      'Good soil and quality fertilizer improve your odds.',
-  },
-  {
-    title: '4/6 — Selling',
-    body:
-      'The village buys everything:\n\n`/sell item:Wheat quantity:all`\n\n' +
-      'Prices move every hour with what other players sell: check `/market` before dumping stock.',
-  },
-  {
-    title: '5/6 — Reinvesting',
-    body:
-      'Your coins are there to grow:\n\n' +
-      '• `/buy-plot` — more land\n' +
-      '• `/shop` — seeds, fertilizer, tools\n' +
-      '• `/buildings` — coop, mill, warehouse\n' +
-      '• `/buy-animal` — passive production',
-  },
-  {
-    title: '6/6 — Progressing',
-    body:
-      'Every day:\n\n' +
-      '• `/daily` — daily reward and streak\n' +
-      '• `/quests` — 4 daily quests + 3 weekly\n' +
-      '• `/coop` — join a co-op for permanent bonuses\n\n' +
-      'Good luck, farmer! 🌾',
-  },
+  { titleKey: 'tutorial.step1.title', bodyKey: 'tutorial.step1.body' },
+  { titleKey: 'tutorial.step2.title', bodyKey: 'tutorial.step2.body' },
+  { titleKey: 'tutorial.step3.title', bodyKey: 'tutorial.step3.body' },
+  { titleKey: 'tutorial.step4.title', bodyKey: 'tutorial.step4.body' },
+  { titleKey: 'tutorial.step5.title', bodyKey: 'tutorial.step5.body' },
+  { titleKey: 'tutorial.step6.title', bodyKey: 'tutorial.step6.body' },
 ] as const;
 
 const tutoriel: Command = {
@@ -181,15 +134,15 @@ const tutoriel: Command = {
     .setDescription('Step-by-step tutorial to get started')
     .toJSON(),
 
-  async execute(interaction): Promise<void> {
+  async execute(interaction, context): Promise<void> {
     const step = TUTORIAL_STEPS[0]!;
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: `🎓 ${step.title}`,
-          description: step.body,
+          title: `🎓 ${context.t(step.titleKey)}`,
+          description: context.t(step.bodyKey),
           color: COLORS.info,
-          footer: 'Use the buttons to navigate',
+          footer: context.t('tutorial.footer'),
         }),
       ],
       components: [
@@ -207,7 +160,7 @@ const tutoriel: Command = {
             action: 'step',
             ownerId: interaction.user.id,
             params: [2],
-            label: 'Next',
+            label: context.t('tutorial.next_button'),
             emoji: '▶️',
             style: ButtonStyle.Primary,
           }),
@@ -222,7 +175,11 @@ const tutoriel: Command = {
 // /help
 // ---------------------------------------------------------------------------
 
-export function helpEmbed(category?: CommandCategory) {
+export function helpEmbed(
+  category?: CommandCategory,
+  locale?: string,
+  t: Translator = translatorFor(locale ?? DEFAULT_LOCALE),
+) {
   const registry = getRegistry();
   const commandsByCategory = new Map<CommandCategory, string[]>();
 
@@ -240,36 +197,37 @@ export function helpEmbed(category?: CommandCategory) {
   if (category) {
     const meta = CATEGORY_LABELS[category];
     return baseEmbed({
-      title: `${meta.emoji} ${meta.label}`,
-      description: `${meta.description}\n\n${(commandsByCategory.get(category) ?? []).sort().join('\n')}`,
+      title: `${meta.emoji} ${t(`help.category.${category}.label`)}`,
+      description: `${t(`help.category.${category}.description`)}\n\n${(commandsByCategory.get(category) ?? []).sort().join('\n')}`,
       color: COLORS.primary,
     });
   }
 
   return baseEmbed({
-    title: '🌾 Harvester help',
-    description:
-      'Harvester is a farming game: plant, raise, process, sell, progress.\n' +
-      'Pick a category below to see the detailed commands.',
+    title: t('help.title'),
+    description: t('help.intro'),
     color: COLORS.primary,
     fields: [
       {
-        name: '🚀 Getting going',
-        value: '`/start` → `/plant` → `/water` → `/harvest` → `/sell`',
+        name: t('help.getting_started_field'),
+        value: t('help.getting_started_value'),
       },
       {
-        name: '📚 Categories',
+        name: t('help.categories_field'),
         value: Object.entries(CATEGORY_LABELS)
           .filter(([key]) => key !== 'admin')
-          .map(([key, meta]) => `${meta.emoji} **${meta.label}** — ${commandsByCategory.get(key as CommandCategory)?.length ?? 0} commands`)
+          .map(([key, meta]) =>
+            t('help.categories_line', {
+              emoji: meta.emoji,
+              label: t(`help.category.${key}.label`),
+              count: commandsByCategory.get(key as CommandCategory)?.length ?? 0,
+            }),
+          )
           .join('\n'),
       },
       {
-        name: '💡 Did you know?',
-        value:
-          "• Weather is shared by the whole village: on rainy days, watering is free.\n" +
-          '• Market prices fall when everyone sells the same thing.\n' +
-          "• A co-op grants permanent bonuses to all its members.",
+        name: t('help.tips_field'),
+        value: t('help.tips_value'),
       },
     ],
   });
@@ -294,24 +252,24 @@ const aide: Command = {
     )
     .toJSON(),
 
-  async execute(interaction): Promise<void> {
+  async execute(interaction, context): Promise<void> {
     const category = interaction.options.getString('category') as CommandCategory | null;
     await interaction.reply({
-      embeds: [helpEmbed(category ?? undefined)],
+      embeds: [helpEmbed(category ?? undefined, context.locale, context.t)],
       components: [
         selectRow(
           select({
             namespace: 'help',
             action: 'category',
             ownerId: interaction.user.id,
-            placeholder: 'Pick a help category',
+            placeholder: context.t('help.select_placeholder'),
             choices: Object.entries(CATEGORY_LABELS)
               .filter(([key]) => key !== 'admin')
               .map(([key, meta]) => ({
-                label: meta.label,
+                label: context.t(`help.category.${key}.label`),
                 value: key,
                 emoji: meta.emoji,
-                description: meta.description,
+                description: context.t(`help.category.${key}.description`),
                 default: category === key,
               })),
           }),

@@ -105,10 +105,15 @@
     "event": "Current event"
   },
   "start": {
-    "welcome_title": "🌾 Welcome to Greendale!",
-    "welcome_body": "The mayor grants you a patch of fallow land, {coins} 🪙 and a bag of seeds.\n\nYour goal is simple: **grow, harvest, sell, reinvest**.\n\n**Three commands to get going:**\n• `/plant` — sow a seed\n• `/farm` — view your farm\n• `/harvest` — cash in your work\n\nStuck? `/help` answers everything and `/tutorial` walks you through it.",
+    "welcome_title": "🌾 Welcome to Greenvale!",
+    "welcome_body": "The mayor grants you a patch of fallow land and **{coins}**.\n\nYour goal is simple: **grow, harvest, sell, reinvest.**\n\n**Three commands to get going:**\n🌱 `/plant seed:Wheat` — sow a seed\n🌾 `/farm` — view your holding\n🧺 `/harvest` — cash in your work\n\nStuck? `/help` answers everything, and `/tutorial` walks you through it.",
     "already_registered": "You already have a farm! Use `/farm` to view it.",
+    "already_title": "🌾 You already have a farm!",
+    "already_body": "Use `/farm` to check on it, `/quests` for today's goals, or `/help` if you are lost.",
     "starter_kit": "Starter pack",
+    "starter_kit_body": "• 10× 🌾 wheat seeds\n• 5× 🥕 carrot seeds\n• 2× 💩 basic fertilizer\n• 1× 🪣 wooden watering can\n• 10× 🌰 grain (for your future animals)",
+    "estate_field": "🗺️ Your estate",
+    "estate_body": "• {plots} plots (3×3)\n• 📦 Warehouse level 1\n• 🏠 House level 1 (100 ⚡)",
     "button_tutorial": "Start tutorial",
     "button_farm": "View my farm",
     "button_plant": "Plant now"
@@ -601,7 +606,52 @@
   "help": {
     "title": "🌾 Harvester help",
     "intro": "Harvester is a farming game: plant, raise, process, sell, progress.\nPick a category from the menu below.",
-    "select_placeholder": "Pick a help category"
+    "select_placeholder": "Pick a help category",
+    "getting_started_field": "🚀 Getting going",
+    "getting_started_value": "`/start` → `/plant` → `/water` → `/harvest` → `/sell`",
+    "categories_field": "📚 Categories",
+    "categories_line": "{emoji} **{label}** — {count} commands",
+    "tips_field": "💡 Did you know?",
+    "tips_value": "• Weather is shared by the whole village: on rainy days, watering is free.\n• Market prices fall when everyone sells the same thing.\n• A co-op grants permanent bonuses to all its members.",
+    "category": {
+      "demarrage": { "label": "Getting started", "description": "Create and configure your farm" },
+      "agriculture": { "label": "Farming", "description": "Plant, water, harvest" },
+      "elevage": { "label": "Livestock", "description": "Animals, buildings, production" },
+      "inventaire": { "label": "Inventory", "description": "Items, crafting, processing" },
+      "economie": { "label": "Economy", "description": "Shop, market, bank, trading" },
+      "progression": { "label": "Progression", "description": "Quests, achievements, pass, prestige" },
+      "social": { "label": "Social", "description": "Co-ops, leaderboards, visits" },
+      "monde": { "label": "World", "description": "Weather, seasons, events" },
+      "admin": { "label": "Administration", "description": "Staff-only commands" }
+    }
+  },
+  "tutorial": {
+    "footer": "Use the buttons to navigate",
+    "next_button": "Next",
+    "step1": {
+      "title": "1/6 — Planting",
+      "body": "Everything starts with a seed.\n\n`/plant seed:Wheat`\n\nWithout a plot number, the bot fills your empty plots automatically. Add `quantity:9` to sow them all at once."
+    },
+    "step2": {
+      "title": "2/6 — Watering",
+      "body": "Every crop expects one or more waterings while it grows.\n\n`/water`\n\nA missed watering costs 8% of the yield (up to −40%). On rainy days it is free!"
+    },
+    "step3": {
+      "title": "3/6 — Harvesting",
+      "body": "When a crop is ready, cash it in:\n\n`/harvest`\n\nYour harvest can come out **silver**, **gold** or **iridium** — up to ×3 on the price. Good soil and quality fertilizer improve your odds."
+    },
+    "step4": {
+      "title": "4/6 — Selling",
+      "body": "The village buys everything:\n\n`/sell item:Wheat quantity:all`\n\nPrices move every hour with what other players sell: check `/market` before dumping stock."
+    },
+    "step5": {
+      "title": "5/6 — Reinvesting",
+      "body": "Your coins are there to grow:\n\n• `/buy-plot` — more land\n• `/shop` — seeds, fertilizer, tools\n• `/buildings` — coop, mill, warehouse\n• `/buy-animal` — passive production"
+    },
+    "step6": {
+      "title": "6/6 — Progressing",
+      "body": "Every day:\n\n• `/daily` — daily reward and streak\n• `/quests` — 4 daily quests + 3 weekly\n• `/coop` — join a co-op for permanent bonuses\n\nGood luck, farmer! 🌾"
+    }
   },
   "weather": {
     "title": "{emoji} Today's weather",
