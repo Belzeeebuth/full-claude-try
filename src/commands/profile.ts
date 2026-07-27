@@ -72,10 +72,35 @@ const profil: Command = {
       title: `${profile.user.displayName ?? profile.user.username} ${prestigeBadge(profile.user.prestige)}`,
       description: [
         profile.user.title ? `*${profile.user.title}*` : '',
-        `**Level ${profile.user.level}** — ${progressBar(profile.user.xp, profile.xpForNext || 1, 12)} ${formatCompact(profile.user.xp)}/${formatCompact(profile.xpForNext)} XP`,
-        `${COIN} ${formatNumber(profile.user.coins)} • ${GEM} ${formatNumber(profile.user.gems)} • 🏦 ${formatCompact(profile.bankBalance)}`,
-        `⚡ ${profile.energy.current}/${profile.energy.max}${profile.energy.fullAt ? ` (plein ${discordTimestamp(profile.energy.fullAt, 'R')})` : ''}`,
-        profile.coop ? `🤝 **${profile.coop.name}** [${profile.coop.tag}] — lv. ${profile.coop.level}` : '',
+        context.t('profile.level_line', {
+          level: profile.user.level,
+          bar: progressBar(profile.user.xp, profile.xpForNext || 1, 12),
+          xp: formatCompact(profile.user.xp, context.locale),
+          needed: formatCompact(profile.xpForNext, context.locale),
+        }),
+        context.t('profile.wallet_line', {
+          coin: COIN,
+          coins: formatNumber(profile.user.coins, context.locale),
+          gem: GEM,
+          gems: formatNumber(profile.user.gems, context.locale),
+          bank: formatCompact(profile.bankBalance, context.locale),
+        }),
+        context.t('profile.energy_line', {
+          current: profile.energy.current,
+          max: profile.energy.max,
+          fullPart: profile.energy.fullAt
+            ? context.t('profile.energy_full_at', {
+                relative: discordTimestamp(profile.energy.fullAt, 'R'),
+              })
+            : '',
+        }),
+        profile.coop
+          ? context.t('profile.coop_line', {
+              name: profile.coop.name,
+              tag: profile.coop.tag,
+              level: context.t('common.level_abbr', { level: profile.coop.level }),
+            })
+          : '',
       ]
         .filter(Boolean)
         .join('\n'),
@@ -87,12 +112,36 @@ const profil: Command = {
 
     if (!image.attachment) {
       embed.addFields(
-        { name: '🌾 Harvests', value: formatNumber(profile.user.totalHarvests), inline: true },
-        { name: '🐄 Animals raised', value: formatNumber(profile.user.totalAnimalsRaised), inline: true },
-        { name: '🛠️ Items crafted', value: formatNumber(profile.user.totalCrafts), inline: true },
-        { name: '🗺️ Plots', value: `${profile.plotsUnlocked}/64`, inline: true },
-        { name: '🔥 Streak', value: `${profile.streak} day(s)`, inline: true },
-        { name: '🏆 Achievements', value: String(profile.achievementsUnlocked), inline: true },
+        {
+          name: context.t('profile.field_harvests'),
+          value: formatNumber(profile.user.totalHarvests, context.locale),
+          inline: true,
+        },
+        {
+          name: context.t('profile.field_animals'),
+          value: formatNumber(profile.user.totalAnimalsRaised, context.locale),
+          inline: true,
+        },
+        {
+          name: context.t('profile.field_crafts'),
+          value: formatNumber(profile.user.totalCrafts, context.locale),
+          inline: true,
+        },
+        {
+          name: context.t('profile.field_plots'),
+          value: context.t('profile.plots_value', { unlocked: profile.plotsUnlocked, max: 64 }),
+          inline: true,
+        },
+        {
+          name: context.t('profile.field_streak'),
+          value: context.t('profile.streak_value', { count: profile.streak }),
+          inline: true,
+        },
+        {
+          name: context.t('profile.field_achievements'),
+          value: String(profile.achievementsUnlocked),
+          inline: true,
+        },
       );
     }
 
@@ -105,7 +154,7 @@ const profil: Command = {
             namespace: 'farm',
             action: 'refresh',
             ownerId: interaction.user.id,
-            label: 'My farm',
+            label: context.t('common.my_farm'),
             emoji: '🌾',
           }),
           button({
@@ -113,7 +162,7 @@ const profil: Command = {
             action: 'stats',
             ownerId: interaction.user.id,
             params: [target.id],
-            label: 'Stats',
+            label: context.t('profile.stats_button'),
             emoji: '📊',
           }),
         ),
@@ -142,63 +191,111 @@ const stats: Command = {
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: `📊 Stats for ${data.user.displayName ?? data.user.username}`,
+          title: context.t('profile.stats_title', { name: data.user.displayName ?? data.user.username }),
           color: COLORS.info,
           fields: [
             {
-              name: '🌾 Agriculture',
+              name: context.t('profile.stats_agriculture_field'),
               value: [
-                `Harvests: **${formatNumber(data.user.totalHarvests)}**`,
-                `Seeds planted: **${formatNumber(data.user.totalPlanted)}**`,
-                `Waterings: **${formatNumber(data.user.totalWatered)}**`,
-                `Best harvest: **${formatCoins(data.user.bestHarvestValue, true)}**`,
+                context.t('profile.stats_harvests_line', {
+                  count: formatNumber(data.user.totalHarvests, context.locale),
+                }),
+                context.t('profile.stats_planted_line', {
+                  count: formatNumber(data.user.totalPlanted, context.locale),
+                }),
+                context.t('profile.stats_watered_line', {
+                  count: formatNumber(data.user.totalWatered, context.locale),
+                }),
+                context.t('profile.stats_best_harvest_line', {
+                  value: formatCoins(data.user.bestHarvestValue, true, context.locale),
+                }),
               ].join('\n'),
               inline: true,
             },
             {
-              name: '🐄 Livestock & crafting',
+              name: context.t('profile.stats_livestock_field'),
               value: [
-                `Animals raised: **${formatNumber(data.user.totalAnimalsRaised)}**`,
-                `Alive: **${data.animalsAlive}**`,
-                `Items crafted: **${formatNumber(data.user.totalCrafts)}**`,
+                context.t('profile.stats_animals_line', {
+                  count: formatNumber(data.user.totalAnimalsRaised, context.locale),
+                }),
+                context.t('profile.stats_alive_line', { count: data.animalsAlive }),
+                context.t('profile.stats_crafts_line', {
+                  count: formatNumber(data.user.totalCrafts, context.locale),
+                }),
               ].join('\n'),
               inline: true,
             },
             {
-              name: '💰 Economy',
+              name: context.t('profile.stats_economy_field'),
               value: [
-                `Earned: **${formatCoins(data.user.totalCoinsEarned, true)}**`,
-                `Spent: **${formatCoins(data.user.totalCoinsSpent, true)}**`,
-                `Balance: **${formatCoins(data.user.coins, true)}**`,
+                context.t('profile.stats_earned_line', {
+                  value: formatCoins(data.user.totalCoinsEarned, true, context.locale),
+                }),
+                context.t('profile.stats_spent_line', {
+                  value: formatCoins(data.user.totalCoinsSpent, true, context.locale),
+                }),
+                context.t('profile.stats_balance_line', {
+                  value: formatCoins(data.user.coins, true, context.locale),
+                }),
               ].join('\n'),
               inline: true,
             },
             {
-              name: '🤝 Social & loyalty',
+              name: context.t('profile.stats_social_field'),
               value: [
-                `Helping hands given: **${formatNumber(data.user.totalHelpGiven)}**`,
-                `Current streak: **${data.streak}** d (best: ${data.longestStreak})`,
-                `Commands used: **${formatNumber(data.user.commandsUsed)}**`,
+                context.t('profile.stats_help_line', {
+                  count: formatNumber(data.user.totalHelpGiven, context.locale),
+                }),
+                context.t('profile.stats_streak_line', {
+                  count: data.streak,
+                  best: data.longestStreak,
+                }),
+                context.t('profile.stats_commands_line', {
+                  count: formatNumber(data.user.commandsUsed, context.locale),
+                }),
               ].join('\n'),
               inline: true,
             },
             {
-              name: '🏅 Leaderboards',
-              value: [
-                data.ranks.wealth ? `Richesse : **#${data.ranks.wealth.rank}**` : '',
-                data.ranks.level ? `Experience: **#${data.ranks.level.rank}**` : '',
-                data.ranks.harvests ? `Harvests: **#${data.ranks.harvests.rank}**` : '',
-              ]
-                .filter(Boolean)
-                .join('\n') || '—',
+              name: context.t('profile.stats_leaderboards_field'),
+              value:
+                [
+                  data.ranks.wealth
+                    ? context.t('profile.stats_rank_line', {
+                        label: context.t('leaderboard.wealth'),
+                        rank: data.ranks.wealth.rank,
+                      })
+                    : '',
+                  data.ranks.level
+                    ? context.t('profile.stats_rank_line', {
+                        label: context.t('leaderboard.level'),
+                        rank: data.ranks.level.rank,
+                      })
+                    : '',
+                  data.ranks.harvests
+                    ? context.t('profile.stats_rank_line', {
+                        label: context.t('leaderboard.harvests'),
+                        rank: data.ranks.harvests.rank,
+                      })
+                    : '',
+                ]
+                  .filter(Boolean)
+                  .join('\n') || '—',
               inline: true,
             },
             {
-              name: '📦 Divers',
+              name: context.t('profile.stats_misc_field'),
               value: [
-                `Inventory: **${formatNumber(data.inventoryTotal)}** items`,
-                `Farm created on **${data.user.createdAt.toLocaleDateString('en-US')}**`,
-                `Prestige : **${data.user.prestige}** ${prestigeBadge(data.user.prestige)}`,
+                context.t('profile.stats_inventory_line', {
+                  count: formatNumber(data.inventoryTotal, context.locale),
+                }),
+                context.t('profile.stats_created_line', {
+                  date: discordTimestamp(data.user.createdAt, 'D'),
+                }),
+                context.t('profile.stats_prestige_line', {
+                  count: data.user.prestige,
+                  badge: prestigeBadge(data.user.prestige),
+                }),
               ].join('\n'),
               inline: true,
             },
@@ -229,13 +326,24 @@ const solde: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: `💰 ${user.displayName ?? user.username}’s balance`,
+          title: context.t('profile.balance_title', { name: user.displayName ?? user.username }),
           description: [
-            `${COIN} **${formatNumber(user.coins)}** coins on hand`,
-            `${GEM} **${formatNumber(user.gems)}** gems`,
-            `🏦 **${formatNumber(bank?.balance ?? 0)}** in the bank (capacity ${formatCompact(bank?.capacity ?? 0)})`,
+            context.t('profile.balance_coins_line', {
+              coin: COIN,
+              coins: formatNumber(user.coins, context.locale),
+            }),
+            context.t('profile.balance_gems_line', {
+              gem: GEM,
+              gems: formatNumber(user.gems, context.locale),
+            }),
+            context.t('profile.balance_bank_line', {
+              bank: formatNumber(bank?.balance ?? 0, context.locale),
+              capacity: formatCompact(bank?.capacity ?? 0, context.locale),
+            }),
             '',
-            `Total net worth: **${formatCoins(user.coins + (bank?.balance ?? 0))}**`,
+            context.t('profile.balance_networth_line', {
+              total: formatCoins(user.coins + (bank?.balance ?? 0), false, context.locale),
+            }),
           ].join('\n'),
           color: COLORS.gold,
         }),
@@ -306,35 +414,50 @@ const parametres: Command = {
     await interaction.reply({
       embeds: [
         baseEmbed({
-          title: '⚙️ Your settings',
+          title: context.t('settings.title'),
           description:
-            Object.keys(patch).length > 0 ? '✅ Preferences updated.' : 'Here are your current settings.',
+            Object.keys(patch).length > 0
+              ? context.t('settings.updated_body')
+              : context.t('settings.current_body'),
           color: COLORS.info,
           fields: [
             {
-              name: '🔔 Notifications',
+              name: context.t('settings.notifications_field'),
               value: [
-                `Direct messages: **${settings?.dmNotifications ? 'enabled' : 'disabled'}**`,
-                `Crops ready: ${settings?.notifyCrops ? '✅' : '❌'}`,
-                `Hungry animals: ${settings?.notifyAnimals ? '✅' : '❌'}`,
-                `Daily reminder: ${settings?.dailyReminder ? '✅' : '❌'}`,
+                context.t('settings.dm_line', {
+                  state: settings?.dmNotifications ? context.t('common.enabled') : context.t('common.disabled'),
+                }),
+                context.t('settings.notify_crops_line', { check: settings?.notifyCrops ? '✅' : '❌' }),
+                context.t('settings.notify_animals_line', { check: settings?.notifyAnimals ? '✅' : '❌' }),
+                context.t('settings.notify_daily_line', { check: settings?.dailyReminder ? '✅' : '❌' }),
               ].join('\n'),
               inline: true,
             },
             {
-              name: '🌍 Display',
+              name: context.t('settings.display_field'),
               value: [
-                `Language: **${settings?.locale ?? 'fr'}**`,
-                `Time zone: **${settings?.timezone ?? 'Europe/Paris'}**`,
-                `Mode compact : ${settings?.compactMode ? '✅' : '❌'}`,
+                context.t('settings.language_line', { locale: settings?.locale ?? 'fr' }),
+                context.t('settings.timezone_line', { timezone: settings?.timezone ?? 'Europe/Paris' }),
+                context.t('settings.compact_mode_line', { check: settings?.compactMode ? '✅' : '❌' }),
               ].join('\n'),
               inline: true,
             },
             {
-              name: '🔒 Privacy',
+              name: context.t('settings.privacy_field'),
               value: [
-                `Farm visible to: **${settings?.privacy === 'private' ? 'nobody' : settings?.privacy === 'coop_only' ? 'my co-op' : 'everyone'}**`,
-                `Trades: ${settings?.allowTrades ? '✅ allowed' : '❌ refused'}`,
+                context.t('settings.privacy_visible_line', {
+                  scope:
+                    settings?.privacy === 'private'
+                      ? context.t('settings.privacy_nobody')
+                      : settings?.privacy === 'coop_only'
+                        ? context.t('settings.privacy_coop')
+                        : context.t('settings.privacy_everyone'),
+                }),
+                context.t('settings.trades_line', {
+                  state: settings?.allowTrades
+                    ? context.t('settings.trades_allowed')
+                    : context.t('settings.trades_refused'),
+                }),
               ].join('\n'),
               inline: false,
             },
@@ -348,7 +471,7 @@ const parametres: Command = {
             action: 'toggle',
             ownerId: interaction.user.id,
             params: ['notifyCrops'],
-            label: 'Crop alerts',
+            label: context.t('settings.crop_alerts_button'),
             emoji: '🌱',
           }),
           button({
@@ -356,7 +479,7 @@ const parametres: Command = {
             action: 'toggle',
             ownerId: interaction.user.id,
             params: ['notifyAnimals'],
-            label: 'Animal alerts',
+            label: context.t('settings.animal_alerts_button'),
             emoji: '🐄',
           }),
           button({
@@ -364,7 +487,7 @@ const parametres: Command = {
             action: 'toggle',
             ownerId: interaction.user.id,
             params: ['dailyReminder'],
-            label: 'Daily reminder',
+            label: context.t('settings.daily_reminder_button'),
             emoji: '📅',
           }),
         ),
@@ -409,48 +532,58 @@ const prestige: Command = {
     await interaction.editReply({
       embeds: [
         baseEmbed({
-          title: '🌟 Rebirth — confirmation required',
-          description:
-            '**This cannot be undone.** Here is exactly what will happen:',
+          title: context.t('progression.prestige_confirm_title'),
+          description: context.t('progression.prestige_confirm_body'),
           color: COLORS.warning,
           fields: [
             {
-              name: '✅ You keep',
+              name: context.t('progression.prestige_keep_field'),
               value: [
-                `🏗️ All your buildings`,
-                `🗺️ **${plan.plotsKept}** plots (50 %)`,
-                `💎 All your gems`,
-                `🪙 ${formatCoins(plan.coinsKept)} (5%) + ${formatCoins(plan.startingCoins)} to start over`,
-                `🎨 Cosmetics, tools and event items`,
+                context.t('progression.prestige_keep_buildings'),
+                context.t('progression.prestige_keep_plots', { plots: plan.plotsKept }),
+                context.t('progression.prestige_keep_gems'),
+                context.t('progression.prestige_keep_coins', {
+                  kept: formatCoins(plan.coinsKept, false, context.locale),
+                  starting: formatCoins(plan.startingCoins, false, context.locale),
+                }),
+                context.t('progression.prestige_keep_misc'),
               ].join('\n'),
               inline: true,
             },
             {
-              name: '❌ You lose',
+              name: context.t('progression.prestige_lose_field'),
               value: [
-                `⭐ Level and XP (back to level 1)`,
-                `🐄 All your animals`,
-                `🌱 Crops currently growing`,
-                `📦 The rest of your inventory`,
+                context.t('progression.prestige_lose_level'),
+                context.t('progression.prestige_lose_animals'),
+                context.t('progression.prestige_lose_crops'),
+                context.t('progression.prestige_lose_inventory'),
               ].join('\n'),
               inline: true,
             },
             {
-              name: '🎁 Gain permanent',
-              value: `Yield and XP multiplier: **×${plan.newMultiplier.toFixed(2)}** (prestige ${plan.newPrestige})\n+${plan.pointsGained} prestige points`,
+              name: context.t('progression.prestige_gain_field'),
+              value: context.t('progression.prestige_gain_value', {
+                multiplier: plan.newMultiplier.toFixed(2),
+                prestige: plan.newPrestige,
+                points: plan.pointsGained,
+              }),
               inline: false,
             },
           ],
         }),
       ],
       components: [
-        confirmRow({
-          namespace: 'prestige',
-          action: 'confirm',
-          ownerId: interaction.user.id,
-          confirmLabel: 'Rebirth',
-          danger: true,
-        }),
+        confirmRow(
+          {
+            namespace: 'prestige',
+            action: 'confirm',
+            ownerId: interaction.user.id,
+            confirmLabel: context.t('progression.prestige_confirm_button'),
+            danger: true,
+          },
+          context.locale,
+          context.t,
+        ),
       ],
     });
   },
