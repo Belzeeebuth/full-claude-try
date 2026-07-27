@@ -89,14 +89,21 @@ const hdv: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '🔨 Listing posted',
+              context.t('trade.sell_title'),
               [
-                `Lot of **${result.quantity}** priced at **${formatCoins(result.price)}**.`,
-                `Listing fee: ${formatCoins(result.fee)} (non-refundable).`,
-                `Expiration ${discordTimestamp(result.expiresAt, 'R')}.`,
-                `Sale commission: ${(context.balance.auction.commissionRate * 100).toFixed(0)}%.`,
+                context.t('trade.sell_lot_line', {
+                  quantity: result.quantity,
+                  price: formatCoins(result.price, false, context.locale),
+                }),
+                context.t('trade.sell_fee_line', { fee: formatCoins(result.fee, false, context.locale) }),
+                context.t('trade.sell_expiration_line', {
+                  relative: discordTimestamp(result.expiresAt, 'R'),
+                }),
+                context.t('trade.sell_commission_line', {
+                  rate: (context.balance.auction.commissionRate * 100).toFixed(0),
+                }),
                 '',
-                `Identifier: \`${result.id}\``,
+                context.t('trade.sell_id_line', { id: result.id }),
               ].join('\n'),
             ),
           ],
@@ -111,8 +118,13 @@ const hdv: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '🛍️ Purchase completed',
-              `You receive **${result.quantity}× ${result.emoji} ${result.itemName}** for ${formatCoins(result.price)}.`,
+              context.t('trade.buy_title'),
+              context.t('trade.buy_body', {
+                quantity: result.quantity,
+                emoji: result.emoji,
+                name: result.itemName,
+                price: formatCoins(result.price, false, context.locale),
+              }),
             ),
           ],
         });
@@ -126,8 +138,8 @@ const hdv: Command = {
         await interaction.editReply({
           embeds: [
             successEmbed(
-              '↩️ Listing cancelled',
-              `**${result.quantity}× ${result.itemName}** are back in your inventory.\n*The listing fee stays with the village.*`,
+              context.t('trade.cancel_title'),
+              context.t('trade.cancel_body', { quantity: result.quantity, name: result.itemName }),
             ),
           ],
         });
@@ -138,21 +150,32 @@ const hdv: Command = {
         await interaction.editReply({
           embeds: [
             baseEmbed({
-              title: '📜 Your listings',
+              title: context.t('trade.my_listings_title'),
               description:
                 listings
                   .map((entry) => {
                     const status =
                       entry.listing.status === 'sold'
-                        ? `✅ vendue ${formatCoins(entry.listing.soldPrice ?? 0)}`
+                        ? context.t('trade.status_sold', {
+                            price: formatCoins(entry.listing.soldPrice ?? 0, false, context.locale),
+                          })
                         : entry.listing.status === 'active'
-                          ? `⏳ expire ${discordTimestamp(entry.listing.expiresAt, 'R')}`
+                          ? context.t('trade.status_active', {
+                              relative: discordTimestamp(entry.listing.expiresAt, 'R'),
+                            })
                           : entry.listing.status === 'expired'
-                            ? '⌛ expired (items returned)'
-                            : '↩️ cancelled';
-                    return `${entry.itemEmoji} **${entry.listing.quantity}× ${entry.itemName}** — ${formatCoins(entry.listing.startPrice)} — ${status}\n\`${entry.listing.id}\``;
+                            ? context.t('trade.status_expired')
+                            : context.t('trade.status_cancelled');
+                    return context.t('trade.my_listings_line', {
+                      emoji: entry.itemEmoji,
+                      quantity: entry.listing.quantity,
+                      name: entry.itemName,
+                      price: formatCoins(entry.listing.startPrice, false, context.locale),
+                      status,
+                      id: entry.listing.id,
+                    });
                   })
-                  .join('\n') || 'No listing.',
+                  .join('\n') || context.t('trade.my_listings_empty'),
               color: COLORS.info,
             }),
           ],
@@ -194,24 +217,33 @@ export async function auctionListView(
 ) {
   const result = await tradeService.browse(context.player.id, { itemKey, page }, context.locale);
 
+  const t = context.t;
+  const locale = context.locale;
   const embed = baseEmbed({
-    title: '🔨 Auction house',
+    title: t('trade.house_title'),
     description:
       result.listings
         .map((listing) => {
           const bid = listing.currentBid
-            ? `bid **${formatCoins(listing.currentBid)}**`
-            : `starting at **${formatCoins(listing.startPrice)}**`;
-          const buyout = listing.buyoutPrice ? ` • buy now **${formatCoins(listing.buyoutPrice)}**` : '';
+            ? t('trade.bid_current', { price: formatCoins(listing.currentBid, false, locale) })
+            : t('trade.bid_starting', { price: formatCoins(listing.startPrice, false, locale) });
+          const buyout = listing.buyoutPrice
+            ? t('trade.buyout_part', { price: formatCoins(listing.buyoutPrice, false, locale) })
+            : '';
           return [
-            `${listing.itemEmoji} **${listing.quantity}× ${listing.itemName}**${qualityIcon(listing.quality)}${listing.isOwn ? ' *(your listing)*' : ''}`,
-            `   ${bid}${buyout} • seller: ${listing.sellerName} • expires ${discordTimestamp(listing.expiresAt, 'R')}`,
+            `${listing.itemEmoji} **${listing.quantity}× ${listing.itemName}**${qualityIcon(listing.quality)}${listing.isOwn ? t('trade.own_listing_marker') : ''}`,
+            `   ${t('trade.listing_line2', {
+              bid,
+              buyout,
+              seller: listing.sellerName,
+              relative: discordTimestamp(listing.expiresAt, 'R'),
+            })}`,
             `   \`${listing.id}\``,
           ].join('\n');
         })
-        .join('\n\n') || 'No listing right now. Be the first with `/auction sell`!',
+        .join('\n\n') || t('trade.house_empty'),
     color: COLORS.gold,
-    footer: `${result.total} listing(s) • page ${result.page}/${result.totalPages}`,
+    footer: t('trade.house_footer', { total: result.total, page: result.page, totalPages: result.totalPages }),
   });
 
   const buyable = result.listings.filter((listing) => !listing.isOwn && listing.buyoutPrice);
@@ -226,12 +258,12 @@ export async function auctionListView(
                 namespace: 'hdv',
                 action: 'buy',
                 ownerId: context.player.discordId,
-                placeholder: 'Buy a listing',
+                placeholder: t('trade.buy_placeholder'),
                 choices: buyable.map((listing) => ({
                   label: truncate(`${listing.quantity}× ${listing.itemName} — ${listing.buyoutPrice} 🪙`, 90),
                   value: listing.id,
                   emoji: listing.itemEmoji,
-                  description: `Seller: ${listing.sellerName}`,
+                  description: t('trade.seller_line', { seller: listing.sellerName }),
                 })),
               }),
             ),
@@ -284,6 +316,8 @@ export async function tradeView(
   trade: tradeService.TradeView,
   partnerName: string,
 ) {
+  const t = context.t;
+  const locale = context.locale;
   const mine = trade.items.filter((item) => item.userId === context.player.id);
   const theirs = trade.items.filter((item) => item.userId !== context.player.id);
   const isInitiator = trade.initiatorId === context.player.id;
@@ -291,28 +325,31 @@ export async function tradeView(
   const format = (items: typeof mine, coins: number): string =>
     [
       ...items.map((item) => `${item.emoji} ${item.quantity}× ${item.name}`),
-      coins > 0 ? `🪙 ${formatNumber(coins)} coins` : '',
+      coins > 0 ? t('trade.coins_line', { coins: formatNumber(coins, locale) }) : '',
     ]
       .filter(Boolean)
-      .join('\n') || '*nothing yet*';
+      .join('\n') || t('trade.nothing_yet');
 
   return {
     embeds: [
       baseEmbed({
-        title: `🤝 Trade with ${partnerName}`,
+        title: t('trade.view_title', { name: partnerName }),
         description: [
-          '**Both players must confirm.** Any change cancels the confirmations.',
-          `Expires ${discordTimestamp(trade.expiresAt, 'R')} • revision ${trade.revision}`,
+          t('trade.view_confirm_notice'),
+          t('trade.view_expires_line', {
+            relative: discordTimestamp(trade.expiresAt, 'R'),
+            revision: trade.revision,
+          }),
         ].join('\n'),
         color: COLORS.info,
         fields: [
           {
-            name: `${trade.initiatorConfirmed && isInitiator ? '✅' : '⬜'} Your offer`,
+            name: `${trade.initiatorConfirmed && isInitiator ? '✅' : '⬜'} ${t('trade.your_offer_field')}`,
             value: format(mine, isInitiator ? trade.initiatorCoins : trade.partnerCoins),
             inline: true,
           },
           {
-            name: `${(isInitiator ? trade.partnerConfirmed : trade.initiatorConfirmed) ? '✅' : '⬜'} ${partnerName}’s offer`,
+            name: `${(isInitiator ? trade.partnerConfirmed : trade.initiatorConfirmed) ? '✅' : '⬜'} ${t('trade.their_offer_field', { name: partnerName })}`,
             value: format(theirs, isInitiator ? trade.partnerCoins : trade.initiatorCoins),
             inline: true,
           },
@@ -326,7 +363,7 @@ export async function tradeView(
           action: 'add_item',
           ownerId: context.player.discordId,
           params: [trade.id],
-          label: 'Add an item',
+          label: t('trade.add_item_button'),
           emoji: '📦',
         }),
         button({
@@ -334,7 +371,7 @@ export async function tradeView(
           action: 'add_coins',
           ownerId: context.player.discordId,
           params: [trade.id],
-          label: 'Add coins',
+          label: t('trade.add_coins_button'),
           emoji: '🪙',
         }),
         button({
@@ -342,7 +379,7 @@ export async function tradeView(
           action: 'confirm',
           ownerId: context.player.discordId,
           params: [trade.id, trade.revision],
-          label: 'Confirmer',
+          label: t('common.confirm'),
           emoji: '✅',
           style: ButtonStyle.Success,
         }),
@@ -351,7 +388,7 @@ export async function tradeView(
           action: 'cancel',
           ownerId: context.player.discordId,
           params: [trade.id],
-          label: 'Cancel',
+          label: t('common.cancel'),
           emoji: '✖️',
           style: ButtonStyle.Danger,
         }),
