@@ -77,10 +77,15 @@ async function resolveWeather(day: string, season: SeasonState, now: Date): Prom
   const balance = getBalance();
   const existing = await systemRepo.getWeatherForDay(day);
   if (existing) {
+    // La table `weather` ne stocke pas de libellé séparé (seulement la
+    // description) : on le retrouve dans la configuration par la clé météo,
+    // comme le fait `rollWeather()` pour un tirage frais. Un `.slice()` sur la
+    // description tronquait ici le libellé au milieu d'un mot.
+    const config = balance.weather.table.find((entry) => entry.weather === existing.weather);
     return {
       weather: existing.weather,
       emoji: existing.emoji,
-      label: existing.description.slice(0, 48),
+      label: config?.label ?? existing.description,
       description: existing.description,
       yieldModifier: Number(existing.yieldModifier),
       growthModifier: Number(existing.growthModifier),
