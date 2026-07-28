@@ -61,9 +61,16 @@ export async function dispatchBatch(client: Client, limit: number): Promise<numb
         (notification.type.startsWith('animal') && settings.notifyAnimals) ||
         (notification.type === 'energy_full' && settings.notifyEnergy) ||
         (notification.type === 'daily_reminder' && settings.dailyReminder) ||
-        ['craft_done', 'auction_sold', 'auction_outbid', 'trade_request', 'coop_objective', 'event_start', 'admin_message'].includes(
-          notification.type,
-        );
+        [
+          'craft_done',
+          'auction_sold',
+          'auction_won',
+          'auction_outbid',
+          'trade_request',
+          'coop_objective',
+          'event_start',
+          'admin_message',
+        ].includes(notification.type);
 
       if (!allowed) {
         await systemRepo.markNotificationDelivered(notification.id);

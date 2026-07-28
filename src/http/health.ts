@@ -6,6 +6,7 @@ import { pingRedis } from '../db/redis';
 import { getConfig } from '../config';
 import { getRegistry } from '../framework/registry';
 import * as economyRepo from '../repositories/economy.repo';
+import { handleApiRequest } from './api';
 import { moduleLogger } from '../utils/logger';
 
 const log = moduleLogger('http');
@@ -67,6 +68,11 @@ export function startHealthServer(client: Client): Server | undefined {
 
     if (url === '/metrics') {
       void handleMetrics(client, response);
+      return;
+    }
+
+    if (url.startsWith('/api/')) {
+      void handleApiRequest(request, response);
       return;
     }
 

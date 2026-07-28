@@ -376,6 +376,7 @@ contextuels. Détail complet dans le [README](../README.md#commandes) et dans
 | `trade.ts` | `/auction`, `/trade` |
 | `world.ts` | `/weather`, `/season`, `/event`, `/encyclopedia` |
 | `admin.ts` | `/admin` |
+| `integrations.ts` | `/apikey`, `/webhook` |
 | `context-menus.ts` | **Voir la ferme**, **Proposer un échange** |
 
 Toutes les options d'objet, de culture, d'animal et de recette utilisent

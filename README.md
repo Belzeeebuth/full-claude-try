@@ -159,7 +159,7 @@ malformée fait échouer le lancement immédiatement, avec le nom du champ fauti
 | `NODE_ENV` | `development` | `production` en exploitation |
 | `LOG_LEVEL` | `info` | `debug` pour diagnostiquer |
 | `LOG_PRETTY` | `false` | `true` en développement (sortie lisible) |
-| `HTTP_PORT` | `3001` | `/health`, `/ready`, `/metrics` |
+| `HTTP_PORT` | `3001` | `/health`, `/ready`, `/metrics`, `/api/v1/*` |
 
 **Réglages de jeu modifiables sans redéploiement**
 
@@ -328,6 +328,8 @@ journalctl -u harvester -f
 | `/tutorial` | Guide interactif paginé |
 | `/help [category]` | Aide complète |
 | `/lang [language]` | Changer la langue de l'interface (français / anglais) |
+| `/apikey create\|list\|revoke` | Clés d'API personnelles pour l'API publique en lecture |
+| `/webhook create\|list\|delete\|test` | Webhooks sortants vers un service tiers (récolte prête, enchère remportée) |
 
 ### Ferme
 
@@ -343,6 +345,8 @@ journalctl -u harvester -f
 | `/plots` | État détaillé, paginé |
 | `/buy-plot` | Étendre la ferme |
 | `/crops [rarity] [season]` | Encyclopédie des cultures |
+| `/fish` | Pêcher à l'étang, minijeu de timing **(image)** |
+| `/mine` | Miner un peu plus profond **(image)** |
 
 ### Élevage
 
@@ -372,6 +376,7 @@ journalctl -u harvester -f
 | `/discard <item> <quantity>` | Jeter |
 | `/bank balance\|deposit\|withdraw\|upgrade` | Banque |
 | `/gift <@user> <amount>` | Don (taxé) |
+| `/black-market` | Marché noir tournant, stock très limité, niveau 30+ |
 
 ### Transformation
 
@@ -449,6 +454,7 @@ Clic droit sur un membre → **Voir la ferme** · **Proposer un échange**.
 | `GET /health` (ou `/healthz`) | Discord **et** PostgreSQL — utilisé par Docker |
 | `GET /ready` | Prêt à recevoir du trafic |
 | `GET /metrics` | Compteurs, latences, files, santé du grand livre |
+| `GET /api/v1/*` | API publique en lecture, à clé — voir [07 — API publique](./docs/07-api-publique.md) |
 
 ### Sauvegardes
 
@@ -564,6 +570,7 @@ Aucune ligne de code à écrire.
 | [04 — Équilibrage](./docs/04-equilibrage.md) | Toutes les tables chiffrées et leur justification |
 | [05 — Pipeline d'assets](./docs/05-pipeline-assets.md) | Conventions de nommage, sources libres, licences, cache |
 | [06 — Roadmap](./docs/06-roadmap.md) | Extensions v2 et v3, dette technique, hors périmètre |
+| [07 — API publique](./docs/07-api-publique.md) | Authentification, endpoints, webhooks, vérification de signature |
 
 ---
 

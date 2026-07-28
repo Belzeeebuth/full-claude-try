@@ -29,6 +29,13 @@
       "when": 1785224133567,
       "tag": "0005_mine_progress",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785240479506,
+      "tag": "0006_api_and_webhooks",
+      "breakpoints": true
     }
   ]
 }

@@ -210,6 +210,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'energy_full',
   'craft_done',
   'auction_sold',
+  'auction_won',
   'auction_outbid',
   'auction_expired',
   'trade_request',
@@ -220,6 +221,12 @@ export const notificationTypeEnum = pgEnum('notification_type', [
 ]);
 
 export const notificationChannelEnum = pgEnum('notification_channel', ['dm', 'none']);
+
+export const webhookEventStatusEnum = pgEnum('webhook_event_status', [
+  'pending',
+  'delivered',
+  'failed',
+]);
 
 export const taskStatusEnum = pgEnum('task_status', [
   'pending',

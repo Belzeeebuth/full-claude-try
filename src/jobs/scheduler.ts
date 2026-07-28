@@ -117,6 +117,7 @@ function startWithTimers(): void {
   // Repli minimaliste : on approxime le cron par un intervalle. Suffisant en
   // développement, jamais recommandé en production (pas de coordination).
   const intervals: Record<string, number> = {
+    '* * * * *': 60_000,
     '*/5 * * * *': 5 * 60_000,
     '*/10 * * * *': 10 * 60_000,
     '*/15 * * * *': 15 * 60_000,

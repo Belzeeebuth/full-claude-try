@@ -7,9 +7,11 @@ import { formatNumber } from '../utils/format';
 import { moduleLogger } from '../utils/logger';
 import * as tradeRepo from '../repositories/trade.repo';
 import * as economyRepo from '../repositories/economy.repo';
+import * as systemRepo from '../repositories/system.repo';
 import * as economyService from './economy.service';
 import * as inventoryService from './inventory.service';
 import { trackAction } from './tracker.service';
+import * as webhookService from './webhook.service';
 import type { Mutation, Quality } from '../repositories/inventory.repo';
 import type { PlayerContext } from '../types';
 
@@ -505,6 +507,35 @@ export async function closeExpiredListings(limit = 50): Promise<{ sold: number; 
           { allowOverflow: true },
         );
         sold += 1;
+
+        await systemRepo.enqueueNotification({
+          userId: locked.sellerId,
+          type: 'auction_sold',
+          payload: {
+            titleKey: 'notifications.auction_sold_title',
+            bodyKey: 'notifications.auction_sold_body',
+            params: { quantity: locked.quantity, amount: locked.currentBid - commission },
+          },
+          dedupeKey: `auction-sold:${locked.id}`,
+        });
+        await systemRepo.enqueueNotification({
+          userId: locked.currentBidderId,
+          type: 'auction_won',
+          payload: {
+            titleKey: 'notifications.auction_won_title',
+            bodyKey: 'notifications.auction_won_body',
+            params: { quantity: locked.quantity, amount: locked.currentBid },
+          },
+          dedupeKey: `auction-won:${locked.id}`,
+        });
+        await webhookService.enqueueEvent(locked.currentBidderId, 'auction_won', {
+          listingId: locked.id,
+          itemKey: locked.itemKey,
+          quantity: locked.quantity,
+          quality: locked.quality,
+          mutation: locked.mutation,
+          pricePaid: locked.currentBid,
+        });
       } else {
         const marked = await tradeRepo.markExpired(locked.id, tx);
         if (!marked) return;

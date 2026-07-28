@@ -18,3 +18,4 @@ export * from './economy';
 export * from './progression';
 export * from './social';
 export * from './system';
+export * from './integrations';

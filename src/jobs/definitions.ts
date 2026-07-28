@@ -19,6 +19,7 @@ import * as marketService from '../services/market.service';
 import * as miscService from '../services/misc.service';
 import * as progressionService from '../services/progression.service';
 import * as tradeService from '../services/trade.service';
+import * as webhookService from '../services/webhook.service';
 import { ensureSeasonCalendar, getWorldState } from '../services/world.service';
 import { isPestRepelActive } from '../services/consumable.service';
 import { currentWeekStart, toSqlDate, weeklyCycleKey } from '../utils/time';
@@ -304,6 +305,13 @@ export const jobs: JobDefinition[] = [
           dedupeKey: `ready:${crop.userId}:${crop.plotSlot}:${crop.readyAt.toISOString()}`,
         });
         if (enqueued) queued += 1;
+        if (enqueued) {
+          await webhookService.enqueueEvent(crop.userId, 'crop_ready', {
+            plotSlot: crop.plotSlot,
+            cropKey: crop.cropKey,
+            readyAt: crop.readyAt.toISOString(),
+          });
+        }
       }
       return `${queued} notifications scheduled`;
     },
@@ -317,6 +325,16 @@ export const jobs: JobDefinition[] = [
       const result = await tradeService.closeExpiredListings(50);
       const trades = await tradeService.expireTrades(50);
       return `${result.sold} sold, ${result.returned} returned, ${trades} trades expired`;
+    },
+  },
+
+  {
+    key: 'webhooks:dispatch',
+    cron: '* * * * *',
+    description: 'Delivers pending outgoing webhook events',
+    async run() {
+      const result = await webhookService.dispatchPending(100);
+      return `${result.delivered} delivered, ${result.failed} failed`;
     },
   },
 

@@ -112,13 +112,40 @@ Objectif : sortir du seul client Discord et industrialiser l'exploitation.
   se limite à une couche HTTP et à l'interface.
 - **Effort** : 6 à 8 semaines.
 
-### v3.2 — API publique et webhooks
+### v3.2 — API publique et webhooks — ✅ Livré
 
-- API REST en lecture pour les statistiques de joueur et de coopérative, avec clés
-  et limitation de débit.
-- Webhooks sortants (récolte prête, enchère remportée) vers des services tiers.
-- Permet aux communautés de construire leurs propres tableaux de bord.
-- **Effort** : 3 semaines.
+- **API REST en lecture** : `GET /api/v1/me` (profil et statistiques) et
+  `GET /api/v1/me/coop` (coopérative du titulaire, 404 s'il n'en a pas), sur le
+  même serveur HTTP que `/health` et `/metrics` (`src/http/api.ts`), sans
+  framework supplémentaire. Un endpoint `/api/v1/leaderboard` a été envisagé puis
+  écarté : le texte de la roadmap ne demandait que les statistiques de joueur et
+  de coopérative, et les classements existants n'avaient pas de forme stable à
+  publier sans travail de conception supplémentaire — à reconsidérer si la
+  demande se confirme.
+- **Authentification et débit** : clés personnelles (`/apikey create|list|revoke`),
+  jamais stockées en clair (hachage SHA-256 — une clé à haute entropie n'a pas
+  besoin d'un KDF lent type bcrypt), secret affiché une seule fois à la création.
+  Limitation de débit par clé via `consumeRate()`, le même mécanisme de fenêtre
+  glissante que les commandes Discord (`balance.api.rateLimitPerMinute`).
+- **Webhooks sortants** (`/webhook create|list|delete|test`) pour `crop_ready` et
+  `auction_won`, signés HMAC-SHA256 (en-tête `X-Harvester-Signature`, à vérifier
+  côté récepteur). Un évènement de jeu ne fait jamais un appel HTTP synchrone :
+  il écrit une ligne dans `webhook_events` au sein de la **même transaction** que
+  l'action qui le déclenche, et un job planifié (`webhooks:dispatch`, chaque
+  minute) livre en tentative unique — la fiabilité vient de la désactivation
+  automatique d'un abonnement en échec répété (`webhookMaxFailures`), pas d'une
+  reprise avec attente exponentielle qui retarderait la livraison à un tiers.
+- **Effet de bord utile** : en câblant `auction_won`, la notification MP du
+  vendeur (`auction_sold`) et celle du gagnant (`auction_won`) ont été branchées
+  au passage — le type `auction_sold` existait déjà dans l'énumération mais
+  n'était encore déclenché par aucun code.
+- **Impact base** : 3 tables (`api_keys`, `webhook_subscriptions`,
+  `webhook_events`), 1 valeur d'énumération ajoutée
+  (`notification_type.auction_won`).
+- **Documentation dédiée** : [07 — API publique](./07-api-publique.md), destinée
+  aux intégrateurs tiers (authentification, endpoints, format des webhooks,
+  vérification de signature).
+- **Effort estimé initial** : 3 semaines.
 
 ### v3.3 — Saisons compétitives
 

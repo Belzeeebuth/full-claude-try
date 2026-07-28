@@ -502,6 +502,14 @@
       "mythic": 1
     }
   },
+  "api": {
+    "enabled": true,
+    "maxKeysPerUser": 3,
+    "rateLimitPerMinute": 60,
+    "maxWebhooksPerUser": 3,
+    "webhookTimeoutMs": 5000,
+    "webhookMaxFailures": 10
+  },
   "daily": {
     "baseCoins": 250,
     "coinsPerStreakDay": 60,

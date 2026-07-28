@@ -929,6 +929,17 @@
       "level_too_low": "La mine nécessite le niveau {level}.",
       "unavailable": "La mine est temporairement indisponible, réessayez."
     },
+    "api": {
+      "too_many_keys": "Vous avez déjà {max} clés d'API actives au maximum.",
+      "key_not_found": "Aucune clé active avec ce préfixe.",
+      "disabled": "L'API publique est temporairement désactivée."
+    },
+    "webhook": {
+      "invalid_url": "URL de webhook invalide. Elle doit commencer par http:// ou https://.",
+      "invalid_event": "Type d'évènement inconnu. Valeurs possibles : {events}.",
+      "too_many": "Vous pouvez avoir au maximum {max} webhooks.",
+      "not_found": "Webhook introuvable."
+    },
     "coop": {
       "not_found": "Coopérative introuvable.",
       "invalid_name": "Le nom doit faire 3 à 32 caractères (lettres, chiffres, espaces, apostrophes, tirets).",
@@ -1039,7 +1050,11 @@
     "animal_hungry_title": "🍽️ Vos animaux ont faim",
     "animal_hungry_body": "Votre {name} a faim ({hunger}%). Un animal affamé produit deux fois moins.",
     "crop_ready_title": "🌾 Récolte prête !",
-    "crop_ready_body": "Votre parcelle {slot} est prête. Utilisez `/harvest` avant qu'elle ne flétrisse."
+    "crop_ready_body": "Votre parcelle {slot} est prête. Utilisez `/harvest` avant qu'elle ne flétrisse.",
+    "auction_sold_title": "💰 Enchère vendue",
+    "auction_sold_body": "Votre lot de {quantity} objet(s) s'est vendu pour {amount} 🪙.",
+    "auction_won_title": "🏆 Enchère remportée",
+    "auction_won_body": "Vous avez remporté {quantity} objet(s) pour {amount} 🪙."
   },
   "world": {
     "weather": {
@@ -1267,5 +1282,31 @@
     "entry_members": "{count} membres",
     "empty": "Aucun classement disponible.",
     "footer_with_rank": "Votre rang : #{rank} • {scope}"
+  },
+  "integrations": {
+    "never": "jamais",
+    "status_active": "active",
+    "status_disabled": "désactivé (trop d'échecs)",
+    "apikey_created_title": "🔑 Clé d'API créée",
+    "apikey_created_body": "Votre clé : `{key}`",
+    "apikey_created_warning": "⚠️ Elle ne sera plus jamais affichée. Conservez-la en lieu sûr — quiconque la possède peut lire vos statistiques.",
+    "apikey_list_title": "🔑 Vos clés d'API",
+    "apikey_list_line": "`{prefix}…` — {label} (créée {created}, dernier usage : {lastUsed})",
+    "apikey_list_empty": "Aucune clé active. Créez-en une avec `/apikey create`.",
+    "apikey_revoked_title": "Clé révoquée",
+    "apikey_revoked_body": "La clé `{prefix}…` ne fonctionne plus.",
+    "webhook_created_title": "🪝 Webhook créé",
+    "webhook_created_body": "Identifiant : `{id}`",
+    "webhook_created_secret": "Secret de signature : `{secret}`",
+    "webhook_created_warning": "⚠️ Le secret ne sera plus jamais affiché : c'est lui qui vous permet de vérifier l'en-tête `X-Harvester-Signature` de chaque livraison.",
+    "webhook_list_title": "🪝 Vos webhooks",
+    "webhook_list_line": "`{id}` — {url} — {events} ({status})",
+    "webhook_list_empty": "Aucun webhook enregistré. Créez-en un avec `/webhook create`.",
+    "webhook_deleted_title": "Webhook supprimé",
+    "webhook_deleted_body": "Il ne recevra plus aucun évènement.",
+    "webhook_test_ok_title": "✅ Test réussi",
+    "webhook_test_ok_body": "Votre point de terminaison a répondu (HTTP {status}).",
+    "webhook_test_failed_title": "❌ Test échoué",
+    "webhook_test_failed_body": "Livraison impossible : {error}"
   }
 }

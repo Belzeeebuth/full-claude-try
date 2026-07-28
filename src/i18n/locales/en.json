@@ -1156,6 +1156,17 @@
       "level_too_low": "Mining requires level {level}.",
       "unavailable": "Mining is temporarily unavailable, please retry."
     },
+    "api": {
+      "too_many_keys": "You already have {max} active API keys, the maximum.",
+      "key_not_found": "No active key with that prefix.",
+      "disabled": "The public API is temporarily disabled."
+    },
+    "webhook": {
+      "invalid_url": "Invalid webhook URL. It must start with http:// or https://.",
+      "invalid_event": "Unknown event type. Valid values: {events}.",
+      "too_many": "You can have at most {max} webhooks.",
+      "not_found": "Webhook not found."
+    },
     "coop": {
       "not_found": "Co-op not found.",
       "invalid_name": "The name must be 3 to 32 characters (letters, digits, spaces, apostrophes, hyphens).",
@@ -1266,6 +1277,36 @@
     "animal_hungry_title": "🍽️ Your animals are hungry",
     "animal_hungry_body": "Your {name} is hungry ({hunger}%). A hungry animal produces half as much.",
     "crop_ready_title": "🌾 Harvest ready!",
-    "crop_ready_body": "Your plot {slot} is ready. Use `/harvest` before it withers."
+    "crop_ready_body": "Your plot {slot} is ready. Use `/harvest` before it withers.",
+    "auction_sold_title": "💰 Auction sold",
+    "auction_sold_body": "Your lot of {quantity} item(s) sold for {amount} 🪙.",
+    "auction_won_title": "🏆 Auction won",
+    "auction_won_body": "You won {quantity} item(s) for {amount} 🪙."
+  },
+  "integrations": {
+    "never": "never",
+    "status_active": "active",
+    "status_disabled": "disabled (too many failures)",
+    "apikey_created_title": "🔑 API key created",
+    "apikey_created_body": "Your key: `{key}`",
+    "apikey_created_warning": "⚠️ It will never be shown again. Keep it safe — anyone who has it can read your stats.",
+    "apikey_list_title": "🔑 Your API keys",
+    "apikey_list_line": "`{prefix}…` — {label} (created {created}, last used: {lastUsed})",
+    "apikey_list_empty": "No active key. Create one with `/apikey create`.",
+    "apikey_revoked_title": "Key revoked",
+    "apikey_revoked_body": "The key `{prefix}…` no longer works.",
+    "webhook_created_title": "🪝 Webhook created",
+    "webhook_created_body": "ID: `{id}`",
+    "webhook_created_secret": "Signing secret: `{secret}`",
+    "webhook_created_warning": "⚠️ The secret will never be shown again: it's what lets you verify the `X-Harvester-Signature` header on each delivery.",
+    "webhook_list_title": "🪝 Your webhooks",
+    "webhook_list_line": "`{id}` — {url} — {events} ({status})",
+    "webhook_list_empty": "No webhook registered. Create one with `/webhook create`.",
+    "webhook_deleted_title": "Webhook deleted",
+    "webhook_deleted_body": "It will no longer receive any events.",
+    "webhook_test_ok_title": "✅ Test succeeded",
+    "webhook_test_ok_body": "Your endpoint responded (HTTP {status}).",
+    "webhook_test_failed_title": "❌ Test failed",
+    "webhook_test_failed_body": "Delivery failed: {error}"
   }
 }

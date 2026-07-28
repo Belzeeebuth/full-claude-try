@@ -659,6 +659,14 @@ export const balanceSchema = z.object({
     /** Poids par rareté pour le tirage du minerai (mêmes clés que `rarities`). */
     rarityWeights: z.record(z.enum(rarities), nonNegativeInt),
   }),
+  api: z.object({
+    enabled: z.boolean(),
+    maxKeysPerUser: positiveInt,
+    rateLimitPerMinute: positiveInt,
+    maxWebhooksPerUser: positiveInt,
+    webhookTimeoutMs: positiveInt,
+    webhookMaxFailures: positiveInt,
+  }),
   daily: z.object({
     baseCoins: nonNegativeInt,
     coinsPerStreakDay: nonNegativeInt,
