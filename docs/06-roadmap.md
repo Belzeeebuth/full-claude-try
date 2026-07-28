@@ -130,6 +130,36 @@ effort/valeur plutôt que pour suivre l'ordre de cette liste.
   `guild_objectives`), 2 valeurs d'énumération (`coop_objective_period`,
   `notification_type.order_filled`).
 
+### v2.7 — Compagnons de ferme — ✅ Livré
+
+Fonctionnalité cosmétique pure, ajoutée hors plan initial : aucun bonus de
+jeu, aucune nouvelle monnaie ni jauge à équilibrer, juste une collection à
+débloquer.
+
+- **Catalogue** (`game/pets.ts`) : 8 compagnons (poussin → bébé dragon),
+  chacun avec un niveau de déblocage, en tableau TypeScript plutôt qu'en
+  table `*_config` — même choix que les gabarits d'objectifs de coopérative
+  (`COOP_OBJECTIVE_TEMPLATES`) : la clé référencée (`owned_pets.pet_key`,
+  `users.equipped_pet_key`) reste un `varchar` sans clé étrangère, validé
+  côté service.
+- **Déblocage automatique** : accroché à `grantXp()` (chaque montée de
+  niveau débloque les compagnons nouvellement atteints, idempotent via
+  `onConflictDoNothing`) et à la création de compte pour le compagnon de
+  niveau 1 — pas de commande « réclamer », le compagnon apparaît directement
+  dans `/companion list` dès le niveau atteint.
+- **Commande** `/companion list|equip|unequip` : liste avec statut
+  verrouillé/débloqué/équipé, équipement soumis à la possession réelle
+  (`owned_pets`), autocomplétion limitée aux compagnons déjà débloqués.
+  `/pet` était déjà pris par `/animals` (caresser un animal), d'où le nom
+  distinct.
+- **Rendu** : badge rond superposé au coin de l'avatar sur `/farm`. Comme
+  pour les tuiles/cultures/animaux, un sprite `pets/<clé>.png` optionnel est
+  tenté en premier ; à défaut, repli procédural (`drawPetIcon`) — silhouette
+  générique teintée par espèce, cohérente avec le reste du travail de
+  polish vectoriel de la v2.6.
+- **Impact base** : 1 table (`owned_pets`), 1 colonne
+  (`users.equipped_pet_key`), sans clé étrangère sur la clé de compagnon.
+
 ---
 
 ## v3 — « La plateforme »

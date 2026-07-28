@@ -403,6 +403,7 @@ journalctl -u harvester -f
 | `/pass` | Passe saisonnier |
 | `/daily` | Récompense quotidienne et série |
 | `/vote` | Récompense de vote top.gg |
+| `/companion list\|equip\|unequip` | Compagnons de ferme cosmétiques, débloqués par niveau |
 
 ### Social et échanges
 
