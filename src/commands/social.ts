@@ -9,7 +9,7 @@ import {
 } from 'discord.js';
 import { COLORS, baseEmbed, button, row, successEmbed } from '../framework/ui';
 import { coopView, farmView } from '../framework/views';
-import { renderLeaderboardImage } from '../render';
+import { NO_IMAGE, renderLeaderboardImage } from '../render';
 import * as coopService from '../services/coop.service';
 import * as farmService from '../services/farm.service';
 import * as miscService from '../services/misc.service';
@@ -385,21 +385,23 @@ export async function sendLeaderboard(
         ? t('leaderboard.scope.coop')
         : t('leaderboard.scope.global');
 
-  const image = await renderLeaderboardImage({
-    locale: context.locale,
-    title: meta.label,
-    emoji: meta.emoji,
-    unit: meta.unit,
-    scopeLabel,
-    entries: board.rows.map((entry) => ({
-      rank: entry.rank,
-      name: entry.name,
-      score: entry.score,
-      extra: entry.extra,
-      isViewer: 'userId' in entry ? entry.userId === context.player.id : false,
-    })),
-    viewer: viewerRank,
-  });
+  const image = context.player.compactMode
+    ? NO_IMAGE
+    : await renderLeaderboardImage({
+        locale: context.locale,
+        title: meta.label,
+        emoji: meta.emoji,
+        unit: meta.unit,
+        scopeLabel,
+        entries: board.rows.map((entry) => ({
+          rank: entry.rank,
+          name: entry.name,
+          score: entry.score,
+          extra: entry.extra,
+          isViewer: 'userId' in entry ? entry.userId === context.player.id : false,
+        })),
+        viewer: viewerRank,
+      });
 
   const embed = baseEmbed({
     title: `${meta.emoji} ${t('render.leaderboard.title', { title: meta.label })}`,

@@ -47,6 +47,8 @@ export interface PlayerContext {
   energyMax: number;
   locale: string;
   isAdmin: boolean;
+  /** Préférence « pas d'images générées » (`/settings compact-mode`). */
+  compactMode: boolean;
   ecoBannedUntil: Date | null;
   farmId: string;
   coopId: string | null;

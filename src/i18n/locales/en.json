@@ -417,7 +417,7 @@
     "display_field": "🌍 Display",
     "language_line": "Language: **{locale}**",
     "timezone_line": "Time zone: **{timezone}**",
-    "compact_mode_line": "Compact mode: {check}",
+    "compact_mode_line": "Compact mode, no generated images: {check}",
     "privacy_field": "🔒 Privacy",
     "privacy_visible_line": "Farm visible to: **{scope}**",
     "privacy_nobody": "nobody",

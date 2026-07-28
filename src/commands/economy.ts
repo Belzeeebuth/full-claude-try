@@ -1,7 +1,7 @@
 import { MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { COLORS, baseEmbed, successEmbed } from '../framework/ui';
 import { inventoryView, marketView, shopView } from '../framework/views';
-import { renderChartImage } from '../render';
+import { NO_IMAGE, renderChartImage } from '../render';
 import * as economyService from '../services/economy.service';
 import * as marketService from '../services/market.service';
 import * as inventoryService from '../services/inventory.service';
@@ -268,16 +268,18 @@ export async function sendMarketChart(
   if (!row) throw gameError('not_found', context.t('market.not_tracked', { item: item.name }));
 
   const points = await marketService.getPriceHistory(itemKey);
-  const image = await renderChartImage({
-    locale: context.locale,
-    title: item.name,
-    emoji: item.emoji,
-    points: points.length > 0 ? points : [{ price: row.price, recordedAt: new Date() }],
-    basePrice: row.basePrice,
-    currentPrice: row.price,
-    trend: row.trend,
-    demandIndex: row.demandIndex,
-  });
+  const image = context.player.compactMode
+    ? NO_IMAGE
+    : await renderChartImage({
+        locale: context.locale,
+        title: item.name,
+        emoji: item.emoji,
+        points: points.length > 0 ? points : [{ price: row.price, recordedAt: new Date() }],
+        basePrice: row.basePrice,
+        currentPrice: row.price,
+        trend: row.trend,
+        demandIndex: row.demandIndex,
+      });
 
   await interaction.editReply({
     embeds: [

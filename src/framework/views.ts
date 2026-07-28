@@ -7,7 +7,7 @@ import * as farmService from '../services/farm.service';
 import * as inventoryService from '../services/inventory.service';
 import * as marketService from '../services/market.service';
 import * as progressionService from '../services/progression.service';
-import { renderFarmImage } from '../render';
+import { NO_IMAGE, renderFarmImage } from '../render';
 import {
   COIN,
   discordTimestamp,
@@ -54,7 +54,7 @@ export async function farmView(
 
   const xpForNext = (await import('../game/xp')).xpForNextLevel(player.level, context.balance);
 
-  const image = await renderFarmImage({
+  const image = player.compactMode ? NO_IMAGE : await renderFarmImage({
     locale: context.locale,
     view,
     player: {

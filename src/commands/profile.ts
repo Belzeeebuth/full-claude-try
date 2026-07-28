@@ -1,6 +1,6 @@
 import { ButtonStyle, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { COLORS, baseEmbed, button, confirmRow, row } from '../framework/ui';
-import { renderProfileImage } from '../render';
+import { NO_IMAGE, renderProfileImage } from '../render';
 import { getProfile } from '../services/player.service';
 import * as miscService from '../services/misc.service';
 import * as playerRepo from '../repositories/player.repo';
@@ -37,36 +37,38 @@ const profil: Command = {
       throw gameError('not_found', context.t('economy.target_no_farm', { name: target.displayName }));
     }
 
-    const image = await renderProfileImage({
-      locale: context.locale,
-      username: profile.user.username,
-      displayName: profile.user.displayName ?? profile.user.username,
-      avatarUrl: target.displayAvatarURL({ extension: 'png', size: 256 }),
-      title: profile.user.title,
-      badges: profile.user.badges,
-      level: profile.user.level,
-      prestige: profile.user.prestige,
-      xp: { current: profile.user.xp, needed: profile.xpForNext },
-      coins: profile.user.coins,
-      gems: profile.user.gems,
-      bank: profile.bankBalance,
-      energy: { current: profile.energy.current, max: profile.energy.max },
-      stats: {
-        harvests: profile.user.totalHarvests,
-        animals: profile.user.totalAnimalsRaised,
-        crafts: profile.user.totalCrafts,
-        plots: profile.plotsUnlocked,
-        streak: profile.streak,
-        achievements: profile.achievementsUnlocked,
-        bestHarvest: profile.user.bestHarvestValue,
-        coinsEarned: profile.user.totalCoinsEarned,
-      },
-      coop: profile.coop,
-      themeColor: profile.user.profileColor,
-      bannerStyle: profile.user.profileTheme,
-      farmName: profile.farm.name,
-      createdAt: profile.user.createdAt,
-    });
+    const image = context.player.compactMode
+      ? NO_IMAGE
+      : await renderProfileImage({
+          locale: context.locale,
+          username: profile.user.username,
+          displayName: profile.user.displayName ?? profile.user.username,
+          avatarUrl: target.displayAvatarURL({ extension: 'png', size: 256 }),
+          title: profile.user.title,
+          badges: profile.user.badges,
+          level: profile.user.level,
+          prestige: profile.user.prestige,
+          xp: { current: profile.user.xp, needed: profile.xpForNext },
+          coins: profile.user.coins,
+          gems: profile.user.gems,
+          bank: profile.bankBalance,
+          energy: { current: profile.energy.current, max: profile.energy.max },
+          stats: {
+            harvests: profile.user.totalHarvests,
+            animals: profile.user.totalAnimalsRaised,
+            crafts: profile.user.totalCrafts,
+            plots: profile.plotsUnlocked,
+            streak: profile.streak,
+            achievements: profile.achievementsUnlocked,
+            bestHarvest: profile.user.bestHarvestValue,
+            coinsEarned: profile.user.totalCoinsEarned,
+          },
+          coop: profile.coop,
+          themeColor: profile.user.profileColor,
+          bannerStyle: profile.user.profileTheme,
+          farmName: profile.farm.name,
+          createdAt: profile.user.createdAt,
+        });
 
     const embed = baseEmbed({
       title: `${profile.user.displayName ?? profile.user.username} ${prestigeBadge(profile.user.prestige)}`,

@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { COLORS, baseEmbed, successEmbed } from '../framework/ui';
-import { renderMiningImage } from '../render';
+import { NO_IMAGE, renderMiningImage } from '../render';
 import * as miningService from '../services/mining.service';
 import { formatCoins } from '../utils/format';
 import type { Command } from '../types';
@@ -18,12 +18,14 @@ const mine: Command = {
 
     const result = await miningService.dig(context.player, context.now);
     const status = await miningService.getStatus(context.player);
-    const image = await renderMiningImage({
-      locale: context.locale,
-      depth: result.depth,
-      maxDepth: result.maxDepth,
-      deepestReached: status.deepestReached,
-    });
+    const image = context.player.compactMode
+      ? NO_IMAGE
+      : await renderMiningImage({
+          locale: context.locale,
+          depth: result.depth,
+          maxDepth: result.maxDepth,
+          deepestReached: status.deepestReached,
+        });
 
     const lines: string[] = [
       result.ore

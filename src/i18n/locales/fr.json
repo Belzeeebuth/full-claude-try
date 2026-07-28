@@ -1236,7 +1236,7 @@
     "display_field": "🌍 Affichage",
     "language_line": "Langue : **{locale}**",
     "timezone_line": "Fuseau horaire : **{timezone}**",
-    "compact_mode_line": "Mode compact : {check}",
+    "compact_mode_line": "Mode compact, sans images générées : {check}",
     "privacy_field": "🔒 Confidentialité",
     "privacy_visible_line": "Ferme visible par : **{scope}**",
     "privacy_nobody": "personne",
