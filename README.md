@@ -414,6 +414,7 @@ journalctl -u harvester -f
 | `/assist <@user>` | Aider (gain mutuel) |
 | `/referral` | Votre code et vos filleuls |
 | `/auction list\|sell\|buy\|my-listings\|cancel` | Hôtel des ventes |
+| `/order create\|list\|cancel` | Ordres d'achat permanents sur l'hôtel des ventes |
 | `/trade <@user>` | Échange direct sécurisé |
 
 ### Monde

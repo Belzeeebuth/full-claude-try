@@ -373,7 +373,7 @@ contextuels. Détail complet dans le [README](../README.md#commandes) et dans
 | `craft.ts` | `/craft`, `/recipes`, `/production`, `/buildings`, `/build` |
 | `progression.ts` | `/quests`, `/reroll-quest`, `/achievements`, `/pass`, `/daily`, `/vote` |
 | `social.ts` | `/coop`, `/leaderboard`, `/visit`, `/assist`, `/referral` |
-| `trade.ts` | `/auction`, `/trade` |
+| `trade.ts` | `/auction`, `/trade`, `/order` |
 | `world.ts` | `/weather`, `/season`, `/event`, `/encyclopedia` |
 | `admin.ts` | `/admin` |
 | `integrations.ts` | `/apikey`, `/webhook` |

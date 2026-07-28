@@ -95,6 +95,41 @@ Le rendu isométrique existe déjà ; il s'agit d'ajouter une couche de placemen
 - **Effort** : 2 semaines. Dépend d'une base de coopératives actives suffisante —
   à ne pas livrer trop tôt.
 
+### v2.6 — Défi quotidien, ordres permanents et accessibilité — ✅ Livré
+
+Trois ajouts ponctuels, hors plan initial, choisis pour leur rapport
+effort/valeur plutôt que pour suivre l'ordre de cette liste.
+
+- **Défi communautaire quotidien** (coopératives) : même mécanique que les
+  objectifs hebdomadaires existants (`guild_objectives`), avec une cadence
+  quotidienne — une colonne `period` distingue les deux, des clés `daily_*`
+  distinctes évitent toute collision. Volontairement scopé à la coopérative et
+  non au serveur Discord : le cahier des charges interdit explicitement
+  d'introduire un `guild_id` (serveur) dans une table de gameplay, décision
+  structurante liée au choix de la ferme globale. Récompenses en pièces et XP
+  de coopérative uniquement, jamais de gemmes — un gain quotidien répété
+  7×/semaine serait une source de monnaie premium bien plus généreuse qu'un
+  objectif hebdomadaire.
+- **Ordres d'achat permanents** (`/order create|list|cancel`) : « achète {X}
+  {objet} à {Y} 🪙 maximum l'unité », rapproché contre les annonces actives de
+  l'hôtel des ventes par le job `auctions:expire` existant (toutes les 5 min).
+  Construit sur l'hôtel des ventes entre joueurs, pas sur le marché fluctuant :
+  ce dernier n'a pas de côté achat aujourd'hui (`/sell` uniquement), et lui en
+  inventer un aurait ouvert un puits d'objets sans plafond. Aucun fonds
+  réservés à la création : le rapprochement tente le débit au moment du match
+  et laisse simplement l'ordre actif si les fonds manquent.
+- **Mode texte intégral** (`/settings compact-mode`) : le réglage existait déjà
+  de bout en bout (colonne, option Discord, ligne d'affichage) mais rien ne le
+  lisait — toutes les commandes à image généraient quand même leur PNG. Les six
+  points d'appel (`renderFarmImage`, `renderProfileImage`,
+  `renderChartImage`, `renderLeaderboardImage`, `renderFishingImage`,
+  `renderMiningImage`) court-circuitent désormais le rendu et vont directement
+  au repli texte déjà prévu à chaque appelant — un vrai gain d'accessibilité,
+  pas seulement un repli technique en cas d'échec.
+- **Impact base** : 1 table (`standing_orders`), 1 colonne (`period` sur
+  `guild_objectives`), 2 valeurs d'énumération (`coop_objective_period`,
+  `notification_type.order_filled`).
+
 ---
 
 ## v3 — « La plateforme »
