@@ -139,6 +139,21 @@ export function addXp(
 }
 
 /**
+ * Retire de l'XP et fait redescendre le niveau en cascade si besoin — l'inverse
+ * d'`addXp()`, pour corriger un octroi erroné (ex. commande d'administration).
+ * Plancher au niveau 1 / 0 XP : jamais de niveau ou d'XP négatif.
+ */
+export function removeXp(
+  current: { level: number; xp: number },
+  amount: number,
+  balance: Balance,
+): LevelState {
+  const currentTotal = totalXpForLevel(current.level, balance) + Math.max(0, current.xp);
+  const newTotal = Math.max(0, currentTotal - Math.max(0, Math.floor(amount)));
+  return levelFromTotalXp(newTotal, balance);
+}
+
+/**
  * Récompense en pièces d'un passage de niveau.
  * `base + perLevel × niveau^exposant` : croît un peu plus vite que linéairement
  * pour rester significative au niveau 40 sans être une source d'inflation

@@ -14,7 +14,7 @@ import * as socialRepo from '../repositories/social.repo';
 import * as systemRepo from '../repositories/system.repo';
 import * as economyService from './economy.service';
 import * as inventoryService from './inventory.service';
-import { grantXp } from './player.service';
+import { grantXp, removeXpAmount } from './player.service';
 import { toSqlDate } from '../utils/time';
 import type { PlayerContext } from '../types';
 
@@ -450,7 +450,11 @@ export async function adminGrant(
         break;
       }
       case 'xp':
-        await grantXp(target.id, remove ? 0 : amount, tx);
+        if (remove) {
+          await removeXpAmount(target.id, amount, tx);
+        } else {
+          await grantXp(target.id, amount, tx);
+        }
         break;
       case 'energy':
         await playerRepo.setEnergy(

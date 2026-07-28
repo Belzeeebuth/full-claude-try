@@ -1,7 +1,15 @@
 import { balance as getBalance, getConfig } from '../config';
 import { env } from '../config/env';
 import { getDb, withTransaction, type Executor } from '../db/client';
-import { addXp, levelRewardCoins, levelRewardGems, levelFromTotalXp, xpForNextLevel } from '../game/xp';
+import {
+  addXp,
+  levelRewardCoins,
+  levelRewardGems,
+  levelFromTotalXp,
+  removeXp,
+  totalXpForLevel,
+  xpForNextLevel,
+} from '../game/xp';
 import { energyCost, hasEnergy, projectEnergy, spendEnergy, type EnergyProjection } from '../game/energy';
 import { buildModifiers, type FarmModifiers, type ModifierSources } from '../game/modifiers';
 import { coopBonuses } from '../game/coop';
@@ -277,6 +285,47 @@ export async function grantXp(
     rewardCoins,
     rewardGems,
     crossedLevels: result.crossedLevels,
+  };
+}
+
+export interface XpLossResult {
+  level: number;
+  xpInLevel: number;
+  xpForNext: number;
+  levelsLost: number;
+}
+
+/**
+ * Retire de l'XP (correction d'un octroi erroné, typiquement). Ne reprend PAS
+ * les récompenses de palier déjà versées par `grantXp()` — pièces et gemmes
+ * restent un puits/robinet indépendant, à corriger séparément via
+ * `/admin take` si besoin, comme pour n'importe quelle autre ressource.
+ */
+export async function removeXpAmount(
+  userId: string,
+  amount: number,
+  tx: Executor,
+): Promise<XpLossResult> {
+  const balance = getBalance();
+  const user = await playerRepo.findUserById(userId, tx);
+  if (!user) throw gameError('not_registered', 'Player not found.', { i18nKey: 'errors.player_not_found' });
+
+  const previousLevel = user.level;
+  const previousTotal = totalXpForLevel(previousLevel, balance) + user.xp;
+  const result = removeXp({ level: previousLevel, xp: user.xp }, amount, balance);
+  const actuallyRemoved = previousTotal - result.totalXp;
+
+  await playerRepo.setLevelAndXp(
+    userId,
+    { level: result.level, xp: result.xpInLevel, totalXpDelta: -Math.max(0, Math.floor(actuallyRemoved)) },
+    tx,
+  );
+
+  return {
+    level: result.level,
+    xpInLevel: result.xpInLevel,
+    xpForNext: result.xpForNext,
+    levelsLost: previousLevel - result.level,
   };
 }
 

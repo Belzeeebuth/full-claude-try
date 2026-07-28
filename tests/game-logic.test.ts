@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { balance as getBalance, getConfig } from '../src/config';
-import { addXp, levelFromTotalXp, totalXpForLevel, xpForNextLevel } from '../src/game/xp';
+import { addXp, levelFromTotalXp, removeXp, totalXpForLevel, xpForNextLevel } from '../src/game/xp';
 import {
   computeGrowth,
   computeWaterStatus,
@@ -59,6 +59,26 @@ describe('courbe d\'expérience', () => {
       const total = totalXpForLevel(level, balance);
       expect(levelFromTotalXp(total, balance).level).toBe(level);
     }
+  });
+
+  it('removeXp() annule exactement un addXp() de même montant', () => {
+    const granted = addXp({ level: 1, xp: 0 }, 50_000, balance);
+    const reverted = removeXp({ level: granted.level, xp: granted.xpInLevel }, 50_000, balance);
+    expect(reverted.level).toBe(1);
+    expect(reverted.xpInLevel).toBe(0);
+  });
+
+  it('removeXp() fait redescendre le niveau en cascade sur plusieurs paliers', () => {
+    const granted = addXp({ level: 1, xp: 0 }, 500_000, balance);
+    expect(granted.level).toBeGreaterThan(10);
+    const reverted = removeXp({ level: granted.level, xp: granted.xpInLevel }, 500_000, balance);
+    expect(reverted.level).toBe(1);
+  });
+
+  it('removeXp() ne descend jamais sous le niveau 1 ni 0 XP', () => {
+    const reverted = removeXp({ level: 3, xp: 10 }, 999_999_999, balance);
+    expect(reverted.level).toBe(1);
+    expect(reverted.xpInLevel).toBe(0);
   });
 
   it('conserve l\'XP excédentaire au niveau maximum', () => {

@@ -271,8 +271,10 @@ export async function setLevelAndXp(
     .set({
       level: data.level,
       xp: data.xp,
-      totalXp: sql`${users.totalXp} + ${data.totalXpDelta}`,
-      weeklyXp: sql`${users.weeklyXp} + ${data.totalXpDelta}`,
+      // GREATEST : `totalXpDelta` négatif (retrait admin) ne doit jamais faire
+      // passer le compteur historique sous zéro.
+      totalXp: sql`GREATEST(0, ${users.totalXp} + ${data.totalXpDelta})`,
+      weeklyXp: sql`GREATEST(0, ${users.weeklyXp} + ${data.totalXpDelta})`,
       updatedAt: new Date(),
     })
     .where(eq(users.id, userId));

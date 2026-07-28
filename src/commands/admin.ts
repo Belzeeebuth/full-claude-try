@@ -61,6 +61,7 @@ const admin: Command = {
             .addChoices(
               { name: 'Coins', value: 'coins' },
               { name: 'Gems', value: 'gems' },
+              { name: 'XP', value: 'xp' },
               { name: 'Item', value: 'item' },
             ),
         )
