@@ -30,6 +30,7 @@ import {
   timingAccuracy,
   type FishConfig,
 } from '../src/game/fishing';
+import { eligibleOre, maxDepthForLevel, rollAdvance, rollOre, type OreConfig } from '../src/game/mining';
 
 const balance = getBalance();
 const config = getConfig();
@@ -692,5 +693,67 @@ describe('pêche', () => {
       if (rollFishQuality(0, balance, createRng(`bad-${i}`)) !== 'normal') badCount += 1;
     }
     expect(goodCount).toBeGreaterThan(badCount);
+  });
+});
+
+describe('mine', () => {
+  const pool: OreConfig[] = [
+    { key: 'shallow', rarity: 'common', requiredLevel: 22, minDepth: 1 },
+    { key: 'mid', rarity: 'rare', requiredLevel: 30, minDepth: 10 },
+    { key: 'deep', rarity: 'legendary', requiredLevel: 50, minDepth: 18 },
+  ];
+
+  it('est fermée avant le niveau de déblocage', () => {
+    expect(maxDepthForLevel(balance.mining.unlockLevel - 1, balance)).toBe(0);
+  });
+
+  it('commence à la profondeur 1 pile au niveau de déblocage', () => {
+    expect(maxDepthForLevel(balance.mining.unlockLevel, balance)).toBe(1);
+  });
+
+  it('ne dépasse jamais la profondeur maximale configurée', () => {
+    expect(maxDepthForLevel(999, balance)).toBe(balance.mining.maxDepth);
+  });
+
+  it('augmente avec le niveau, jamais ne diminue', () => {
+    let previous = 0;
+    for (let level = balance.mining.unlockLevel; level <= 200; level += 1) {
+      const depth = maxDepthForLevel(level, balance);
+      expect(depth).toBeGreaterThanOrEqual(previous);
+      previous = depth;
+    }
+  });
+
+  it('exclut le minerai trop profond ou hors niveau', () => {
+    // Niveau 35 : suffisant pour "mid" (requiert 30) et "shallow", pas pour
+    // "deep" (requiert 50). Profondeur 5 : insuffisante pour "mid" (10) et
+    // "deep" (18). Isole donc les deux motifs d'exclusion.
+    const eligible = eligibleOre(pool, { level: 35, depth: 5 });
+    const keys = eligible.map((ore) => ore.key);
+    expect(keys).toContain('shallow');
+    expect(keys).not.toContain('mid'); // profondeur insuffisante malgré le niveau suffisant
+    expect(keys).not.toContain('deep'); // niveau insuffisant
+  });
+
+  it('ne tire jamais un minerai hors du pool éligible', () => {
+    const eligible = eligibleOre(pool, { level: 22, depth: 3 });
+    for (let i = 0; i < 100; i += 1) {
+      const ore = rollOre(eligible, balance, createRng(`mine-${i}`));
+      if (ore) expect(eligible.map((o) => o.key)).toContain(ore.key);
+    }
+  });
+
+  it("ne propose jamais d'avancer au-delà de la profondeur maximale", () => {
+    for (let i = 0; i < 200; i += 1) {
+      expect(rollAdvance(10, 10, balance, createRng(`stuck-${i}`))).toBe(false);
+    }
+  });
+
+  it("peut avancer d'un niveau tant que le plafond n'est pas atteint", () => {
+    let advanced = 0;
+    for (let i = 0; i < 500; i += 1) {
+      if (rollAdvance(5, 20, balance, createRng(`advance-${i}`))) advanced += 1;
+    }
+    expect(advanced).toBeGreaterThan(0);
   });
 });

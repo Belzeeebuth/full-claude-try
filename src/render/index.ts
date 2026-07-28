@@ -7,6 +7,7 @@ import { renderMarketChart, type ChartInput } from './chart';
 import { renderFarm, type FarmRenderInput } from './farm';
 import { renderFishing, type FishingRenderInput } from './fishing';
 import { renderLeaderboard, type LeaderboardRenderInput } from './leaderboard';
+import { renderMining, type MiningRenderInput } from './mining';
 import { renderProfile, type ProfileRenderInput } from './profile';
 
 const log = moduleLogger('render');
@@ -196,5 +197,22 @@ export async function renderFishingImage(input: FishingRenderInput): Promise<Ren
   return render('fishing', stateKey, 'peche.png', () => renderFishing(input));
 }
 
-export type { ChartInput, FarmRenderInput, FishingRenderInput, LeaderboardRenderInput, ProfileRenderInput };
-export { renderFarm, renderProfile, renderMarketChart, renderLeaderboard, renderFishing };
+export async function renderMiningImage(input: MiningRenderInput): Promise<RenderOutcome> {
+  const stateKey = {
+    locale: input.locale,
+    depth: input.depth,
+    maxDepth: input.maxDepth,
+    deepestReached: input.deepestReached,
+  };
+  return render('mining', stateKey, 'mine.png', () => renderMining(input));
+}
+
+export type {
+  ChartInput,
+  FarmRenderInput,
+  FishingRenderInput,
+  LeaderboardRenderInput,
+  MiningRenderInput,
+  ProfileRenderInput,
+};
+export { renderFarm, renderProfile, renderMarketChart, renderLeaderboard, renderFishing, renderMining };

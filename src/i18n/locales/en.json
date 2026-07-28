@@ -499,6 +499,7 @@
     "nothing_body": "Just rock, this time.",
     "advance_body": "A passage opens up: you descend to depth {depth}.",
     "depth_field": "Depth",
+    "best_depth_field": "Record: level {depth}",
     "max_depth_body": "You've reached the known bottom of the mine.",
     "level_locked_body": "Level {level} required to dig deeper."
   },

@@ -364,6 +364,8 @@ contextuels. Détail complet dans le [README](../README.md#commandes) et dans
 |---|---|
 | `start.ts` | `/start`, `/tutorial`, `/help` |
 | `farm.ts` | `/farm`, `/plant`, `/harvest`, `/water`, `/fertilize`, `/weed`, `/treat`, `/plots`, `/buy-plot`, `/crops` |
+| `fishing.ts` | `/fish` |
+| `mining.ts` | `/mine` |
 | `profile.ts` | `/profile`, `/stats`, `/balance`, `/settings`, `/prestige` |
 | `animals.ts` | `/animals`, `/buy-animal`, `/feed`, `/collect`, `/heal`, `/pet`, `/breed`, `/sell-animal` |
 | `economy.ts` | `/shop`, `/buy`, `/sell`, `/market`, `/market-history`, `/inventory`, `/item`, `/use`, `/discard`, `/bank`, `/gift` |

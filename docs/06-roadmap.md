@@ -22,20 +22,32 @@ administration et anti-triche.
 Objectif : donner des choses à faire à un joueur de niveau 40+ qui a déjà tout
 débloqué, sans allonger artificiellement les courbes.
 
-### v2.1 — Pêche et mine
+### v2.1 — Pêche et mine — ✅ Livré
 
-Deux nouvelles boucles courtes qui utilisent l'infrastructure existante (parcelles →
-spots, cultures → prises/minerais, qualité → même modèle). Le gros du travail est du
-contenu et du rendu, pas de l'architecture.
+Deux nouvelles boucles courtes qui utilisent l'infrastructure existante (qualité →
+même modèle que les récoltes). Le gros du travail a été du contenu et du rendu, pas
+de l'architecture — confirmé à l'implémentation.
 
-- **Pêche** : étang débloqué au niveau 18, 15 espèces de poissons selon météo, saison
-  et heure de la journée. Minijeu de timing via bouton (fenêtre de 3 s), donc **une**
-  interaction, compatible avec la contrainte de session courte.
-- **Mine** : 20 niveaux de profondeur, minerais et gemmes brutes, consommation
-  d'énergie. Alimente une nouvelle recette de forge (outils améliorés).
-- **Impact base** : 4 tables (`fishing_spots`, `caught_fish`, `mine_progress`,
-  `mined_resources`), aucune migration destructive.
-- **Effort estimé** : 3 à 4 semaines.
+- **Pêche** (`/fish`) : étang débloqué au niveau 18, 11 espèces de poissons filtrées
+  par niveau, saison et jour/nuit (la météo précise n'a finalement pas servi de
+  filtre — simplification assumée, la saison et le moment de la journée suffisent à
+  faire vivre le vivier). Minijeu de timing via bouton (fenêtre de 3 s comparée en
+  timestamps absolus, donc insensible à la latence Discord), **une seule**
+  interaction, compatible avec la contrainte de session courte. La précision du
+  ferrage pilote la qualité de la prise (réutilise les poids globaux de qualité).
+- **Mine** (`/mine`) : profondeur qui ne recule jamais, plafonnée par une **formule**
+  du niveau du joueur (pas de table à 20 paliers à maintenir à la main) ; 11
+  minerais/gemmes bruts filtrés par profondeur minimale. Alimente une recette
+  d'atelier existante (lingot de mithril, consomme le minerai miné).
+- **Impact base réel** : une seule table, `mine_progress` (profondeur par joueur).
+  La pêche n'en a nécessité aucune : l'état de ferrage, éphémère et sans valeur
+  d'audit, vit en Redis avec un TTL court — même logique que les boosts de
+  `/use`. Deux nouvelles catégories d'objets (`fish`, `ore`), aucune migration
+  destructive.
+- **Rendu** : scène d'étang (pêche) et coupe verticale du puits avec règle de
+  profondeur (mine), toutes deux via le pipeline de rendu existant
+  (cache Redis par état, repli procédural, budget de 4 s).
+- **Effort estimé initial** : 3 à 4 semaines.
 
 ### v2.2 — Décoration libre de la ferme
 
@@ -144,9 +156,12 @@ Indépendamment des fonctionnalités, à faire avant toute v2 significative :
    pure et la configuration. Il manque une suite Testcontainers vérifiant les
    transactions concurrentes — notamment que deux `/harvest` simultanés sur la même
    parcelle n'en produisent qu'une. C'est le test le plus important qui manque.
-2. **Métriques Prometheus.** `/metrics` expose déjà des compteurs ; les passer au
-   format Prometheus et brancher un Grafana rendrait la détection d'anomalies
-   économiques visuelle plutôt que journalisée.
+2. **Métriques Prometheus économiques — ✅ Fait.** `/metrics` exposait déjà des
+   compteurs techniques au format Prometheus ; il expose maintenant aussi la masse
+   monétaire, le ratio création/destruction de pièces, les écarts de journal
+   comptable et le nombre de joueurs suspects, dérivés de l'instantané horaire
+   existant (`economy:snapshot`) — de quoi brancher un Grafana pour une détection
+   d'anomalies visuelle plutôt que journalisée.
 3. **Partitionnement des tables de journaux.** `transactions` et
    `market_price_history` croissent linéairement avec l'activité. Un partitionnement
    par mois deviendra nécessaire vers 10 millions de lignes.

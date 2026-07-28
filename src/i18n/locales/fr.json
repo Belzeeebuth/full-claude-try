@@ -249,6 +249,7 @@
     "nothing_body": "Que de la roche, cette fois.",
     "advance_body": "Un passage s'ouvre : vous descendez au niveau {depth}.",
     "depth_field": "Profondeur",
+    "best_depth_field": "Record : palier {depth}",
     "max_depth_body": "Vous avez atteint le fond connu de la mine.",
     "level_locked_body": "Niveau {level} requis pour descendre plus bas."
   },

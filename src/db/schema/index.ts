@@ -13,6 +13,7 @@ export * from './enums';
 export * from './config';
 export * from './core';
 export * from './farming';
+export * from './mining';
 export * from './economy';
 export * from './progression';
 export * from './social';

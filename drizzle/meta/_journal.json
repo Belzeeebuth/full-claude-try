@@ -22,6 +22,13 @@
       "when": 1785222859618,
       "tag": "0004_item_categories_fish_ore",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785224133567,
+      "tag": "0005_mine_progress",
+      "breakpoints": true
     }
   ]
 }
