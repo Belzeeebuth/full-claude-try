@@ -95,6 +95,7 @@ function guestContext(interaction: Interaction): CommandContext {
     locale,
     isAdmin: env.BOT_OWNER_IDS.includes(interaction.user.id),
     compactMode: false,
+    equippedPetKey: null,
     ecoBannedUntil: null,
     farmId: '',
     coopId: null,

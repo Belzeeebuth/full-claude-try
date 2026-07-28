@@ -140,6 +140,7 @@ export async function renderFarmImage(input: FarmRenderInput): Promise<RenderOut
     season: input.view.world.season.season,
     level: input.player.level,
     coins: Math.floor(input.player.coins / 100),
+    equippedPetKey: input.equippedPetKey ?? '',
     plots: input.view.plots.map((plot) => [
       plot.slot,
       plot.state,

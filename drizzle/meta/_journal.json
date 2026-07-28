@@ -57,6 +57,13 @@
       "when": 1785254458290,
       "tag": "0009_order_filled_notification",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785260531019,
+      "tag": "0010_owned_pets",
+      "breakpoints": true
     }
   ]
 }

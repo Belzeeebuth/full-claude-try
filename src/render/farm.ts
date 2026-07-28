@@ -21,6 +21,7 @@ import {
   drawAnimal,
   drawBadge,
   drawLockedTile,
+  drawPetIcon,
   drawPlant,
   drawCoin,
   drawGem,
@@ -47,6 +48,8 @@ export interface FarmRenderInput {
   xp: { current: number; needed: number };
   theme?: string;
   animalsPreview?: Array<{ emoji: string; animalKey: string }>;
+  /** Compagnon actuellement équipé (voir `game/pets.ts`), ou `null`. */
+  equippedPetKey?: string | null;
 }
 
 export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
@@ -99,6 +102,43 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
 
   const avatarSize = 68;
   await drawAvatar(ctx, input.player.avatarUrl, config.padding + 16, 26, avatarSize);
+
+  // Compagnon équipé : badge rond superposé au coin bas-droit de l'avatar,
+  // comme une pastille de statut plutôt qu'une case séparée dans l'en-tête.
+  if (input.equippedPetKey) {
+    const petSprite = await sprite('pets', input.equippedPetKey);
+    const badgeRadius = 20;
+    const badgeX = config.padding + 16 + avatarSize - 10;
+    const badgeY = 26 + avatarSize - 10;
+
+    withDropShadow(
+      ctx,
+      () => {
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, badgeRadius + 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(20,24,33,0.9)';
+        ctx.fill();
+      },
+      { blur: 8, offsetY: 3 },
+    );
+
+    if (petSprite) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(badgeX, badgeY, badgeRadius, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(petSprite, badgeX - badgeRadius, badgeY - badgeRadius, badgeRadius * 2, badgeRadius * 2);
+      ctx.restore();
+    } else {
+      drawPetIcon(ctx, badgeX, badgeY, badgeRadius, input.equippedPetKey);
+    }
+
+    ctx.beginPath();
+    ctx.arc(badgeX, badgeY, badgeRadius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
 
   const textX = config.padding + 16 + avatarSize + 18;
   ctx.fillStyle = PALETTE.text;

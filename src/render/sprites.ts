@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path';
 import { loadImage, type Image, type SKRSContext2D } from '@napi-rs/canvas';
 import { env } from '../config/env';
 import { moduleLogger } from '../utils/logger';
-import { PALETTE } from './canvas';
+import { PALETTE, lighten } from './canvas';
 
 const log = moduleLogger('sprites');
 
@@ -584,4 +584,59 @@ export function drawItemIcon(ctx: SKRSContext2D, x: number, y: number, radius: n
   ctx.strokeStyle = colors.stem;
   ctx.lineWidth = Math.max(1, radius / 6);
   ctx.stroke();
+}
+
+/** Teinte de repli par compagnon (voir `game/pets.ts`) ; `#cccccc` pour une clé inconnue. */
+const PET_COLORS: Record<string, string> = {
+  chick: '#f4d35e',
+  kitten: '#e8a33d',
+  puppy: '#b5804a',
+  piglet: '#f4b6c2',
+  bunny: '#f2efe9',
+  fox: '#e0672c',
+  owl: '#8a6d4b',
+  dragon: '#4caf6a',
+};
+
+/**
+ * Icône ronde d'un compagnon de ferme équipé, affichée près de l'avatar sur
+ * `/farm`. Silhouette générique (même famille que `drawAnimal`) teintée par
+ * espèce plutôt que dessinée au trait : un vrai sprite PNG par compagnon
+ * resterait le repère visuel le plus lisible, ceci n'est que le repli
+ * vectoriel (voir `docs/05-pipeline-assets.md`).
+ */
+export function drawPetIcon(ctx: SKRSContext2D, x: number, y: number, radius: number, petKey: string): void {
+  const base = PET_COLORS[petKey] ?? '#cccccc';
+  const shine = ctx.createRadialGradient(
+    x - radius * 0.3,
+    y - radius * 0.35,
+    radius * 0.05,
+    x,
+    y,
+    radius * 1.1,
+  );
+  shine.addColorStop(0, lighten(base, 0.35));
+  shine.addColorStop(1, base);
+
+  // Deux oreilles avant le corps, pour que le contour de tête se lise même à
+  // très petite taille.
+  ctx.fillStyle = base;
+  ctx.beginPath();
+  ctx.arc(x - radius * 0.5, y - radius * 0.65, radius * 0.24, 0, Math.PI * 2);
+  ctx.arc(x + radius * 0.5, y - radius * 0.65, radius * 0.24, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = shine;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+  ctx.lineWidth = Math.max(1, radius / 10);
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.beginPath();
+  ctx.arc(x - radius * 0.22, y - radius * 0.05, radius * 0.09, 0, Math.PI * 2);
+  ctx.arc(x + radius * 0.22, y - radius * 0.05, radius * 0.09, 0, Math.PI * 2);
+  ctx.fill();
 }

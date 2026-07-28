@@ -860,6 +860,50 @@
     "collect_title": "📦 Production collected",
     "recipes_hint": "Use `/recipes` for the full list and `/craft` to start a production run."
   },
+  "pets": {
+    "list_title": "🐾 Your companions",
+    "equipped_marker": "✅ equipped",
+    "owned_marker": "🔓 unlocked",
+    "locked_marker": "🔒 level {level}",
+    "equipped_title": "🐾 Companion equipped",
+    "equipped_body": "{name} now accompanies you on `/farm`.",
+    "unequipped_title": "🐾 Companion removed",
+    "unequipped_body": "You no longer have a companion equipped.",
+    "catalog": {
+      "chick": {
+        "title": "Chick",
+        "description": "Hatches alongside your very first harvests."
+      },
+      "kitten": {
+        "title": "Kitten",
+        "description": "Naps in the sun between two waterings."
+      },
+      "puppy": {
+        "title": "Puppy",
+        "description": "Runs along the rows of plots."
+      },
+      "piglet": {
+        "title": "Piglet",
+        "description": "Always finds the muddiest plot."
+      },
+      "bunny": {
+        "title": "Bunny",
+        "description": "Keeps a suspicious eye on the carrots."
+      },
+      "fox": {
+        "title": "Fox",
+        "description": "Watches the hen house a little too closely."
+      },
+      "owl": {
+        "title": "Owl",
+        "description": "Keeps watch over the farm at night."
+      },
+      "dragon": {
+        "title": "Baby dragon",
+        "description": "A legend among farmhands."
+      }
+    }
+  },
   "help": {
     "title": "🌾 Harvester help",
     "intro": "Harvester is a farming game: plant, raise, process, sell, progress.\nPick a category from the menu below.",
@@ -1182,6 +1226,10 @@
       "use_fertilize_instead": "{emoji} {name} is applied with `/fertilize`, not with `/use`.",
       "auto_consumed_token": "This token is consumed automatically by `/reroll-quest`.",
       "unknown_effect": "Unknown effect for {item}."
+    },
+    "pets": {
+      "unknown": "Unknown companion.",
+      "not_unlocked": "This companion unlocks at level {level}."
     },
     "fishing": {
       "level_too_low": "Fishing requires level {level}.",

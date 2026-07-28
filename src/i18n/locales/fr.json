@@ -633,6 +633,50 @@
     "collect_title": "📦 Production collectée",
     "recipes_hint": "Utilisez `/recipes` pour la liste complète et `/craft` pour démarrer une production."
   },
+  "pets": {
+    "list_title": "🐾 Vos compagnons",
+    "equipped_marker": "✅ équipé",
+    "owned_marker": "🔓 débloqué",
+    "locked_marker": "🔒 niveau {level}",
+    "equipped_title": "🐾 Compagnon équipé",
+    "equipped_body": "{name} vous accompagne désormais sur `/farm`.",
+    "unequipped_title": "🐾 Compagnon retiré",
+    "unequipped_body": "Vous n'avez plus de compagnon équipé.",
+    "catalog": {
+      "chick": {
+        "title": "Poussin",
+        "description": "Éclot en même temps que vos toutes premières récoltes."
+      },
+      "kitten": {
+        "title": "Chaton",
+        "description": "Fait la sieste au soleil entre deux arrosages."
+      },
+      "puppy": {
+        "title": "Chiot",
+        "description": "Court le long des rangées de parcelles."
+      },
+      "piglet": {
+        "title": "Cochonnet",
+        "description": "Trouve toujours la parcelle la plus boueuse."
+      },
+      "bunny": {
+        "title": "Lapereau",
+        "description": "Garde un œil suspicieux sur les carottes."
+      },
+      "fox": {
+        "title": "Renard",
+        "description": "Surveille le poulailler d'un peu trop près."
+      },
+      "owl": {
+        "title": "Chouette",
+        "description": "Veille sur la ferme pendant la nuit."
+      },
+      "dragon": {
+        "title": "Bébé dragon",
+        "description": "Une légende parmi les fermiers."
+      }
+    }
+  },
   "help": {
     "title": "🌾 Aide de Harvester",
     "intro": "Harvester est un jeu de ferme : plantez, élevez, transformez, vendez, progressez.\nChoisissez une catégorie dans le menu ci-dessous.",
@@ -955,6 +999,10 @@
       "use_fertilize_instead": "{emoji} {name} s'applique avec `/fertilize`, pas avec `/use`.",
       "auto_consumed_token": "Ce jeton est consommé automatiquement par `/reroll-quest`.",
       "unknown_effect": "Effet inconnu pour {item}."
+    },
+    "pets": {
+      "unknown": "Compagnon inconnu.",
+      "not_unlocked": "Ce compagnon se débloque au niveau {level}."
     },
     "fishing": {
       "level_too_low": "La pêche nécessite le niveau {level}.",

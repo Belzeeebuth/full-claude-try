@@ -130,6 +130,7 @@ async function main(): Promise<void> {
       { emoji: '🐄', animalKey: 'cow' },
       { emoji: '🐝', animalKey: 'bee' },
     ],
+    equippedPetKey: 'fox',
   });
   writeFileSync(join(outDir, 'ferme.png'), farmBuffer);
 

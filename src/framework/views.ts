@@ -70,6 +70,7 @@ export async function farmView(
       emoji: animal.emoji,
       animalKey: animal.animalKey,
     })),
+    equippedPetKey: player.equippedPetKey,
   });
 
   const counts = view.counts;

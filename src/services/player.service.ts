@@ -21,6 +21,7 @@ import * as economyRepo from '../repositories/economy.repo';
 import * as inventoryRepo from '../repositories/inventory.repo';
 import * as playerRepo from '../repositories/player.repo';
 import * as progressionRepo from '../repositories/progression.repo';
+import { unlockPetsForLevel } from './pet.service';
 import { getWorldState, globalMultipliers } from './world.service';
 import type { PlayerContext } from '../types';
 
@@ -156,6 +157,10 @@ async function createPlayer(input: EnsurePlayerInput): Promise<PlayerContext> {
       tx,
     );
 
+    // Compagnon de niveau 1 : débloqué dès la création, comme le reste du kit
+    // de départ (voir `game/pets.ts`).
+    await unlockPetsForLevel(user.id, user.level, tx);
+
     log.info({ userId: user.id, discordId: input.discordId }, 'new farm created');
 
     return {
@@ -172,6 +177,7 @@ async function createPlayer(input: EnsurePlayerInput): Promise<PlayerContext> {
       locale: settings.locale,
       isAdmin: env.BOT_OWNER_IDS.includes(user.discordId),
       compactMode: settings.compactMode,
+      equippedPetKey: user.equippedPetKey,
       ecoBannedUntil: user.ecoBannedUntil,
       farmId: farm.id,
       coopId: null,
@@ -196,6 +202,7 @@ function toPlayerContext(bundle: playerRepo.PlayerBundle): PlayerContext {
     locale: bundle.settings.locale,
     isAdmin: bundle.user.isAdmin || env.BOT_OWNER_IDS.includes(bundle.user.discordId),
     compactMode: bundle.settings.compactMode,
+    equippedPetKey: bundle.user.equippedPetKey,
     ecoBannedUntil: bundle.user.ecoBannedUntil,
     farmId: bundle.farm.id,
     coopId: bundle.coop?.id ?? null,
@@ -277,6 +284,7 @@ export async function grantXp(
     // seule fois, plutôt que d'être vérifiés à chaque action.
     await progressionRepo.setQuestProgress(userId, 'reach_level', result.level, tx);
     await progressionRepo.setAchievementProgress(userId, 'reach_level', result.level, tx);
+    await unlockPetsForLevel(userId, result.level, tx);
   }
 
   return {

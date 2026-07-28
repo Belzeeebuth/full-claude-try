@@ -49,6 +49,8 @@ export interface PlayerContext {
   isAdmin: boolean;
   /** Préférence « pas d'images générées » (`/settings compact-mode`). */
   compactMode: boolean;
+  /** Compagnon affiché sur `/farm`, ou `null` si aucun n'est équipé. */
+  equippedPetKey: string | null;
   ecoBannedUntil: Date | null;
   farmId: string;
   coopId: string | null;
