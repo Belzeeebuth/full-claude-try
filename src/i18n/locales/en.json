@@ -344,9 +344,9 @@
       "your_rank": "Your rank: #{rank} — {score} {unit}"
     },
     "chart": {
-      "subtitle": "Base price: {base} 🪙   •   Demand index: {demand}",
+      "subtitle": "Base price: {base}   •   Demand index: {demand}",
       "reference": "baseline",
-      "legend": "Min {min} 🪙   •   Max {max} 🪙   •   {count} history point(s)"
+      "legend": "Min {min}   •   Max {max}   •   {count} history point(s)"
     }
   },
   "profile": {

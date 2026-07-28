@@ -1,7 +1,8 @@
 import { balance as getBalance } from '../config';
 import { translate } from '../i18n';
 import { formatCompact, formatPercent } from '../utils/format';
-import { PALETTE, encode, fillRoundRect, font, newCanvas } from './canvas';
+import { PALETTE, encode, fillRoundRect, font, newCanvas, withDropShadow } from './canvas';
+import { drawCoin, drawItemIcon } from './sprites';
 
 /**
  * Graphique de prix du marché.
@@ -39,17 +40,24 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   ctx.fillRect(0, 0, dims.width, dims.height);
 
   // --- Titre ------------------------------------------------------------
+  // Icône dessinée, jamais l'emoji de l'objet en texte : sans police couleur,
+  // ce serait un carré « tofu » (voir la note de drawBadge dans sprites.ts).
+  drawItemIcon(ctx, 44, 34, 16, input.title);
   ctx.font = font(26, 'bold');
   ctx.fillStyle = PALETTE.text;
-  ctx.fillText(`${input.emoji} ${input.title}`, 32, 24);
+  ctx.fillText(input.title, 68, 24);
 
   const rising = input.trend >= 0;
   const accent = rising ? PALETTE.success : PALETTE.danger;
   ctx.font = font(18, 'bold');
   ctx.fillStyle = accent;
+  const priceLabel = `${formatCompact(input.currentPrice, locale)}`;
+  ctx.fillText(priceLabel, 32, 58);
+  const priceWidth = ctx.measureText(priceLabel).width;
+  drawCoin(ctx, 32 + priceWidth + 16, 67, 9);
   ctx.fillText(
-    `${formatCompact(input.currentPrice, locale)} 🪙  ${rising ? '▲' : '▼'} ${formatPercent(input.trend, 1, locale)}`,
-    32,
+    `${rising ? '▲' : '▼'} ${formatPercent(input.trend, 1, locale)}`,
+    32 + priceWidth + 34,
     58,
   );
 
@@ -66,7 +74,9 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
 
   // --- Zone de tracé ----------------------------------------------------
   const plot = { x: 72, y: 120, width: dims.width - 104, height: dims.height - 190 };
-  fillRoundRect(ctx, plot.x - 12, plot.y - 12, plot.width + 24, plot.height + 24, 12, PALETTE.cardAlt);
+  withDropShadow(ctx, () =>
+    fillRoundRect(ctx, plot.x - 12, plot.y - 12, plot.width + 24, plot.height + 24, 12, PALETTE.cardAlt),
+  );
 
   const points = input.points.length > 0 ? input.points : [
     { price: input.currentPrice, recordedAt: new Date() },

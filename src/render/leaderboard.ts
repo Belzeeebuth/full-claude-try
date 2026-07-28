@@ -10,6 +10,7 @@ import {
   font,
   newCanvas,
   verticalGradient,
+  withDropShadow,
 } from './canvas';
 
 /** Carte de classement : podium illustré + liste des suivants. */
@@ -71,7 +72,9 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
 
     await drawAvatar(ctx, entry.avatarUrl ?? null, x + columnWidth / 2 - 34, barY - 84, 68);
 
-    fillRoundRect(ctx, x, barY, columnWidth, barHeight, 12, PODIUM_COLORS[entryIndex] ?? '#555');
+    withDropShadow(ctx, () =>
+      fillRoundRect(ctx, x, barY, columnWidth, barHeight, 12, PODIUM_COLORS[entryIndex] ?? '#555'),
+    );
     ctx.fillStyle = 'rgba(0,0,0,0.65)';
     ctx.font = font(34, 'bold');
     ctx.textAlign = 'center';

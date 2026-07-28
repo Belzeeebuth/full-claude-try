@@ -10,9 +10,11 @@ import {
   encode,
   fillRoundRect,
   font,
+  lighten,
   newCanvas,
   progressBar,
   verticalGradient,
+  withDropShadow,
 } from './canvas';
 import {
   cropColors,
@@ -78,11 +80,22 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
   ctx.fillRect(0, 0, width, height);
   ctx.fillStyle = theme.grassDark;
   ctx.fillRect(0, config.headerHeight - 12, width, height - config.headerHeight + 12);
-  ctx.fillStyle = theme.grass;
+  // Dégradé plutôt qu'un aplat : l'herbe s'assombrit légèrement vers le bas,
+  // ce qui suggère une source de lumière au lieu d'un fond plat en 2D pure.
+  ctx.fillStyle = verticalGradient(
+    ctx,
+    0,
+    config.headerHeight - 6,
+    height - config.headerHeight + 6,
+    lighten(theme.grass, 0.12),
+    theme.grassDark,
+  );
   ctx.fillRect(0, config.headerHeight - 6, width, height - config.headerHeight + 6);
 
   // --- En-tête ----------------------------------------------------------
-  fillRoundRect(ctx, config.padding, 14, width - config.padding * 2, config.headerHeight - 34, 18, 'rgba(20,24,33,0.82)');
+  withDropShadow(ctx, () =>
+    fillRoundRect(ctx, config.padding, 14, width - config.padding * 2, config.headerHeight - 34, 18, 'rgba(20,24,33,0.82)'),
+  );
 
   const avatarSize = 68;
   await drawAvatar(ctx, input.player.avatarUrl, config.padding + 16, 26, avatarSize);
@@ -254,7 +267,9 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
 
   // --- Pied de page -----------------------------------------------------
   const footerY = boardY + boardHeight + 12;
-  fillRoundRect(ctx, config.padding, footerY, width - config.padding * 2, footerHeight - 24, 14, 'rgba(20,24,33,0.82)');
+  withDropShadow(ctx, () =>
+    fillRoundRect(ctx, config.padding, footerY, width - config.padding * 2, footerHeight - 24, 14, 'rgba(20,24,33,0.82)'),
+  );
 
   ctx.font = font(16, 'bold');
   ctx.fillStyle = PALETTE.text;

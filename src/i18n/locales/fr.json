@@ -1200,9 +1200,9 @@
       "your_rank": "Votre rang : #{rank} — {score} {unit}"
     },
     "chart": {
-      "subtitle": "Prix de référence : {base} 🪙   •   Indice de demande : {demand}",
+      "subtitle": "Prix de référence : {base}   •   Indice de demande : {demand}",
       "reference": "référence",
-      "legend": "Min {min} 🪙   •   Max {max} 🪙   •   {count} point(s) d'historique"
+      "legend": "Min {min}   •   Max {max}   •   {count} point(s) d'historique"
     }
   },
   "profile": {

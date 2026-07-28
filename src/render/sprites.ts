@@ -79,6 +79,14 @@ export function drawSoil(
   ctx.fillStyle = color;
   ctx.fillRect(x, y, size, size);
 
+  // Ombrage léger, lumière en haut à gauche : casse l'aplat sans coût de sprite.
+  const shade = ctx.createLinearGradient(x, y, x + size, y + size);
+  shade.addColorStop(0, 'rgba(255,255,255,0.10)');
+  shade.addColorStop(0.5, 'rgba(0,0,0,0)');
+  shade.addColorStop(1, 'rgba(0,0,0,0.14)');
+  ctx.fillStyle = shade;
+  ctx.fillRect(x, y, size, size);
+
   // Sillons : trois traits horizontaux plus sombres.
   ctx.strokeStyle = PALETTE.soilDark;
   ctx.lineWidth = Math.max(1, size / 28);
@@ -195,9 +203,21 @@ export function drawPlant(
   // Fruit visible à partir du stade 4, plus gros et lumineux à maturité
   if (stage >= 4) {
     const fruitRadius = size * (options.ready ? 0.16 : 0.11);
+    const fruitX = centerX;
+    const fruitY = baseY - height - fruitRadius * 0.4;
+    const shine = ctx.createRadialGradient(
+      fruitX - fruitRadius * 0.35,
+      fruitY - fruitRadius * 0.4,
+      fruitRadius * 0.05,
+      fruitX,
+      fruitY,
+      fruitRadius * 1.15,
+    );
+    shine.addColorStop(0, lightenColor(options.fruitColor, 0.5));
+    shine.addColorStop(1, options.fruitColor);
     ctx.beginPath();
-    ctx.arc(centerX, baseY - height - fruitRadius * 0.4, fruitRadius, 0, Math.PI * 2);
-    ctx.fillStyle = options.fruitColor;
+    ctx.arc(fruitX, fruitY, fruitRadius, 0, Math.PI * 2);
+    ctx.fillStyle = shine;
     ctx.fill();
     if (options.ready) {
       ctx.strokeStyle = PALETTE.ready;
@@ -460,6 +480,15 @@ export function cropColors(cropKey: string): { stem: string; fruit: string } {
   };
 }
 
+/** Éclaircit une couleur `hsl(h, s%, l%)` en poussant la luminosité vers 100 %. */
+function lightenColor(hsl: string, amount: number): string {
+  const match = /^hsl\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)%,\s*(\d+(?:\.\d+)?)%\)$/.exec(hsl);
+  if (!match) return hsl;
+  const [, h, s, l] = match;
+  const lightness = Number(l) + (100 - Number(l)) * amount;
+  return `hsl(${h}, ${s}%, ${lightness}%)`;
+}
+
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const clean = hex.replace('#', '');
   return {
@@ -471,9 +500,21 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 
 /** Pièce d'or vectorielle (centre en x, y). */
 export function drawCoin(ctx: SKRSContext2D, x: number, y: number, radius: number): void {
+  const shine = ctx.createRadialGradient(
+    x - radius * 0.35,
+    y - radius * 0.4,
+    radius * 0.05,
+    x,
+    y,
+    radius * 1.1,
+  );
+  shine.addColorStop(0, '#fff2b8');
+  shine.addColorStop(0.5, '#ffc93c');
+  shine.addColorStop(1, '#e0a41f');
+
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffc93c';
+  ctx.fillStyle = shine;
   ctx.fill();
   ctx.strokeStyle = '#b8860b';
   ctx.lineWidth = Math.max(1, radius / 5);
@@ -481,19 +522,66 @@ export function drawCoin(ctx: SKRSContext2D, x: number, y: number, radius: numbe
   ctx.beginPath();
   ctx.arc(x, y, radius * 0.55, 0, Math.PI * 2);
   ctx.stroke();
+
+  // Reflet : petit arc clair en haut à gauche, la touche qui lit « métal ».
+  ctx.beginPath();
+  ctx.arc(x - radius * 0.32, y - radius * 0.32, radius * 0.28, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fill();
 }
 
 /** Gemme vectorielle (centre en x, y). */
 export function drawGem(ctx: SKRSContext2D, x: number, y: number, radius: number): void {
+  const facet = ctx.createLinearGradient(x - radius, y - radius, x + radius, y + radius);
+  facet.addColorStop(0, '#d4f4ff');
+  facet.addColorStop(0.5, '#7fd8ff');
+  facet.addColorStop(1, '#3fa8d8');
+
   ctx.beginPath();
   ctx.moveTo(x, y - radius);
   ctx.lineTo(x + radius, y);
   ctx.lineTo(x, y + radius);
   ctx.lineTo(x - radius, y);
   ctx.closePath();
-  ctx.fillStyle = '#7fd8ff';
+  ctx.fillStyle = facet;
   ctx.fill();
   ctx.strokeStyle = '#2f8fbe';
   ctx.lineWidth = Math.max(1, radius / 5);
+  ctx.stroke();
+
+  // Ligne de facette centrale, pour casser l'aplat en deux plans de lumière.
+  ctx.beginPath();
+  ctx.moveTo(x, y - radius * 0.7);
+  ctx.lineTo(x, y + radius * 0.7);
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = Math.max(1, radius / 8);
+  ctx.stroke();
+}
+
+/**
+ * Icône générique pour un objet arbitraire sans forme vectorielle dédiée
+ * (utilisée par exemple dans l'en-tête du graphique de marché). Teinte dérivée
+ * d'un hachage de `seed` (le nom de l'objet) : jamais deux fois la même forme
+ * sans couleur cohérente, sans table de correspondance à maintenir.
+ */
+export function drawItemIcon(ctx: SKRSContext2D, x: number, y: number, radius: number, seed: string): void {
+  const colors = cropColors(seed);
+  const shine = ctx.createRadialGradient(
+    x - radius * 0.3,
+    y - radius * 0.35,
+    radius * 0.05,
+    x,
+    y,
+    radius * 1.1,
+  );
+  shine.addColorStop(0, lightenColor(colors.fruit, 0.4));
+  shine.addColorStop(1, colors.fruit);
+
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = shine;
+  ctx.fill();
+  ctx.strokeStyle = colors.stem;
+  ctx.lineWidth = Math.max(1, radius / 6);
   ctx.stroke();
 }
