@@ -284,6 +284,15 @@ export function select(options: {
   maxValues?: number;
   disabled?: boolean;
 }): StringSelectMenuBuilder {
+  // Discord exige entre 1 et 25 options, MÊME sur un menu désactivé : une liste
+  // de choix vide (rien à acheter, rien à sélectionner) ferait échouer l'appel
+  // API entier plutôt que produire un menu simplement grisé. On force donc une
+  // option de repli, et le menu à l'état désactivé, dans ce cas précis.
+  const hasChoices = options.choices.length > 0;
+  const choices = hasChoices
+    ? options.choices.slice(0, 25)
+    : [{ label: truncate(options.placeholder, 100), value: 'none' }];
+
   const menu = new StringSelectMenuBuilder()
     .setCustomId(
       buildCustomId(options.namespace, options.action, options.ownerId, ...(options.params ?? [])),
@@ -291,10 +300,10 @@ export function select(options: {
     .setPlaceholder(truncate(options.placeholder, 150))
     .setMinValues(options.minValues ?? 1)
     .setMaxValues(options.maxValues ?? 1)
-    .setDisabled(options.disabled ?? false);
+    .setDisabled(!hasChoices || (options.disabled ?? false));
 
   menu.addOptions(
-    options.choices.slice(0, 25).map((choice) => {
+    choices.map((choice) => {
       const builder = new StringSelectMenuOptionBuilder()
         .setLabel(truncate(choice.label, 100))
         .setValue(choice.value)
