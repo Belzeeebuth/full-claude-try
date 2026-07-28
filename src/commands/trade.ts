@@ -397,5 +397,126 @@ export async function tradeView(
   };
 }
 
-export const commands: Command[] = [hdv, echange];
+// ---------------------------------------------------------------------------
+// /order — ordres d'achat permanents
+// ---------------------------------------------------------------------------
+
+const ordre: Command = {
+  category: 'economie',
+  cooldown: { seconds: 3 },
+  data: new SlashCommandBuilder()
+    .setName('order')
+    .setDescription('Standing buy orders on the auction house')
+    .addSubcommand((sub) =>
+      sub
+        .setName('create')
+        .setDescription('Buy automatically the next time a matching listing appears')
+        .addStringOption((option) =>
+          option.setName('item').setDescription('The item to buy').setRequired(true).setAutocomplete(true),
+        )
+        .addIntegerOption((option) =>
+          option.setName('quantity').setDescription('Quantity wanted').setRequired(true).setMinValue(1),
+        )
+        .addIntegerOption((option) =>
+          option
+            .setName('max-unit-price')
+            .setDescription('Maximum price per unit you are willing to pay')
+            .setRequired(true)
+            .setMinValue(1),
+        ),
+    )
+    .addSubcommand((sub) => sub.setName('list').setDescription('Your active standing orders'))
+    .addSubcommand((sub) =>
+      sub
+        .setName('cancel')
+        .setDescription('Cancel a standing order')
+        .addStringOption((option) =>
+          option.setName('order').setDescription('Order ID, shown by /order list').setRequired(true),
+        ),
+    )
+    .toJSON(),
+
+  async execute(interaction, context): Promise<void> {
+    await interaction.deferReply();
+    const sub = interaction.options.getSubcommand();
+
+    switch (sub) {
+      case 'create': {
+        const created = await tradeService.createStandingOrder(context.player, {
+          itemKey: interaction.options.getString('item', true),
+          quantity: interaction.options.getInteger('quantity', true),
+          maxUnitPrice: interaction.options.getInteger('max-unit-price', true),
+        });
+        await interaction.editReply({
+          embeds: [
+            successEmbed(
+              context.t('trade.order_created_title'),
+              context.t('trade.order_created_body', {
+                emoji: created.itemEmoji,
+                name: created.itemName,
+                quantity: created.totalQuantity,
+                price: formatCoins(created.maxUnitPrice, false, context.locale),
+                relative: discordTimestamp(created.expiresAt, 'R'),
+              }),
+            ),
+          ],
+        });
+        break;
+      }
+      case 'list': {
+        const orders = await tradeService.listStandingOrders(context.player.id);
+        await interaction.editReply({
+          embeds: [
+            baseEmbed({
+              title: context.t('trade.order_list_title'),
+              description:
+                orders
+                  .map((order) =>
+                    context.t('trade.order_list_line', {
+                      emoji: order.itemEmoji,
+                      name: order.itemName,
+                      remaining: order.remainingQuantity,
+                      total: order.totalQuantity,
+                      price: formatCoins(order.maxUnitPrice, false, context.locale),
+                      relative: discordTimestamp(order.expiresAt, 'R'),
+                      id: order.id,
+                    }),
+                  )
+                  .join('\n') || context.t('trade.order_list_empty'),
+              color: COLORS.info,
+            }),
+          ],
+        });
+        break;
+      }
+      case 'cancel': {
+        await tradeService.cancelStandingOrder(
+          context.player,
+          interaction.options.getString('order', true),
+        );
+        await interaction.editReply({
+          embeds: [
+            successEmbed(
+              context.t('trade.order_cancelled_title'),
+              context.t('trade.order_cancelled_body'),
+            ),
+          ],
+        });
+        break;
+      }
+    }
+  },
+
+  async autocomplete(interaction, context): Promise<void> {
+    const query = interaction.options.getFocused().toString().toLowerCase();
+    await interaction.respond(
+      context.config.itemList
+        .filter((item) => item.enabled && item.tradable && (!query || item.name.toLowerCase().includes(query)))
+        .slice(0, 25)
+        .map((item) => ({ name: truncate(`${item.emoji} ${item.name}`, 100), value: item.key })),
+    );
+  },
+};
+
+export const commands: Command[] = [hdv, echange, ordre];
 export { inventoryService, MessageFlags };

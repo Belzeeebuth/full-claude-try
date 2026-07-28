@@ -24,6 +24,7 @@ import {
   currencyEnum,
   mutationEnum,
   qualityEnum,
+  standingOrderStatusEnum,
   tradeStatusEnum,
   transactionTypeEnum,
 } from './enums';
@@ -240,6 +241,48 @@ export const auctionBids = pgTable(
     index('auction_bids_bidder_idx').on(t.bidderId, t.createdAt.desc()),
     index('auction_bids_refund_idx').on(t.refunded, t.isWinning),
     check('auction_bids_amount_positive', sql`${t.amount} > 0`),
+  ],
+);
+
+/**
+ * Ordre d'achat permanent : « achète {quantity} {item} à {maxUnitPrice} 🪙
+ * l'unité maximum ». Rapproché contre les annonces actives de l'hôtel des
+ * ventes par un job planifié (`market.service.ts`), qui exécute le même achat
+ * immédiat que `/auction buy` (`executeBuyout`) dès qu'une annonce compatible
+ * apparaît — jamais de fonds réservés à l'avance : le job tente le débit au
+ * moment du rapprochement et laisse l'ordre actif si les fonds manquent.
+ */
+export const standingOrders = pgTable(
+  'standing_orders',
+  {
+    id: uuid('id').primaryKey(),
+    buyerId: uuid('buyer_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    itemKey: varchar('item_key', { length: 48 })
+      .notNull()
+      .references(() => itemsConfig.key, { onUpdate: 'cascade' }),
+    /** `NULL` = n'importe quelle qualité / mutation. */
+    quality: qualityEnum('quality'),
+    mutation: mutationEnum('mutation'),
+    maxUnitPrice: bigint('max_unit_price', { mode: 'number' }).notNull(),
+    totalQuantity: integer('total_quantity').notNull(),
+    remainingQuantity: integer('remaining_quantity').notNull(),
+    status: standingOrderStatusEnum('status').notNull().default('active'),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    fulfilledAt: timestamp('fulfilled_at', { withTimezone: true }),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('standing_orders_matching_idx').on(t.status, t.itemKey, t.maxUnitPrice),
+    index('standing_orders_buyer_idx').on(t.buyerId, t.status),
+    check('standing_orders_price_positive', sql`${t.maxUnitPrice} > 0`),
+    check(
+      'standing_orders_quantity_range',
+      sql`${t.totalQuantity} > 0 AND ${t.remainingQuantity} >= 0 AND ${t.remainingQuantity} <= ${t.totalQuantity}`,
+    ),
   ],
 );
 

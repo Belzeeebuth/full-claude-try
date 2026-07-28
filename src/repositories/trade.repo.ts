@@ -1,9 +1,10 @@
-import { and, asc, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, lte, ne, sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../db/client';
 import {
   auctionBids,
   auctionListings,
   itemsConfig,
+  standingOrders,
   tradeItems,
   trades,
   users,
@@ -14,6 +15,7 @@ import { uuidv7 } from '../utils/uuid';
 
 export type AuctionRow = typeof auctionListings.$inferSelect;
 export type TradeRow = typeof trades.$inferSelect;
+export type StandingOrderRow = typeof standingOrders.$inferSelect;
 
 export async function createListing(
   values: Omit<typeof auctionListings.$inferInsert, 'id'>,
@@ -217,6 +219,147 @@ export async function markBidsRefunded(bidIds: number[], executor: Executor): Pr
     .update(auctionBids)
     .set({ refunded: true, refundedAt: new Date() })
     .where(inArray(auctionBids.id, bidIds));
+}
+
+// ---------------------------------------------------------------------------
+// Ordres d'achat permanents
+// ---------------------------------------------------------------------------
+
+export async function createStandingOrder(
+  values: Omit<typeof standingOrders.$inferInsert, 'id'>,
+  executor: Executor,
+): Promise<StandingOrderRow> {
+  const [row] = await executor
+    .insert(standingOrders)
+    .values({ id: uuidv7(), ...values })
+    .returning();
+  return row!;
+}
+
+export async function countActiveOrders(buyerId: string, executor: Executor = getDb()): Promise<number> {
+  const [row] = await executor
+    .select({ count: sql<number>`count(*)::int` })
+    .from(standingOrders)
+    .where(and(eq(standingOrders.buyerId, buyerId), eq(standingOrders.status, 'active')));
+  return row?.count ?? 0;
+}
+
+export async function listOrders(buyerId: string, executor: Executor = getDb()) {
+  return executor
+    .select({
+      order: standingOrders,
+      itemName: itemsConfig.name,
+      itemEmoji: itemsConfig.emoji,
+    })
+    .from(standingOrders)
+    .innerJoin(itemsConfig, eq(itemsConfig.key, standingOrders.itemKey))
+    .where(and(eq(standingOrders.buyerId, buyerId), eq(standingOrders.status, 'active')))
+    .orderBy(desc(standingOrders.createdAt));
+}
+
+export async function cancelOrder(
+  orderId: string,
+  buyerId: string,
+  executor: Executor,
+): Promise<boolean> {
+  const result = await executor
+    .update(standingOrders)
+    .set({ status: 'cancelled', cancelledAt: new Date(), updatedAt: new Date() })
+    .where(
+      and(
+        eq(standingOrders.id, orderId),
+        eq(standingOrders.buyerId, buyerId),
+        eq(standingOrders.status, 'active'),
+      ),
+    );
+  return (result.rowCount ?? 0) > 0;
+}
+
+/** Ordres actifs et non expirés, les plus anciens d'abord — file d'attente équitable. */
+export async function findMatchableOrders(limit: number, executor: Executor = getDb()) {
+  return executor
+    .select()
+    .from(standingOrders)
+    .where(and(eq(standingOrders.status, 'active'), gte(standingOrders.expiresAt, new Date())))
+    .orderBy(asc(standingOrders.createdAt))
+    .limit(limit);
+}
+
+/**
+ * Annonces actives pouvant satisfaire un ordre : même objet (et qualité /
+ * mutation si l'ordre les précise), achat immédiat activé, quantité totale de
+ * l'annonce tenant dans ce qu'il reste à acheter, prix total dans le budget.
+ * Comparaison en prix TOTAL (`buyoutPrice <= maxUnitPrice × quantity`), jamais
+ * en prix unitaire, pour ne pas introduire d'arrondi de division entière.
+ */
+export async function findMatchingListings(
+  order: { itemKey: string; quality: string | null; mutation: string | null; maxUnitPrice: number; remainingQuantity: number; buyerId: string },
+  executor: Executor = getDb(),
+) {
+  const conditions = [
+    eq(auctionListings.status, 'active'),
+    gte(auctionListings.expiresAt, new Date()),
+    eq(auctionListings.itemKey, order.itemKey),
+    ne(auctionListings.sellerId, order.buyerId),
+    sql`${auctionListings.buyoutPrice} IS NOT NULL`,
+    sql`${auctionListings.quantity} <= ${order.remainingQuantity}`,
+    sql`${auctionListings.buyoutPrice} <= ${order.maxUnitPrice} * ${auctionListings.quantity}`,
+  ];
+  if (order.quality) conditions.push(eq(auctionListings.quality, order.quality as typeof auctionListings.$inferSelect.quality));
+  if (order.mutation) conditions.push(eq(auctionListings.mutation, order.mutation as typeof auctionListings.$inferSelect.mutation));
+
+  return executor
+    .select()
+    .from(auctionListings)
+    .where(and(...conditions))
+    .orderBy(asc(auctionListings.buyoutPrice))
+    .limit(5);
+}
+
+/**
+ * Décrémente la quantité restante après un achat, et clôt l'ordre s'il est
+ * épuisé. `WHERE status = 'active'` protège contre une double exécution.
+ */
+export async function fillOrder(
+  orderId: string,
+  quantity: number,
+  executor: Executor,
+): Promise<{ remainingQuantity: number; fulfilled: boolean } | undefined> {
+  const [row] = await executor
+    .update(standingOrders)
+    .set({
+      remainingQuantity: sql`${standingOrders.remainingQuantity} - ${quantity}`,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(standingOrders.id, orderId), eq(standingOrders.status, 'active')))
+    .returning({ remainingQuantity: standingOrders.remainingQuantity });
+
+  if (!row) return undefined;
+
+  const fulfilled = row.remainingQuantity <= 0;
+  if (fulfilled) {
+    await executor
+      .update(standingOrders)
+      .set({ status: 'fulfilled', fulfilledAt: new Date() })
+      .where(and(eq(standingOrders.id, orderId), eq(standingOrders.status, 'active')));
+  }
+  return { remainingQuantity: row.remainingQuantity, fulfilled };
+}
+
+export async function findExpiredOrders(now: Date, limit: number, executor: Executor = getDb()) {
+  return executor
+    .select()
+    .from(standingOrders)
+    .where(and(eq(standingOrders.status, 'active'), lte(standingOrders.expiresAt, now)))
+    .limit(limit);
+}
+
+export async function markOrderExpired(orderId: string, executor: Executor): Promise<boolean> {
+  const result = await executor
+    .update(standingOrders)
+    .set({ status: 'expired', updatedAt: new Date() })
+    .where(and(eq(standingOrders.id, orderId), eq(standingOrders.status, 'active')));
+  return (result.rowCount ?? 0) > 0;
 }
 
 // ---------------------------------------------------------------------------

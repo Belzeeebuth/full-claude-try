@@ -324,7 +324,9 @@ export const jobs: JobDefinition[] = [
     async run() {
       const result = await tradeService.closeExpiredListings(50);
       const trades = await tradeService.expireTrades(50);
-      return `${result.sold} sold, ${result.returned} returned, ${trades} trades expired`;
+      const filled = await tradeService.matchStandingOrders(50);
+      const expiredOrders = await tradeService.expireStandingOrders(100);
+      return `${result.sold} sold, ${result.returned} returned, ${trades} trades expired, ${filled} orders filled, ${expiredOrders} orders expired`;
     },
   },
 

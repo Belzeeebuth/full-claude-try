@@ -586,6 +586,13 @@
     "house_footer": "{total} listing(s) • page {page}/{totalPages}",
     "buy_placeholder": "Buy a listing",
     "seller_line": "Seller: {seller}",
+    "order_created_title": "🎯 Buy order created",
+    "order_created_body": "As soon as a listing of **{quantity}× {emoji} {name}** appears at {price} per unit or less, it is bought automatically.\nExpires {relative}.",
+    "order_list_title": "🎯 Your buy orders",
+    "order_list_line": "{emoji} **{name}** — {remaining}/{total} left at {price} max per unit — expires {relative}\n`{id}`",
+    "order_list_empty": "No active buy order. Create one with `/order create`.",
+    "order_cancelled_title": "↩️ Order cancelled",
+    "order_cancelled_body": "It will no longer be matched.",
     "view_title": "🤝 Trade with {name}",
     "view_confirm_notice": "**Both players must confirm.** Any change cancels the confirmations.",
     "view_expires_line": "Expires {relative} • revision {revision}",
@@ -1091,7 +1098,9 @@
       "max_items": "Maximum {max} items per player.",
       "not_enough_owned": "You only have {owned}× {item}.",
       "offer_changed": "The offer changed since you confirmed. Review it and confirm again.",
-      "already_closed": "This trade is already closed."
+      "already_closed": "This trade is already closed.",
+      "too_many_orders": "You already have {active} active orders (maximum {max}).",
+      "order_not_found": "Buy order not found."
     },
     "craft": {
       "unknown_recipe": "Unknown recipe: `{recipeKey}`.",
@@ -1307,7 +1316,9 @@
     "auction_sold_title": "💰 Auction sold",
     "auction_sold_body": "Your lot of {quantity} item(s) sold for {amount} 🪙.",
     "auction_won_title": "🏆 Auction won",
-    "auction_won_body": "You won {quantity} item(s) for {amount} 🪙."
+    "auction_won_body": "You won {quantity} item(s) for {amount} 🪙.",
+    "order_filled_title": "🎯 Buy order filled",
+    "order_filled_body": "Your order for {quantity} item(s) has been fully matched. Check your inventory!"
   },
   "integrations": {
     "never": "never",

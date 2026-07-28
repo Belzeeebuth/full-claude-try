@@ -336,6 +336,13 @@
     "house_footer": "{total} annonce(s) • page {page}/{totalPages}",
     "buy_placeholder": "Acheter une annonce",
     "seller_line": "Vendeur : {seller}",
+    "order_created_title": "🎯 Ordre d'achat créé",
+    "order_created_body": "Dès qu'une annonce de **{quantity}× {emoji} {name}** apparaît à {price} l'unité ou moins, elle est achetée automatiquement.\nExpire {relative}.",
+    "order_list_title": "🎯 Vos ordres d'achat",
+    "order_list_line": "{emoji} **{name}** — {remaining}/{total} restant(s) à {price} maximum l'unité — expire {relative}\n`{id}`",
+    "order_list_empty": "Aucun ordre d'achat actif. Créez-en un avec `/order create`.",
+    "order_cancelled_title": "↩️ Ordre annulé",
+    "order_cancelled_body": "Il ne sera plus rapproché.",
     "view_title": "🤝 Échange avec {name}",
     "view_confirm_notice": "**Les deux joueurs doivent confirmer.** Tout changement annule les confirmations.",
     "view_expires_line": "Expire {relative} • révision {revision}",
@@ -864,7 +871,9 @@
       "max_items": "Maximum {max} objets par joueur.",
       "not_enough_owned": "Vous n'avez que {owned}× {item}.",
       "offer_changed": "L'offre a changé depuis votre confirmation. Vérifiez-la et confirmez à nouveau.",
-      "already_closed": "Cet échange est déjà fermé."
+      "already_closed": "Cet échange est déjà fermé.",
+      "too_many_orders": "Vous avez déjà {active} ordres d'achat actifs (maximum {max}).",
+      "order_not_found": "Ordre d'achat introuvable."
     },
     "craft": {
       "unknown_recipe": "Recette inconnue : `{recipeKey}`.",
@@ -1080,7 +1089,9 @@
     "auction_sold_title": "💰 Enchère vendue",
     "auction_sold_body": "Votre lot de {quantity} objet(s) s'est vendu pour {amount} 🪙.",
     "auction_won_title": "🏆 Enchère remportée",
-    "auction_won_body": "Vous avez remporté {quantity} objet(s) pour {amount} 🪙."
+    "auction_won_body": "Vous avez remporté {quantity} objet(s) pour {amount} 🪙.",
+    "order_filled_title": "🎯 Ordre d'achat exécuté",
+    "order_filled_body": "Votre ordre pour {quantity} objet(s) a été entièrement rapproché. Consultez votre inventaire !"
   },
   "world": {
     "weather": {
