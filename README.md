@@ -501,9 +501,10 @@ reste accessible.
 ```bash
 npm run dev              # rechargement à chaud (tsx watch)
 npm run typecheck        # tsc --noEmit
-npm test                 # 90 tests
+npm test                 # 125 tests, sans infrastructure (logique pure + config)
 npm run test:watch       # mode veille
 npm run test:coverage    # couverture (seuil 70 % sur src/game/**)
+npm run test:integration # suite Testcontainers (Docker requis) : transactions concurrentes
 npm run db:studio        # explorateur de base Drizzle
 npm run balance:report   # tables d'équilibrage
 npm run render:preview   # écrit 4 PNG dans out/fr/
@@ -528,7 +529,9 @@ src/
 
 La règle de dépendance est stricte :
 `commands → services → repositories → db`, et `game/` n'importe rien d'autre que
-lui-même. C'est ce qui permet aux 90 tests de tourner **sans base de données**.
+lui-même. C'est ce qui permet aux 125 tests rapides de tourner **sans base de
+données** ; `tests/integration/` (Testcontainers) est le seul endroit qui en
+démarre une, volontairement séparé (`npm run test:integration`).
 
 ### Ajouter une culture
 

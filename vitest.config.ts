@@ -13,6 +13,11 @@ export default defineConfig({
     setupFiles: ['tests/setup-env.ts'],
     environment: 'node',
     include: ['tests/**/*.test.ts'],
+    // Les tests d'intégration (tests/integration/**) démarrent leurs propres
+    // conteneurs Postgres/Redis et fixent `DATABASE_URL`/`REDIS_URL` eux-mêmes ;
+    // les mélanger à cette suite rapide et sans I/O leur ferait hériter des
+    // faux placeholders de `setup-env.ts`. Suite dédiée : `npm run test:integration`.
+    exclude: ['**/node_modules/**', 'tests/integration/**'],
     globals: false,
     reporters: ['default'],
     coverage: {

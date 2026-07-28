@@ -214,10 +214,19 @@ Objectif : sortir du seul client Discord et industrialiser l'exploitation.
 
 Indépendamment des fonctionnalités, à faire avant toute v2 significative :
 
-1. **Tests d'intégration sur base réelle.** Les 90 tests actuels couvrent la logique
-   pure et la configuration. Il manque une suite Testcontainers vérifiant les
-   transactions concurrentes — notamment que deux `/harvest` simultanés sur la même
-   parcelle n'en produisent qu'une. C'est le test le plus important qui manque.
+1. **Tests d'intégration sur base réelle — ✅ Fait.** `tests/integration/` (suite
+   dédiée, `npm run test:integration`, séparée des 125 tests rapides qui ne
+   nécessitent aucune infrastructure) démarre de vrais conteneurs PostgreSQL et
+   Redis via Testcontainers et vérifie que deux `/harvest` simultanés sur la
+   même parcelle n'en produisent qu'une — la garantie qui ne peut être
+   honnêtement prouvée que contre une vraie base (verrou `SELECT ... FOR
+   UPDATE`, isolation `read committed`), jamais par un mock. La logique a été
+   validée manuellement contre un PostgreSQL/Redis locaux (résultat : exactement
+   une récolte aboutit, l'autre échoue avec `crop_not_ready`, l'inventaire ne
+   compte que la récolte gagnante) ; l'environnement de développement qui a
+   produit ce commit n'avait pas de démon Docker accessible pour exécuter la
+   suite Testcontainers elle-même de bout en bout — à confirmer au premier
+   `npm run test:integration` sur une machine avec Docker.
 2. **Métriques Prometheus économiques — ✅ Fait.** `/metrics` exposait déjà des
    compteurs techniques au format Prometheus ; il expose maintenant aussi la masse
    monétaire, le ratio création/destruction de pièces, les écarts de journal
@@ -231,10 +240,16 @@ Indépendamment des fonctionnalités, à faire avant toute v2 significative :
    chaque requête depuis la mémoire du processus (déjà en cache), mais les données
    de monde (météo, saison) font un aller-retour Redis systématique. Un cache local
    de 60 s économiserait l'essentiel de ce trafic.
-5. **Sprites.** Le rendu procédural est propre et fonctionne, mais des sprites
-   dédiés changeraient la perception du bot. C'est le meilleur rapport
-   effort/impact perçu de toute cette liste — voir
-   [05 — Pipeline d'assets](./05-pipeline-assets.md).
+5. **Sprites — toujours pas livré, mais repli amélioré.** Aucun sprite dédié ne
+   peut être ajouté sans assets sous licence claire (voir
+   [05 — Pipeline d'assets](./05-pipeline-assets.md)) ; ça reste le meilleur
+   rapport effort/impact perçu de toute cette liste dès qu'ils existeront. En
+   attendant, le rendu procédural de repli a été enrichi (dégradés sur pièces,
+   gemmes, fruits, sol et avatars par défaut ; ombres portées sur les panneaux)
+   pour paraître moins plat sans dépendre d'un seul pixel d'asset externe — et
+   un vrai bug a été corrigé au passage : le graphique de marché dessinait
+   l'emoji d'un objet directement en texte canvas, ce qui produisait des carrés
+   « tofu » sans police d'emoji couleur.
 
 ---
 
