@@ -229,7 +229,9 @@
       "consumable": "Consumables",
       "material": "Materials",
       "cosmetic": "Cosmetics",
-      "event": "Event"
+      "event": "Event",
+      "fish": "Fish",
+      "ore": "Ore"
     },
     "estimated_value_field": "Estimated value",
     "filter_placeholder": "Filter by category",
@@ -475,6 +477,30 @@
     "success": "💧 {count} plot(s) watered.",
     "nothing_to_water": "No plot needs water right now.",
     "free_rain": "🌧️ It's raining: your plots are watered for free."
+  },
+  "fishing": {
+    "hook_button": "Hook it!",
+    "cast_title": "🎣 Line in the water",
+    "cast_body": "A bite won't be long... stay ready to hook it.",
+    "bite_title": "🐟 It's biting!",
+    "bite_body": "Click **Hook it!** now.",
+    "catch_title": "🎣 Catch!",
+    "catch_body": "{emoji} **{name}**{icon} — worth {value}",
+    "miss_title": "🎣 Missed",
+    "nothing_body": "The fish got away without leaving anything behind.",
+    "too_early_body": "Hooked too early — nothing was biting yet.",
+    "too_late_body": "Too late, the fish spat out the hook.",
+    "expired_body": "The line sat in the water too long."
+  },
+  "mining": {
+    "descend_button": "Dig",
+    "dig_title": "⛏️ Pickaxe swing",
+    "found_body": "{emoji} **{name}** — worth {value}",
+    "nothing_body": "Just rock, this time.",
+    "advance_body": "A passage opens up: you descend to depth {depth}.",
+    "depth_field": "Depth",
+    "max_depth_body": "You've reached the known bottom of the mine.",
+    "level_locked_body": "Level {level} required to dig deeper."
   },
   "shop": {
     "title": "🏪 Village shop",
@@ -1120,6 +1146,14 @@
       "use_fertilize_instead": "{emoji} {name} is applied with `/fertilize`, not with `/use`.",
       "auto_consumed_token": "This token is consumed automatically by `/reroll-quest`.",
       "unknown_effect": "Unknown effect for {item}."
+    },
+    "fishing": {
+      "level_too_low": "Fishing requires level {level}.",
+      "unavailable": "Fishing is temporarily unavailable, please retry."
+    },
+    "mining": {
+      "level_too_low": "Mining requires level {level}.",
+      "unavailable": "Mining is temporarily unavailable, please retry."
     },
     "coop": {
       "not_found": "Co-op not found.",

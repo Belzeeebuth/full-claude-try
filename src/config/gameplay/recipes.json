@@ -722,5 +722,29 @@
     "xpReward": 900,
     "category": "atelier",
     "sortOrder": 320
+  },
+  {
+    "key": "mithril_ingot",
+    "name": "Lingot de mithril",
+    "nameEn": "Mithril ingot",
+    "emoji": "⚙️",
+    "buildingKey": "workshop",
+    "outputItemKey": "mithril_ingot",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "ore_mithril",
+        "quantity": 4
+      },
+      {
+        "itemKey": "ore_gold",
+        "quantity": 2
+      }
+    ],
+    "durationSeconds": 14400,
+    "requiredLevel": 34,
+    "xpReward": 350,
+    "category": "atelier",
+    "sortOrder": 305
   }
 ]

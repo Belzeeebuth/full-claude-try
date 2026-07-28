@@ -22,12 +22,13 @@ import { replyEphemeral } from '../../framework/interaction';
 import * as animalService from '../../services/animal.service';
 import * as craftService from '../../services/craft.service';
 import * as farmService from '../../services/farm.service';
+import * as fishingService from '../../services/fishing.service';
 import * as inventoryService from '../../services/inventory.service';
 import * as miscService from '../../services/misc.service';
 import * as progressionService from '../../services/progression.service';
 import * as playerRepo from '../../repositories/player.repo';
 import { paramInt, paramString } from '../../utils/custom-id';
-import { formatCoins, formatNumber } from '../../utils/format';
+import { formatCoins, formatNumber, qualityIcon } from '../../utils/format';
 import type { ButtonHandler, CommandContext } from '../../types';
 
 /**
@@ -306,6 +307,57 @@ const blackMarketButtons: ButtonHandler = {
   async execute(interaction: ButtonInteraction, _parsed, context): Promise<void> {
     await interaction.deferUpdate();
     await interaction.editReply(await blackMarketView(context));
+  },
+};
+
+const fishingButtons: ButtonHandler = {
+  namespace: 'fishing',
+  actions: ['hook'],
+  lockKey: 'fishing-hook',
+
+  async execute(interaction: ButtonInteraction, parsed, context): Promise<void> {
+    await interaction.deferUpdate();
+    const castId = paramString(parsed, 0, '');
+    const result = await fishingService.resolveHook(context.player, castId, interaction.createdTimestamp);
+
+    let embed;
+    if (result.fish) {
+      embed = successEmbed(
+        context.t('fishing.catch_title'),
+        context.t('fishing.catch_body', {
+          emoji: result.fish.emoji,
+          icon: qualityIcon(result.fish.quality),
+          name: result.fish.name,
+          value: formatCoins(result.fish.value, false, context.locale),
+        }),
+      );
+    } else if (result.outcome === 'hit') {
+      embed = baseEmbed({
+        title: context.t('fishing.miss_title'),
+        description: context.t('fishing.nothing_body'),
+        color: COLORS.info,
+      });
+    } else if (result.outcome === 'too_early') {
+      embed = baseEmbed({
+        title: context.t('fishing.miss_title'),
+        description: context.t('fishing.too_early_body'),
+        color: COLORS.warning,
+      });
+    } else if (result.outcome === 'too_late') {
+      embed = baseEmbed({
+        title: context.t('fishing.miss_title'),
+        description: context.t('fishing.too_late_body'),
+        color: COLORS.warning,
+      });
+    } else {
+      embed = baseEmbed({
+        title: context.t('fishing.miss_title'),
+        description: context.t('fishing.expired_body'),
+        color: COLORS.neutral,
+      });
+    }
+
+    await interaction.editReply({ embeds: [embed], components: [] });
   },
 };
 
@@ -849,6 +901,7 @@ export const handlers: ButtonHandler[] = [
   inventoryButtons,
   shopButtons,
   blackMarketButtons,
+  fishingButtons,
   marketButtons,
   animalButtons,
   questButtons,

@@ -30,6 +30,8 @@ export const itemCategories = [
   'material',
   'cosmetic',
   'event',
+  'fish',
+  'ore',
 ] as const;
 export const buildingCategories = ['livestock', 'production', 'storage', 'utility'] as const;
 export const qualities = ['normal', 'silver', 'gold', 'iridium'] as const;
@@ -179,6 +181,12 @@ export const itemSchema = z.object({
   descriptionEn: z.string().max(512).optional(),
   sortOrder: nonNegativeInt.default(0),
   enabled: z.boolean().default(true),
+  /** Pêche : saisons où la prise est possible ; absent/vide = toute l'année. */
+  seasons: z.array(z.enum(seasonNames)).optional(),
+  /** Pêche : moment de la journée requis. */
+  timeOfDay: z.enum(['day', 'night', 'any']).optional(),
+  /** Mine : profondeur minimale à laquelle le minerai peut apparaître. */
+  minDepth: positiveInt.optional(),
 });
 export type ItemConfig = z.infer<typeof itemSchema>;
 
@@ -632,6 +640,25 @@ export const balanceSchema = z.object({
     costs: z.record(z.string(), nonNegativeInt),
     refillGemCost: nonNegativeInt,
   }),
+  fishing: z.object({
+    unlockLevel: positiveInt,
+    /** Fenêtre pendant laquelle ferrer, en millisecondes. */
+    windowMs: positiveInt,
+    /** Délai avant la touche, tiré uniformément dans cet intervalle (ms). */
+    biteDelayMsRange: z.tuple([nonNegativeInt, positiveInt]),
+    /** Poids par rareté pour le tirage de l'espèce (mêmes clés que `rarities`). */
+    rarityWeights: z.record(z.enum(rarities), nonNegativeInt),
+  }),
+  mining: z.object({
+    unlockLevel: positiveInt,
+    maxDepth: positiveInt,
+    /** Niveaux de joueur nécessaires pour débloquer une profondeur supplémentaire. */
+    levelsPerDepth: positiveInt,
+    /** Probabilité de descendre d'un palier à chaque extraction réussie. */
+    advanceChance: ratio,
+    /** Poids par rareté pour le tirage du minerai (mêmes clés que `rarities`). */
+    rarityWeights: z.record(z.enum(rarities), nonNegativeInt),
+  }),
   daily: z.object({
     baseCoins: nonNegativeInt,
     coinsPerStreakDay: nonNegativeInt,
@@ -750,6 +777,8 @@ export const balanceSchema = z.object({
     profile: z.object({ width: positiveInt, height: positiveInt }),
     chart: z.object({ width: positiveInt, height: positiveInt }),
     leaderboard: z.object({ width: positiveInt, height: positiveInt }),
+    fishing: z.object({ width: positiveInt, height: positiveInt }),
+    mining: z.object({ width: positiveInt, height: positiveInt }),
     quality: z.number().min(0.1).max(1),
   }),
   notifications: z.object({

@@ -52,7 +52,9 @@ export type TrackedAction =
   | 'visit_farm'
   | 'help_farmer'
   | 'auction_sale'
-  | 'login_streak';
+  | 'login_streak'
+  | 'catch_fish'
+  | 'mine_ore';
 
 export interface TrackTarget extends Record<string, string | undefined> {
   cropKey?: string;

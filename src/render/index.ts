@@ -5,6 +5,7 @@ import { cacheGet, cacheSet, key as redisKey } from '../db/redis';
 import { moduleLogger } from '../utils/logger';
 import { renderMarketChart, type ChartInput } from './chart';
 import { renderFarm, type FarmRenderInput } from './farm';
+import { renderFishing, type FishingRenderInput } from './fishing';
 import { renderLeaderboard, type LeaderboardRenderInput } from './leaderboard';
 import { renderProfile, type ProfileRenderInput } from './profile';
 
@@ -190,5 +191,10 @@ export async function renderLeaderboardImage(
   return render('leaderboard', stateKey, 'classement.png', () => renderLeaderboard(input));
 }
 
-export type { ChartInput, FarmRenderInput, LeaderboardRenderInput, ProfileRenderInput };
-export { renderFarm, renderProfile, renderMarketChart, renderLeaderboard };
+export async function renderFishingImage(input: FishingRenderInput): Promise<RenderOutcome> {
+  const stateKey = { locale: input.locale, season: input.season, weather: input.weather };
+  return render('fishing', stateKey, 'peche.png', () => renderFishing(input));
+}
+
+export type { ChartInput, FarmRenderInput, FishingRenderInput, LeaderboardRenderInput, ProfileRenderInput };
+export { renderFarm, renderProfile, renderMarketChart, renderLeaderboard, renderFishing };

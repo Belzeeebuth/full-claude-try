@@ -21,6 +21,15 @@ import { rollWeather, seasonAt } from '../src/game/world';
 import { addCoopXp, coopBonuses, coopMemberLimit } from '../src/game/coop';
 import { checkPrestigeEligibility, planPrestige } from '../src/game/prestige';
 import { energyCost, projectEnergy, spendEnergy } from '../src/game/energy';
+import {
+  eligibleFish,
+  isDaytime,
+  rollFish,
+  rollFishQuality,
+  scoreCastTiming,
+  timingAccuracy,
+  type FishConfig,
+} from '../src/game/fishing';
 
 const balance = getBalance();
 const config = getConfig();
@@ -612,5 +621,76 @@ describe('générateur aléatoire', () => {
     }
     expect(rare).toBeGreaterThan(700);
     expect(rare).toBeLessThan(1_300);
+  });
+});
+
+describe('pêche', () => {
+  const pool: FishConfig[] = [
+    { key: 'a', rarity: 'common', requiredLevel: 18 },
+    { key: 'b', rarity: 'rare', requiredLevel: 25, seasons: ['summer'] },
+    { key: 'c', rarity: 'epic', requiredLevel: 30, timeOfDay: 'night' },
+    { key: 'd', rarity: 'legendary', requiredLevel: 50 },
+  ];
+
+  it('découpe jour/nuit à 6h et 20h UTC', () => {
+    expect(isDaytime(0)).toBe(false);
+    expect(isDaytime(6)).toBe(true);
+    expect(isDaytime(19)).toBe(true);
+    expect(isDaytime(20)).toBe(false);
+    expect(isDaytime(23)).toBe(false);
+  });
+
+  it('exclut les espèces hors niveau, hors saison ou hors moment', () => {
+    const eligible = eligibleFish(pool, { level: 26, season: 'winter', daytime: true });
+    const keys = eligible.map((fish) => fish.key);
+    expect(keys).toContain('a');
+    expect(keys).not.toContain('b'); // mauvaise saison
+    expect(keys).not.toContain('c'); // nuit uniquement
+    expect(keys).not.toContain('d'); // niveau trop bas
+  });
+
+  it('inclut une espèce saisonnière pendant sa saison, nocturne la nuit', () => {
+    const eligible = eligibleFish(pool, { level: 30, season: 'summer', daytime: false });
+    const keys = eligible.map((fish) => fish.key);
+    expect(keys).toContain('b');
+    expect(keys).toContain('c');
+  });
+
+  it('ne tire jamais une espèce hors du pool éligible', () => {
+    const rng = createRng('peche-graine');
+    const eligible = eligibleFish(pool, { level: 18, season: 'spring', daytime: true });
+    for (let i = 0; i < 200; i += 1) {
+      const fish = rollFish(eligible, balance, createRng(`${rng.next()}`));
+      if (fish) expect(eligible.map((f) => f.key)).toContain(fish.key);
+    }
+  });
+
+  it('retourne undefined pour un pool vide', () => {
+    expect(rollFish([], balance, createRng('vide'))).toBeUndefined();
+  });
+
+  it('note le ferrage : trop tôt, à l\'heure, trop tard', () => {
+    expect(scoreCastTiming(999, 1000, 3000)).toBe('too_early');
+    expect(scoreCastTiming(1000, 1000, 3000)).toBe('hit');
+    expect(scoreCastTiming(2500, 1000, 3000)).toBe('hit');
+    expect(scoreCastTiming(4001, 1000, 3000)).toBe('too_late');
+  });
+
+  it('la précision de ferrage est maximale au centre de la fenêtre', () => {
+    const center = timingAccuracy(2500, 1000, 3000);
+    const edge = timingAccuracy(1000, 1000, 3000);
+    expect(center).toBeCloseTo(1, 5);
+    expect(edge).toBeCloseTo(0, 5);
+    expect(center).toBeGreaterThan(edge);
+  });
+
+  it('une meilleure précision de ferrage ne peut jamais réduire la chance de qualité', () => {
+    let goodCount = 0;
+    let badCount = 0;
+    for (let i = 0; i < 2_000; i += 1) {
+      if (rollFishQuality(1, balance, createRng(`good-${i}`)) !== 'normal') goodCount += 1;
+      if (rollFishQuality(0, balance, createRng(`bad-${i}`)) !== 'normal') badCount += 1;
+    }
+    expect(goodCount).toBeGreaterThan(badCount);
   });
 });

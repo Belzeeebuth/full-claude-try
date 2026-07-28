@@ -469,9 +469,38 @@
       "heal": 3,
       "breed": 5,
       "craft": 2,
-      "help": 2
+      "help": 2,
+      "fish": 2,
+      "mine": 3
     },
     "refillGemCost": 15
+  },
+  "fishing": {
+    "unlockLevel": 18,
+    "windowMs": 3000,
+    "biteDelayMsRange": [1500, 4500],
+    "rarityWeights": {
+      "common": 1000,
+      "uncommon": 400,
+      "rare": 120,
+      "epic": 30,
+      "legendary": 6,
+      "mythic": 1
+    }
+  },
+  "mining": {
+    "unlockLevel": 22,
+    "maxDepth": 20,
+    "levelsPerDepth": 2,
+    "advanceChance": 0.2,
+    "rarityWeights": {
+      "common": 1000,
+      "uncommon": 350,
+      "rare": 100,
+      "epic": 25,
+      "legendary": 5,
+      "mythic": 1
+    }
   },
   "daily": {
     "baseCoins": 250,
@@ -617,6 +646,14 @@
     "leaderboard": {
       "width": 900,
       "height": 700
+    },
+    "fishing": {
+      "width": 900,
+      "height": 500
+    },
+    "mining": {
+      "width": 900,
+      "height": 620
     },
     "quality": 0.85
   },

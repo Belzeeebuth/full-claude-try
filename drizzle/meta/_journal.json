@@ -15,6 +15,13 @@
       "when": 1785185497816,
       "tag": "0003_economy_snapshot_health",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785222859618,
+      "tag": "0004_item_categories_fish_ore",
+      "breakpoints": true
     }
   ]
 }

@@ -302,6 +302,8 @@ export async function inventoryView(
       material: '🪵',
       cosmetic: '🎨',
       event: '🎉',
+      fish: '🐟',
+      ore: '🪨',
     };
     return { label: t(`inventory.categories.${key}`), emoji: emojis[key] ?? '📦' };
   };

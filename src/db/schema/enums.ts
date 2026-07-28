@@ -58,6 +58,8 @@ export const itemCategoryEnum = pgEnum('item_category', [
   'material',
   'cosmetic',
   'event',
+  'fish',
+  'ore',
 ]);
 
 export const buildingCategoryEnum = pgEnum('building_category', [

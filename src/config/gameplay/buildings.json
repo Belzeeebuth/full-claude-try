@@ -800,7 +800,8 @@
       "spun_wool",
       "fine_cloth",
       "ginseng_elixir",
-      "dragon_potion"
+      "dragon_potion",
+      "mithril_ingot"
     ],
     "sortOrder": 120,
     "tiers": [

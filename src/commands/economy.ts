@@ -338,6 +338,8 @@ const inventaire: Command = {
           { name: '🪵 Materials', value: 'material' },
           { name: '🎨 Cosmetics', value: 'cosmetic' },
           { name: '🎉 Event', value: 'event' },
+          { name: '🐟 Fish', value: 'fish' },
+          { name: '🪨 Ore', value: 'ore' },
         ),
     )
     .addIntegerOption((option) => option.setName('page').setDescription('Page').setMinValue(1))

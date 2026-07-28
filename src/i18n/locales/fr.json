@@ -228,6 +228,30 @@
     "nothing_to_water": "Aucune parcelle n'a besoin d'eau pour le moment.",
     "free_rain": "🌧️ Il pleut : vos parcelles sont arrosées gratuitement."
   },
+  "fishing": {
+    "hook_button": "Ferrer !",
+    "cast_title": "🎣 Ligne à l'eau",
+    "cast_body": "Une prise ne va pas tarder... restez prêt à ferrer.",
+    "bite_title": "🐟 Ça mord !",
+    "bite_body": "Cliquez sur **Ferrer !** maintenant.",
+    "catch_title": "🎣 Prise !",
+    "catch_body": "{emoji} **{name}**{icon} — vendable {value}",
+    "miss_title": "🎣 Raté",
+    "nothing_body": "Le poisson a filé sans rien laisser derrière lui.",
+    "too_early_body": "Ferré trop tôt — rien ne mordait encore.",
+    "too_late_body": "Trop tard, le poisson a relâché l'hameçon.",
+    "expired_body": "La ligne est restée à l'eau trop longtemps."
+  },
+  "mining": {
+    "descend_button": "Creuser",
+    "dig_title": "⛏️ Coup de pioche",
+    "found_body": "{emoji} **{name}** — vendable {value}",
+    "nothing_body": "Que de la roche, cette fois.",
+    "advance_body": "Un passage s'ouvre : vous descendez au niveau {depth}.",
+    "depth_field": "Profondeur",
+    "max_depth_body": "Vous avez atteint le fond connu de la mine.",
+    "level_locked_body": "Niveau {level} requis pour descendre plus bas."
+  },
   "shop": {
     "title": "🏪 Boutique du village",
     "rotation": "Stock renouvelé {when}",
@@ -416,7 +440,9 @@
       "consumable": "Consommables",
       "material": "Matériaux",
       "cosmetic": "Cosmétiques",
-      "event": "Événement"
+      "event": "Événement",
+      "fish": "Poissons",
+      "ore": "Minerais"
     },
     "estimated_value_field": "Valeur estimée",
     "filter_placeholder": "Filtrer par catégorie",
@@ -893,6 +919,14 @@
       "use_fertilize_instead": "{emoji} {name} s'applique avec `/fertilize`, pas avec `/use`.",
       "auto_consumed_token": "Ce jeton est consommé automatiquement par `/reroll-quest`.",
       "unknown_effect": "Effet inconnu pour {item}."
+    },
+    "fishing": {
+      "level_too_low": "La pêche nécessite le niveau {level}.",
+      "unavailable": "La pêche est temporairement indisponible, réessayez."
+    },
+    "mining": {
+      "level_too_low": "La mine nécessite le niveau {level}.",
+      "unavailable": "La mine est temporairement indisponible, réessayez."
     },
     "coop": {
       "not_found": "Coopérative introuvable.",
