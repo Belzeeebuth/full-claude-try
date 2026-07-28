@@ -551,6 +551,7 @@
     "maxLevel": 30,
     "contributionXpRatio": 0.02,
     "weeklyObjectiveCount": 3,
+    "dailyObjectiveCount": 1,
     "bonusesPerLevel": {
       "growthSpeed": 0.004,
       "sellBonus": 0.003,

@@ -184,6 +184,72 @@ export const COOP_OBJECTIVE_TEMPLATES: readonly CoopObjectiveTemplate[] = [
   },
 ];
 
+/**
+ * Défi quotidien de coopérative : une seule cible tirée chaque jour parmi ces
+ * gabarits (`balance.coop.dailyObjectiveCount`), même mécanique que les
+ * objectifs hebdomadaires mais sur une fenêtre bien plus courte — les cibles
+ * et récompenses par membre sont donc nettement plus petites. Aucune gemme en
+ * récompense : un gain quotidien répété 7×/semaine serait une source de
+ * gemmes bien plus généreuse qu'un objectif hebdomadaire, ce qui déséquilibrerait
+ * la monnaie premium.
+ */
+export const COOP_DAILY_OBJECTIVE_TEMPLATES: readonly CoopObjectiveTemplate[] = [
+  {
+    objectiveKey: 'daily_harvest_total',
+    title: 'Daily harvest',
+    description: 'Harvest {target} units across all members, today.',
+    basePerMember: 20,
+    rewardCoinsPerMember: 700,
+    rewardGems: 0,
+    rewardCoopXp: 400,
+  },
+  {
+    objectiveKey: 'daily_craft_total',
+    title: 'Daily production',
+    description: 'Craft {target} processed goods, today.',
+    basePerMember: 4,
+    rewardCoinsPerMember: 900,
+    rewardGems: 0,
+    rewardCoopXp: 500,
+  },
+  {
+    objectiveKey: 'daily_collect_total',
+    title: 'Daily milking',
+    description: 'Collect {target} animal productions, today.',
+    basePerMember: 10,
+    rewardCoinsPerMember: 600,
+    rewardGems: 0,
+    rewardCoopXp: 350,
+  },
+  {
+    objectiveKey: 'daily_sell_value_total',
+    title: 'Daily market',
+    description: 'Sell {target} coins worth of goods, today.',
+    basePerMember: 10000,
+    rewardCoinsPerMember: 1000,
+    rewardGems: 0,
+    rewardCoopXp: 550,
+  },
+  {
+    objectiveKey: 'daily_help_total',
+    title: 'Daily solidarity',
+    description: 'Help {target} farmers, members or not, today.',
+    basePerMember: 2,
+    rewardCoinsPerMember: 500,
+    rewardGems: 0,
+    rewardCoopXp: 300,
+  },
+  {
+    objectiveKey: 'daily_treasury_total',
+    title: 'Daily treasury',
+    description: 'Pay {target} coins into the treasury, today.',
+    basePerMember: 4000,
+    rewardCoinsPerMember: 400,
+    rewardGems: 0,
+    rewardCoopXp: 600,
+  },
+];
+
 export function buildCoopObjective(
   template: CoopObjectiveTemplate,
   memberCount: number,

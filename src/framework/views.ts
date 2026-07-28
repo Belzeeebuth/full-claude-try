@@ -898,6 +898,16 @@ export async function questsView(
 // COOPÉRATIVE
 // ---------------------------------------------------------------------------
 
+/** Ligne résumant un objectif (hebdomadaire ou défi quotidien) — même gabarit pour les deux. */
+function objectiveSummaryLine(
+  objective: { objectiveKey: string; status: string; progress: number; target: number; rewardCoins: number },
+  t: CommandContext['t'],
+  locale: string,
+): string {
+  const check = objective.status === 'completed' ? '✅' : '';
+  return `**${t(`coop.objective.${objective.objectiveKey}.title`)}** ${check}\n${progressBar(objective.progress, objective.target, 10)} ${formatCompact(objective.progress, locale)}/${formatCompact(objective.target, locale)} — ${formatCompact(objective.rewardCoins, locale)} 🪙`;
+}
+
 export async function coopView(context: CommandContext): Promise<View> {
   const player = context.player;
   const t = context.t;
@@ -961,7 +971,8 @@ export async function coopView(context: CommandContext): Promise<View> {
   }
 
   const info = await coopService.getCoopInfo(player.coopId, player.id);
-  const objectives = await coopService.listObjectives(player.coopId, context.now);
+  const objectives = await coopService.listWeeklyObjectives(player.coopId, context.now);
+  const dailyObjectives = await coopService.listDailyObjectives(player.coopId, context.now);
   const members = await coopService.listMembers(player.coopId);
 
   const embed = baseEmbed({
@@ -997,12 +1008,15 @@ export async function coopView(context: CommandContext): Promise<View> {
       {
         name: `🎯 ${t('coop.objectives')}`,
         value:
-          objectives
-            .map(
-              (objective) =>
-                `**${t(`coop.objective.${objective.objectiveKey}.title`)}** ${objective.status === 'completed' ? '✅' : ''}\n${progressBar(objective.progress, objective.target, 10)} ${formatCompact(objective.progress, locale)}/${formatCompact(objective.target, locale)} — ${formatCompact(objective.rewardCoins, locale)} 🪙`,
-            )
-            .join('\n') || t('coop.no_active_goal'),
+          objectives.map((objective) => objectiveSummaryLine(objective, t, locale)).join('\n') ||
+          t('coop.no_active_goal'),
+        inline: false,
+      },
+      {
+        name: `🌟 ${t('coop.daily_challenge')}`,
+        value:
+          dailyObjectives.map((objective) => objectiveSummaryLine(objective, t, locale)).join('\n') ||
+          t('coop.no_daily_challenge'),
         inline: false,
       },
       {

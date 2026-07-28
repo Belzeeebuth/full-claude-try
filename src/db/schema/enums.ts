@@ -178,6 +178,9 @@ export const coopObjectiveStatusEnum = pgEnum('coop_objective_status', [
   'expired',
 ]);
 
+/** Cadence d'un objectif de coopérative : hebdomadaire (existant) ou quotidien (défi du jour). */
+export const coopObjectivePeriodEnum = pgEnum('coop_objective_period', ['weekly', 'daily']);
+
 export const treasuryOpEnum = pgEnum('treasury_operation', [
   'deposit',
   'withdraw',

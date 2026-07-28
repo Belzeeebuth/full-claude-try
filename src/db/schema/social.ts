@@ -17,7 +17,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { users } from './core';
-import { coopObjectiveStatusEnum, coopRoleEnum, treasuryOpEnum } from './enums';
+import { coopObjectivePeriodEnum, coopObjectiveStatusEnum, coopRoleEnum, treasuryOpEnum } from './enums';
 
 /**
  * ---------------------------------------------------------------------------
@@ -116,8 +116,14 @@ export const coopObjectives = pgTable(
     description: text('description').notNull(),
     target: bigint('target', { mode: 'number' }).notNull(),
     progress: bigint('progress', { mode: 'number' }).notNull().default(0),
-    /** Lundi de la semaine ISO concernée. */
+    /**
+     * Début de la période concernée : le lundi de la semaine ISO pour un
+     * objectif `weekly`, la date du jour pour un objectif `daily` (défi
+     * quotidien). Le nom de colonne garde son sens historique ; seule sa
+     * granularité change avec `period`.
+     */
     weekStart: date('week_start').notNull(),
+    period: coopObjectivePeriodEnum('period').notNull().default('weekly'),
     status: coopObjectiveStatusEnum('status').notNull().default('active'),
     rewardCoins: bigint('reward_coins', { mode: 'number' }).notNull().default(0),
     rewardGems: bigint('reward_gems', { mode: 'number' }).notNull().default(0),
@@ -129,7 +135,7 @@ export const coopObjectives = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    uniqueIndex('guild_objectives_uq').on(t.guildId, t.objectiveKey, t.weekStart),
+    uniqueIndex('guild_objectives_uq').on(t.guildId, t.objectiveKey, t.weekStart, t.period),
     index('guild_objectives_guild_status_idx').on(t.guildId, t.status),
     index('guild_objectives_week_idx').on(t.weekStart, t.status),
     check('guild_objectives_target_positive', sql`${t.target} > 0`),

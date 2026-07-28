@@ -36,6 +36,13 @@
       "when": 1785240479506,
       "tag": "0006_api_and_webhooks",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785253481021,
+      "tag": "0007_coop_daily_objectives",
+      "breakpoints": true
     }
   ]
 }

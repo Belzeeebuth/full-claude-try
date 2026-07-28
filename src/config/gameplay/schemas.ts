@@ -705,6 +705,7 @@ export const balanceSchema = z.object({
     maxLevel: positiveInt,
     contributionXpRatio: z.number().min(0).max(1),
     weeklyObjectiveCount: positiveInt,
+    dailyObjectiveCount: positiveInt,
     bonusesPerLevel: z.object({
       growthSpeed: z.number().min(0).max(1),
       sellBonus: z.number().min(0).max(1),

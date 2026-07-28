@@ -251,12 +251,19 @@ export async function listPublicCoops(limit: number, executor: Executor = getDb(
 export async function listObjectives(
   coopId: string,
   weekStart: string,
+  period: 'weekly' | 'daily' = 'weekly',
   executor: Executor = getDb(),
 ) {
   return executor
     .select()
     .from(coopObjectives)
-    .where(and(eq(coopObjectives.guildId, coopId), eq(coopObjectives.weekStart, weekStart)))
+    .where(
+      and(
+        eq(coopObjectives.guildId, coopId),
+        eq(coopObjectives.weekStart, weekStart),
+        eq(coopObjectives.period, period),
+      ),
+    )
     .orderBy(asc(coopObjectives.objectiveKey));
 }
 
