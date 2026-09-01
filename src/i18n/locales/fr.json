@@ -336,6 +336,13 @@
     "house_footer": "{total} annonce(s) • page {page}/{totalPages}",
     "buy_placeholder": "Acheter une annonce",
     "seller_line": "Vendeur : {seller}",
+    "order_created_title": "🎯 Ordre d'achat créé",
+    "order_created_body": "Dès qu'une annonce de **{quantity}× {emoji} {name}** apparaît à {price} l'unité ou moins, elle est achetée automatiquement.\nExpire {relative}.",
+    "order_list_title": "🎯 Vos ordres d'achat",
+    "order_list_line": "{emoji} **{name}** — {remaining}/{total} restant(s) à {price} maximum l'unité — expire {relative}\n`{id}`",
+    "order_list_empty": "Aucun ordre d'achat actif. Créez-en un avec `/order create`.",
+    "order_cancelled_title": "↩️ Ordre annulé",
+    "order_cancelled_body": "Il ne sera plus rapproché.",
     "view_title": "🤝 Échange avec {name}",
     "view_confirm_notice": "**Les deux joueurs doivent confirmer.** Tout changement annule les confirmations.",
     "view_expires_line": "Expire {relative} • révision {revision}",
@@ -499,6 +506,8 @@
     "bonus_xp": "✨ XP **+{pct}%**",
     "bonus_quality": "🥇 Qualité **+{pct}%**",
     "no_active_goal": "Aucun objectif actif.",
+    "no_daily_challenge": "Aucun défi du jour actif.",
+    "daily_challenge": "Défi du jour",
     "top_contributors_field": "👥 Meilleurs contributeurs",
     "contribute_button": "Contribuer",
     "objectives_button": "Objectifs",
@@ -550,6 +559,30 @@
       "treasury_total": {
         "title": "Trésorerie commune",
         "description": "Versez {target} pièces dans la trésorerie."
+      },
+      "daily_harvest_total": {
+        "title": "Récolte du jour",
+        "description": "Récoltez {target} unités aujourd'hui, tous membres confondus."
+      },
+      "daily_craft_total": {
+        "title": "Production du jour",
+        "description": "Fabriquez {target} produits transformés aujourd'hui."
+      },
+      "daily_collect_total": {
+        "title": "Traite du jour",
+        "description": "Collectez {target} productions animales aujourd'hui."
+      },
+      "daily_sell_value_total": {
+        "title": "Marché du jour",
+        "description": "Vendez pour {target} pièces de marchandises aujourd'hui."
+      },
+      "daily_help_total": {
+        "title": "Solidarité du jour",
+        "description": "Aidez {target} fermiers, membres ou non, aujourd'hui."
+      },
+      "daily_treasury_total": {
+        "title": "Trésorerie du jour",
+        "description": "Versez {target} pièces dans la trésorerie aujourd'hui."
       }
     },
     "create_modal_title": "Créer une coopérative",
@@ -599,6 +632,50 @@
     "build_slots_line": "Emplacements de production : **{slots}**",
     "collect_title": "📦 Production collectée",
     "recipes_hint": "Utilisez `/recipes` pour la liste complète et `/craft` pour démarrer une production."
+  },
+  "pets": {
+    "list_title": "🐾 Vos compagnons",
+    "equipped_marker": "✅ équipé",
+    "owned_marker": "🔓 débloqué",
+    "locked_marker": "🔒 niveau {level}",
+    "equipped_title": "🐾 Compagnon équipé",
+    "equipped_body": "{name} vous accompagne désormais sur `/farm`.",
+    "unequipped_title": "🐾 Compagnon retiré",
+    "unequipped_body": "Vous n'avez plus de compagnon équipé.",
+    "catalog": {
+      "chick": {
+        "title": "Poussin",
+        "description": "Éclot en même temps que vos toutes premières récoltes."
+      },
+      "kitten": {
+        "title": "Chaton",
+        "description": "Fait la sieste au soleil entre deux arrosages."
+      },
+      "puppy": {
+        "title": "Chiot",
+        "description": "Court le long des rangées de parcelles."
+      },
+      "piglet": {
+        "title": "Cochonnet",
+        "description": "Trouve toujours la parcelle la plus boueuse."
+      },
+      "bunny": {
+        "title": "Lapereau",
+        "description": "Garde un œil suspicieux sur les carottes."
+      },
+      "fox": {
+        "title": "Renard",
+        "description": "Surveille le poulailler d'un peu trop près."
+      },
+      "owl": {
+        "title": "Chouette",
+        "description": "Veille sur la ferme pendant la nuit."
+      },
+      "dragon": {
+        "title": "Bébé dragon",
+        "description": "Une légende parmi les fermiers."
+      }
+    }
   },
   "help": {
     "title": "🌾 Aide de Harvester",
@@ -865,7 +942,9 @@
       "max_items": "Maximum {max} objets par joueur.",
       "not_enough_owned": "Vous n'avez que {owned}× {item}.",
       "offer_changed": "L'offre a changé depuis votre confirmation. Vérifiez-la et confirmez à nouveau.",
-      "already_closed": "Cet échange est déjà fermé."
+      "already_closed": "Cet échange est déjà fermé.",
+      "too_many_orders": "Vous avez déjà {active} ordres d'achat actifs (maximum {max}).",
+      "order_not_found": "Ordre d'achat introuvable."
     },
     "craft": {
       "unknown_recipe": "Recette inconnue : `{recipeKey}`.",
@@ -947,6 +1026,10 @@
       "use_fertilize_instead": "{emoji} {name} s'applique avec `/fertilize`, pas avec `/use`.",
       "auto_consumed_token": "Ce jeton est consommé automatiquement par `/reroll-quest`.",
       "unknown_effect": "Effet inconnu pour {item}."
+    },
+    "pets": {
+      "unknown": "Compagnon inconnu.",
+      "not_unlocked": "Ce compagnon se débloque au niveau {level}."
     },
     "fishing": {
       "level_too_low": "La pêche nécessite le niveau {level}.",
@@ -1081,7 +1164,9 @@
     "auction_sold_title": "💰 Enchère vendue",
     "auction_sold_body": "Votre lot de {quantity} objet(s) s'est vendu pour {amount} 🪙.",
     "auction_won_title": "🏆 Enchère remportée",
-    "auction_won_body": "Vous avez remporté {quantity} objet(s) pour {amount} 🪙."
+    "auction_won_body": "Vous avez remporté {quantity} objet(s) pour {amount} 🪙.",
+    "order_filled_title": "🎯 Ordre d'achat exécuté",
+    "order_filled_body": "Votre ordre pour {quantity} objet(s) a été entièrement rapproché. Consultez votre inventaire !"
   },
   "world": {
     "weather": {
@@ -1190,9 +1275,9 @@
       "your_rank": "Votre rang : #{rank} — {score} {unit}"
     },
     "chart": {
-      "subtitle": "Prix de référence : {base} 🪙   •   Indice de demande : {demand}",
+      "subtitle": "Prix de référence : {base}   •   Indice de demande : {demand}",
       "reference": "référence",
-      "legend": "Min {min} 🪙   •   Max {max} 🪙   •   {count} point(s) d'historique"
+      "legend": "Min {min}   •   Max {max}   •   {count} point(s) d'historique"
     }
   },
   "profile": {
@@ -1263,7 +1348,7 @@
     "display_field": "🌍 Affichage",
     "language_line": "Langue : **{locale}**",
     "timezone_line": "Fuseau horaire : **{timezone}**",
-    "compact_mode_line": "Mode compact : {check}",
+    "compact_mode_line": "Mode compact, sans images générées : {check}",
     "privacy_field": "🔒 Confidentialité",
     "privacy_visible_line": "Ferme visible par : **{scope}**",
     "privacy_nobody": "personne",

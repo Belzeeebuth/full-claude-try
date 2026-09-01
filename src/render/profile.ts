@@ -12,6 +12,7 @@ import {
   newCanvas,
   progressBar,
   verticalGradient,
+  withDropShadow,
 } from './canvas';
 import { drawCoin, drawGem, rarityColor } from './sprites';
 
@@ -138,7 +139,7 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
 
   // --- Monnaies ---------------------------------------------------------
   const walletX = dims.width - 288;
-  fillRoundRect(ctx, walletX, bannerHeight + 26, 252, 116, 14, PALETTE.cardAlt);
+  withDropShadow(ctx, () => fillRoundRect(ctx, walletX, bannerHeight + 26, 252, 116, 14, PALETTE.cardAlt));
   drawCoin(ctx, walletX + 26, bannerHeight + 56, 11);
   ctx.font = font(20, 'bold');
   ctx.fillStyle = PALETTE.gold;
@@ -177,7 +178,10 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
     const x = 36 + column * (cellWidth + 12);
     const y = statsY + row * (cellHeight + 12);
 
-    fillRoundRect(ctx, x, y, cellWidth, cellHeight, 12, PALETTE.cardAlt);
+    withDropShadow(ctx, () => fillRoundRect(ctx, x, y, cellWidth, cellHeight, 12, PALETTE.cardAlt), {
+      blur: 8,
+      offsetY: 3,
+    });
     ctx.fillStyle = cell.color;
     ctx.fillRect(x, y + 12, 4, cellHeight - 24);
     ctx.font = font(20, 'bold');

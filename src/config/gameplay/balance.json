@@ -389,7 +389,9 @@
     "minPricePctOfMarket": 0.4,
     "maxPricePctOfMarket": 5.0,
     "minBidIncrementPct": 0.05,
-    "antiSnipeExtensionMinutes": 5
+    "antiSnipeExtensionMinutes": 5,
+    "maxActiveOrders": 5,
+    "orderDurationHours": 72
   },
   "trade": {
     "expiryMinutes": 10,
@@ -551,6 +553,7 @@
     "maxLevel": 30,
     "contributionXpRatio": 0.02,
     "weeklyObjectiveCount": 3,
+    "dailyObjectiveCount": 1,
     "bonusesPerLevel": {
       "growthSpeed": 0.004,
       "sellBonus": 0.003,

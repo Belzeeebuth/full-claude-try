@@ -95,6 +95,7 @@ export async function dispatchBatch(client: Client, limit: number): Promise<numb
           'coop_objective',
           'event_start',
           'admin_message',
+          'order_filled',
         ].includes(notification.type);
 
       if (!allowed) {

@@ -206,6 +206,38 @@ export function fillRoundRect(
   ctx.fill();
 }
 
+/**
+ * Ombre portée douce, appliquée pendant `draw()` puis réinitialisée.
+ *
+ * Une seule ligne d'appel suffit à donner un effet de « carte surélevée » à un
+ * panneau plein — bien moins cher qu'une texture, et ça se voit immédiatement
+ * sur un fond par ailleurs plat.
+ */
+export function withDropShadow(
+  ctx: SKRSContext2D,
+  draw: () => void,
+  options: { color?: string; blur?: number; offsetY?: number } = {},
+): void {
+  ctx.save();
+  ctx.shadowColor = options.color ?? 'rgba(0,0,0,0.35)';
+  ctx.shadowBlur = options.blur ?? 14;
+  ctx.shadowOffsetY = options.offsetY ?? 6;
+  draw();
+  ctx.restore();
+}
+
+/** Éclaircit une couleur hexadécimale vers le blanc ; renvoyée telle quelle si le format est inattendu. */
+export function lighten(hex: string, amount: number): string {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!match) return hex;
+  const value = match[1]!;
+  const channel = (offset: number): number => {
+    const base = Number.parseInt(value.slice(offset, offset + 2), 16);
+    return Math.round(base + (255 - base) * amount);
+  };
+  return `rgb(${channel(0)}, ${channel(2)}, ${channel(4)})`;
+}
+
 export function verticalGradient(
   ctx: SKRSContext2D,
   x: number,
@@ -322,7 +354,19 @@ export async function drawAvatar(
   if (image) {
     ctx.drawImage(image, x, y, size, size);
   } else {
-    ctx.fillStyle = fallbackColor;
+    // Repli sans avatar : dégradé radial plutôt qu'un aplat, pour que le
+    // placeholder ait un minimum de volume au lieu d'un disque plat.
+    const gradient = ctx.createRadialGradient(
+      x + size * 0.35,
+      y + size * 0.32,
+      size * 0.05,
+      x + size / 2,
+      y + size / 2,
+      size * 0.75,
+    );
+    gradient.addColorStop(0, lighten(fallbackColor, 0.35));
+    gradient.addColorStop(1, fallbackColor);
+    ctx.fillStyle = gradient;
     ctx.fillRect(x, y, size, size);
   }
   ctx.restore();

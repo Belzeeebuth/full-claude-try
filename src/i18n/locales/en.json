@@ -344,9 +344,9 @@
       "your_rank": "Your rank: #{rank} — {score} {unit}"
     },
     "chart": {
-      "subtitle": "Base price: {base} 🪙   •   Demand index: {demand}",
+      "subtitle": "Base price: {base}   •   Demand index: {demand}",
       "reference": "baseline",
-      "legend": "Min {min} 🪙   •   Max {max} 🪙   •   {count} history point(s)"
+      "legend": "Min {min}   •   Max {max}   •   {count} history point(s)"
     }
   },
   "profile": {
@@ -417,7 +417,7 @@
     "display_field": "🌍 Display",
     "language_line": "Language: **{locale}**",
     "timezone_line": "Time zone: **{timezone}**",
-    "compact_mode_line": "Compact mode: {check}",
+    "compact_mode_line": "Compact mode, no generated images: {check}",
     "privacy_field": "🔒 Privacy",
     "privacy_visible_line": "Farm visible to: **{scope}**",
     "privacy_nobody": "nobody",
@@ -586,6 +586,13 @@
     "house_footer": "{total} listing(s) • page {page}/{totalPages}",
     "buy_placeholder": "Buy a listing",
     "seller_line": "Seller: {seller}",
+    "order_created_title": "🎯 Buy order created",
+    "order_created_body": "As soon as a listing of **{quantity}× {emoji} {name}** appears at {price} per unit or less, it is bought automatically.\nExpires {relative}.",
+    "order_list_title": "🎯 Your buy orders",
+    "order_list_line": "{emoji} **{name}** — {remaining}/{total} left at {price} max per unit — expires {relative}\n`{id}`",
+    "order_list_empty": "No active buy order. Create one with `/order create`.",
+    "order_cancelled_title": "↩️ Order cancelled",
+    "order_cancelled_body": "It will no longer be matched.",
     "view_title": "🤝 Trade with {name}",
     "view_confirm_notice": "**Both players must confirm.** Any change cancels the confirmations.",
     "view_expires_line": "Expires {relative} • revision {revision}",
@@ -726,6 +733,8 @@
     "bonus_xp": "✨ XP **+{pct}%**",
     "bonus_quality": "🥇 Quality **+{pct}%**",
     "no_active_goal": "No active goal.",
+    "no_daily_challenge": "No active daily challenge.",
+    "daily_challenge": "Daily challenge",
     "top_contributors_field": "👥 Top contributors",
     "contribute_button": "Contribute",
     "objectives_button": "Objectives",
@@ -777,6 +786,30 @@
       "treasury_total": {
         "title": "Common treasury",
         "description": "Pay {target} coins into the treasury."
+      },
+      "daily_harvest_total": {
+        "title": "Daily harvest",
+        "description": "Harvest {target} units across all members, today."
+      },
+      "daily_craft_total": {
+        "title": "Daily production",
+        "description": "Craft {target} processed goods, today."
+      },
+      "daily_collect_total": {
+        "title": "Daily milking",
+        "description": "Collect {target} animal productions, today."
+      },
+      "daily_sell_value_total": {
+        "title": "Daily market",
+        "description": "Sell {target} coins worth of goods, today."
+      },
+      "daily_help_total": {
+        "title": "Daily solidarity",
+        "description": "Help {target} farmers, members or not, today."
+      },
+      "daily_treasury_total": {
+        "title": "Daily treasury",
+        "description": "Pay {target} coins into the treasury, today."
       }
     },
     "create_modal_title": "Create a co-op",
@@ -826,6 +859,50 @@
     "build_slots_line": "Production slots: **{slots}**",
     "collect_title": "📦 Production collected",
     "recipes_hint": "Use `/recipes` for the full list and `/craft` to start a production run."
+  },
+  "pets": {
+    "list_title": "🐾 Your companions",
+    "equipped_marker": "✅ equipped",
+    "owned_marker": "🔓 unlocked",
+    "locked_marker": "🔒 level {level}",
+    "equipped_title": "🐾 Companion equipped",
+    "equipped_body": "{name} now accompanies you on `/farm`.",
+    "unequipped_title": "🐾 Companion removed",
+    "unequipped_body": "You no longer have a companion equipped.",
+    "catalog": {
+      "chick": {
+        "title": "Chick",
+        "description": "Hatches alongside your very first harvests."
+      },
+      "kitten": {
+        "title": "Kitten",
+        "description": "Naps in the sun between two waterings."
+      },
+      "puppy": {
+        "title": "Puppy",
+        "description": "Runs along the rows of plots."
+      },
+      "piglet": {
+        "title": "Piglet",
+        "description": "Always finds the muddiest plot."
+      },
+      "bunny": {
+        "title": "Bunny",
+        "description": "Keeps a suspicious eye on the carrots."
+      },
+      "fox": {
+        "title": "Fox",
+        "description": "Watches the hen house a little too closely."
+      },
+      "owl": {
+        "title": "Owl",
+        "description": "Keeps watch over the farm at night."
+      },
+      "dragon": {
+        "title": "Baby dragon",
+        "description": "A legend among farmhands."
+      }
+    }
   },
   "help": {
     "title": "🌾 Harvester help",
@@ -1092,7 +1169,9 @@
       "max_items": "Maximum {max} items per player.",
       "not_enough_owned": "You only have {owned}× {item}.",
       "offer_changed": "The offer changed since you confirmed. Review it and confirm again.",
-      "already_closed": "This trade is already closed."
+      "already_closed": "This trade is already closed.",
+      "too_many_orders": "You already have {active} active orders (maximum {max}).",
+      "order_not_found": "Buy order not found."
     },
     "craft": {
       "unknown_recipe": "Unknown recipe: `{recipeKey}`.",
@@ -1174,6 +1253,10 @@
       "use_fertilize_instead": "{emoji} {name} is applied with `/fertilize`, not with `/use`.",
       "auto_consumed_token": "This token is consumed automatically by `/reroll-quest`.",
       "unknown_effect": "Unknown effect for {item}."
+    },
+    "pets": {
+      "unknown": "Unknown companion.",
+      "not_unlocked": "This companion unlocks at level {level}."
     },
     "fishing": {
       "level_too_low": "Fishing requires level {level}.",
@@ -1308,7 +1391,9 @@
     "auction_sold_title": "💰 Auction sold",
     "auction_sold_body": "Your lot of {quantity} item(s) sold for {amount} 🪙.",
     "auction_won_title": "🏆 Auction won",
-    "auction_won_body": "You won {quantity} item(s) for {amount} 🪙."
+    "auction_won_body": "You won {quantity} item(s) for {amount} 🪙.",
+    "order_filled_title": "🎯 Buy order filled",
+    "order_filled_body": "Your order for {quantity} item(s) has been fully matched. Check your inventory!"
   },
   "integrations": {
     "never": "never",

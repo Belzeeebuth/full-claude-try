@@ -7,7 +7,7 @@ import * as farmService from '../services/farm.service';
 import * as inventoryService from '../services/inventory.service';
 import * as marketService from '../services/market.service';
 import * as progressionService from '../services/progression.service';
-import { renderFarmImage } from '../render';
+import { NO_IMAGE, renderFarmImage } from '../render';
 import {
   COIN,
   discordTimestamp,
@@ -54,7 +54,7 @@ export async function farmView(
 
   const xpForNext = (await import('../game/xp')).xpForNextLevel(player.level, context.balance);
 
-  const image = await renderFarmImage({
+  const image = player.compactMode ? NO_IMAGE : await renderFarmImage({
     locale: context.locale,
     view,
     player: {
@@ -71,6 +71,7 @@ export async function farmView(
       animalKey: animal.animalKey,
     })),
     buildingsPreview: herd.ownedBuildings,
+    equippedPetKey: player.equippedPetKey,
   });
 
   const counts = view.counts;
@@ -899,6 +900,16 @@ export async function questsView(
 // COOPÉRATIVE
 // ---------------------------------------------------------------------------
 
+/** Ligne résumant un objectif (hebdomadaire ou défi quotidien) — même gabarit pour les deux. */
+function objectiveSummaryLine(
+  objective: { objectiveKey: string; status: string; progress: number; target: number; rewardCoins: number },
+  t: CommandContext['t'],
+  locale: string,
+): string {
+  const check = objective.status === 'completed' ? '✅' : '';
+  return `**${t(`coop.objective.${objective.objectiveKey}.title`)}** ${check}\n${progressBar(objective.progress, objective.target, 10)} ${formatCompact(objective.progress, locale)}/${formatCompact(objective.target, locale)} — ${formatCompact(objective.rewardCoins, locale)} 🪙`;
+}
+
 export async function coopView(context: CommandContext): Promise<View> {
   const player = context.player;
   const t = context.t;
@@ -962,7 +973,8 @@ export async function coopView(context: CommandContext): Promise<View> {
   }
 
   const info = await coopService.getCoopInfo(player.coopId, player.id);
-  const objectives = await coopService.listObjectives(player.coopId, context.now);
+  const objectives = await coopService.listWeeklyObjectives(player.coopId, context.now);
+  const dailyObjectives = await coopService.listDailyObjectives(player.coopId, context.now);
   const members = await coopService.listMembers(player.coopId);
 
   const embed = baseEmbed({
@@ -998,12 +1010,15 @@ export async function coopView(context: CommandContext): Promise<View> {
       {
         name: `🎯 ${t('coop.objectives')}`,
         value:
-          objectives
-            .map(
-              (objective) =>
-                `**${t(`coop.objective.${objective.objectiveKey}.title`)}** ${objective.status === 'completed' ? '✅' : ''}\n${progressBar(objective.progress, objective.target, 10)} ${formatCompact(objective.progress, locale)}/${formatCompact(objective.target, locale)} — ${formatCompact(objective.rewardCoins, locale)} 🪙`,
-            )
-            .join('\n') || t('coop.no_active_goal'),
+          objectives.map((objective) => objectiveSummaryLine(objective, t, locale)).join('\n') ||
+          t('coop.no_active_goal'),
+        inline: false,
+      },
+      {
+        name: `🌟 ${t('coop.daily_challenge')}`,
+        value:
+          dailyObjectives.map((objective) => objectiveSummaryLine(objective, t, locale)).join('\n') ||
+          t('coop.no_daily_challenge'),
         inline: false,
       },
       {

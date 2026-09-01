@@ -372,8 +372,9 @@ contextuels. Détail complet dans le [README](../README.md#commandes) et dans
 | `blackmarket.ts` | `/black-market` |
 | `craft.ts` | `/craft`, `/recipes`, `/production`, `/buildings`, `/build` |
 | `progression.ts` | `/quests`, `/reroll-quest`, `/achievements`, `/pass`, `/daily`, `/vote` |
+| `companion.ts` | `/companion list\|equip\|unequip` |
 | `social.ts` | `/coop`, `/leaderboard`, `/visit`, `/assist`, `/referral` |
-| `trade.ts` | `/auction`, `/trade` |
+| `trade.ts` | `/auction`, `/trade`, `/order` |
 | `world.ts` | `/weather`, `/season`, `/event`, `/encyclopedia` |
 | `admin.ts` | `/admin` |
 | `integrations.ts` | `/apikey`, `/webhook` |
@@ -446,7 +447,7 @@ Pipeline d'assets documenté en [05](./05-pipeline-assets.md).
 | **Sécurité** | Aucun secret en dur, validation Zod de l'environnement au démarrage (échec immédiat si invalide) et de toute entrée utilisateur, limitation de débit et cooldowns. |
 | **i18n** | Interface **anglaise**, contenu de jeu **bilingue**. Chaque entrée de `src/config/gameplay/` porte `name`/`description` (français) et `nameEn`/`descriptionEn`. Le chargeur construit une variante complète par langue, donc aucun point d'affichage n'a à résoudre la langue lui-même. |
 | **Configuration** | Tout l'équilibrage vit dans des JSON rechargeables à chaud sans redéploiement ; une configuration invalide est **rejetée** et l'ancienne conservée. |
-| **Tests** | 90 tests sur la logique de jeu pure et la cohérence de configuration ; seuil de couverture 70 % sur `src/game/**`. |
+| **Tests** | 125 tests sur la logique de jeu pure et la cohérence de configuration (seuil de couverture 70 % sur `src/game/**`), plus une suite d'intégration Testcontainers (`tests/integration/`) pour les garanties qu'une base en mémoire ne peut pas prouver, comme la non-duplication d'une récolte concurrente. |
 | **Observabilité** | Journaux structurés (Pino), `/health`, `/metrics`, instantanés économiques horaires. |
 
 ---

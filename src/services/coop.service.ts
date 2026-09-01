@@ -10,7 +10,9 @@ import {
   coopBonuses,
   coopLevelState,
   coopMemberLimit,
+  COOP_DAILY_OBJECTIVE_TEMPLATES,
   COOP_OBJECTIVE_TEMPLATES,
+  type CoopObjectiveTemplate,
   type CoopRole,
 } from '../game/coop';
 import { dailyRng } from '../game/rng';
@@ -18,7 +20,7 @@ import { gameError } from '../utils/errors';
 import { moduleLogger } from '../utils/logger';
 import * as socialRepo from '../repositories/social.repo';
 import * as economyService from './economy.service';
-import { currentWeekStart } from '../utils/time';
+import { currentWeekStart, dailyCycleKey } from '../utils/time';
 import type { PlayerContext } from '../types';
 
 const log = moduleLogger('coop');
@@ -429,6 +431,13 @@ export async function contribute(
       amount,
       tx,
     );
+    await socialRepo.progressObjective(
+      coop.id,
+      'daily_treasury_total',
+      dailyCycleKey(new Date()),
+      amount,
+      tx,
+    );
 
     return {
       treasury,
@@ -486,27 +495,52 @@ export async function withdrawTreasury(
 }
 
 // ---------------------------------------------------------------------------
-// Objectifs hebdomadaires
+// Objectifs hebdomadaires et défi quotidien
 // ---------------------------------------------------------------------------
 
-/**
- * Génère les objectifs de la semaine s'ils n'existent pas encore.
- * Tirage déterministe par (coopérative, semaine) : deux membres qui ouvrent
- * `/coop objectives` en même temps obtiennent la même liste.
- */
-export async function ensureObjectives(coopId: string, now: Date = new Date()): Promise<void> {
+interface ObjectivePeriodConfig {
+  period: 'weekly' | 'daily';
+  periodStart: string;
+  count: number;
+  templates: readonly CoopObjectiveTemplate[];
+}
+
+function periodConfig(period: 'weekly' | 'daily', now: Date): ObjectivePeriodConfig {
   const balance = getBalance();
-  const weekStart = currentWeekStart(now);
-  const existing = await socialRepo.listObjectives(coopId, weekStart);
-  if (existing.length >= balance.coop.weeklyObjectiveCount) return;
+  return period === 'daily'
+    ? {
+        period,
+        periodStart: dailyCycleKey(now),
+        count: balance.coop.dailyObjectiveCount,
+        templates: COOP_DAILY_OBJECTIVE_TEMPLATES,
+      }
+    : {
+        period,
+        periodStart: currentWeekStart(now),
+        count: balance.coop.weeklyObjectiveCount,
+        templates: COOP_OBJECTIVE_TEMPLATES,
+      };
+}
+
+/**
+ * Génère les objectifs d'une période (semaine ou jour) s'ils n'existent pas
+ * encore. Tirage déterministe par (coopérative, période) : deux membres qui
+ * ouvrent `/coop objectives` en même temps obtiennent la même liste.
+ */
+async function ensureObjectives(
+  coopId: string,
+  period: 'weekly' | 'daily',
+  now: Date = new Date(),
+): Promise<void> {
+  const config = periodConfig(period, now);
+  const existing = await socialRepo.listObjectives(coopId, config.periodStart, period);
+  if (existing.length >= config.count) return;
 
   const coop = await socialRepo.findCoopById(coopId);
   if (!coop) return;
 
-  const rng = dailyRng(`coop-objectives:${coopId}`, weekStart);
-  const picked = rng
-    .shuffle(COOP_OBJECTIVE_TEMPLATES)
-    .slice(0, balance.coop.weeklyObjectiveCount);
+  const rng = dailyRng(`coop-objectives:${period}:${coopId}`, config.periodStart);
+  const picked = rng.shuffle(config.templates).slice(0, config.count);
 
   await socialRepo.insertObjectives(
     picked.map((template) => {
@@ -518,7 +552,8 @@ export async function ensureObjectives(coopId: string, now: Date = new Date()): 
         description: objective.description,
         target: objective.target,
         progress: 0,
-        weekStart,
+        weekStart: config.periodStart,
+        period,
         rewardCoins: objective.rewardCoins,
         rewardGems: objective.rewardGems,
         rewardCoopXp: objective.rewardCoopXp,
@@ -527,9 +562,15 @@ export async function ensureObjectives(coopId: string, now: Date = new Date()): 
   );
 }
 
-export async function listObjectives(coopId: string, now: Date = new Date()) {
-  await ensureObjectives(coopId, now);
-  return socialRepo.listObjectives(coopId, currentWeekStart(now));
+export async function listWeeklyObjectives(coopId: string, now: Date = new Date()) {
+  await ensureObjectives(coopId, 'weekly', now);
+  return socialRepo.listObjectives(coopId, currentWeekStart(now), 'weekly');
+}
+
+/** Défi quotidien de coopérative : voir `COOP_DAILY_OBJECTIVE_TEMPLATES`. */
+export async function listDailyObjectives(coopId: string, now: Date = new Date()) {
+  await ensureObjectives(coopId, 'daily', now);
+  return socialRepo.listObjectives(coopId, dailyCycleKey(now), 'daily');
 }
 
 /**

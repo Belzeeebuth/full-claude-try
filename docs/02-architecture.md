@@ -71,7 +71,7 @@ Pourquoi c'est le bon choix, chiffres à l'appui :
 
 Le corollaire est que **le temps est un paramètre explicite** partout dans
 `src/game/**` : aucune fonction n'appelle `Date.now()` elle-même. C'est ce qui rend
-les 90 tests déterministes.
+les tests déterministes.
 
 Les jobs planifiés ne « font pas pousser » : ils gèrent uniquement des **événements
 discrets** que la dérivation ne peut pas produire (apparition de nuisibles, dégâts,

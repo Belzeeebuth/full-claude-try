@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { COLORS, baseEmbed, button, row } from '../framework/ui';
-import { renderFishingImage } from '../render';
+import { NO_IMAGE, renderFishingImage } from '../render';
 import * as fishingService from '../services/fishing.service';
 import { getWorldState } from '../services/world.service';
 import { moduleLogger } from '../utils/logger';
@@ -26,11 +26,13 @@ const peche: Command = {
 
     const result = await fishingService.cast(context.player, context.now);
     const world = await getWorldState(context.now, context.locale);
-    const image = await renderFishingImage({
-      locale: context.locale,
-      season: world.season.season,
-      weather: world.weather.weather,
-    });
+    const image = context.player.compactMode
+      ? NO_IMAGE
+      : await renderFishingImage({
+          locale: context.locale,
+          season: world.season.season,
+          weather: world.weather.weather,
+        });
 
     const components = [
       row(

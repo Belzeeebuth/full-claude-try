@@ -1,8 +1,18 @@
 import { balance as getBalance } from '../config';
 import { translate } from '../i18n';
 import { formatCompact, formatPercent } from '../utils/format';
-import { PALETTE, drawableText, encode, fillRoundRect, font, newCanvas, withEmoji } from './canvas';
-import { drawCoin } from './sprites';
+import {
+  PALETTE,
+  drawableText,
+  encode,
+  fillRoundRect,
+  font,
+  hasEmojiFont,
+  newCanvas,
+  withDropShadow,
+  withEmoji,
+} from './canvas';
+import { drawCoin, drawItemIcon } from './sprites';
 
 /**
  * Graphique de prix du marché.
@@ -40,26 +50,32 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   ctx.fillRect(0, 0, dims.width, dims.height);
 
   // --- Titre ------------------------------------------------------------
+  // Icône dessinée, jamais l'emoji de l'objet en texte : sans police couleur,
+  // ce serait un carré « tofu » (voir la note de drawBadge dans sprites.ts).
+  drawItemIcon(ctx, 44, 34, 16, input.title);
   ctx.font = font(26, 'bold');
   ctx.fillStyle = PALETTE.text;
-  // L'emoji n'est ajouté que si la police couleur répond présente : sinon il
-  // sortirait en carré « tofu ».
-  ctx.fillText(withEmoji(input.emoji, input.title), 32, 24);
+  // Deux replis pour le même problème : l'emoji du catalogue quand la police
+  // couleur est installée (le conteneur l'embarque), et une pastille colorée
+  // dérivée du nom sinon. Dans les deux cas, jamais de carré « tofu ».
+  const emojiAvailable = hasEmojiFont();
+  if (!emojiAvailable) drawItemIcon(ctx, 44, 34, 16, input.title);
+  ctx.fillText(withEmoji(input.emoji, input.title), emojiAvailable ? 32 : 68, 24);
 
   const rising = input.trend >= 0;
   const accent = rising ? PALETTE.success : PALETTE.danger;
   ctx.font = font(18, 'bold');
   ctx.fillStyle = accent;
-  // La pièce est DESSINÉE, pas écrite : c'est une valeur monétaire, elle doit
-  // rester lisible même sans police emoji.
-  const priceText = formatCompact(input.currentPrice, locale);
-  ctx.fillText(priceText, 32, 58);
-  const priceWidth = ctx.measureText(priceText).width;
-  drawCoin(ctx, 32 + priceWidth + 12, 67, 8);
+  const priceLabel = formatCompact(input.currentPrice, locale);
+  ctx.fillText(priceLabel, 32, 58);
+  const priceWidth = ctx.measureText(priceLabel).width;
+  drawCoin(ctx, 32 + priceWidth + 16, 67, 9);
+  // `drawCoin` laisse le doré dans le contexte : sans cette ligne, la variation
+  // s'affiche en jaune au lieu du vert ou du rouge de tendance.
   ctx.fillStyle = accent;
   ctx.fillText(
     `${rising ? '▲' : '▼'} ${formatPercent(input.trend, 1, locale)}`,
-    32 + priceWidth + 28,
+    32 + priceWidth + 34,
     58,
   );
 
@@ -78,7 +94,9 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
 
   // --- Zone de tracé ----------------------------------------------------
   const plot = { x: 72, y: 120, width: dims.width - 104, height: dims.height - 190 };
-  fillRoundRect(ctx, plot.x - 12, plot.y - 12, plot.width + 24, plot.height + 24, 12, PALETTE.cardAlt);
+  withDropShadow(ctx, () =>
+    fillRoundRect(ctx, plot.x - 12, plot.y - 12, plot.width + 24, plot.height + 24, 12, PALETTE.cardAlt),
+  );
 
   const points = input.points.length > 0 ? input.points : [
     { price: input.currentPrice, recordedAt: new Date() },

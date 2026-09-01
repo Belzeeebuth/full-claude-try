@@ -9,7 +9,7 @@ import {
 } from 'discord.js';
 import { COLORS, baseEmbed, button, row, successEmbed } from '../framework/ui';
 import { coopView, farmView } from '../framework/views';
-import { renderLeaderboardImage } from '../render';
+import { NO_IMAGE, renderLeaderboardImage } from '../render';
 import * as coopService from '../services/coop.service';
 import * as farmService from '../services/farm.service';
 import * as miscService from '../services/misc.service';
@@ -276,28 +276,48 @@ const coop: Command = {
       }
       case 'objectives': {
         const membership = await coopService.requireMembership(context.player.id);
-        const objectives = await coopService.listObjectives(membership.coop.id, context.now);
+        const [weekly, daily] = await Promise.all([
+          coopService.listWeeklyObjectives(membership.coop.id, context.now),
+          coopService.listDailyObjectives(membership.coop.id, context.now),
+        ]);
+
+        const objectiveLine = (objective: {
+          objectiveKey: string;
+          status: string;
+          progress: number;
+          target: number;
+          rewardCoins: number;
+          rewardGems: number;
+        }): string =>
+          context.t('coop.objectives_line', {
+            title: context.t(`coop.objective.${objective.objectiveKey}.title`),
+            check: objective.status === 'completed' ? '✅' : '',
+            description: context.t(`coop.objective.${objective.objectiveKey}.description`, {
+              target: objective.target,
+            }),
+            bar: progressBar(Number(objective.progress), Number(objective.target), 12),
+            progress: formatCompact(Number(objective.progress), context.locale),
+            target: formatCompact(Number(objective.target), context.locale),
+            coins: formatCoins(objective.rewardCoins, false, context.locale),
+            gems: objective.rewardGems,
+          });
+
         await interaction.editReply({
           embeds: [
             baseEmbed({
               title: context.t('coop.objectives_title', { name: membership.coop.name }),
-              description:
-                objectives
-                  .map((objective) =>
-                    context.t('coop.objectives_line', {
-                      title: context.t(`coop.objective.${objective.objectiveKey}.title`),
-                      check: objective.status === 'completed' ? '✅' : '',
-                      description: context.t(`coop.objective.${objective.objectiveKey}.description`, {
-                        target: objective.target,
-                      }),
-                      bar: progressBar(Number(objective.progress), Number(objective.target), 12),
-                      progress: formatCompact(Number(objective.progress), context.locale),
-                      target: formatCompact(Number(objective.target), context.locale),
-                      coins: formatCoins(objective.rewardCoins, false, context.locale),
-                      gems: objective.rewardGems,
-                    }),
-                  )
-                  .join('\n\n') || context.t('coop.no_active_goal'),
+              fields: [
+                {
+                  name: `🎯 ${context.t('coop.objectives')}`,
+                  value: weekly.map(objectiveLine).join('\n\n') || context.t('coop.no_active_goal'),
+                  inline: false,
+                },
+                {
+                  name: `🌟 ${context.t('coop.daily_challenge')}`,
+                  value: daily.map(objectiveLine).join('\n\n') || context.t('coop.no_daily_challenge'),
+                  inline: false,
+                },
+              ],
               color: COLORS.primary,
             }),
           ],
@@ -385,21 +405,23 @@ export async function sendLeaderboard(
         ? t('leaderboard.scope.coop')
         : t('leaderboard.scope.global');
 
-  const image = await renderLeaderboardImage({
-    locale: context.locale,
-    title: meta.label,
-    emoji: meta.emoji,
-    unit: meta.unit,
-    scopeLabel,
-    entries: board.rows.map((entry) => ({
-      rank: entry.rank,
-      name: entry.name,
-      score: entry.score,
-      extra: entry.extra,
-      isViewer: 'userId' in entry ? entry.userId === context.player.id : false,
-    })),
-    viewer: viewerRank,
-  });
+  const image = context.player.compactMode
+    ? NO_IMAGE
+    : await renderLeaderboardImage({
+        locale: context.locale,
+        title: meta.label,
+        emoji: meta.emoji,
+        unit: meta.unit,
+        scopeLabel,
+        entries: board.rows.map((entry) => ({
+          rank: entry.rank,
+          name: entry.name,
+          score: entry.score,
+          extra: entry.extra,
+          isViewer: 'userId' in entry ? entry.userId === context.player.id : false,
+        })),
+        viewer: viewerRank,
+      });
 
   const embed = baseEmbed({
     title: `${meta.emoji} ${t('render.leaderboard.title', { title: meta.label })}`,

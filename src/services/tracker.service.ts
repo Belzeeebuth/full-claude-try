@@ -2,7 +2,7 @@ import { balance as getBalance, getActiveSeasonPass, getConfig } from '../config
 import type { Executor } from '../db/client';
 import * as progressionRepo from '../repositories/progression.repo';
 import * as socialRepo from '../repositories/social.repo';
-import { currentWeekStart } from '../utils/time';
+import { currentWeekStart, dailyCycleKey } from '../utils/time';
 import { moduleLogger } from '../utils/logger';
 import { getActiveEvents } from './world.service';
 
@@ -84,13 +84,22 @@ const EMPTY_RESULT: TrackResult = {
   eventPoints: 0,
 };
 
-/** Correspondance action de jeu → objectif de coopérative. */
+/** Correspondance action de jeu → objectif hebdomadaire de coopérative. */
 const COOP_OBJECTIVE_BY_ACTION: Partial<Record<TrackedAction, string>> = {
   harvest_any: 'harvest_total',
   craft_item: 'craft_total',
   collect_animal: 'collect_total',
   sell_value: 'sell_value_total',
   help_farmer: 'help_total',
+};
+
+/** Correspondance action de jeu → défi quotidien de coopérative (mêmes actions, cible plus petite). */
+const COOP_DAILY_OBJECTIVE_BY_ACTION: Partial<Record<TrackedAction, string>> = {
+  harvest_any: 'daily_harvest_total',
+  craft_item: 'daily_craft_total',
+  collect_animal: 'daily_collect_total',
+  sell_value: 'daily_sell_value_total',
+  help_farmer: 'daily_help_total',
 };
 
 export interface TrackContext {
@@ -172,7 +181,8 @@ async function trackWithin(
     );
     result.unlockedAchievements = unlocked.map((entry) => ({ key: entry.key, name: entry.name }));
 
-    // Objectifs de coopérative
+    // Objectifs de coopérative — hebdomadaire, puis défi quotidien (même clé
+    // d'action, deux tables de correspondance distinctes ci-dessus).
     const objectiveKey = COOP_OBJECTIVE_BY_ACTION[action];
     if (context.coopId && objectiveKey) {
       const progressed = await socialRepo.progressObjective(
@@ -187,6 +197,20 @@ async function trackWithin(
         // de langues potentiellement différentes, donc seul l'affichage (avec le
         // traducteur du joueur qui consulte) peut choisir le bon texte.
         result.completedCoopObjectives.push(objectiveKey);
+      }
+    }
+
+    const dailyObjectiveKey = COOP_DAILY_OBJECTIVE_BY_ACTION[action];
+    if (context.coopId && dailyObjectiveKey) {
+      const progressed = await socialRepo.progressObjective(
+        context.coopId,
+        dailyObjectiveKey,
+        dailyCycleKey(new Date()),
+        amount,
+        tx,
+      );
+      if (progressed?.completed) {
+        result.completedCoopObjectives.push(dailyObjectiveKey);
       }
     }
 

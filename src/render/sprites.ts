@@ -5,7 +5,7 @@ import { loadImage, type Image, type SKRSContext2D } from '@napi-rs/canvas';
 import type { CropForm, CropPalette } from '../config/gameplay/schemas';
 import { env } from '../config/env';
 import { moduleLogger } from '../utils/logger';
-import { PALETTE, fillRoundRect } from './canvas';
+import { PALETTE, fillRoundRect, lighten } from './canvas';
 
 const log = moduleLogger('sprites');
 
@@ -90,6 +90,15 @@ export function drawBed(
   ctx.beginPath();
   ctx.rect(x, y, size, topHeight);
   ctx.clip();
+
+  // Lumière en haut à gauche : un dégradé diagonal casse l'aplat sans coûter
+  // un sprite. Posé sous les sillons pour qu'ils restent lisibles.
+  const shade = ctx.createLinearGradient(x, y, x + size, y + topHeight);
+  shade.addColorStop(0, 'rgba(255,255,255,0.10)');
+  shade.addColorStop(0.5, 'rgba(0,0,0,0)');
+  shade.addColorStop(1, 'rgba(0,0,0,0.14)');
+  ctx.fillStyle = shade;
+  ctx.fillRect(x, y, size, topHeight);
 
   // Sillons : un trait sombre doublé d'un liseré clair au-dessus. C'est ce
   // décalage d'un pixel qui donne l'impression de creux.
@@ -627,17 +636,27 @@ function drawFlower(
 
 /** Fruit sphérique avec ombre propre et point spéculaire : c'est ce qui donne le volume. */
 function drawFruit(ctx: SKRSContext2D, x: number, y: number, radius: number, skin: CropSkin): void {
+  // Base sombre : elle détache le fruit du feuillage derrière lui.
   ctx.fillStyle = skin.fruitDark;
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = skin.fruit;
+
+  // Dégradé radial plutôt qu'un aplat plus un point blanc : le volume est plus
+  // franc, pour le même nombre d'appels de dessin.
+  const shine = ctx.createRadialGradient(
+    x - radius * 0.35,
+    y - radius * 0.4,
+    radius * 0.05,
+    x,
+    y,
+    radius * 1.1,
+  );
+  shine.addColorStop(0, lighten(skin.fruit, 0.5));
+  shine.addColorStop(1, skin.fruit);
+  ctx.fillStyle = shine;
   ctx.beginPath();
-  ctx.arc(x, y - radius * 0.14, radius * 0.86, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.beginPath();
-  ctx.arc(x - radius * 0.32, y - radius * 0.42, radius * 0.22, 0, Math.PI * 2);
+  ctx.arc(x, y - radius * 0.12, radius * 0.88, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -900,6 +919,25 @@ export function rarityColor(rarity: string): string {
   );
 }
 
+/**
+ * Couleur dérivée d'une clé quelconque.
+ *
+ * Ce n'est PLUS la source d'apparence des cultures — elles déclarent leur
+ * palette dans `crops.json`, voir `cropSkin()` — mais elle reste le bon outil
+ * pour un objet sans identité configurée : `drawItemIcon()` doit produire une
+ * couleur stable pour n'importe quelle clé, sans table à maintenir.
+ */
+export function cropColors(cropKey: string): { stem: string; fruit: string } {
+  let hash = 0;
+  for (let index = 0; index < cropKey.length; index += 1) {
+    hash = (hash * 31 + cropKey.charCodeAt(index)) % 360;
+  }
+  return {
+    stem: `hsl(${100 + (hash % 40)}, 55%, 38%)`,
+    fruit: `hsl(${hash}, 70%, 55%)`,
+  };
+}
+
 /** Interpolation linéaire entre deux couleurs hexadécimales. */
 export function mixHex(from: string, to: string, ratio: number): string {
   const a = hexToRgb(from);
@@ -908,6 +946,15 @@ export function mixHex(from: string, to: string, ratio: number): string {
   return `rgb(${Math.round(a.r + (b.r - a.r) * clamped)},${Math.round(
     a.g + (b.g - a.g) * clamped,
   )},${Math.round(a.b + (b.b - a.b) * clamped)})`;
+}
+
+/** Éclaircit une couleur `hsl(h, s%, l%)` en poussant la luminosité vers 100 %. */
+function lightenColor(hsl: string, amount: number): string {
+  const match = /^hsl\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)%,\s*(\d+(?:\.\d+)?)%\)$/.exec(hsl);
+  if (!match) return hsl;
+  const [, h, s, l] = match;
+  const lightness = Number(l) + (100 - Number(l)) * amount;
+  return `hsl(${h}, ${s}%, ${lightness}%)`;
 }
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
@@ -921,9 +968,21 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 
 /** Pièce d'or vectorielle (centre en x, y). */
 export function drawCoin(ctx: SKRSContext2D, x: number, y: number, radius: number): void {
+  const shine = ctx.createRadialGradient(
+    x - radius * 0.35,
+    y - radius * 0.4,
+    radius * 0.05,
+    x,
+    y,
+    radius * 1.1,
+  );
+  shine.addColorStop(0, '#fff2b8');
+  shine.addColorStop(0.5, '#ffc93c');
+  shine.addColorStop(1, '#e0a41f');
+
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffc93c';
+  ctx.fillStyle = shine;
   ctx.fill();
   ctx.strokeStyle = '#b8860b';
   ctx.lineWidth = Math.max(1, radius / 5);
@@ -931,19 +990,121 @@ export function drawCoin(ctx: SKRSContext2D, x: number, y: number, radius: numbe
   ctx.beginPath();
   ctx.arc(x, y, radius * 0.55, 0, Math.PI * 2);
   ctx.stroke();
+
+  // Reflet : petit arc clair en haut à gauche, la touche qui lit « métal ».
+  ctx.beginPath();
+  ctx.arc(x - radius * 0.32, y - radius * 0.32, radius * 0.28, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fill();
 }
 
 /** Gemme vectorielle (centre en x, y). */
 export function drawGem(ctx: SKRSContext2D, x: number, y: number, radius: number): void {
+  const facet = ctx.createLinearGradient(x - radius, y - radius, x + radius, y + radius);
+  facet.addColorStop(0, '#d4f4ff');
+  facet.addColorStop(0.5, '#7fd8ff');
+  facet.addColorStop(1, '#3fa8d8');
+
   ctx.beginPath();
   ctx.moveTo(x, y - radius);
   ctx.lineTo(x + radius, y);
   ctx.lineTo(x, y + radius);
   ctx.lineTo(x - radius, y);
   ctx.closePath();
-  ctx.fillStyle = '#7fd8ff';
+  ctx.fillStyle = facet;
   ctx.fill();
   ctx.strokeStyle = '#2f8fbe';
   ctx.lineWidth = Math.max(1, radius / 5);
   ctx.stroke();
+
+  // Ligne de facette centrale, pour casser l'aplat en deux plans de lumière.
+  ctx.beginPath();
+  ctx.moveTo(x, y - radius * 0.7);
+  ctx.lineTo(x, y + radius * 0.7);
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = Math.max(1, radius / 8);
+  ctx.stroke();
+}
+
+/**
+ * Icône générique pour un objet arbitraire sans forme vectorielle dédiée
+ * (utilisée par exemple dans l'en-tête du graphique de marché). Teinte dérivée
+ * d'un hachage de `seed` (le nom de l'objet) : jamais deux fois la même forme
+ * sans couleur cohérente, sans table de correspondance à maintenir.
+ */
+export function drawItemIcon(ctx: SKRSContext2D, x: number, y: number, radius: number, seed: string): void {
+  const colors = cropColors(seed);
+  const shine = ctx.createRadialGradient(
+    x - radius * 0.3,
+    y - radius * 0.35,
+    radius * 0.05,
+    x,
+    y,
+    radius * 1.1,
+  );
+  shine.addColorStop(0, lightenColor(colors.fruit, 0.4));
+  shine.addColorStop(1, colors.fruit);
+
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = shine;
+  ctx.fill();
+  ctx.strokeStyle = colors.stem;
+  ctx.lineWidth = Math.max(1, radius / 6);
+  ctx.stroke();
+}
+
+/** Teinte de repli par compagnon (voir `game/pets.ts`) ; `#cccccc` pour une clé inconnue. */
+const PET_COLORS: Record<string, string> = {
+  chick: '#f4d35e',
+  kitten: '#e8a33d',
+  puppy: '#b5804a',
+  piglet: '#f4b6c2',
+  bunny: '#f2efe9',
+  fox: '#e0672c',
+  owl: '#8a6d4b',
+  dragon: '#4caf6a',
+};
+
+/**
+ * Icône ronde d'un compagnon de ferme équipé, affichée près de l'avatar sur
+ * `/farm`. Silhouette générique (même famille que `drawAnimal`) teintée par
+ * espèce plutôt que dessinée au trait : un vrai sprite PNG par compagnon
+ * resterait le repère visuel le plus lisible, ceci n'est que le repli
+ * vectoriel (voir `docs/05-pipeline-assets.md`).
+ */
+export function drawPetIcon(ctx: SKRSContext2D, x: number, y: number, radius: number, petKey: string): void {
+  const base = PET_COLORS[petKey] ?? '#cccccc';
+  const shine = ctx.createRadialGradient(
+    x - radius * 0.3,
+    y - radius * 0.35,
+    radius * 0.05,
+    x,
+    y,
+    radius * 1.1,
+  );
+  shine.addColorStop(0, lighten(base, 0.35));
+  shine.addColorStop(1, base);
+
+  // Deux oreilles avant le corps, pour que le contour de tête se lise même à
+  // très petite taille.
+  ctx.fillStyle = base;
+  ctx.beginPath();
+  ctx.arc(x - radius * 0.5, y - radius * 0.65, radius * 0.24, 0, Math.PI * 2);
+  ctx.arc(x + radius * 0.5, y - radius * 0.65, radius * 0.24, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = shine;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+  ctx.lineWidth = Math.max(1, radius / 10);
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.beginPath();
+  ctx.arc(x - radius * 0.22, y - radius * 0.05, radius * 0.09, 0, Math.PI * 2);
+  ctx.arc(x + radius * 0.22, y - radius * 0.05, radius * 0.09, 0, Math.PI * 2);
+  ctx.fill();
 }

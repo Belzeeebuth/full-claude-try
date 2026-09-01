@@ -138,6 +138,7 @@ async function main(): Promise<void> {
       { key: 'mill', tier: 2 },
       { key: 'coop', tier: 2 },
     ],
+    equippedPetKey: 'fox',
   });
   writeFileSync(join(outDir, 'ferme.png'), farmBuffer);
 

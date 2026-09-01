@@ -10,6 +10,7 @@ import {
   font,
   newCanvas,
   verticalGradient,
+  withDropShadow,
   withEmoji,
 } from './canvas';
 
@@ -91,7 +92,9 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
       podiumAvatar,
     );
 
-    fillRoundRect(ctx, x, barY, columnWidth, barHeight, 12, PODIUM_COLORS[entryIndex] ?? '#555');
+    withDropShadow(ctx, () =>
+      fillRoundRect(ctx, x, barY, columnWidth, barHeight, 12, PODIUM_COLORS[entryIndex] ?? '#555'),
+    );
     ctx.fillStyle = 'rgba(0,0,0,0.65)';
     ctx.font = font(34, 'bold');
     ctx.textAlign = 'center';

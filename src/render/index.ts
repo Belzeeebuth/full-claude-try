@@ -61,6 +61,14 @@ export interface RenderOutcome {
 
 const EMPTY: RenderOutcome = { attachment: null, fileName: null, cached: false, durationMs: 0 };
 
+/**
+ * Résultat à utiliser quand le joueur a désactivé les images générées
+ * (`/settings compact-mode`). Même forme que `EMPTY` : les appelants ont déjà
+ * tous un repli texte pour `attachment === null`, donc court-circuiter le
+ * rendu ici réutilise ce chemin sans code supplémentaire.
+ */
+export const NO_IMAGE: RenderOutcome = EMPTY;
+
 function hashState(state: unknown): string {
   return createHash('sha1').update(JSON.stringify(state)).digest('hex').slice(0, 16);
 }
@@ -202,6 +210,7 @@ export async function renderFarmImage(input: FarmRenderInput): Promise<RenderOut
     season: input.view.world.season.season,
     level: input.player.level,
     coins: Math.floor(input.player.coins / 100),
+    equippedPetKey: input.equippedPetKey ?? '',
     plots: input.view.plots.map((plot) => [
       plot.slot,
       plot.state,

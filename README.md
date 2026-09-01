@@ -404,6 +404,7 @@ journalctl -u harvester -f
 | `/pass` | Passe saisonnier |
 | `/daily` | Récompense quotidienne et série |
 | `/vote` | Récompense de vote top.gg |
+| `/companion list\|equip\|unequip` | Compagnons de ferme cosmétiques, débloqués par niveau |
 
 ### Social et échanges
 
@@ -415,6 +416,7 @@ journalctl -u harvester -f
 | `/assist <@user>` | Aider (gain mutuel) |
 | `/referral` | Votre code et vos filleuls |
 | `/auction list\|sell\|buy\|my-listings\|cancel` | Hôtel des ventes |
+| `/order create\|list\|cancel` | Ordres d'achat permanents sur l'hôtel des ventes |
 | `/trade <@user>` | Échange direct sécurisé |
 
 ### Monde
@@ -501,10 +503,11 @@ reste accessible.
 ```bash
 npm run dev              # rechargement à chaud (tsx watch)
 npm run typecheck        # tsc --noEmit
-npm test                 # 129 tests — aucune infrastructure requise
-npm run test:integration # 23 tests contre un vrai PostgreSQL (voir ci-dessous)
+npm test                 # 137 tests — aucune infrastructure requise
+npm run test:integration # 24 tests contre un vrai PostgreSQL (voir ci-dessous)
 npm run test:watch       # mode veille
 npm run test:coverage    # couverture (seuil 70 % sur src/game/**)
+npm run test:integration # suite Testcontainers (Docker requis) : transactions concurrentes
 npm run db:studio        # explorateur de base Drizzle
 npm run balance:report   # tables d'équilibrage
 npm run render:preview   # écrit 4 PNG dans out/fr/
@@ -532,6 +535,12 @@ Elle refuse de démarrer si le nom de base ne contient pas « test » — elle f
 `TRUNCATE` entre chaque test. Les identifiants viennent du `.env` ;
 `TEST_DATABASE_URL` permet de pointer ailleurs.
 
+Un fichier fait exception : `harvest-concurrency.test.ts` démarre ses propres
+conteneurs PostgreSQL et Redis (Testcontainers) et n'a besoin que d'un démon
+Docker. Il vérifie que deux `/harvest` simultanés sur la même parcelle ne
+récoltent qu'une fois — une garantie de `SELECT … FOR UPDATE`, donc du moteur.
+Les deux mécaniques cohabitent dans la même commande.
+
 Effet de bord utile : chaque exécution est une répétition générale des migrations
 en attente, sur une base vierge.
 
@@ -551,7 +560,9 @@ src/
 
 La règle de dépendance est stricte :
 `commands → services → repositories → db`, et `game/` n'importe rien d'autre que
-lui-même. C'est ce qui permet aux 90 tests de tourner **sans base de données**.
+lui-même. C'est ce qui permet aux 125 tests rapides de tourner **sans base de
+données** ; `tests/integration/` (Testcontainers) est le seul endroit qui en
+démarre une, volontairement séparé (`npm run test:integration`).
 
 ### Ajouter une culture
 

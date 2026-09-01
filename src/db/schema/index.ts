@@ -19,3 +19,4 @@ export * from './progression';
 export * from './social';
 export * from './system';
 export * from './integrations';
+export * from './pets';

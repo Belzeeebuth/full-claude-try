@@ -1,5 +1,5 @@
 import { balance as getBalance, getConfig } from '../config';
-import { lockUserRow, lockUserRows, withTransaction } from '../db/client';
+import { getDb, lockUserRow, lockUserRows, withTransaction, type Transaction } from '../db/client';
 import { auctionCommission, auctionListingFee, auctionPriceBounds, minimumBid } from '../game/market';
 import { feeOf } from '../game/money';
 import { gameError } from '../utils/errors';
@@ -12,6 +12,7 @@ import * as economyService from './economy.service';
 import * as inventoryService from './inventory.service';
 import { trackAction } from './tracker.service';
 import * as webhookService from './webhook.service';
+import type { AuctionRow } from '../repositories/trade.repo';
 import type { Mutation, Quality } from '../repositories/inventory.repo';
 import type { PlayerContext } from '../types';
 
@@ -206,119 +207,132 @@ export async function createListing(
  * → créditer le vendeur net de commission → livrer les objets. Si le débit
  * échoue, tout est annulé et l'annonce reste active.
  */
+/**
+ * Cœur de l'achat immédiat : débit de l'acheteur, clôture de l'annonce,
+ * paiement du vendeur (net de commission), livraison de l'objet, remboursement
+ * d'un éventuel enchérisseur évincé. Partagé entre `buyout()` (commande
+ * `/auction buy`) et le rapprochement des ordres d'achat permanents
+ * (`market.service.ts`), qui n'a pas de `PlayerContext` — seulement un
+ * identifiant de joueur — puisqu'il tourne en tâche de fond.
+ */
+export async function executeBuyout(
+  buyerId: string,
+  listingId: string,
+  tx: Transaction,
+): Promise<{ listing: AuctionRow; price: number; commission: number }> {
+  const balance = getBalance();
+  const listing = await tradeRepo.lockListing(tx, listingId);
+  if (!listing) {
+    throw gameError('auction_not_found', 'Listing not found.', {
+      i18nKey: 'errors.trade.listing_not_found',
+    });
+  }
+  if (listing.status !== 'active') {
+    throw gameError('auction_not_found', 'This listing is closed.', {
+      i18nKey: 'errors.trade.listing_closed',
+    });
+  }
+  if (listing.sellerId === buyerId) {
+    throw gameError('auction_own_listing', 'You cannot buy your own listing.', {
+      i18nKey: 'errors.trade.cannot_buy_own',
+    });
+  }
+  if (listing.buyoutPrice === null) {
+    throw gameError('invalid_state', 'This listing is auction-only.', {
+      i18nKey: 'errors.trade.auction_only',
+    });
+  }
+
+  await lockUserRows(tx, [buyerId, listing.sellerId]);
+
+  const price = listing.buyoutPrice;
+  await economyService.charge(
+    {
+      userId: buyerId,
+      amount: price,
+      type: 'auction_purchase',
+      itemKey: listing.itemKey,
+      quantity: listing.quantity,
+      counterpartyId: listing.sellerId,
+      referenceType: 'auction',
+      referenceId: listing.id,
+    },
+    tx,
+  );
+
+  const sold = await tradeRepo.markSold(listing.id, buyerId, price, tx);
+  if (!sold) {
+    throw gameError('busy', 'This listing was just sold.', {
+      i18nKey: 'errors.trade.just_sold',
+    });
+  }
+
+  const commission = auctionCommission(price, balance);
+  await economyService.pay(
+    {
+      userId: listing.sellerId,
+      amount: price - commission,
+      type: 'auction_sale',
+      itemKey: listing.itemKey,
+      quantity: listing.quantity,
+      counterpartyId: buyerId,
+      referenceType: 'auction',
+      referenceId: listing.id,
+      metadata: { commission },
+    },
+    tx,
+  );
+
+  await inventoryService.addItems(
+    buyerId,
+    [
+      {
+        itemKey: listing.itemKey,
+        quantity: listing.quantity,
+        quality: listing.quality as Quality,
+        mutation: listing.mutation as Mutation,
+      },
+    ],
+    tx,
+    { allowOverflow: true },
+  );
+
+  // L'achat immédiat évince TOUS les enchérisseurs, celui en tête compris : on
+  // rend l'intégralité du séquestre encore dû, en s'appuyant sur `auction_bids`
+  // plutôt que sur les colonnes de l'annonce — elles ne portent que la dernière
+  // mise, et rien n'y dit ce qui a déjà été remboursé. Le marquage n'est pas
+  // cosmétique : sans lui, la clôture rembourserait une seconde fois.
+  const escrowed = await tradeRepo.findUnrefundedBids(listing.id, tx, true);
+  for (const escrow of escrowed) {
+    await economyService.pay(
+      {
+        userId: escrow.bidderId,
+        amount: escrow.amount,
+        type: 'auction_refund',
+        referenceType: 'auction',
+        referenceId: listing.id,
+      },
+      tx,
+    );
+  }
+  await tradeRepo.markBidsRefunded(
+    escrowed.map((escrow) => escrow.id),
+    tx,
+  );
+
+  await trackAction({ userId: listing.sellerId, coopId: null, level: 1 }, 'auction_sale', 1, {}, tx);
+
+  return { listing, price, commission };
+}
+
 export async function buyout(
   player: PlayerContext,
   listingId: string,
 ): Promise<{ itemName: string; emoji: string; quantity: number; price: number; commission: number; sellerId: string }> {
   const config = getConfig(player.locale);
-  const balance = getBalance();
 
   return withTransaction(async (tx) => {
-    const listing = await tradeRepo.lockListing(tx, listingId);
-    if (!listing) {
-      throw gameError('auction_not_found', 'Listing not found.', {
-        i18nKey: 'errors.trade.listing_not_found',
-      });
-    }
-    if (listing.status !== 'active') {
-      throw gameError('auction_not_found', 'This listing is closed.', {
-        i18nKey: 'errors.trade.listing_closed',
-      });
-    }
-    if (listing.sellerId === player.id) {
-      throw gameError('auction_own_listing', 'You cannot buy your own listing.', {
-        i18nKey: 'errors.trade.cannot_buy_own',
-      });
-    }
-    if (listing.buyoutPrice === null) {
-      throw gameError('invalid_state', 'This listing is auction-only.', {
-        i18nKey: 'errors.trade.auction_only',
-      });
-    }
-
-    await lockUserRows(tx, [player.id, listing.sellerId]);
-
-    const price = listing.buyoutPrice;
-    await economyService.charge(
-      {
-        userId: player.id,
-        amount: price,
-        type: 'auction_purchase',
-        itemKey: listing.itemKey,
-        quantity: listing.quantity,
-        counterpartyId: listing.sellerId,
-        referenceType: 'auction',
-        referenceId: listing.id,
-      },
-      tx,
-    );
-
-    const sold = await tradeRepo.markSold(listing.id, player.id, price, tx);
-    if (!sold) {
-      throw gameError('busy', 'This listing was just sold.', {
-        i18nKey: 'errors.trade.just_sold',
-      });
-    }
-
-    const commission = auctionCommission(price, balance);
-    await economyService.pay(
-      {
-        userId: listing.sellerId,
-        amount: price - commission,
-        type: 'auction_sale',
-        itemKey: listing.itemKey,
-        quantity: listing.quantity,
-        counterpartyId: player.id,
-        referenceType: 'auction',
-        referenceId: listing.id,
-        metadata: { commission },
-      },
-      tx,
-    );
-
-    await inventoryService.addItems(
-      player.id,
-      [
-        {
-          itemKey: listing.itemKey,
-          quantity: listing.quantity,
-          quality: listing.quality as Quality,
-          mutation: listing.mutation as Mutation,
-        },
-      ],
-      tx,
-      { allowOverflow: true },
-    );
-
-    // L'achat immédiat évince TOUS les enchérisseurs, y compris celui en tête :
-    // on rend l'intégralité du séquestre encore dû, en s'appuyant sur
-    // `auction_bids` plutôt que sur les colonnes de l'annonce.
-    const escrowed = await tradeRepo.findUnrefundedBids(listing.id, tx, true);
-    for (const escrow of escrowed) {
-      await economyService.pay(
-        {
-          userId: escrow.bidderId,
-          amount: escrow.amount,
-          type: 'auction_refund',
-          referenceType: 'auction',
-          referenceId: listing.id,
-        },
-        tx,
-      );
-    }
-    await tradeRepo.markBidsRefunded(
-      escrowed.map((escrow) => escrow.id),
-      tx,
-    );
-
-    await trackAction(
-      { userId: listing.sellerId, coopId: null, level: 1 },
-      'auction_sale',
-      1,
-      {},
-      tx,
-    );
-
+    const { listing, price, commission } = await executeBuyout(player.id, listingId, tx);
     const item = config.items.get(listing.itemKey);
     return {
       itemName: item?.name ?? listing.itemKey,
@@ -329,6 +343,169 @@ export async function buyout(
       sellerId: listing.sellerId,
     };
   });
+}
+
+// ---------------------------------------------------------------------------
+// ORDRES D'ACHAT PERMANENTS
+// ---------------------------------------------------------------------------
+//
+// « Achète {quantity} {item} à {maxUnitPrice} 🪙 maximum » : l'ordre reste actif
+// jusqu'à épuisement, annulation ou expiration, et se déclenche tout seul dès
+// qu'une annonce compatible apparaît à l'hôtel des ventes — pas besoin de
+// rafraîchir `/auction list` en boucle. Aucun fonds réservé à la création : le
+// rapprochement tente le débit au moment du match (voir `executeBuyout`) et
+// laisse simplement l'ordre actif si les fonds manquent, en réessayant au
+// prochain passage du job.
+
+export interface StandingOrderView {
+  id: string;
+  itemKey: string;
+  itemName: string;
+  itemEmoji: string;
+  quality: Quality | null;
+  mutation: Mutation | null;
+  maxUnitPrice: number;
+  totalQuantity: number;
+  remainingQuantity: number;
+  expiresAt: Date;
+}
+
+export async function createStandingOrder(
+  player: PlayerContext,
+  input: { itemKey: string; quantity: number; maxUnitPrice: number; quality?: Quality; mutation?: Mutation },
+): Promise<StandingOrderView> {
+  const balance = getBalance();
+  const item = inventoryService.requireItem(input.itemKey, player.locale);
+  if (!item.tradable) {
+    throw gameError('item_not_tradable', `${item.emoji} ${item.name} cannot be traded.`, {
+      i18nKey: 'errors.trade.item_not_tradable',
+      params: { item: item.name },
+    });
+  }
+
+  const active = await tradeRepo.countActiveOrders(player.id);
+  if (active >= balance.auction.maxActiveOrders) {
+    throw gameError(
+      'forbidden',
+      `You already have ${active} active orders (maximum ${balance.auction.maxActiveOrders}).`,
+      { i18nKey: 'errors.trade.too_many_orders', params: { active, max: balance.auction.maxActiveOrders } },
+    );
+  }
+
+  const quantity = Math.max(1, Math.floor(input.quantity));
+  const maxUnitPrice = Math.max(1, Math.floor(input.maxUnitPrice));
+  const expiresAt = new Date(Date.now() + balance.auction.orderDurationHours * 3_600_000);
+
+  const row = await tradeRepo.createStandingOrder(
+    {
+      buyerId: player.id,
+      itemKey: input.itemKey,
+      quality: input.quality ?? null,
+      mutation: input.mutation ?? null,
+      maxUnitPrice,
+      totalQuantity: quantity,
+      remainingQuantity: quantity,
+      expiresAt,
+    },
+    getDb(),
+  );
+
+  return {
+    id: row.id,
+    itemKey: item.key,
+    itemName: item.name,
+    itemEmoji: item.emoji,
+    quality: row.quality as Quality | null,
+    mutation: row.mutation as Mutation | null,
+    maxUnitPrice: row.maxUnitPrice,
+    totalQuantity: row.totalQuantity,
+    remainingQuantity: row.remainingQuantity,
+    expiresAt: row.expiresAt,
+  };
+}
+
+export async function listStandingOrders(buyerId: string): Promise<StandingOrderView[]> {
+  const rows = await tradeRepo.listOrders(buyerId);
+  return rows.map(({ order, itemName, itemEmoji }) => ({
+    id: order.id,
+    itemKey: order.itemKey,
+    itemName,
+    itemEmoji,
+    quality: order.quality as Quality | null,
+    mutation: order.mutation as Mutation | null,
+    maxUnitPrice: order.maxUnitPrice,
+    totalQuantity: order.totalQuantity,
+    remainingQuantity: order.remainingQuantity,
+    expiresAt: order.expiresAt,
+  }));
+}
+
+export async function cancelStandingOrder(player: PlayerContext, orderId: string): Promise<void> {
+  const cancelled = await tradeRepo.cancelOrder(orderId, player.id, getDb());
+  if (!cancelled) {
+    throw gameError('not_found', 'Order not found.', { i18nKey: 'errors.trade.order_not_found' });
+  }
+}
+
+/**
+ * Rapprochement périodique (job `auctions:expire`). Une tentative par ordre à
+ * chaque passage : en cas d'échec (fonds insuffisants, annonce disputée par un
+ * autre acheteur entre-temps), l'ordre reste actif pour le prochain cycle.
+ */
+export async function matchStandingOrders(limit = 50): Promise<number> {
+  const orders = await tradeRepo.findMatchableOrders(limit);
+  let filled = 0;
+
+  for (const order of orders) {
+    const candidates = await tradeRepo.findMatchingListings(order);
+
+    for (const listing of candidates) {
+      try {
+        await withTransaction(async (tx) => {
+          await executeBuyout(order.buyerId, listing.id, tx);
+          const result = await tradeRepo.fillOrder(order.id, listing.quantity, tx);
+          if (!result) return;
+
+          filled += 1;
+          if (result.fulfilled) {
+            await systemRepo.enqueueNotification({
+              userId: order.buyerId,
+              type: 'order_filled',
+              payload: {
+                titleKey: 'notifications.order_filled_title',
+                bodyKey: 'notifications.order_filled_body',
+                params: { quantity: order.totalQuantity },
+              },
+              dedupeKey: `order-filled:${order.id}`,
+            });
+          }
+        });
+        // Un ordre ne se sert que d'une annonce par passage de job : la
+        // quantité restante et le budget sont réévalués proprement au
+        // prochain cycle plutôt que d'enchaîner plusieurs achats dans la
+        // même itération.
+        break;
+      } catch (error) {
+        // Fonds insuffisants ou annonce disputée entre-temps : on essaie
+        // l'annonce suivante, l'ordre lui-même reste actif.
+        log.debug({ err: error, orderId: order.id, listingId: listing.id }, 'ordre non rapproché');
+      }
+    }
+  }
+
+  if (filled > 0) log.info({ filled }, 'ordres permanents rapprochés');
+  return filled;
+}
+
+export async function expireStandingOrders(limit = 100): Promise<number> {
+  const expired = await tradeRepo.findExpiredOrders(new Date(), limit);
+  let count = 0;
+  for (const order of expired) {
+    await withTransaction(async (tx) => {
+      if (await tradeRepo.markOrderExpired(order.id, tx)) count += 1;
+    });
+  }
+  return count;
 }
 
 /** Enchère. La mise précédente est remboursée à son auteur. */

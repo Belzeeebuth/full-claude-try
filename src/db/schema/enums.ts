@@ -126,6 +126,14 @@ export const auctionStatusEnum = pgEnum('auction_status', [
   'cancelled',
 ]);
 
+/** Ordre d'achat permanent : exécuté dès qu'une annonce correspondante apparaît. */
+export const standingOrderStatusEnum = pgEnum('standing_order_status', [
+  'active',
+  'fulfilled',
+  'cancelled',
+  'expired',
+]);
+
 export const tradeStatusEnum = pgEnum('trade_status', [
   'pending',
   'confirmed',
@@ -178,6 +186,9 @@ export const coopObjectiveStatusEnum = pgEnum('coop_objective_status', [
   'expired',
 ]);
 
+/** Cadence d'un objectif de coopérative : hebdomadaire (existant) ou quotidien (défi du jour). */
+export const coopObjectivePeriodEnum = pgEnum('coop_objective_period', ['weekly', 'daily']);
+
 export const treasuryOpEnum = pgEnum('treasury_operation', [
   'deposit',
   'withdraw',
@@ -218,6 +229,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'daily_reminder',
   'event_start',
   'admin_message',
+  'order_filled',
 ]);
 
 export const notificationChannelEnum = pgEnum('notification_channel', ['dm', 'none']);

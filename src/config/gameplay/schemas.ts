@@ -646,6 +646,8 @@ export const balanceSchema = z.object({
     maxPricePctOfMarket: z.number().min(0).max(100),
     minBidIncrementPct: z.number().min(0).max(1),
     antiSnipeExtensionMinutes: nonNegativeInt,
+    maxActiveOrders: positiveInt,
+    orderDurationHours: positiveInt,
   }),
   trade: z.object({
     expiryMinutes: positiveInt,
@@ -742,6 +744,7 @@ export const balanceSchema = z.object({
     maxLevel: positiveInt,
     contributionXpRatio: z.number().min(0).max(1),
     weeklyObjectiveCount: positiveInt,
+    dailyObjectiveCount: positiveInt,
     bonusesPerLevel: z.object({
       growthSpeed: z.number().min(0).max(1),
       sellBonus: z.number().min(0).max(1),

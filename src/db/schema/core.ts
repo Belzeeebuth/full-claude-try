@@ -80,6 +80,12 @@ export const users = pgTable(
     badges: text('badges').array().notNull().default(sql`ARRAY[]::text[]`),
     profileTheme: varchar('profile_theme', { length: 32 }).notNull().default('classic'),
     profileColor: varchar('profile_color', { length: 7 }).notNull().default('#4ca64c'),
+    /**
+     * Compagnon affiché sur `/farm`. Pas de clé étrangère : le catalogue
+     * (`game/pets.ts`) est un tableau TypeScript, comme les gabarits d'objectifs
+     * de coopérative — validé par le service, pas par le schéma.
+     */
+    equippedPetKey: varchar('equipped_pet_key', { length: 48 }),
 
     // --- Statistiques détaillées -----------------------------------------
     totalHarvests: bigint('total_harvests', { mode: 'number' }).notNull().default(0),

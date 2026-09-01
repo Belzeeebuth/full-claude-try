@@ -95,6 +95,71 @@ Le rendu isométrique existe déjà ; il s'agit d'ajouter une couche de placemen
 - **Effort** : 2 semaines. Dépend d'une base de coopératives actives suffisante —
   à ne pas livrer trop tôt.
 
+### v2.6 — Défi quotidien, ordres permanents et accessibilité — ✅ Livré
+
+Trois ajouts ponctuels, hors plan initial, choisis pour leur rapport
+effort/valeur plutôt que pour suivre l'ordre de cette liste.
+
+- **Défi communautaire quotidien** (coopératives) : même mécanique que les
+  objectifs hebdomadaires existants (`guild_objectives`), avec une cadence
+  quotidienne — une colonne `period` distingue les deux, des clés `daily_*`
+  distinctes évitent toute collision. Volontairement scopé à la coopérative et
+  non au serveur Discord : le cahier des charges interdit explicitement
+  d'introduire un `guild_id` (serveur) dans une table de gameplay, décision
+  structurante liée au choix de la ferme globale. Récompenses en pièces et XP
+  de coopérative uniquement, jamais de gemmes — un gain quotidien répété
+  7×/semaine serait une source de monnaie premium bien plus généreuse qu'un
+  objectif hebdomadaire.
+- **Ordres d'achat permanents** (`/order create|list|cancel`) : « achète {X}
+  {objet} à {Y} 🪙 maximum l'unité », rapproché contre les annonces actives de
+  l'hôtel des ventes par le job `auctions:expire` existant (toutes les 5 min).
+  Construit sur l'hôtel des ventes entre joueurs, pas sur le marché fluctuant :
+  ce dernier n'a pas de côté achat aujourd'hui (`/sell` uniquement), et lui en
+  inventer un aurait ouvert un puits d'objets sans plafond. Aucun fonds
+  réservés à la création : le rapprochement tente le débit au moment du match
+  et laisse simplement l'ordre actif si les fonds manquent.
+- **Mode texte intégral** (`/settings compact-mode`) : le réglage existait déjà
+  de bout en bout (colonne, option Discord, ligne d'affichage) mais rien ne le
+  lisait — toutes les commandes à image généraient quand même leur PNG. Les six
+  points d'appel (`renderFarmImage`, `renderProfileImage`,
+  `renderChartImage`, `renderLeaderboardImage`, `renderFishingImage`,
+  `renderMiningImage`) court-circuitent désormais le rendu et vont directement
+  au repli texte déjà prévu à chaque appelant — un vrai gain d'accessibilité,
+  pas seulement un repli technique en cas d'échec.
+- **Impact base** : 1 table (`standing_orders`), 1 colonne (`period` sur
+  `guild_objectives`), 2 valeurs d'énumération (`coop_objective_period`,
+  `notification_type.order_filled`).
+
+### v2.7 — Compagnons de ferme — ✅ Livré
+
+Fonctionnalité cosmétique pure, ajoutée hors plan initial : aucun bonus de
+jeu, aucune nouvelle monnaie ni jauge à équilibrer, juste une collection à
+débloquer.
+
+- **Catalogue** (`game/pets.ts`) : 8 compagnons (poussin → bébé dragon),
+  chacun avec un niveau de déblocage, en tableau TypeScript plutôt qu'en
+  table `*_config` — même choix que les gabarits d'objectifs de coopérative
+  (`COOP_OBJECTIVE_TEMPLATES`) : la clé référencée (`owned_pets.pet_key`,
+  `users.equipped_pet_key`) reste un `varchar` sans clé étrangère, validé
+  côté service.
+- **Déblocage automatique** : accroché à `grantXp()` (chaque montée de
+  niveau débloque les compagnons nouvellement atteints, idempotent via
+  `onConflictDoNothing`) et à la création de compte pour le compagnon de
+  niveau 1 — pas de commande « réclamer », le compagnon apparaît directement
+  dans `/companion list` dès le niveau atteint.
+- **Commande** `/companion list|equip|unequip` : liste avec statut
+  verrouillé/débloqué/équipé, équipement soumis à la possession réelle
+  (`owned_pets`), autocomplétion limitée aux compagnons déjà débloqués.
+  `/pet` était déjà pris par `/animals` (caresser un animal), d'où le nom
+  distinct.
+- **Rendu** : badge rond superposé au coin de l'avatar sur `/farm`. Comme
+  pour les tuiles/cultures/animaux, un sprite `pets/<clé>.png` optionnel est
+  tenté en premier ; à défaut, repli procédural (`drawPetIcon`) — silhouette
+  générique teintée par espèce, cohérente avec le reste du travail de
+  polish vectoriel de la v2.6.
+- **Impact base** : 1 table (`owned_pets`), 1 colonne
+  (`users.equipped_pet_key`), sans clé étrangère sur la clé de compagnon.
+
 ---
 
 ## v3 — « La plateforme »
@@ -179,10 +244,19 @@ Objectif : sortir du seul client Discord et industrialiser l'exploitation.
 
 Indépendamment des fonctionnalités, à faire avant toute v2 significative :
 
-1. **Tests d'intégration sur base réelle.** Les 90 tests actuels couvrent la logique
-   pure et la configuration. Il manque une suite Testcontainers vérifiant les
-   transactions concurrentes — notamment que deux `/harvest` simultanés sur la même
-   parcelle n'en produisent qu'une. C'est le test le plus important qui manque.
+1. **Tests d'intégration sur base réelle — ✅ Fait.** `tests/integration/` (suite
+   dédiée, `npm run test:integration`, séparée des 125 tests rapides qui ne
+   nécessitent aucune infrastructure) démarre de vrais conteneurs PostgreSQL et
+   Redis via Testcontainers et vérifie que deux `/harvest` simultanés sur la
+   même parcelle n'en produisent qu'une — la garantie qui ne peut être
+   honnêtement prouvée que contre une vraie base (verrou `SELECT ... FOR
+   UPDATE`, isolation `read committed`), jamais par un mock. La logique a été
+   validée manuellement contre un PostgreSQL/Redis locaux (résultat : exactement
+   une récolte aboutit, l'autre échoue avec `crop_not_ready`, l'inventaire ne
+   compte que la récolte gagnante) ; l'environnement de développement qui a
+   produit ce commit n'avait pas de démon Docker accessible pour exécuter la
+   suite Testcontainers elle-même de bout en bout — à confirmer au premier
+   `npm run test:integration` sur une machine avec Docker.
 2. **Métriques Prometheus économiques — ✅ Fait.** `/metrics` exposait déjà des
    compteurs techniques au format Prometheus ; il expose maintenant aussi la masse
    monétaire, le ratio création/destruction de pièces, les écarts de journal
@@ -196,10 +270,16 @@ Indépendamment des fonctionnalités, à faire avant toute v2 significative :
    chaque requête depuis la mémoire du processus (déjà en cache), mais les données
    de monde (météo, saison) font un aller-retour Redis systématique. Un cache local
    de 60 s économiserait l'essentiel de ce trafic.
-5. **Sprites.** Le rendu procédural est propre et fonctionne, mais des sprites
-   dédiés changeraient la perception du bot. C'est le meilleur rapport
-   effort/impact perçu de toute cette liste — voir
-   [05 — Pipeline d'assets](./05-pipeline-assets.md).
+5. **Sprites — toujours pas livré, mais repli amélioré.** Aucun sprite dédié ne
+   peut être ajouté sans assets sous licence claire (voir
+   [05 — Pipeline d'assets](./05-pipeline-assets.md)) ; ça reste le meilleur
+   rapport effort/impact perçu de toute cette liste dès qu'ils existeront. En
+   attendant, le rendu procédural de repli a été enrichi (dégradés sur pièces,
+   gemmes, fruits, sol et avatars par défaut ; ombres portées sur les panneaux)
+   pour paraître moins plat sans dépendre d'un seul pixel d'asset externe — et
+   un vrai bug a été corrigé au passage : le graphique de marché dessinait
+   l'emoji d'un objet directement en texte canvas, ce qui produisait des carrés
+   « tofu » sans police d'emoji couleur.
 
 ---
 

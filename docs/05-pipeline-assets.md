@@ -54,6 +54,8 @@ assets/
 │   │   └── wheat_5.png             Stade 5 : prête à récolter
 │   ├── animals/
 │   │   └── chicken.png             Nom = clé de animals.json
+│   ├── pets/
+│   │   └── fox.png                 Nom = clé de game/pets.ts (compagnon cosmétique)
 │   ├── buildings/
 │   │   └── coop.png                Nom = clé de buildings.json
 │   ├── tiles/
