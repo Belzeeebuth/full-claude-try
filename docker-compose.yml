@@ -16,7 +16,11 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-harvester}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-harvester}
+      # Pas de valeur de repli sur le MOT DE PASSE : un `.env` absent ou
+      # incomplet démarrait la base avec « harvester/harvester ». `:?` fait
+      # échouer `docker compose up` avec un message clair plutôt que de poser
+      # un identifiant par défaut en silence.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?définissez POSTGRES_PASSWORD dans .env}
       POSTGRES_DB: ${POSTGRES_DB:-harvester}
       # Le tri français : les classements par nom sortent dans le bon ordre.
       LANG: fr_FR.utf8
@@ -87,7 +91,7 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-harvester}:${POSTGRES_PASSWORD:-harvester}@db:5432/${POSTGRES_DB:-harvester}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-harvester}:${POSTGRES_PASSWORD:?définissez POSTGRES_PASSWORD dans .env}@db:5432/${POSTGRES_DB:-harvester}
       REDIS_URL: redis://redis:6379
       HTTP_PORT: 3001
     depends_on:

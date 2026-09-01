@@ -13,6 +13,7 @@ import {
 import { qualityMultiplier, type Quality } from '../game/quality';
 import { liveRng } from '../game/rng';
 import { gameError } from '../utils/errors';
+import { scaleMoney } from '../game/money';
 import { moduleLogger } from '../utils/logger';
 import { uuidv7 } from '../utils/uuid';
 import * as inventoryService from './inventory.service';
@@ -161,13 +162,11 @@ export async function resolveHook(
   const accuracy = timingAccuracy(clickAt, state.biteAt, balance.fishing.windowMs);
   const quality = rollFishQuality(accuracy, balance, rng);
   const item = config.items.get(picked.key)!;
-  const value = Math.round(item.sellPrice * qualityMultiplier(quality, balance));
+  const value = scaleMoney(item.sellPrice, qualityMultiplier(quality, balance));
 
   await withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
-    await inventoryService.addItems(player.id, [{ itemKey: picked.key, quantity: 1, quality }], tx, {
-      allowOverflow: true,
-    });
+    await inventoryService.addItems(player.id, [{ itemKey: picked.key, quantity: 1, quality }], tx);
     await trackAction(
       { userId: player.id, coopId: player.coopId, level: player.level },
       'catch_fish',

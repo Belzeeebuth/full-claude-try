@@ -81,8 +81,22 @@ export async function getCapacity(
  * Choix de design : on REFUSE l'ajout plutôt que de perdre silencieusement le
  * surplus. Un joueur qui perd 40 truffes parce que son entrepôt était plein sans
  * avertissement quitte le jeu ; un joueur à qui l'on dit « videz ou améliorez
- * votre entrepôt » va acheter l'amélioration. `allowOverflow` existe pour les
- * récompenses de quête, qu'on ne veut jamais bloquer.
+ * votre entrepôt » va acheter l'amélioration.
+ *
+ * ⚠ `allowOverflow` est une EXCEPTION, pas le mode normal. Il a longtemps été
+ * passé par 21 des 22 appels du projet : l'entrepôt ne limitait donc rien, et le
+ * puits de pièces que son amélioration doit alimenter était inerte. La règle,
+ * désormais tenue :
+ *
+ *   - capacité VÉRIFIÉE sur tout ce que le joueur PRODUIT et peut refaire plus
+ *     tard — récolte, désherbage, artisanat, pêche, mine, collecte d'élevage.
+ *     La transaction est annulée, la ressource reste où elle était ;
+ *   - `allowOverflow` réservé à ce qu'on ne peut pas refuser sans le DÉTRUIRE :
+ *     récompenses de quête, de succès et de passe, remboursements d'annulation,
+ *     livraison d'une enchère gagnée, retour d'une annonce expirée, transferts
+ *     d'échange, kit de départ, dons d'administration.
+ *
+ * Tout nouvel appel doit se ranger explicitement dans l'une des deux colonnes.
  */
 export async function addItems(
   userId: string,

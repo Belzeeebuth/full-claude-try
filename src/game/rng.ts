@@ -87,6 +87,33 @@ export function createRng(seed: number | string): Rng {
   return rng;
 }
 
+/**
+ * ---------------------------------------------------------------------------
+ * GRAINE DU MONDE
+ * ---------------------------------------------------------------------------
+ * Elle valait auparavant la constante littérale `'harvest'`, écrite dans un
+ * dépôt que tout le monde peut lire : la météo du lendemain, la rotation de la
+ * boutique et le stock du marché noir étaient donc calculables par n'importe
+ * qui — un avantage réel sur un jeu dont l'économie est le cœur.
+ *
+ * Elle est INJECTÉE et non lue ici : `game/` n'importe rien d'autre que
+ * lui-même, et c'est ce qui permet aux tests de la logique de jeu de tourner
+ * sans configuration ni infrastructure. `src/config/index.ts` appelle
+ * `setWorldSeed(env.WORLD_SEED)` au chargement, et tout consommateur de
+ * `dailyRng` passe par ce module — la graine est donc toujours posée avant le
+ * premier tirage, en production comme dans les scripts.
+ */
+let worldSeed = 'harvest';
+
+export function setWorldSeed(seed: string): void {
+  worldSeed = seed;
+}
+
+/** Graine effective, exposée pour les tests et le diagnostic. */
+export function getWorldSeed(): string {
+  return worldSeed;
+}
+
 /** FNV-1a 32 bits : transforme une graine textuelle en entier. */
 export function hashString(value: string): number {
   let hash = 0x811c9dc5;
@@ -111,6 +138,6 @@ export function liveRng(salt = ''): Rng {
  * même entité donnent le même résultat. Utilisé pour la météo et les rotations
  * de boutique, afin que tous les shards soient d'accord sans coordination.
  */
-export function dailyRng(scope: string, day: string, secret = 'harvest'): Rng {
+export function dailyRng(scope: string, day: string, secret = worldSeed): Rng {
   return createRng(`${scope}|${day}|${secret}`);
 }

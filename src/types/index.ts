@@ -75,6 +75,22 @@ export interface Command {
   category: CommandCategory;
   /** Le joueur doit-il avoir une ferme ? `false` pour `/start` et `/help`. */
   requiresAccount?: boolean;
+  /**
+   * Diffère la réponse AVANT la construction du contexte joueur.
+   *
+   * Discord invalide le jeton d'interaction au bout de 3 secondes, et le
+   * pipeline dépense ce budget avant d'appeler `execute()` : limitation de
+   * débit, chargement du joueur, cooldown, verrou. C'est sans conséquence pour
+   * une commande ordinaire — le chargement du joueur est une requête — mais
+   * `/start` CRÉE le compte à cet endroit : ferme, 64 parcelles, compte
+   * bancaire et kit de départ, le tout avant d'avoir répondu quoi que ce soit.
+   *
+   * Une commande qui déclare ce champ est déférée par le pipeline dès la
+   * résolution du gestionnaire, et son `execute()` doit alors répondre par
+   * `safeReply` / `replyEphemeral` plutôt que par `interaction.reply()`.
+   * Incompatible avec `showModal()`, qu'un `defer` rend impossible.
+   */
+  deferBeforeContext?: 'public' | 'ephemeral';
   /** Réservé aux administrateurs du bot. */
   adminOnly?: boolean;
   /** Permissions Discord requises dans le serveur. */

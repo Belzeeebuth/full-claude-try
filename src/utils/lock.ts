@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { getRedis, key } from '../db/redis';
 import { moduleLogger } from '../utils/logger';
 
@@ -21,6 +22,26 @@ const log = moduleLogger('lock');
  */
 
 const memoryLocks = new Map<string, number>();
+/** Propriétaire du verrou mémoire, même rôle que la valeur de la clé Redis. */
+const memoryLockOwners = new Map<string, string>();
+
+/**
+ * Libération PROPRIÉTAIRE, en Lua pour rester atomique.
+ *
+ * Un `DEL` inconditionnel est le piège classique du verrou distribué : si
+ * l'action dépasse le TTL, le verrou expire, une deuxième exécution le reprend,
+ * puis la première termine et supprime le verrou de la seconde — les deux
+ * tournent alors en parallèle, ce qui est exactement ce que le verrou devait
+ * empêcher. Ce n'est pas théorique ici : `command.execute()` tourne DANS le
+ * verrou et englobe le rendu d'image, dont le seuil dur dépasse le TTL par
+ * défaut. On ne supprime donc la clé que si elle porte encore notre jeton.
+ */
+const RELEASE_SCRIPT = `
+if redis.call('get', KEYS[1]) == ARGV[1] then
+  return redis.call('del', KEYS[1])
+end
+return 0
+`;
 
 export class LockBusyError extends Error {
   constructor(public readonly lockKey: string) {
@@ -33,9 +54,9 @@ function lockKeyFor(userId: string, action: string): string {
   return key('lock', action, userId);
 }
 
-async function acquire(lockKey: string, ttlMs: number): Promise<boolean> {
+async function acquire(lockKey: string, ttlMs: number, token: string): Promise<boolean> {
   try {
-    const result = await getRedis().set(lockKey, '1', 'PX', ttlMs, 'NX');
+    const result = await getRedis().set(lockKey, token, 'PX', ttlMs, 'NX');
     return result === 'OK';
   } catch (error) {
     log.warn({ err: error, lockKey }, 'Redis indisponible, verrou en mémoire');
@@ -43,14 +64,18 @@ async function acquire(lockKey: string, ttlMs: number): Promise<boolean> {
     const existing = memoryLocks.get(lockKey);
     if (existing && existing > now) return false;
     memoryLocks.set(lockKey, now + ttlMs);
+    memoryLockOwners.set(lockKey, token);
     return true;
   }
 }
 
-async function release(lockKey: string): Promise<void> {
-  memoryLocks.delete(lockKey);
+async function release(lockKey: string, token: string): Promise<void> {
+  if (memoryLockOwners.get(lockKey) === token) {
+    memoryLocks.delete(lockKey);
+    memoryLockOwners.delete(lockKey);
+  }
   try {
-    await getRedis().del(lockKey);
+    await getRedis().eval(RELEASE_SCRIPT, 1, lockKey, token);
   } catch {
     /* le TTL fera le travail */
   }
@@ -64,15 +89,19 @@ export async function withUserLock<T>(
   userId: string,
   action: string,
   fn: () => Promise<T>,
-  ttlMs = 15_000,
+  // 30 s et non 15 : le TTL n'est qu'un filet en cas de crash, il ne doit
+  // jamais expirer sous une action encore vivante. `command.execute()` tourne
+  // dans ce verrou et englobe le rendu, dont le seuil dur vaut déjà 20 s.
+  ttlMs = 30_000,
 ): Promise<T> {
   const lockKey = lockKeyFor(userId, action);
-  const acquired = await acquire(lockKey, ttlMs);
+  const token = randomUUID();
+  const acquired = await acquire(lockKey, ttlMs, token);
   if (!acquired) throw new LockBusyError(action);
   try {
     return await fn();
   } finally {
-    await release(lockKey);
+    await release(lockKey, token);
   }
 }
 
@@ -97,6 +126,25 @@ export async function claimOnce(token: string, ttlSeconds = 900): Promise<boolea
   }
 }
 
+/**
+ * Rend une marque d'idempotence posée par `claimOnce` quand l'opération qu'elle
+ * protégeait a finalement échoué.
+ *
+ * Sans cela, une transaction de paiement en échec après un `claimOnce` réussi
+ * laisse la marque en place : la récompense est perdue pour toute la fenêtre,
+ * et l'appelant a déjà acquitté l'appel entrant — personne n'en saura rien.
+ * Réservé au chemin d'ERREUR : sur le chemin nominal, la marque doit rester.
+ */
+export async function releaseOnce(token: string): Promise<void> {
+  const idempotencyKey = key('once', token);
+  memoryLocks.delete(idempotencyKey);
+  try {
+    await getRedis().del(idempotencyKey);
+  } catch (error) {
+    log.warn({ err: error, token }, 'idempotence : libération impossible');
+  }
+}
+
 /** Purge les verrous mémoire expirés (appelé par le scheduler toutes les 5 min). */
 export function pruneMemoryLocks(): number {
   const now = Date.now();
@@ -104,6 +152,7 @@ export function pruneMemoryLocks(): number {
   for (const [lockKey, expiresAt] of memoryLocks) {
     if (expiresAt <= now) {
       memoryLocks.delete(lockKey);
+      memoryLockOwners.delete(lockKey);
       pruned += 1;
     }
   }

@@ -409,7 +409,9 @@ export async function rotateBlackMarket(now: Date = new Date()): Promise<number>
       itemKey: item.key,
       rotationDate,
       category: BLACK_MARKET_CATEGORY,
-      price: Math.max(1, Math.round(item.sellPrice * bm.priceMultiplier)),
+      // Arrondi à la baisse comme partout ailleurs (`money.ts`) : c'est un prix
+      // affiché au joueur, il doit suivre la même règle que le reste.
+      price: Math.max(1, scaleMoney(item.sellPrice, bm.priceMultiplier)),
       currency: 'coins' as const,
       discountPercent: 0,
       stockTotal,

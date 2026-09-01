@@ -587,6 +587,13 @@ export async function harvest(
     );
 
     const harvested: HarvestedPlot[] = [];
+    /** Tout ce que la récolte rapporte, déposé en un seul lot après la boucle. */
+    const pending: Array<{
+      itemKey: string;
+      quantity: number;
+      quality?: HarvestResult['quality'];
+      mutation?: HarvestResult['mutation'];
+    }> = [];
     const witheredSlots: number[] = [];
     const seedsRecovered = new Map<string, number>();
     const trackings: TrackResult[] = [];
@@ -657,33 +664,31 @@ export async function harvest(
         ),
         eventMutationMultiplier: world.eventModifiers.mutationMultiplier,
         balance,
-        // Graine unique par parcelle et par récolte : un rejeu produirait le
-        // même résultat, ce qui neutralise toute tentative de « reroll ».
+        // `liveRng` mélange l'horloge : le tirage n'est PAS reproductible, et
+        // ne prétend pas l'être. Ce qui interdit le « reroll », c'est le
+        // `lockUserRow` en tête de transaction — la deuxième récolte attend,
+        // relit une parcelle déjà vidée et échoue. La graine ne porte aucune
+        // garantie de sécurité, seulement de la décorrélation entre parcelles.
         rng: liveRng(`${crop.id}:${crop.harvestCount}`),
       });
 
+      // Les gains sont ACCUMULÉS et déposés en un seul appel après la boucle.
+      // Un `addItems` par parcelle coûtait deux requêtes de capacité chacune —
+      // soit une soixantaine sur une récolte complète, à l'intérieur d'une
+      // transaction qui tient déjà le verrou du joueur.
       if (result.quantity > 0) {
-        await inventoryService.addItems(
-          player.id,
-          [
-            {
-              itemKey: harvestItemKey,
-              quantity: result.quantity,
-              quality: result.quality,
-              mutation: result.mutation,
-            },
-          ],
-          tx,
-          { allowOverflow: true },
-        );
+        pending.push({
+          itemKey: harvestItemKey,
+          quantity: result.quantity,
+          quality: result.quality,
+          mutation: result.mutation,
+        });
       }
 
       if (result.seedRecovered) {
         const seedKey = seedKeyOf(crop.cropKey);
         seedsRecovered.set(seedKey, (seedsRecovered.get(seedKey) ?? 0) + 1);
-        await inventoryService.addItems(player.id, [{ itemKey: seedKey, quantity: 1 }], tx, {
-          allowOverflow: true,
-        });
+        pending.push({ itemKey: seedKey, quantity: 1 });
       }
 
       // Repousse ou parcelle libérée.
@@ -761,13 +766,21 @@ export async function harvest(
     for (const event of world.activeEvents) {
       const perHarvest = event.modifiers.tokenPerHarvest ?? 0;
       if (event.currencyItemKey && perHarvest > 0 && harvested.length > 0) {
-        await inventoryService.addItems(
-          player.id,
-          [{ itemKey: event.currencyItemKey, quantity: perHarvest * harvested.length }],
-          tx,
-          { allowOverflow: true },
-        );
+        pending.push({
+          itemKey: event.currencyItemKey,
+          quantity: perHarvest * harvested.length,
+        });
       }
+    }
+
+    // Dépôt unique, capacité VÉRIFIÉE. La récolte passait auparavant en
+    // `allowOverflow`, comme 21 des 22 appels du projet : l'entrepôt ne limitait
+    // donc rien, et le puits de pièces que son amélioration doit alimenter était
+    // inerte. Un entrepôt plein annule maintenant toute la transaction — la
+    // récolte reste mûre en terre, rien n'est perdu, et le message renvoie vers
+    // `/buildings`, ce que le module d'inventaire documentait déjà.
+    if (pending.length > 0) {
+      await inventoryService.addItems(player.id, pending, tx);
     }
 
     await playerRepo.incrementStats(player.id, { totalHarvests: totalQuantity }, tx);
@@ -929,9 +942,7 @@ export async function weed(
       { weedLevel: 0, lastWeededAt: now },
       tx,
     );
-    await inventoryService.addItems(player.id, [{ itemKey: 'weeds', quantity: weedsCollected }], tx, {
-      allowOverflow: true,
-    });
+    await inventoryService.addItems(player.id, [{ itemKey: 'weeds', quantity: weedsCollected }], tx);
 
     return { slots: candidates.map(({ plot }) => plot.slot), weedsCollected };
   });

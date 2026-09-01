@@ -117,6 +117,15 @@ async function handleCommand(
       return;
     }
 
+    // Déféré AVANT `buildContext` quand la commande le demande : c'est le seul
+    // moyen de tenir dans les 3 secondes de Discord quand la construction du
+    // contexte fait un vrai travail (création de compte pour `/start`).
+    if (command.deferBeforeContext) {
+      await interaction.deferReply(
+        command.deferBeforeContext === 'ephemeral' ? { flags: MessageFlags.Ephemeral } : {},
+      );
+    }
+
     context = await buildContext(interaction, {
       createIfMissing: interaction.commandName === 'start',
       requiresAccount: command.requiresAccount,

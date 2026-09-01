@@ -55,6 +55,11 @@ export async function reportIncident(
   entry.count += 1;
   seen.set(signature, entry);
 
+  // Sans canal d'erreurs il n'y a rien à envoyer : on sort AVANT la
+  // comptabilité du plafond. La consommer ici rendait `incidentStats()` — donc
+  // `/admin stats` — dépendant d'une variable d'environnement sans rapport.
+  if (!env.DISCORD_ERROR_CHANNEL_ID) return;
+
   // Déjà signalé dans cette fenêtre : on compte, on ne renvoie pas de message.
   if (entry.reported) return;
   if (reportsInWindow >= MAX_PER_WINDOW) {
@@ -64,8 +69,6 @@ export async function reportIncident(
 
   entry.reported = true;
   reportsInWindow += 1;
-
-  if (!env.DISCORD_ERROR_CHANNEL_ID) return;
 
   try {
     const channel = await client.channels.fetch(env.DISCORD_ERROR_CHANNEL_ID);

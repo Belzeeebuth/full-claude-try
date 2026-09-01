@@ -76,6 +76,15 @@ const envSchema = z.object({
   DATABASE_POOL_IDLE_TIMEOUT_MS: intFromEnv(1_000, 600_000, 30_000),
   DATABASE_STATEMENT_TIMEOUT_MS: intFromEnv(1_000, 120_000, 15_000),
   DATABASE_SSL: booleanish.default(false),
+  /** Certificat d'autorité à présenter au serveur (PaaS à CA privée). */
+  DATABASE_SSL_CA: z.string().optional(),
+  /**
+   * Désactive la VÉRIFICATION du certificat. Chiffrer sans authentifier ne
+   * protège que de l'écoute passive : un intercepteur actif lit les
+   * identifiants PostgreSQL et tout le trafic de jeu. À n'activer qu'en
+   * connaissance de cause — le démarrage l'annonce alors bruyamment.
+   */
+  DATABASE_SSL_INSECURE: booleanish.default(false),
   REDIS_URL: z.string().min(1, 'REDIS_URL est obligatoire'),
   REDIS_PREFIX: z.string().default('harvester'),
   QUEUES_ENABLED: booleanish.default(true),
@@ -86,6 +95,16 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
   LOG_PRETTY: booleanish.default(false),
   HTTP_PORT: intFromEnv(0, 65_535, 3_001),
+  /**
+   * Jeton exigé sur `/metrics` (`Authorization: Bearer …`).
+   *
+   * `/metrics` publie la masse monétaire, les joueurs actifs, le ratio
+   * faucet/sink et le nombre d'écarts comptables. Il partage son port avec
+   * l'API publique `/api/v1`, qui est faite pour être exposée : exposer l'une
+   * exposait donc l'autre. Vide = accès libre, ce qui reste le bon réglage
+   * quand le port n'est joignable que depuis la boucle locale.
+   */
+  HTTP_METRICS_TOKEN: z.string().optional(),
   MAINTENANCE_MODE: booleanish.default(false),
   MAINTENANCE_MESSAGE: z.string().default(''),
   // ⚠ NE JAMAIS nommer ces variables SHARD_COUNT ni SHARDS : ces deux noms
@@ -98,6 +117,17 @@ const envSchema = z.object({
   SHARDING_LIST: z.string().default('auto'),
 
   // --- Gameplay ---
+  /**
+   * Graine du monde : météo du jour, rotation de la boutique et stock du marché
+   * noir en dérivent.
+   *
+   * Elle DOIT être secrète et propre à l'instance. Tant qu'elle valait la
+   * constante littérale du code source, n'importe quel lecteur du dépôt pouvait
+   * calculer le marché noir du lendemain et anticiper les mouvements de prix.
+   * La reproductibilité inter-shards, qui est la raison d'être du mécanisme,
+   * est intégralement préservée : tous les process partagent la même valeur.
+   */
+  WORLD_SEED: z.string().default('harvest'),
   SEASON_LENGTH_DAYS: intFromEnv(1, 365, 14),
   GLOBAL_GROWTH_MULTIPLIER: floatFromEnv(0.05, 100, 1),
   GLOBAL_ECONOMY_MULTIPLIER: floatFromEnv(0.05, 100, 1),

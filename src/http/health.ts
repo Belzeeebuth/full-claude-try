@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import { createServer, type Server } from 'node:http';
 import type { Client } from 'discord.js';
 import { env } from '../config/env';
@@ -48,6 +49,21 @@ export function recordInteraction(): void {
   metrics.interactionsTotal += 1;
 }
 
+/**
+ * Autorise `/metrics` : libre si `HTTP_METRICS_TOKEN` est vide, sinon
+ * `Authorization: Bearer <jeton>` en comparaison à temps constant.
+ */
+function metricsAuthorized(request: import('node:http').IncomingMessage): boolean {
+  const expected = env.HTTP_METRICS_TOKEN;
+  if (!expected) return true;
+
+  const header = request.headers.authorization;
+  if (!header?.startsWith('Bearer ')) return false;
+  const provided = Buffer.from(header.slice('Bearer '.length).trim());
+  const reference = Buffer.from(expected);
+  return provided.length === reference.length && timingSafeEqual(provided, reference);
+}
+
 export function startHealthServer(client: Client): Server | undefined {
   if (env.HTTP_PORT <= 0) return undefined;
 
@@ -67,6 +83,16 @@ export function startHealthServer(client: Client): Server | undefined {
     }
 
     if (url === '/metrics') {
+      // `/metrics` publie la masse monétaire, les joueurs actifs, le ratio
+      // faucet/sink et les écarts comptables — et partage son port avec l'API
+      // publique `/api/v1`, qui est faite pour être exposée. Exposer l'une
+      // exposait donc l'autre. Le jeton est facultatif : sur un port lié à la
+      // boucle locale, l'accès libre reste le bon réglage.
+      if (!metricsAuthorized(request)) {
+        response.writeHead(401, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ error: 'unauthorized' }));
+        return;
+      }
       void handleMetrics(client, response);
       return;
     }

@@ -3,6 +3,7 @@ import { env } from '../config/env';
 import { lockUserRow, withTransaction } from '../db/client';
 import { checkPrestigeEligibility, planPrestige, prestigeBadge } from '../game/prestige';
 import { gameError } from '../utils/errors';
+import { scaleMoney } from '../game/money';
 import { moduleLogger } from '../utils/logger';
 import { reloadCatalogs, translate } from '../i18n';
 import * as animalRepo from '../repositories/animal.repo';
@@ -17,7 +18,7 @@ import { broadcast } from './cluster';
 import * as economyService from './economy.service';
 import * as inventoryService from './inventory.service';
 import { grantXp, removeXpAmount } from './player.service';
-import { claimOnce } from '../utils/lock';
+import { claimOnce, releaseOnce } from '../utils/lock';
 import { checkAndSet as setCooldown } from '../framework/cooldown';
 import { dailyCycleKey, isWeekend, toSqlDate } from '../utils/time';
 import type { PlayerContext } from '../types';
@@ -470,8 +471,8 @@ export async function recordVote(
 
   const weekend = options.weekend ?? isWeekend();
   const multiplier = weekend ? balance.vote.weekendMultiplier : 1;
-  const gems = Math.max(0, Math.round(balance.vote.rewardGems * multiplier));
-  const coins = Math.max(0, Math.round(balance.vote.rewardCoins * multiplier));
+  const gems = scaleMoney(balance.vote.rewardGems, multiplier);
+  const coins = scaleMoney(balance.vote.rewardCoins, multiplier);
 
   // Fenêtre d'idempotence alignée sur le cooldown : deux livraisons du même
   // vote ne peuvent pas payer deux fois, y compris à cheval sur un redémarrage.
@@ -483,24 +484,33 @@ export async function recordVote(
   const pass = getActiveSeasonPass();
   let premiumGranted = false;
 
-  await withTransaction(async (tx) => {
-    await lockUserRow(tx, user.id);
-    if (gems > 0) {
-      await economyService.pay(
-        { userId: user.id, amount: gems, currency: 'gems', type: 'vote_reward' },
-        tx,
-      );
-    }
-    if (coins > 0) {
-      await economyService.pay({ userId: user.id, amount: coins, type: 'vote_reward' }, tx);
-    }
+  try {
+    await withTransaction(async (tx) => {
+      await lockUserRow(tx, user.id);
+      if (gems > 0) {
+        await economyService.pay(
+          { userId: user.id, amount: gems, currency: 'gems', type: 'vote_reward' },
+          tx,
+        );
+      }
+      if (coins > 0) {
+        await economyService.pay({ userId: user.id, amount: coins, type: 'vote_reward' }, tx);
+      }
 
-    // Voter débloque la voie premium du passe en cours.
-    if (pass) {
-      await progressionRepo.grantPassPremium(user.id, pass.id, tx);
-      premiumGranted = true;
-    }
-  });
+      // Voter débloque la voie premium du passe en cours.
+      if (pass) {
+        await progressionRepo.grantPassPremium(user.id, pass.id, tx);
+        premiumGranted = true;
+      }
+    });
+  } catch (error) {
+    // La marque d'idempotence a été posée AVANT le paiement : si celui-ci
+    // échoue, la garder condamnerait le joueur à ne rien toucher pendant toute
+    // la fenêtre de cooldown, sans que personne ne le sache — le webhook top.gg
+    // a déjà reçu son 200. On la rend, la relivraison suivante repaiera.
+    await releaseOnce(token);
+    throw error;
+  }
 
   // Le cooldown affiché par `/vote` était consulté mais jamais posé.
   await setCooldown(user.id, 'vote', balance.vote.cooldownHours * 3_600);

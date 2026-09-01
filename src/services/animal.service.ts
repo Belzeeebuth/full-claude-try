@@ -462,7 +462,6 @@ export async function collect(
         player.id,
         [{ itemKey: animalConfig.productItemKey, quantity }],
         tx,
-        { allowOverflow: true },
       );
 
       // Le bâtiment était rechargé pour CHAQUE bête : un troupeau de vingt

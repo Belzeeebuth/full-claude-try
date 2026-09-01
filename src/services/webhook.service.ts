@@ -1,5 +1,7 @@
 import { createHmac, randomBytes } from 'node:crypto';
+import { lookup as dnsCallbackLookup } from 'node:dns';
 import { lookup } from 'node:dns/promises';
+import { Agent } from 'undici';
 import { balance as getBalance } from '../config';
 import { gameError } from '../utils/errors';
 import { moduleLogger } from '../utils/logger';
@@ -50,7 +52,13 @@ export function signPayload(secret: string, body: string): string {
  *  2. résolution DNS puis refus des plages privées, AVANT la requête — filtrer
  *     sur le nom d'hôte ne sert à rien, `evil.com` peut pointer sur 127.0.0.1 ;
  *  3. `redirect: 'manual'` — sans quoi une redirection 302 contourne les deux
- *     premières.
+ *     premières ;
+ *  4. ÉPINGLAGE de l'adresse validée — `fetch(url)` refaisait sa propre
+ *     résolution DNS après le contrôle, ce qui laissait entière la fenêtre du
+ *     « DNS rebinding » : un domaine à TTL très court peut répondre par une
+ *     adresse publique à la vérification et par `127.0.0.1` à la requête. On
+ *     se connecte donc à l'adresse effectivement contrôlée, et le contrôle est
+ *     rejoué au moment de l'établissement de la connexion.
  */
 
 /** Adresse hors de portée d'un webhook : boucle locale, réseaux privés, métadonnées cloud. */
@@ -109,6 +117,43 @@ async function resolvesToPublicAddress(hostname: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Agent HTTP dont la résolution DNS est elle-même filtrée.
+ *
+ * C'est la seule barrière qui ferme réellement le « DNS rebinding » : le
+ * contrôle porte sur l'adresse à laquelle la socket va SE CONNECTER, pas sur
+ * une résolution antérieure et indépendante. Une résolution qui renvoie la
+ * moindre adresse interne fait échouer la connexion avec une erreur explicite.
+ */
+const guardedAgent = new Agent({
+  connect: {
+    lookup(hostname, options, callback) {
+      dnsCallbackLookup(hostname, { ...options, all: true, verbatim: true }, (error, addresses) => {
+        if (error) {
+          callback(error, '', 0);
+          return;
+        }
+        const records = addresses as unknown as Array<{ address: string; family: number }>;
+        if (
+          records.length === 0 ||
+          records.some((record) => isBlockedAddress(record.address, record.family))
+        ) {
+          callback(new Error('blocked_address'), '', 0);
+          return;
+        }
+        // `all: true` a été imposé pour pouvoir inspecter TOUTES les réponses ;
+        // on rend ensuite la forme attendue par l'appelant d'origine.
+        if (options.all) {
+          callback(null, records as never);
+          return;
+        }
+        const first = records[0]!;
+        callback(null, first.address as never, first.family);
+      });
+    },
+  },
+});
 
 export async function subscribe(
   player: PlayerContext,
@@ -198,6 +243,10 @@ async function deliver(url: string, secret: string, eventType: string, payload: 
       signal: controller.signal,
       // Une redirection contournerait le contrôle d'adresse ci-dessus.
       redirect: 'manual',
+      // Le contrôle d'adresse est rejoué à l'établissement de la connexion :
+      // sans cela, `fetch` refait sa propre résolution et la vérification
+      // ci-dessus ne porte que sur une réponse DNS déjà périmée.
+      dispatcher: guardedAgent,
       headers: {
         'content-type': 'application/json',
         'x-harvester-event': eventType,

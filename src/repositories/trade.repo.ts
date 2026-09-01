@@ -308,6 +308,26 @@ export async function cancelOrder(
   return (result.rowCount ?? 0) > 0;
 }
 
+/**
+ * Verrouille un ordre permanent pour la durée de la transaction.
+ *
+ * Le rapprochement dépense l'argent de l'acheteur : il doit relire l'ordre sous
+ * verrou plutôt que se fier à la ligne lue par `findMatchableOrders`, qui a pu
+ * être annulée ou soldée entre-temps.
+ */
+export async function lockOrder(
+  tx: Executor,
+  orderId: string,
+): Promise<StandingOrderRow | undefined> {
+  const [row] = await tx
+    .select()
+    .from(standingOrders)
+    .where(eq(standingOrders.id, orderId))
+    .limit(1)
+    .for('update');
+  return row;
+}
+
 /** Ordres actifs et non expirés, les plus anciens d'abord — file d'attente équitable. */
 export async function findMatchableOrders(limit: number, executor: Executor = getDb()) {
   return executor

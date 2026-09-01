@@ -2,6 +2,7 @@ import { balance as getBalance, getActiveSeasonPass, getConfig, type QuestConfig
 import { lockUserRow, withTransaction, type Executor } from '../db/client';
 import { dailyRng, liveRng } from '../game/rng';
 import { gameError } from '../utils/errors';
+import { scaleMoney } from '../game/money';
 import { discordTimestamp } from '../utils/format';
 import { moduleLogger } from '../utils/logger';
 import * as playerRepo from '../repositories/player.repo';
@@ -68,9 +69,16 @@ interface QuestSnapshotShape {
  */
 function scaleReward(value: number, level: number): number {
   const balance = getBalance();
-  return Math.round(value * (1 + balance.quests.rewardLevelScale * Math.max(0, level - 1)));
+  // `scaleMoney` et non `Math.round` : `money.ts` impose l'arrondi à la BAISSE
+  // sur tout gain joueur, précisément parce qu'un arrondi au plus proche crée
+  // de la monnaie une fois sur deux, sur des millions de quêtes rendues.
+  return scaleMoney(value, 1 + balance.quests.rewardLevelScale * Math.max(0, level - 1));
 }
 
+/**
+ * Mise à l'échelle d'un OBJECTIF de quête (« récolter N blés »), pas d'un gain :
+ * `Math.round` reste correct ici, ce n'est pas de la monnaie.
+ */
 function scaleAmount(value: number, level: number): number {
   const balance = getBalance();
   return Math.max(1, Math.round(value * (1 + balance.quests.amountLevelScale * Math.max(0, level - 1))));

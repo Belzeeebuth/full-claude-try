@@ -6,7 +6,7 @@ import { renderFarm } from '../render/farm';
 import { renderMarketChart } from '../render/chart';
 import { renderProfile } from '../render/profile';
 import { renderLeaderboard } from '../render/leaderboard';
-import { gridSizeFor } from '../game/grid';
+import { gridSizeFor, slotToCoords } from '../game/grid';
 import { translate } from '../i18n';
 import { moduleLogger } from '../utils/logger';
 
@@ -38,7 +38,10 @@ async function main(): Promise<void> {
 
   const plots = Array.from({ length: balance.plots.maxPlots }, (_, index) => {
     const slot = index + 1;
-    const coords = { x: index % grid.width, y: Math.floor(index / grid.width) };
+    // `slotToCoords` et non un calcul maison : la prévisualisation doit
+    // montrer la géométrie réellement servie aux joueurs, sans quoi elle ne
+    // peut pas révéler un décalage entre la grille et le placement des slots.
+    const coords = slotToCoords(slot, balance);
     const locked = slot > unlocked;
     const planted = !locked && slot % 4 !== 0;
     const stages = ['planted', 'sprouting', 'growing', 'maturing', 'ready'] as const;

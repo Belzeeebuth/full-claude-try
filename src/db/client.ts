@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { eq } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool, type PoolClient } from 'pg';
@@ -16,6 +17,29 @@ export type Executor = Database | Transaction;
 let pool: Pool | undefined;
 let db: Database | undefined;
 
+/**
+ * Options TLS de la connexion PostgreSQL.
+ *
+ * On VÉRIFIE le certificat par défaut. `rejectUnauthorized: false` inconditionnel
+ * — l'ancien comportement — chiffre sans authentifier : cela protège de l'écoute
+ * passive, mais un intercepteur actif lit alors les identifiants et l'intégralité
+ * du trafic de jeu. Un PaaS à CA privée se configure par `DATABASE_SSL_CA` ;
+ * `DATABASE_SSL_INSECURE` reste possible, mais devient un choix explicite,
+ * annoncé bruyamment au démarrage plutôt que subi en silence.
+ */
+function sslOptions(): { rejectUnauthorized: boolean; ca?: string } {
+  if (env.DATABASE_SSL_INSECURE) {
+    log.warn(
+      'DATABASE_SSL_INSECURE=true : le certificat du serveur PostgreSQL n\'est PAS vérifié. ' +
+        'La connexion est chiffrée mais reste vulnérable à une interception active.',
+    );
+    return { rejectUnauthorized: false };
+  }
+  return env.DATABASE_SSL_CA
+    ? { rejectUnauthorized: true, ca: readFileSync(env.DATABASE_SSL_CA, 'utf8') }
+    : { rejectUnauthorized: true };
+}
+
 function createPool(): Pool {
   const created = new Pool({
     connectionString: env.DATABASE_URL,
@@ -27,7 +51,7 @@ function createPool(): Pool {
     statement_timeout: env.DATABASE_STATEMENT_TIMEOUT_MS,
     query_timeout: env.DATABASE_STATEMENT_TIMEOUT_MS,
     application_name: 'harvester',
-    ...(env.DATABASE_SSL ? { ssl: { rejectUnauthorized: false } } : {}),
+    ...(env.DATABASE_SSL ? { ssl: sslOptions() } : {}),
   });
 
   created.on('error', (error) => {

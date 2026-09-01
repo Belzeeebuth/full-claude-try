@@ -315,6 +315,37 @@ describe('grille et parcelles', () => {
     }
   });
 
+  /**
+   * Le test ci-dessus ne vérifiait QUE les bornes exactes des paliers, et c'est
+   * précisément par là que le défaut est passé : entre deux paliers,
+   * `gridSizeFor` renvoyait la grille du palier précédent alors que
+   * `slotToCoords` plaçait déjà les nouvelles parcelles dans le palier suivant.
+   * Le renderer sautait donc les parcelles hors grille — payées, invisibles.
+   */
+  it('garde toute parcelle débloquée à l\'intérieur de la grille, y compris entre deux paliers', () => {
+    for (let unlocked = 1; unlocked <= balance.plots.maxPlots; unlocked += 1) {
+      const grid = gridSizeFor(unlocked, balance);
+      for (let slot = 1; slot <= unlocked; slot += 1) {
+        const coords = slotToCoords(slot, balance);
+        expect(
+          coords.x < grid.width && coords.y < grid.height,
+          `parcelle ${slot} hors de la grille ${grid.width}×${grid.height} ` +
+            `pour ${unlocked} parcelles débloquées`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it('ne fait jamais rétrécir la grille quand on débloque une parcelle', () => {
+    let previous = gridSizeFor(1, balance);
+    for (let unlocked = 2; unlocked <= balance.plots.maxPlots; unlocked += 1) {
+      const grid = gridSizeFor(unlocked, balance);
+      expect(grid.width).toBeGreaterThanOrEqual(previous.width);
+      expect(grid.height).toBeGreaterThanOrEqual(previous.height);
+      previous = grid;
+    }
+  });
+
   it('fait croître le coût des parcelles de façon monotone', () => {
     let previous = 0;
     for (let slot = balance.plots.startingUnlocked + 1; slot <= balance.plots.maxPlots; slot += 1) {

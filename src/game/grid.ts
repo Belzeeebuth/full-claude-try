@@ -22,13 +22,21 @@ export interface GridSize {
   capacity: number;
 }
 
-/** Forme de la grille pour un nombre de parcelles débloquées. */
+/**
+ * Forme de la grille pour un nombre de parcelles débloquées.
+ *
+ * On retient le plus PETIT palier qui CONTIENT le compte, jamais le plus grand
+ * palier inférieur ou égal. La différence n'est visible qu'entre deux paliers,
+ * et elle est grave : `slotToCoords` place chaque slot d'après le palier qui le
+ * contient, donc avec 10 parcelles débloquées la parcelle 10 se trouve en
+ * `x = 3` alors qu'une grille 3×3 s'arrête à `x = 2`. Le renderer sautait alors
+ * la parcelle (`plot.x >= gridWidth`) et le joueur ne voyait pas ce qu'il venait
+ * de payer, jusqu'à ce qu'il atteigne le palier suivant. Jusqu'à six parcelles
+ * pouvaient disparaître ainsi dans les paliers hauts.
+ */
 export function gridSizeFor(unlockedPlots: number, balance: Balance): GridSize {
   const steps = balance.plots.gridSteps;
-  let chosen = steps[0]!;
-  for (const step of steps) {
-    if (unlockedPlots >= step.plots) chosen = step;
-  }
+  const chosen = steps.find((step) => unlockedPlots <= step.plots) ?? steps[steps.length - 1]!;
   return { width: chosen.width, height: chosen.height, capacity: chosen.plots };
 }
 

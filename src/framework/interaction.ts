@@ -183,6 +183,23 @@ export async function replyEphemeral(
   interaction: RepliableInteraction,
   payload: InteractionReplyOptions,
 ): Promise<void> {
+  // Sur une interaction DÉFÉRÉE, `safeReply` passe par `editReply`, qui ignore
+  // purement et simplement le drapeau éphémère : un message d'erreur atterrissait
+  // alors dans le salon, à la vue de tous, sur toute commande déférée
+  // publiquement (`/farm`, `/market`, `/leaderboard`…). Un `followUp` est le
+  // seul moyen d'obtenir une réponse éphémère après un `deferReply()` public.
+  if (interaction.deferred && !interaction.ephemeral) {
+    try {
+      // Le « … réfléchit » public doit quand même être résolu, sinon Discord
+      // laisse un placeholder mort dans le salon pendant quinze minutes.
+      await interaction.deleteReply().catch(() => undefined);
+      await interaction.followUp({ ...payload, flags: MessageFlags.Ephemeral });
+      return;
+    } catch (error) {
+      log.debug({ err: error }, 'followUp éphémère impossible (interaction expirée ?)');
+      return;
+    }
+  }
   await safeReply(interaction, { ...payload, flags: MessageFlags.Ephemeral });
 }
 

@@ -303,25 +303,24 @@ export async function collectProduction(
 
       const output = config.items.get(recipe.outputItemKey);
       const quantity = recipe.outputQuantity * entry.job.quantity;
-      await inventoryService.addItems(
-        player.id,
-        [{ itemKey: recipe.outputItemKey, quantity }],
-        tx,
-        { allowOverflow: true },
-      );
 
-      // Jetons d'événement pour les fabrications (Marché de Noël).
+      // Production et jetons d'événement en un seul dépôt, capacité VÉRIFIÉE :
+      // un entrepôt plein annule la collecte, la fabrication reste en file
+      // (`markCraftCollected` est annulé avec la transaction) plutôt que de
+      // déborder silencieusement.
+      const collected: Array<{ itemKey: string; quantity: number }> = [
+        { itemKey: recipe.outputItemKey, quantity },
+      ];
       for (const event of world.activeEvents) {
         const perCraft = event.modifiers.tokenPerCraft ?? 0;
         if (event.currencyItemKey && perCraft > 0) {
-          await inventoryService.addItems(
-            player.id,
-            [{ itemKey: event.currencyItemKey, quantity: perCraft * entry.job.quantity }],
-            tx,
-            { allowOverflow: true },
-          );
+          collected.push({
+            itemKey: event.currencyItemKey,
+            quantity: perCraft * entry.job.quantity,
+          });
         }
       }
+      await inventoryService.addItems(player.id, collected, tx);
 
       xpTotal += recipe.xpReward * entry.job.quantity;
       craftedUnits += entry.job.quantity;

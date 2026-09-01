@@ -102,9 +102,11 @@ export function rollWeather(
   day: string,
   season: SeasonName,
   balance: Balance,
-  secret = 'harvest-weather',
+  secret?: string,
 ): WeatherState {
-  const rng = dailyRng('weather', day, secret);
+  // Pas de littéral de repli : `dailyRng` retombe sur `WORLD_SEED`, seule
+  // source de la graine du monde. Le paramètre ne sert plus qu'aux tests.
+  const rng = secret === undefined ? dailyRng('weather', day) : dailyRng('weather', day, secret);
   const entries = balance.weather.table.map((entry) => ({
     value: entry,
     weight: entry.weights[season] ?? 0,

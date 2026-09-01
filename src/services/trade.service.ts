@@ -461,12 +461,35 @@ export async function matchStandingOrders(limit = 50): Promise<number> {
 
     for (const listing of candidates) {
       try {
-        await withTransaction(async (tx) => {
+        const matched = await withTransaction(async (tx) => {
+          // L'ordre est verrouillé AVANT la moindre dépense, et son état est
+          // relu sous ce verrou : `findMatchableOrders` a lu une ligne qui a pu
+          // être annulée ou soldée depuis, et rien d'autre ne sérialise deux
+          // passages concurrents du job sur le même ordre.
+          const current = await tradeRepo.lockOrder(tx, order.id);
+          if (
+            !current ||
+            current.status !== 'active' ||
+            current.remainingQuantity < listing.quantity ||
+            current.expiresAt.getTime() <= Date.now()
+          ) {
+            return false;
+          }
+
           await executeBuyout(order.buyerId, listing.id, tx);
           const result = await tradeRepo.fillOrder(order.id, listing.quantity, tx);
-          if (!result) return;
+          if (!result) {
+            // ⚠ Ne JAMAIS sortir par `return` ici : `executeBuyout` a déjà
+            // débité l'acheteur et livré la marchandise, et un `return` VALIDE
+            // la transaction. Un joueur qui vient d'annuler son ordre serait
+            // débité malgré tout, et la quantité restante ne serait pas
+            // décrémentée — l'ordre rachèterait au cycle suivant. Il faut lever
+            // pour annuler l'achat ; le `catch` en dessous laisse l'ordre actif.
+            throw gameError('busy', 'This standing order is no longer fillable.', {
+              i18nKey: 'errors.trade.order_not_found',
+            });
+          }
 
-          filled += 1;
           if (result.fulfilled) {
             await systemRepo.enqueueNotification({
               userId: order.buyerId,
@@ -479,7 +502,14 @@ export async function matchStandingOrders(limit = 50): Promise<number> {
               dedupeKey: `order-filled:${order.id}`,
             });
           }
+
+          return true;
         });
+
+        // Incrémenté APRÈS la validation de la transaction, jamais dedans : un
+        // compteur posé à l'intérieur survit à l'annulation et fait mentir le
+        // journal du job.
+        if (matched) filled += 1;
         // Un ordre ne se sert que d'une annonce par passage de job : la
         // quantité restante et le budget sont réévalués proprement au
         // prochain cycle plutôt que d'enchaîner plusieurs achats dans la

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { z } from 'zod';
 import { env } from './env';
 import { moduleLogger } from '../utils/logger';
+import { setWorldSeed } from '../game/rng';
 import {
   achievementSchema,
   animalSchema,
@@ -28,6 +29,11 @@ import {
 } from './gameplay/schemas';
 
 const log = moduleLogger('config');
+
+// La graine du monde est posée ici, au chargement de la configuration : c'est
+// le seul endroit qui connaisse à la fois l'environnement et qui soit importé
+// par tous les consommateurs de `dailyRng`. `game/rng.ts` reste ainsi pur.
+setWorldSeed(env.WORLD_SEED);
 
 /**
  * ---------------------------------------------------------------------------

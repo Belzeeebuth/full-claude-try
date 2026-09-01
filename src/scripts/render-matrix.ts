@@ -2,7 +2,7 @@ import './offline-env';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { balance as getBalance, getConfig } from '../config';
-import { gridSizeFor } from '../game/grid';
+import { gridSizeFor, slotToCoords } from '../game/grid';
 import { renderFarm, type FarmRenderInput } from '../render/farm';
 
 /**
@@ -31,8 +31,7 @@ function build(unlocked: number, season: string, weather: string): FarmRenderInp
     const key = keys[slot % keys.length]!;
     return {
       slot,
-      x: index % grid.width,
-      y: Math.floor(index / grid.width),
+      ...slotToCoords(slot, balance),
       state: locked ? 'locked' : planted ? 'growing' : 'empty',
       fertility: 30 + ((slot * 11) % 70),
       fertilityLabel: '',

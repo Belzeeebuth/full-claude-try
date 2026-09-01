@@ -4,12 +4,18 @@ import { COLORS, baseEmbed, button, row, select, selectRow } from '../framework/
 import { getRegistry } from '../framework/registry';
 import { formatCoins } from '../utils/format';
 import { translatorFor, DEFAULT_LOCALE } from '../i18n';
+import { replyEphemeral, safeReply } from '../framework/interaction';
 
 /** Onboarding, tutoriel et aide. */
 
 const start: Command = {
   category: 'demarrage',
   requiresAccount: false,
+  // `buildContext` crée ici la ferme entière : sans ce `defer`, tout le travail
+  // de création se déroulait à l'intérieur des 3 secondes de Discord, avant la
+  // moindre réponse. Sur une base lente, le joueur voyait « L'application ne
+  // répond pas » alors que son compte venait d'être créé.
+  deferBeforeContext: 'public',
   cooldown: { seconds: 5 },
   data: new SlashCommandBuilder()
     .setName('start')
@@ -26,7 +32,7 @@ const start: Command = {
   async execute(interaction, context): Promise<void> {
     // `buildContext` a déjà créé le compte si nécessaire (createIfMissing).
     if (!context.player.created) {
-      await interaction.reply({
+      await replyEphemeral(interaction, {
         embeds: [
           baseEmbed({
             title: context.t('start.already_title'),
@@ -53,12 +59,11 @@ const start: Command = {
             }),
           ),
         ],
-        flags: MessageFlags.Ephemeral,
       });
       return;
     }
 
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [
         baseEmbed({
           title: context.t('start.welcome_title'),

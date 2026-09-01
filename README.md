@@ -503,7 +503,7 @@ reste accessible.
 ```bash
 npm run dev              # rechargement à chaud (tsx watch)
 npm run typecheck        # tsc --noEmit
-npm test                 # 137 tests — aucune infrastructure requise
+npm test                 # 167 tests — aucune infrastructure requise
 npm run test:integration # 24 tests contre un vrai PostgreSQL (voir ci-dessous)
 npm run test:watch       # mode veille
 npm run test:coverage    # couverture (seuil 70 % sur src/game/**)
@@ -560,7 +560,7 @@ src/
 
 La règle de dépendance est stricte :
 `commands → services → repositories → db`, et `game/` n'importe rien d'autre que
-lui-même. C'est ce qui permet aux 125 tests rapides de tourner **sans base de
+lui-même. C'est ce qui permet aux tests rapides de tourner **sans base de
 données** ; `tests/integration/` (Testcontainers) est le seul endroit qui en
 démarre une, volontairement séparé (`npm run test:integration`).
 
