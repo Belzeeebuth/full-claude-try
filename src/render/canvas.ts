@@ -106,6 +106,62 @@ export function font(size: number, weight: 'normal' | 'bold' = 'normal'): string
   return `${weight} ${size}px ${fontFamily()}`;
 }
 
+/**
+ * Plus grande taille de la liste à laquelle `text` tient dans `maxWidth`.
+ *
+ * Tronquer un nom que le joueur a choisi est le dernier recours, pas le
+ * premier : on réduit d'abord. Renvoie la plus petite taille proposée si même
+ * elle ne suffit pas — à l'appelant de couper alors avec `clipText`.
+ */
+export function fitFont(
+  ctx: SKRSContext2D,
+  text: string,
+  maxWidth: number,
+  sizes: number[],
+  weight: 'normal' | 'bold' = 'bold',
+): string {
+  let candidate = font(sizes[sizes.length - 1] ?? 14, weight);
+  for (const size of sizes) {
+    candidate = font(size, weight);
+    ctx.font = candidate;
+    if (ctx.measureText(text).width <= maxWidth) return candidate;
+  }
+  return candidate;
+}
+
+/** La police couleur des emoji est-elle disponible dans ce process ? */
+export function hasEmojiFont(): boolean {
+  ensureFonts();
+  return GlobalFonts.families.some((family) => /emoji/i.test(family.family));
+}
+
+/**
+ * Préfixe un titre de son emoji, mais seulement si la police couleur est là.
+ *
+ * Sans elle, `@napi-rs/canvas` dessine un carré « tofu » — c'est pourquoi les
+ * emoji avaient été bannis des images. L'image Docker installe pourtant
+ * `fonts-noto-color-emoji` : la vérification permet d'en profiter en production
+ * sans casser le rendu sur une machine qui ne l'a pas.
+ */
+export function withEmoji(emoji: string, text: string): string {
+  return hasEmojiFont() ? `${emoji} ${text}` : text;
+}
+
+/**
+ * Prépare un texte TRADUIT pour le dessin : sans police couleur, les emoji qu'il
+ * contient sont retirés plutôt que rendus en carrés.
+ *
+ * Ne s'applique qu'aux clés `render.*`, qui ne servent qu'aux images. Dans un
+ * embed Discord, c'est le client qui dessine les emoji : ils y restent intacts.
+ */
+export function drawableText(text: string): string {
+  if (hasEmojiFont()) return text;
+  return text
+    .replace(/\p{Extended_Pictographic}[\uFE0F\u200D]*/gu, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 export function newCanvas(width: number, height: number): { canvas: Canvas; ctx: SKRSContext2D } {
   ensureFonts();
   const canvas = createCanvas(width, height);
@@ -200,14 +256,35 @@ export function progressBar(
     );
   }
   if (options.label) {
+    // Le libellé est centré sur la barre : il chevauche donc le bord du
+    // remplissage dès que le taux approche la moitié — et comme ce bord dépend
+    // du taux, l'illisibilité n'apparaissait que pour certains joueurs. On écrit
+    // le texte DEUX FOIS, découpé sur ce bord : encre sombre sur la partie
+    // remplie (toujours vive), encre claire sur le fond (toujours sombre).
+    // Lisible quel que soit le taux, sans déplacer la mise en page.
+    const fillEnd =
+      ratio > 0 ? options.x + Math.max(options.height, options.width * ratio) : options.x;
+    const centerX = options.x + options.width / 2;
+    const baseline = options.y + options.height * 0.18;
     ctx.font = font(Math.round(options.height * 0.7), 'bold');
-    ctx.fillStyle = PALETTE.text;
     ctx.textAlign = 'center';
-    ctx.fillText(
-      options.label,
-      options.x + options.width / 2,
-      options.y + options.height * 0.18,
-    );
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(options.x, options.y, Math.max(0, fillEnd - options.x), options.height);
+    ctx.clip();
+    ctx.fillStyle = 'rgba(18,22,30,0.92)';
+    ctx.fillText(options.label, centerX, baseline);
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(fillEnd, options.y, Math.max(0, options.x + options.width - fillEnd), options.height);
+    ctx.clip();
+    ctx.fillStyle = PALETTE.text;
+    ctx.fillText(options.label, centerX, baseline);
+    ctx.restore();
+
     ctx.textAlign = 'left';
   }
 }

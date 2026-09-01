@@ -3,6 +3,7 @@ import { translate } from '../i18n';
 import { formatCompact, formatNumber } from '../utils/format';
 import {
   PALETTE,
+  hasEmojiFont,
   clipText,
   drawAvatar,
   encode,
@@ -188,13 +189,23 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
   });
 
   // --- Pied de carte : badges à gauche, ferme et ancienneté à droite -----
-  // Les badges sont des emoji : sans police couleur installée, ils
-  // s'afficheraient en carrés. On les représente donc par des pastilles, et
-  // l'embed Discord affiche les emoji réels à côté de l'image.
+  // Les badges SONT des emoji. On les dessine tels quels quand la police couleur
+  // est installée — c'est le cas de l'image Docker, qui embarque
+  // `fonts-noto-color-emoji` — et on retombe sur des pastilles sinon, pour ne
+  // jamais afficher de carrés « tofu » sur une machine qui ne l'a pas.
   const footerY = dims.height - 34;
+  const emojiAvailable = hasEmojiFont();
   if (input.badges.length > 0) {
-    for (const [index, _badge] of input.badges.slice(0, 10).entries()) {
+    for (const [index, badge] of input.badges.slice(0, 10).entries()) {
       const x = 42 + index * 22;
+      if (emojiAvailable) {
+        ctx.font = font(17);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = PALETTE.text;
+        ctx.fillText(badge, x, footerY);
+        ctx.textAlign = 'left';
+        continue;
+      }
       ctx.beginPath();
       ctx.arc(x, footerY + 8, 8, 0, Math.PI * 2);
       ctx.fillStyle = index % 2 === 0 ? PALETTE.gold : rarityColor('epic');

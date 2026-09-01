@@ -51,6 +51,41 @@ export type ItemStack = z.infer<typeof itemStackSchema>;
 // ---------------------------------------------------------------------------
 // Cultures
 // ---------------------------------------------------------------------------
+/**
+ * Apparence d'une culture dans les images générées.
+ *
+ * `form` choisit la SILHOUETTE dessinée : c'est elle qui permet de reconnaître
+ * ce qui pousse sans lire une infobulle. La palette donne les quatre teintes du
+ * tracé. Les deux sont des données d'équilibrage comme les autres — on change
+ * l'aspect d'une culture sans toucher au code.
+ *
+ * Sans ces champs, le rendu retombe sur une silhouette générique : la
+ * configuration reste valide, l'image reste correcte, elle est juste moins
+ * lisible.
+ */
+export const cropForms = [
+  'stalk',   // céréale : touffe d'épis (blé)
+  'tall',    // tige haute à tête (maïs, tournesol)
+  'bush',    // buisson à fruits (tomate, poivron)
+  'vine',    // treille (raisin, houblon, concombre)
+  'ground',  // courge posée au sol (potiron, melon)
+  'tree',    // arbuste (café, cacao, thé)
+  'root',    // racine, épaule visible à maturité (carotte)
+  'leafy',   // rosette de feuilles, sans fruit (laitue)
+  'flower',  // hampe et corolle (lavande, safran)
+] as const;
+export type CropForm = (typeof cropForms)[number];
+
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'doit être une couleur hexadécimale #rrggbb');
+
+export const cropPaletteSchema = z.object({
+  leaf: hexColor,
+  leafDark: hexColor,
+  fruit: hexColor,
+  fruitDark: hexColor,
+});
+export type CropPalette = z.infer<typeof cropPaletteSchema>;
+
 export const cropSchema = z.object({
   key,
   name: z.string().min(1).max(64),
@@ -70,6 +105,8 @@ export const cropSchema = z.object({
   regrowCycles: z.number().int().min(0).max(20).default(0),
   regrowSeconds: nonNegativeInt.default(0),
   mutationChance: z.number().min(0).max(1).default(0.01),
+  form: z.enum(cropForms).default('bush'),
+  palette: cropPaletteSchema.optional(),
   sprite: z.string().max(64).optional(),
   description: z.string().max(512).optional(),
   descriptionEn: z.string().max(512).optional(),

@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "commands:deploy": "tsx src/scripts/deploy-commands.ts",
     "commands:deploy:prod": "node dist/scripts/deploy-commands.js",
     "commands:clear": "tsx src/scripts/deploy-commands.ts --clear",
@@ -30,6 +31,7 @@
     "balance:report": "tsx src/scripts/balance-report.ts",
     "render:preview": "tsx src/scripts/render-preview.ts",
     "render:preview:en": "PREVIEW_LOCALE=en tsx src/scripts/render-preview.ts",
+    "render:matrix": "tsx src/scripts/render-matrix.ts",
     "brand": "tsx src/scripts/generate-brand.ts",
     "build:assets": "node -e \"const fs=require('fs');fs.cpSync('src/config/gameplay','dist/config/gameplay',{recursive:true,filter:(s)=>!s.endsWith('.ts')});fs.cpSync('src/i18n/locales','dist/i18n/locales',{recursive:true});console.log('assets copiés dans dist/')\""
   },

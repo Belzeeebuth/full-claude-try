@@ -15,6 +15,30 @@ Dès qu'un fichier PNG existe au bon chemin, il **remplace automatiquement** le
 dessin procédural. Aucune ligne de code à modifier, aucun redémarrage : le cache
 de sprites se vide au prochain démarrage, ou via `/admin reload-config`.
 
+### L'apparence d'une culture est une donnée, pas du code
+
+Le dessin procédural n'est pas générique : chaque culture déclare dans
+`crops.json` la **silhouette** à tracer et sa **palette**.
+
+```json
+"form": "vine",
+"palette": { "leaf": "#5c9648", "leafDark": "#3d6630",
+             "fruit": "#7b4bab", "fruitDark": "#54317a" }
+```
+
+Neuf silhouettes couvrent les 27 cultures : `stalk` (épi), `tall` (tige haute à
+tête), `bush` (buisson à fruits), `vine` (treille), `ground` (courge au sol),
+`tree` (arbuste), `root` (racine), `leafy` (rosette) et `flower` (corolle).
+Ajouter une culture, c'est choisir une forme et quatre couleurs — pas écrire du
+canvas.
+
+Ces deux champs sont validés par le schéma Zod et couverts par
+`tests/render-crops.test.ts`, qui refuse une culture sans palette : sans ce test,
+une culture ajoutée plus tard retomberait silencieusement sur une apparence
+neutre, et se confondrait avec les autres. C'était exactement le défaut de la
+version précédente, où la couleur venait d'un hash du nom — tige toujours verte,
+teinte de fruit sans rapport avec la plante.
+
 ## Arborescence et conventions de nommage
 
 ```

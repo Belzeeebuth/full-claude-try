@@ -1,7 +1,8 @@
 import { balance as getBalance } from '../config';
 import { translate } from '../i18n';
 import { formatCompact, formatPercent } from '../utils/format';
-import { PALETTE, encode, fillRoundRect, font, newCanvas } from './canvas';
+import { PALETTE, drawableText, encode, fillRoundRect, font, newCanvas, withEmoji } from './canvas';
+import { drawCoin } from './sprites';
 
 /**
  * Graphique de prix du marché.
@@ -41,25 +42,36 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   // --- Titre ------------------------------------------------------------
   ctx.font = font(26, 'bold');
   ctx.fillStyle = PALETTE.text;
-  ctx.fillText(`${input.emoji} ${input.title}`, 32, 24);
+  // L'emoji n'est ajouté que si la police couleur répond présente : sinon il
+  // sortirait en carré « tofu ».
+  ctx.fillText(withEmoji(input.emoji, input.title), 32, 24);
 
   const rising = input.trend >= 0;
   const accent = rising ? PALETTE.success : PALETTE.danger;
   ctx.font = font(18, 'bold');
   ctx.fillStyle = accent;
+  // La pièce est DESSINÉE, pas écrite : c'est une valeur monétaire, elle doit
+  // rester lisible même sans police emoji.
+  const priceText = formatCompact(input.currentPrice, locale);
+  ctx.fillText(priceText, 32, 58);
+  const priceWidth = ctx.measureText(priceText).width;
+  drawCoin(ctx, 32 + priceWidth + 12, 67, 8);
+  ctx.fillStyle = accent;
   ctx.fillText(
-    `${formatCompact(input.currentPrice, locale)} 🪙  ${rising ? '▲' : '▼'} ${formatPercent(input.trend, 1, locale)}`,
-    32,
+    `${rising ? '▲' : '▼'} ${formatPercent(input.trend, 1, locale)}`,
+    32 + priceWidth + 28,
     58,
   );
 
   ctx.font = font(14);
   ctx.fillStyle = PALETTE.textMuted;
   ctx.fillText(
-    t('render.chart.subtitle', {
-      base: formatCompact(input.basePrice, locale),
-      demand: input.demandIndex.toFixed(2),
-    }),
+    drawableText(
+      t('render.chart.subtitle', {
+        base: formatCompact(input.basePrice, locale),
+        demand: input.demandIndex.toFixed(2),
+      }),
+    ),
     32,
     84,
   );
@@ -173,11 +185,13 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   ctx.font = font(13);
   ctx.fillStyle = PALETTE.textMuted;
   ctx.fillText(
-    t('render.chart.legend', {
-      min: formatCompact(min, locale),
-      max: formatCompact(max, locale),
-      count: points.length,
-    }),
+    drawableText(
+      t('render.chart.legend', {
+        min: formatCompact(min, locale),
+        max: formatCompact(max, locale),
+        count: points.length,
+      }),
+    ),
     32,
     dims.height - 28,
   );

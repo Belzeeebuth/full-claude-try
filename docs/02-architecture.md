@@ -132,7 +132,7 @@ harvester/
 │   │   ├── views.ts             Vues partagées commande ⇄ composant (source unique de vérité)
 │   │   └── cooldown.ts          Cooldowns Redis (`SET NX PX`)
 │   │
-│   ├── render/                  canvas · sprites · farm · profile · chart · leaderboard · index
+│   ├── render/                  canvas · sprites (silhouettes) · farm · profile · chart · leaderboard · index · pool (workers)
 │   ├── jobs/                    definitions (15 tâches cron) · scheduler · notifications
 │   ├── http/health.ts           /health et /metrics
 │   ├── i18n/                    fr.json (défaut) · en.json
@@ -292,6 +292,18 @@ d'attente. Configurés par commande dans `balance.json`, donc modifiables à cha
 **Cache de rendu** : clé = `render:<type>:<sha1(état)>`, TTL 120 s. Le hash porte
 sur l'état *rendu* (stades, échéances arrondies à la minute, météo, monnaies) :
 rafraîchir sans changement réutilise l'image, la moindre évolution invalide la clé.
+
+**Rendu hors du thread principal** : `@napi-rs/canvas` dessine de façon
+synchrone. Sur le thread principal, chaque image immobilisait l'event loop
+quelques centaines de millisecondes — donc aussi les battements de cœur de la
+passerelle Discord et les autres interactions en cours. `src/render/pool.ts`
+maintient `RENDER_WORKERS` threads persistants (2 par défaut) qui chargent une
+fois configuration, traductions et polices, puis traitent les demandes en série.
+La file est bornée : sous saturation on refuse et on répond en texte, plutôt que
+d'accumuler des images que plus personne n'attend. Le budget de temps reste une
+attente côté appelant — le worker termine son image, qui alimente le cache pour
+l'affichage suivant ; seul un rendu bloqué au-delà de quatre fois le budget est
+réellement interrompu, worker compris.
 
 ---
 

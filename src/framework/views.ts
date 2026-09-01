@@ -70,6 +70,7 @@ export async function farmView(
       emoji: animal.emoji,
       animalKey: animal.animalKey,
     })),
+    buildingsPreview: herd.ownedBuildings,
   });
 
   const counts = view.counts;

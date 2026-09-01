@@ -130,6 +130,14 @@ async function main(): Promise<void> {
       { emoji: '🐄', animalKey: 'cow' },
       { emoji: '🐝', animalKey: 'bee' },
     ],
+    buildingsPreview: [
+      { key: 'house', tier: 2 },
+      { key: 'barn', tier: 3 },
+      { key: 'well', tier: 1 },
+      { key: 'greenhouse', tier: 1 },
+      { key: 'mill', tier: 2 },
+      { key: 'coop', tier: 2 },
+    ],
   });
   writeFileSync(join(outDir, 'ferme.png'), farmBuffer);
 

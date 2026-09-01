@@ -4,6 +4,13 @@
     "name": "Blé",
     "nameEn": "Wheat",
     "emoji": "🌾",
+    "form": "stalk",
+    "palette": {
+      "leaf": "#c8b062",
+      "leafDark": "#9c8542",
+      "fruit": "#f2d472",
+      "fruitDark": "#c8a63f"
+    },
     "rarity": "common",
     "seedPrice": 10,
     "growthSeconds": 300,
@@ -31,6 +38,13 @@
     "name": "Carotte",
     "nameEn": "Carrot",
     "emoji": "🥕",
+    "form": "root",
+    "palette": {
+      "leaf": "#4f9a4a",
+      "leafDark": "#356b32",
+      "fruit": "#e8862c",
+      "fruitDark": "#b1601a"
+    },
     "rarity": "common",
     "seedPrice": 14,
     "growthSeconds": 480,
@@ -57,6 +71,13 @@
     "name": "Pomme de terre",
     "nameEn": "Potato",
     "emoji": "🥔",
+    "form": "root",
+    "palette": {
+      "leaf": "#4f9a4a",
+      "leafDark": "#356b32",
+      "fruit": "#c9a06a",
+      "fruitDark": "#96733f"
+    },
     "rarity": "common",
     "seedPrice": 20,
     "growthSeconds": 720,
@@ -84,6 +105,13 @@
     "name": "Laitue",
     "nameEn": "Lettuce",
     "emoji": "🥬",
+    "form": "leafy",
+    "palette": {
+      "leaf": "#7cc24f",
+      "leafDark": "#4f8a34",
+      "fruit": "#9ed46a",
+      "fruitDark": "#6ba33f"
+    },
     "rarity": "common",
     "seedPrice": 26,
     "growthSeconds": 900,
@@ -110,6 +138,13 @@
     "name": "Maïs",
     "nameEn": "Corn",
     "emoji": "🌽",
+    "form": "tall",
+    "palette": {
+      "leaf": "#63a83f",
+      "leafDark": "#42702a",
+      "fruit": "#f5cf4e",
+      "fruitDark": "#c39a26"
+    },
     "rarity": "common",
     "seedPrice": 40,
     "growthSeconds": 1500,
@@ -136,6 +171,13 @@
     "name": "Tomate",
     "nameEn": "Tomato",
     "emoji": "🍅",
+    "form": "bush",
+    "palette": {
+      "leaf": "#4f9a4a",
+      "leafDark": "#356b32",
+      "fruit": "#e0453a",
+      "fruitDark": "#a82f27"
+    },
     "rarity": "uncommon",
     "seedPrice": 55,
     "growthSeconds": 1800,
@@ -161,6 +203,13 @@
     "name": "Concombre",
     "nameEn": "Cucumber",
     "emoji": "🥒",
+    "form": "vine",
+    "palette": {
+      "leaf": "#5c9648",
+      "leafDark": "#3d6630",
+      "fruit": "#4f9a3a",
+      "fruitDark": "#357026"
+    },
     "rarity": "uncommon",
     "seedPrice": 60,
     "growthSeconds": 2100,
@@ -186,6 +235,13 @@
     "name": "Fraise",
     "nameEn": "Strawberry",
     "emoji": "🍓",
+    "form": "bush",
+    "palette": {
+      "leaf": "#4f9a4a",
+      "leafDark": "#356b32",
+      "fruit": "#e33d4e",
+      "fruitDark": "#a72734"
+    },
     "rarity": "uncommon",
     "seedPrice": 70,
     "growthSeconds": 2400,
@@ -212,6 +268,13 @@
     "name": "Aubergine",
     "nameEn": "Eggplant",
     "emoji": "🍆",
+    "form": "bush",
+    "palette": {
+      "leaf": "#4f8a4a",
+      "leafDark": "#356b32",
+      "fruit": "#7a4a9c",
+      "fruitDark": "#523170"
+    },
     "rarity": "uncommon",
     "seedPrice": 85,
     "growthSeconds": 2700,
@@ -238,6 +301,13 @@
     "name": "Poivron",
     "nameEn": "Pepper",
     "emoji": "🫑",
+    "form": "bush",
+    "palette": {
+      "leaf": "#4f9a4a",
+      "leafDark": "#356b32",
+      "fruit": "#d94c2b",
+      "fruitDark": "#a3341a"
+    },
     "rarity": "uncommon",
     "seedPrice": 95,
     "growthSeconds": 3000,
@@ -263,6 +333,13 @@
     "name": "Melon",
     "nameEn": "Melon",
     "emoji": "🍈",
+    "form": "ground",
+    "palette": {
+      "leaf": "#5aa04c",
+      "leafDark": "#3b6c33",
+      "fruit": "#8fc74f",
+      "fruitDark": "#5e8f33"
+    },
     "rarity": "rare",
     "seedPrice": 160,
     "growthSeconds": 5400,
@@ -288,6 +365,13 @@
     "name": "Tournesol",
     "nameEn": "Sunflower",
     "emoji": "🌻",
+    "form": "tall",
+    "palette": {
+      "leaf": "#4f9a4a",
+      "leafDark": "#356b32",
+      "fruit": "#f2c33c",
+      "fruitDark": "#c2921f"
+    },
     "rarity": "rare",
     "seedPrice": 180,
     "growthSeconds": 6300,
@@ -314,6 +398,13 @@
     "name": "Pastèque",
     "nameEn": "Watermelon",
     "emoji": "🍉",
+    "form": "ground",
+    "palette": {
+      "leaf": "#4f9a4a",
+      "leafDark": "#356b32",
+      "fruit": "#3f8a33",
+      "fruitDark": "#25601f"
+    },
     "rarity": "rare",
     "seedPrice": 220,
     "growthSeconds": 7200,
@@ -339,6 +430,13 @@
     "name": "Houblon",
     "nameEn": "Hops",
     "emoji": "🌿",
+    "form": "vine",
+    "palette": {
+      "leaf": "#6ba33f",
+      "leafDark": "#47702a",
+      "fruit": "#b7cf6a",
+      "fruitDark": "#8aa246"
+    },
     "rarity": "rare",
     "seedPrice": 240,
     "growthSeconds": 7200,
@@ -365,6 +463,13 @@
     "name": "Citrouille",
     "nameEn": "Pumpkin",
     "emoji": "🎃",
+    "form": "ground",
+    "palette": {
+      "leaf": "#4a8f3f",
+      "leafDark": "#31612a",
+      "fruit": "#e8862c",
+      "fruitDark": "#b1601a"
+    },
     "rarity": "rare",
     "seedPrice": 260,
     "growthSeconds": 9000,
@@ -390,6 +495,13 @@
     "name": "Raisin",
     "nameEn": "Grape",
     "emoji": "🍇",
+    "form": "vine",
+    "palette": {
+      "leaf": "#5c9648",
+      "leafDark": "#3d6630",
+      "fruit": "#7b4bab",
+      "fruitDark": "#54317a"
+    },
     "rarity": "rare",
     "seedPrice": 300,
     "growthSeconds": 10800,
@@ -415,6 +527,13 @@
     "name": "Thé",
     "nameEn": "Tea",
     "emoji": "🍵",
+    "form": "tree",
+    "palette": {
+      "leaf": "#3f8a52",
+      "leafDark": "#2a5a37",
+      "fruit": "#86c46a",
+      "fruitDark": "#5c8f47"
+    },
     "rarity": "epic",
     "seedPrice": 460,
     "growthSeconds": 12600,
@@ -441,6 +560,13 @@
     "name": "Café",
     "nameEn": "Coffee",
     "emoji": "☕",
+    "form": "tree",
+    "palette": {
+      "leaf": "#3f7d4a",
+      "leafDark": "#2a5533",
+      "fruit": "#c0392b",
+      "fruitDark": "#8b2820"
+    },
     "rarity": "epic",
     "seedPrice": 520,
     "growthSeconds": 14400,
@@ -467,6 +593,13 @@
     "name": "Cacao",
     "nameEn": "Cacao",
     "emoji": "🍫",
+    "form": "tree",
+    "palette": {
+      "leaf": "#3f7d4a",
+      "leafDark": "#2a5533",
+      "fruit": "#b5651d",
+      "fruitDark": "#7d4413"
+    },
     "rarity": "epic",
     "seedPrice": 700,
     "growthSeconds": 18000,
@@ -492,6 +625,13 @@
     "name": "Lavande",
     "nameEn": "Lavender",
     "emoji": "🪻",
+    "form": "flower",
+    "palette": {
+      "leaf": "#6f9a72",
+      "leafDark": "#4b6b4e",
+      "fruit": "#9b7bd4",
+      "fruitDark": "#6b539c"
+    },
     "rarity": "epic",
     "seedPrice": 780,
     "growthSeconds": 16200,
@@ -518,6 +658,13 @@
     "name": "Vanille",
     "nameEn": "Vanilla",
     "emoji": "🌼",
+    "form": "flower",
+    "palette": {
+      "leaf": "#5c9648",
+      "leafDark": "#3d6630",
+      "fruit": "#f0e6c8",
+      "fruitDark": "#c9bb96"
+    },
     "rarity": "epic",
     "seedPrice": 900,
     "growthSeconds": 21600,
@@ -543,6 +690,13 @@
     "name": "Ginseng",
     "nameEn": "Ginseng",
     "emoji": "🫚",
+    "form": "root",
+    "palette": {
+      "leaf": "#4f9a4a",
+      "leafDark": "#356b32",
+      "fruit": "#d9c9a3",
+      "fruitDark": "#a89574"
+    },
     "rarity": "legendary",
     "seedPrice": 1600,
     "growthSeconds": 28800,
@@ -569,6 +723,13 @@
     "name": "Truffe",
     "nameEn": "Truffle",
     "emoji": "🍄",
+    "form": "root",
+    "palette": {
+      "leaf": "#6b5d47",
+      "leafDark": "#463c2e",
+      "fruit": "#4a3a2c",
+      "fruitDark": "#2e241b"
+    },
     "rarity": "legendary",
     "seedPrice": 2400,
     "growthSeconds": 36000,
@@ -595,6 +756,13 @@
     "name": "Safran",
     "nameEn": "Saffron",
     "emoji": "🌺",
+    "form": "flower",
+    "palette": {
+      "leaf": "#6f8a5a",
+      "leafDark": "#4a6139",
+      "fruit": "#a05fc4",
+      "fruitDark": "#71408c"
+    },
     "rarity": "legendary",
     "seedPrice": 3200,
     "growthSeconds": 43200,
@@ -620,6 +788,13 @@
     "name": "Fruit du dragon",
     "nameEn": "Dragon fruit",
     "emoji": "🐉",
+    "form": "bush",
+    "palette": {
+      "leaf": "#4a8f5a",
+      "leafDark": "#2f6039",
+      "fruit": "#e8447e",
+      "fruitDark": "#a82a56"
+    },
     "rarity": "mythic",
     "seedPrice": 6000,
     "growthSeconds": 64800,
@@ -645,6 +820,13 @@
     "name": "Lotus étoilé",
     "nameEn": "Star lotus",
     "emoji": "✨",
+    "form": "flower",
+    "palette": {
+      "leaf": "#4f9a8a",
+      "leafDark": "#33685c",
+      "fruit": "#8fd8ff",
+      "fruitDark": "#5aa3d4"
+    },
     "rarity": "mythic",
     "seedPrice": 9000,
     "growthSeconds": 86400,
@@ -673,6 +855,13 @@
     "name": "Arbre-monde",
     "nameEn": "World tree",
     "emoji": "🌳",
+    "form": "tree",
+    "palette": {
+      "leaf": "#4fae6a",
+      "leafDark": "#2f7a45",
+      "fruit": "#ffd45e",
+      "fruitDark": "#c9a12f"
+    },
     "rarity": "mythic",
     "seedPrice": 15000,
     "growthSeconds": 129600,

@@ -173,6 +173,7 @@ malformée fait échouer le lancement immédiatement, avec le nom du champ fauti
 | `RENDER_ENABLED` | `true` | `false` bascule tout en embeds texte |
 | `RENDER_CACHE_TTL` | `120` | Durée du cache d'images (s) |
 | `RENDER_TIMEOUT_MS` | `4000` | Budget de rendu avant repli texte |
+| `RENDER_WORKERS` | `2` | Threads de dessin. `0` = rendu sur le thread principal, qui bloque alors l'event loop |
 | `MAINTENANCE_MODE` | `false` | Bloque le jeu sauf `/admin` |
 | `QUEUES_ENABLED` | `true` | BullMQ ; `false` = minuteurs (mono-processus **uniquement**) |
 | `SHARDING_TOTAL` | `auto` | Nombre de shards. **Ne jamais nommer cette variable `SHARD_COUNT`** : ce nom appartient au protocole interne de discord.js. |
@@ -500,16 +501,39 @@ reste accessible.
 ```bash
 npm run dev              # rechargement à chaud (tsx watch)
 npm run typecheck        # tsc --noEmit
-npm test                 # 90 tests
+npm test                 # 129 tests — aucune infrastructure requise
+npm run test:integration # 23 tests contre un vrai PostgreSQL (voir ci-dessous)
 npm run test:watch       # mode veille
 npm run test:coverage    # couverture (seuil 70 % sur src/game/**)
 npm run db:studio        # explorateur de base Drizzle
 npm run balance:report   # tables d'équilibrage
 npm run render:preview   # écrit 4 PNG dans out/fr/
+npm run render:matrix    # cas limites : grilles 3×3 et 8×8, 4 météos
 npm run render:preview:en # les mêmes en anglais, dans out/en/
 npm run brand            # régénère l'avatar et la bannière du bot
 npm run commands:clear   # retire les commandes publiées
 ```
+
+### Tests d'intégration
+
+`npm test` ne touche NI base NI Redis : c'est ce qui permet de l'exécuter dans
+l'étape de build Docker. Mais une partie des bugs du projet ne vit pas dans la
+logique de jeu — elle vit dans le comportement du moteur : sémantique de
+`RETURNING`, portée d'un `UPDATE … FROM`, invariant `SUM(transactions) = coins`.
+Aucune relecture ne les voit. `npm run test:integration` les cible :
+
+```bash
+npm run test:integration
+```
+
+La suite crée sa PROPRE base (`<POSTGRES_DB>_test`), y applique toutes les
+migrations avec le runner du projet, puis la peuple des tables de configuration.
+Elle refuse de démarrer si le nom de base ne contient pas « test » — elle fait un
+`TRUNCATE` entre chaque test. Les identifiants viennent du `.env` ;
+`TEST_DATABASE_URL` permet de pointer ailleurs.
+
+Effet de bord utile : chaque exécution est une répétition générale des migrations
+en attente, sur une base vierge.
 
 ### Organisation du code
 
