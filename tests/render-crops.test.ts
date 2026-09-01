@@ -61,8 +61,20 @@ describe('apparence des cultures', () => {
   });
 });
 
+/**
+ * Ces deux cas mesurent du texte : sans police installée, toute largeur vaut 0
+ * et il n'y a rien à ajuster. C'est le cas de l'étape de build Docker, qui
+ * compile et teste dans une image nue — `fonts-dejavu-core` n'est installée que
+ * dans l'image finale. On saute plutôt que d'affirmer une propriété vide.
+ */
+function fontsAvailable(): boolean {
+  const { ctx } = newCanvas(10, 10);
+  ctx.font = 'bold 30px sans-serif';
+  return ctx.measureText('Ferme').width > 0;
+}
+
 describe('ajustement du texte', () => {
-  it('réduit la taille plutôt que de tronquer un nom long', () => {
+  it.skipIf(!fontsAvailable())('réduit la taille plutôt que de tronquer un nom long', () => {
     const { ctx } = newCanvas(400, 100);
     const name = 'Ferme des Trois Chênes';
     ctx.font = 'bold 30px sans-serif';
@@ -76,7 +88,7 @@ describe('ajustement du texte', () => {
     expect(ctx.measureText(name).width).toBeLessThanOrEqual(budget);
   });
 
-  it('renvoie la plus petite taille quand aucune ne suffit — au clip de finir', () => {
+  it.skipIf(!fontsAvailable())('renvoie la plus petite taille quand aucune ne suffit — au clip de finir', () => {
     const { ctx } = newCanvas(400, 100);
     const chosen = fitFont(ctx, 'La Très Grande Ferme des Trois Chênes Centenaires', 40, [30, 18, 12]);
     expect(chosen).toContain('12px');
