@@ -89,14 +89,50 @@ export const jobs: JobDefinition[] = [
     description: 'Spawns pests and applies weather damage',
     async run() {
       const balance = getBalance();
+      const config = getConfig();
       const world = await getWorldState();
       const candidates = await farmRepo.findPlotsForPestRoll(500);
       const windowMs = 2 * 3_600_000;
       let pests = 0;
       let damaged = 0;
 
+      // Les 500 parcelles d'un cycle appartiennent à bien moins de 500 fermes :
+      // on mémorise par joueur et par ferme au lieu de refaire les mêmes
+      // lectures parcelle après parcelle (4 GET Redis × 500 auparavant).
+      const repelByUser = new Map<string, boolean>();
+      const reductionByFarm = new Map<string, number>();
+
+      const repelFor = async (userId: string): Promise<boolean> => {
+        const known = repelByUser.get(userId);
+        if (known !== undefined) return known;
+        const active = await isPestRepelActive(userId);
+        repelByUser.set(userId, active);
+        return active;
+      };
+
+      /**
+       * Réduction des dégâts météo apportée par les bâtiments (la serre au
+       * premier chef). Elle était câblée à zéro : le joueur payait 90 000 pièces
+       * une protection que ce job ignorait.
+       */
+      const damageReductionFor = async (farmId: string): Promise<number> => {
+        const known = reductionByFarm.get(farmId);
+        if (known !== undefined) return known;
+        let reduction = 0;
+        for (const owned of await animalRepo.listBuildings(farmId)) {
+          const tier = config.buildings
+            .get(owned.buildingKey)
+            ?.tiers.find((entry) => entry.tier === owned.building.tier);
+          if (tier?.effect?.weatherDamageReduction !== undefined) {
+            reduction = Math.max(reduction, tier.effect.weatherDamageReduction);
+          }
+        }
+        reductionByFarm.set(farmId, reduction);
+        return reduction;
+      };
+
       for (const candidate of candidates) {
-        const repelActive = await isPestRepelActive(candidate.userId);
+        const repelActive = await repelFor(candidate.userId);
         const rng = liveRng(`pest:${candidate.plotId}`);
 
         const pest = rollPest(
@@ -130,9 +166,13 @@ export const jobs: JobDefinition[] = [
           });
         }
 
-        // Dégâts météo (orage, gel) : indépendants des nuisibles.
+        // Dégâts météo (orage, gel) : indépendants des nuisibles, mais atténués
+        // par la serre — que ce job ignorait purement et simplement.
         const damage = rollWeatherDamage(
-          { damageChance: world.weather.damageChance, damageReduction: 0 },
+          {
+            damageChance: world.weather.damageChance,
+            damageReduction: await damageReductionFor(candidate.farmId),
+          },
           rng,
         );
         if (damage > 0) {
@@ -363,24 +403,38 @@ export const jobs: JobDefinition[] = [
     cron: '0 3 * * *',
     description: 'Pays daily bank interest',
     async run() {
+      // Solde minimal en dessous duquel l'intérêt s'arrondirait à zéro : ces
+      // comptes doivent être écartés par le SQL, sinon ils monopolisent le lot
+      // en revenant chaque jour sans que leur échéance n'avance jamais.
+      const rate = getBalance().bank.tiers[0]?.interestRate ?? 0.01;
+      const minimumBalance = Math.max(1, Math.ceil(1 / Math.max(rate, 0.0001)));
+
       const accounts = await economyRepo.findAccountsForInterest(
         new Date(Date.now() - 86_400_000),
         500,
+        minimumBalance,
       );
       const now = new Date();
+      const { withTransaction } = await import('../db/client');
       let total = 0;
+      let skipped = 0;
 
       for (const account of accounts) {
         const raw = Math.floor(account.balance * Number(account.interestRate));
         const interest = Math.min(raw, account.interestCap);
-        if (interest <= 0) continue;
-        const { withTransaction } = await import('../db/client');
+        if (interest <= 0) {
+          // Échéance repoussée quand même : sans cela le compte est re-servi
+          // demain, et après-demain, à la place d'un compte éligible.
+          await economyRepo.skipInterest(account.id, now);
+          skipped += 1;
+          continue;
+        }
         await withTransaction(async (tx) => {
           await economyRepo.applyInterest(account.id, interest, now, tx);
         });
         total += interest;
       }
-      return `${accounts.length} accounts, ${total} coins of interest`;
+      return `${accounts.length} accounts, ${total} coins of interest, ${skipped} skipped`;
     },
   },
 

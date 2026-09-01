@@ -561,14 +561,27 @@ const passButtons: ButtonHandler = {
     let gems = 0;
     let claimed = 0;
     for (const tier of pass.tiers) {
-      if (tier.tier > pass.tier || pass.claimedTiers.includes(tier.tier)) continue;
-      try {
-        const result = await progressionService.claimPassTier(context.player, tier.tier, false);
-        coins += result.coins;
-        gems += result.gems;
-        claimed += 1;
-      } catch {
-        /* palier déjà réclamé */
+      if (tier.tier > pass.tier) continue;
+
+      // Voie gratuite, puis voie premium quand le joueur y a droit. La seconde
+      // était codée en dur à `false` : même une fois le premium débloqué, la
+      // moitié des récompenses restait hors de portée de « tout réclamer ».
+      const tracks: boolean[] = pass.premium ? [false, true] : [false];
+      for (const premium of tracks) {
+        const already = premium ? pass.claimedPremiumTiers : pass.claimedTiers;
+        if (already.includes(tier.tier)) continue;
+        try {
+          const result = await progressionService.claimPassTier(
+            context.player,
+            tier.tier,
+            premium,
+          );
+          coins += result.coins;
+          gems += result.gems;
+          claimed += 1;
+        } catch {
+          /* palier déjà réclamé, ou voie non débloquée */
+        }
       }
     }
 

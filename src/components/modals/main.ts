@@ -22,6 +22,34 @@ const log = moduleLogger('modals');
  * quelle chaîne, y compris depuis un script.
  */
 
+/**
+ * Étiquette de coopérative dérivée du nom.
+ *
+ * Le nom accepte tout l'alphabet Unicode (`\p{L}`), mais l'étiquette est limitée
+ * à 2-5 caractères alphanumériques ASCII. Un nom entièrement cyrillique ou
+ * arabe se réduisait donc à une chaîne vide, et TOUTES ces coopératives
+ * retombaient sur le même repli « COOP » : la deuxième échouait sur « étiquette
+ * déjà prise », avec un message parlant d'un champ que le joueur n'a jamais vu.
+ *
+ * On translittère d'abord les diacritiques, puis on complète par des chiffres
+ * aléatoires quand il ne reste pas assez de caractères utilisables.
+ */
+export function deriveTag(name: string): string {
+  const ascii = name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]/g, '')
+    .slice(0, 5)
+    .toUpperCase();
+
+  if (ascii.length >= 2) return ascii;
+
+  const filler = Math.floor(Math.random() * 10_000)
+    .toString()
+    .padStart(4, '0');
+  return `${ascii}${filler}`.slice(0, 5);
+}
+
 function parseQuantity(t: Translator, raw: string, max = 100_000): number {
   const cleaned = raw.trim().toLowerCase().replace(/\s|_/g, '');
   if (cleaned === 'tout' || cleaned === 'all' || cleaned === 'max') return max;
@@ -75,13 +103,7 @@ const coopCreate: ModalHandler = {
   async execute(interaction: ModalSubmitInteraction, _parsed, context): Promise<void> {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const name = interaction.fields.getTextInputValue('name').trim();
-    // L'étiquette est dérivée du nom : trois premières lettres alphanumériques.
-    const tag = name
-      .replace(/[^A-Za-z0-9]/g, '')
-      .slice(0, 4)
-      .toUpperCase() || 'COOP';
-
-    const info = await coopService.createCoop(context.player, { name, tag });
+    const info = await coopService.createCoop(context.player, { name, tag: deriveTag(name) });
     await interaction.editReply({
       embeds: [
         successEmbed(

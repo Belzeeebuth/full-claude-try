@@ -611,15 +611,42 @@
     "tips_field": "💡 Le saviez-vous ?",
     "tips_value": "• La météo est commune à tout le village : les jours de pluie, l'arrosage est gratuit.\n• Les prix du marché baissent quand tout le monde vend la même chose.\n• Une coopérative accorde des bonus permanents à tous ses membres.",
     "category": {
-      "demarrage": { "label": "Démarrage", "description": "Créez et configurez votre ferme" },
-      "agriculture": { "label": "Agriculture", "description": "Planter, arroser, récolter" },
-      "elevage": { "label": "Élevage", "description": "Animaux, bâtiments, production" },
-      "inventaire": { "label": "Inventaire", "description": "Objets, artisanat, transformation" },
-      "economie": { "label": "Économie", "description": "Boutique, marché, banque, échanges" },
-      "progression": { "label": "Progression", "description": "Quêtes, succès, passe, prestige" },
-      "social": { "label": "Social", "description": "Coopératives, classements, visites" },
-      "monde": { "label": "Monde", "description": "Météo, saisons, événements" },
-      "admin": { "label": "Administration", "description": "Commandes réservées au staff" }
+      "demarrage": {
+        "label": "Démarrage",
+        "description": "Créez et configurez votre ferme"
+      },
+      "agriculture": {
+        "label": "Agriculture",
+        "description": "Planter, arroser, récolter"
+      },
+      "elevage": {
+        "label": "Élevage",
+        "description": "Animaux, bâtiments, production"
+      },
+      "inventaire": {
+        "label": "Inventaire",
+        "description": "Objets, artisanat, transformation"
+      },
+      "economie": {
+        "label": "Économie",
+        "description": "Boutique, marché, banque, échanges"
+      },
+      "progression": {
+        "label": "Progression",
+        "description": "Quêtes, succès, passe, prestige"
+      },
+      "social": {
+        "label": "Social",
+        "description": "Coopératives, classements, visites"
+      },
+      "monde": {
+        "label": "Monde",
+        "description": "Météo, saisons, événements"
+      },
+      "admin": {
+        "label": "Administration",
+        "description": "Commandes réservées au staff"
+      }
     }
   },
   "tutorial": {
@@ -1305,8 +1332,8 @@
     "webhook_deleted_title": "Webhook supprimé",
     "webhook_deleted_body": "Il ne recevra plus aucun évènement.",
     "webhook_test_ok_title": "✅ Test réussi",
-    "webhook_test_ok_body": "Votre point de terminaison a répondu (HTTP {status}).",
+    "webhook_test_ok_body": "Votre point de terminaison a bien reçu la livraison de test.",
     "webhook_test_failed_title": "❌ Test échoué",
-    "webhook_test_failed_body": "Livraison impossible : {error}"
+    "webhook_test_failed_body": "La livraison de test n'a pas abouti. Vérifiez que l'adresse est publique, en HTTPS, et qu'elle répond en moins de quelques secondes."
   }
 }

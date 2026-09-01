@@ -1,4 +1,5 @@
 import { createHmac, randomBytes } from 'node:crypto';
+import { lookup } from 'node:dns/promises';
 import { balance as getBalance } from '../config';
 import { gameError } from '../utils/errors';
 import { moduleLogger } from '../utils/logger';
@@ -6,6 +7,8 @@ import * as webhookRepo from '../repositories/webhook.repo';
 import type { PlayerContext } from '../types';
 
 const log = moduleLogger('webhook');
+
+const dnsLookup = lookup;
 
 /**
  * Webhooks sortants (v3.2 — API publique).
@@ -31,10 +34,77 @@ export function signPayload(secret: string, body: string): string {
   return createHmac('sha256', secret).update(body).digest('hex');
 }
 
+/**
+ * ---------------------------------------------------------------------------
+ * DÉFENSE ANTI-SSRF
+ * ---------------------------------------------------------------------------
+ * L'URL d'un webhook est fournie par un JOUEUR, et le bot la contacte depuis
+ * l'intérieur du réseau Docker. Sans filtrage, n'importe qui pouvait enregistrer
+ * `http://harvester-db:5432`, `http://127.0.0.1:3001/metrics` ou
+ * `http://169.254.169.254/` puis lire le résultat via `/webhook test` : un
+ * scanner de l'infrastructure offert à tous les joueurs.
+ *
+ * Trois barrières, nécessaires ENSEMBLE :
+ *  1. HTTPS seul — un `http://` en clair vers une IP interne n'a aucun usage
+ *     légitime pour un webhook public ;
+ *  2. résolution DNS puis refus des plages privées, AVANT la requête — filtrer
+ *     sur le nom d'hôte ne sert à rien, `evil.com` peut pointer sur 127.0.0.1 ;
+ *  3. `redirect: 'manual'` — sans quoi une redirection 302 contourne les deux
+ *     premières.
+ */
+
+/** Adresse hors de portée d'un webhook : boucle locale, réseaux privés, métadonnées cloud. */
+function isBlockedAddress(address: string, family: number): boolean {
+  if (family === 6) {
+    const normalized = address.toLowerCase().replace(/^\[|\]$/g, '');
+    if (normalized === '::1' || normalized === '::') return true;
+    // Adresses locales uniques (fc00::/7) et lien-local (fe80::/10).
+    if (/^f[cd]/.test(normalized) || /^fe[89ab]/.test(normalized)) return true;
+    // IPv4 encapsulée : on retombe sur les règles v4.
+    const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(normalized);
+    if (mapped?.[1]) return isBlockedAddress(mapped[1], 4);
+    return false;
+  }
+
+  const octets = address.split('.').map((part) => Number.parseInt(part, 10));
+  if (octets.length !== 4 || octets.some((octet) => !Number.isInteger(octet))) return true;
+  const [a = 0, b = 0] = octets;
+
+  if (a === 0) return true;                          // 0.0.0.0/8
+  if (a === 10) return true;                         // privé
+  if (a === 127) return true;                        // boucle locale
+  if (a === 169 && b === 254) return true;           // lien-local + métadonnées cloud
+  if (a === 172 && b >= 16 && b <= 31) return true;  // privé
+  if (a === 192 && b === 168) return true;           // privé
+  if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+  if (a >= 224) return true;                         // multicast et réservé
+  return false;
+}
+
+/** Forme de l'URL. La résolution DNS, elle, est vérifiée juste avant l'envoi. */
 function isValidWebhookUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+    if (parsed.protocol !== 'https:') return false;
+    if (parsed.username || parsed.password) return false;
+    return parsed.hostname.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Vérifie qu'un hôte ne résout QUE vers des adresses publiques.
+ *
+ * Contrôlé à chaque envoi, et non seulement à l'inscription : un nom de domaine
+ * accepté aujourd'hui peut être repointé vers 127.0.0.1 demain (« DNS
+ * rebinding »). Un refus de résolution bloque, plutôt que de laisser passer.
+ */
+async function resolvesToPublicAddress(hostname: string): Promise<boolean> {
+  try {
+    const records = await dnsLookup(hostname, { all: true, verbatim: true });
+    if (records.length === 0) return false;
+    return records.every((record) => !isBlockedAddress(record.address, record.family));
   } catch {
     return false;
   }
@@ -53,7 +123,14 @@ export async function subscribe(
   }
 
   if (!isValidWebhookUrl(url) || url.length > 500) {
-    throw gameError('target_invalid', 'Invalid webhook URL.', { i18nKey: 'errors.webhook.invalid_url' });
+    throw gameError('target_invalid', 'Invalid webhook URL.', {
+      i18nKey: 'errors.webhook.invalid_url',
+    });
+  }
+  if (!(await resolvesToPublicAddress(new URL(url).hostname))) {
+    throw gameError('target_invalid', 'This address is not reachable.', {
+      i18nKey: 'errors.webhook.invalid_url',
+    });
   }
   const uniqueEvents = [...new Set(events)];
   if (uniqueEvents.length === 0 || uniqueEvents.some((event) => !WEBHOOK_EVENT_TYPES.includes(event as WebhookEventType))) {
@@ -101,6 +178,16 @@ interface DeliveryOutcome {
 
 async function deliver(url: string, secret: string, eventType: string, payload: unknown): Promise<DeliveryOutcome> {
   const balance = getBalance();
+
+  if (!isValidWebhookUrl(url)) {
+    return { ok: false, error: 'blocked_url' };
+  }
+  const target = new URL(url);
+  if (!(await resolvesToPublicAddress(target.hostname))) {
+    log.warn({ hostname: target.hostname }, 'webhook vers une adresse non publique, bloqué');
+    return { ok: false, error: 'blocked_address' };
+  }
+
   const body = JSON.stringify({ event: eventType, data: payload, sentAt: new Date().toISOString() });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), balance.api.webhookTimeoutMs);
@@ -109,6 +196,8 @@ async function deliver(url: string, secret: string, eventType: string, payload: 
     const response = await fetch(url, {
       method: 'POST',
       signal: controller.signal,
+      // Une redirection contournerait le contrôle d'adresse ci-dessus.
+      redirect: 'manual',
       headers: {
         'content-type': 'application/json',
         'x-harvester-event': eventType,
@@ -127,13 +216,25 @@ async function deliver(url: string, secret: string, eventType: string, payload: 
   }
 }
 
-/** Envoi immédiat, hors file, pour que le joueur vérifie son point de terminaison. */
-export async function sendTestPing(player: PlayerContext, id: string): Promise<DeliveryOutcome> {
+/**
+ * Envoi immédiat, hors file, pour que le joueur vérifie son point de terminaison.
+ *
+ * Ne renvoie qu'un booléen : rendre le statut HTTP et le message d'erreur bruts
+ * transformait cette commande en scanner de ports — la différence entre
+ * « connexion refusée », « expiré » et « 200 » suffit à cartographier un réseau.
+ */
+export async function sendTestPing(
+  player: PlayerContext,
+  id: string,
+): Promise<{ ok: boolean }> {
   const subscription = await webhookRepo.findSubscription(player.id, id);
   if (!subscription) {
     throw gameError('not_found', 'Webhook not found.', { i18nKey: 'errors.webhook.not_found' });
   }
-  return deliver(subscription.url, subscription.secret, 'ping', { message: 'Test delivery from Harvester.' });
+  const outcome = await deliver(subscription.url, subscription.secret, 'ping', {
+    message: 'Test delivery from Harvester.',
+  });
+  return { ok: outcome.ok };
 }
 
 /** Met en file un évènement pour chaque abonnement actif du joueur qui l'écoute. */

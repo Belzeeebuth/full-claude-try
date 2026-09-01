@@ -290,12 +290,15 @@ export async function buyout(
       { allowOverflow: true },
     );
 
-    // Remboursement de l'éventuel enchérisseur évincé par l'achat immédiat.
-    if (listing.currentBidderId && listing.currentBid) {
+    // L'achat immédiat évince TOUS les enchérisseurs, y compris celui en tête :
+    // on rend l'intégralité du séquestre encore dû, en s'appuyant sur
+    // `auction_bids` plutôt que sur les colonnes de l'annonce.
+    const escrowed = await tradeRepo.findUnrefundedBids(listing.id, tx, true);
+    for (const escrow of escrowed) {
       await economyService.pay(
         {
-          userId: listing.currentBidderId,
-          amount: listing.currentBid,
+          userId: escrow.bidderId,
+          amount: escrow.amount,
           type: 'auction_refund',
           referenceType: 'auction',
           referenceId: listing.id,
@@ -303,6 +306,10 @@ export async function buyout(
         tx,
       );
     }
+    await tradeRepo.markBidsRefunded(
+      escrowed.map((escrow) => escrow.id),
+      tx,
+    );
 
     await trackAction(
       { userId: listing.sellerId, coopId: null, level: 1 },
@@ -374,25 +381,33 @@ export async function bid(
       tx,
     );
 
-    const result = await tradeRepo.placeBid(listing.id, player.id, amount, minimum, tx);
+    const result = await tradeRepo.placeBid(listing.id, player.id, amount, tx);
     if (!result) {
       throw gameError('busy', 'A higher bid was just placed.', {
         i18nKey: 'errors.trade.higher_bid_placed',
       });
     }
 
-    if (result.previousBidderId && result.previousBid) {
+    // Remboursement des mises détrônées, MARQUÉES dans la même transaction.
+    // Le marquage n'est pas cosmétique : `closeExpiredListings` rembourse toute
+    // mise non marquée, donc rembourser sans marquer paie deux fois.
+    const refundedBidIds: number[] = [];
+    for (const outbid of result.outbid) {
+      if (outbid.refunded) continue;
       await economyService.pay(
         {
-          userId: result.previousBidderId,
-          amount: result.previousBid,
+          userId: outbid.bidderId,
+          amount: outbid.amount,
           type: 'auction_refund',
           referenceType: 'auction',
           referenceId: listing.id,
         },
         tx,
       );
+      refundedBidIds.push(outbid.id);
     }
+    await tradeRepo.markBidsRefunded(refundedBidIds, tx);
+    const previousBidderId = result.outbid[0]?.bidderId ?? null;
 
     // Anti-snipe : une mise dans les dernières minutes prolonge l'enchère, ce qui
     // évite qu'un joueur ne remporte tout en misant à la dernière seconde.
@@ -409,7 +424,7 @@ export async function bid(
       );
     }
 
-    return { amount, previousBidderId: result.previousBidderId, expiresAt };
+    return { amount, previousBidderId, expiresAt };
   });
 }
 
@@ -555,8 +570,10 @@ export async function closeExpiredListings(limit = 50): Promise<{ sold: number; 
         returned += 1;
       }
 
-      // Remboursement des mises perdantes.
-      const losing = await tradeRepo.findUnrefundedLosingBids(locked.id, tx);
+      // Remboursement des mises perdantes. La mise gagnante, elle, finance le
+      // vendeur : `findUnrefundedBids` l'exclut tant qu'on ne demande pas
+      // explicitement de l'inclure.
+      const losing = await tradeRepo.findUnrefundedBids(locked.id, tx);
       for (const losingBid of losing) {
         await economyService.pay(
           {

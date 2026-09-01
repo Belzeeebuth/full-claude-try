@@ -21,6 +21,8 @@ import * as economyRepo from '../repositories/economy.repo';
 import * as inventoryRepo from '../repositories/inventory.repo';
 import * as playerRepo from '../repositories/player.repo';
 import * as progressionRepo from '../repositories/progression.repo';
+import { activeBoosts } from './consumable.service';
+import { readCachedModifiers, writeCachedModifiers } from './modifier-cache';
 import { getWorldState, globalMultipliers } from './world.service';
 import type { PlayerContext } from '../types';
 
@@ -145,7 +147,7 @@ async function createPlayer(input: EnsurePlayerInput): Promise<PlayerContext> {
     // seulement la ligne comptable correspondante pour que l'égalité
     // « solde = somme du journal » soit vraie dès la création.
     const startingCoins = balance.economy.startingCoins + startingBonus;
-    await economyRepo.recordGenesisLedger(
+    await economyRepo.recordDirectBalanceLedger(
       {
         userId: user.id,
         type: 'starting_bonus',
@@ -390,11 +392,25 @@ export async function consumeEnergy(
 /**
  * Assemble les modificateurs actifs d'un joueur.
  *
- * Coûteux (4 requêtes) mais mis en cache 60 s : les bâtiments, outils et animaux
- * ne changent pas d'une seconde à l'autre, alors qu'une session de jeu enchaîne
- * plusieurs actions qui en ont besoin.
+ * Coûteux (4 requêtes plus les boosts Redis), donc mis en cache 60 s : les
+ * bâtiments, outils et animaux ne changent pas d'une seconde à l'autre, alors
+ * qu'une session enchaîne plusieurs actions qui en ont besoin. Le cache est
+ * invalidé explicitement par les actions qui modifient ces sources.
  */
 export async function getFarmModifiers(
+  player: { id: string; farmId: string; prestige: number; coopId: string | null },
+  options: { coopLevel?: number; now?: Date } = {},
+): Promise<FarmModifiers> {
+  const coopLevel = options.coopLevel ?? 0;
+  const hit = await readCachedModifiers(player.id, coopLevel);
+  if (hit) return hit;
+
+  const modifiers = await computeFarmModifiers(player, { ...options, coopLevel });
+  await writeCachedModifiers(player.id, coopLevel, modifiers);
+  return modifiers;
+}
+
+async function computeFarmModifiers(
   player: { id: string; farmId: string; prestige: number; coopId: string | null },
   options: { coopLevel?: number; now?: Date } = {},
 ): Promise<FarmModifiers> {
@@ -403,10 +419,11 @@ export async function getFarmModifiers(
   const world = await getWorldState(options.now);
   const globals = globalMultipliers();
 
-  const [buildings, animals, tools] = await Promise.all([
+  const [buildings, animals, tools, boosts] = await Promise.all([
     animalRepo.listBuildings(player.farmId),
     animalRepo.listAnimals(player.farmId),
     inventoryRepo.listInventory(player.id, { category: 'tool' }),
+    activeBoosts(player.id),
   ]);
 
   const animalCounts = new Map<string, number>();
@@ -438,7 +455,10 @@ export async function getFarmModifiers(
       .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined),
     coopLevel: options.coopLevel ?? 0,
     prestige: player.prestige,
-    activeBoosts: [],
+    // Les boosts consommables étaient câblés à `[]` : les potions d'XP, de
+    // croissance et de chance étaient écrites dans Redis, annoncées au joueur,
+    // et n'avaient aucun effet. `buildModifiers` sait déjà les appliquer.
+    activeBoosts: boosts,
     eventModifiers: {
       xpMultiplier: world.eventModifiers.xpMultiplier,
       growthMultiplier: world.eventModifiers.growthMultiplier,

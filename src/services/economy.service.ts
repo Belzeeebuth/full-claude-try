@@ -48,6 +48,11 @@ export async function pay(input: PayInput, tx: Executor): Promise<number> {
       unitPrice: input.unitPrice,
       counterpartyId: input.counterpartyId,
       discordGuildId: input.discordGuildId,
+      // Ces deux champs étaient acceptés par `PayInput` puis silencieusement
+      // abandonnés : la traçabilité vers l'enchère ou la quête d'origine,
+      // pourtant documentée, n'arrivait jamais jusqu'au journal.
+      referenceType: input.referenceType,
+      referenceId: input.referenceId,
       metadata: input.metadata,
     },
     tx,
@@ -71,6 +76,8 @@ export async function charge(input: PayInput, tx: Executor): Promise<number> {
       unitPrice: input.unitPrice,
       counterpartyId: input.counterpartyId,
       discordGuildId: input.discordGuildId,
+      referenceType: input.referenceType,
+      referenceId: input.referenceId,
       metadata: input.metadata,
     },
     tx,

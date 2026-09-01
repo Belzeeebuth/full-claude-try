@@ -344,7 +344,10 @@ export async function tradeView(
         color: COLORS.info,
         fields: [
           {
-            name: `${trade.initiatorConfirmed && isInitiator ? '✅' : '⬜'} ${t('trade.your_offer_field')}`,
+            // « Votre offre » doit refléter LA confirmation du spectateur : le
+            // test précédent ne s'allumait que pour l'initiateur, si bien que le
+            // partenaire ne voyait jamais sa propre coche.
+            name: `${(isInitiator ? trade.initiatorConfirmed : trade.partnerConfirmed) ? '✅' : '⬜'} ${t('trade.your_offer_field')}`,
             value: format(mine, isInitiator ? trade.initiatorCoins : trade.partnerCoins),
             inline: true,
           },

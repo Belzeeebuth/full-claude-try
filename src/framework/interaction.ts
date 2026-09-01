@@ -11,7 +11,7 @@ import {
 import { balance as getBalance, getConfig } from '../config';
 import { env } from '../config/env';
 import { translate, translatorFor, normalizeLocale } from '../i18n';
-import { ensurePlayer } from '../services/player.service';
+import { assertNotEcoBanned, ensurePlayer } from '../services/player.service';
 import { getMaintenance } from '../services/misc.service';
 import { MaintenanceError, isGameError, toError } from '../utils/errors';
 import { LockBusyError } from '../utils/lock';
@@ -39,6 +39,31 @@ export interface BuildContextOptions {
   referralCode?: string;
 }
 
+/**
+ * Commandes restant accessibles à un joueur banni de l'économie.
+ *
+ * Le bannissement doit couper les ACTIONS, pas l'information : quelqu'un de
+ * sanctionné doit pouvoir lire pourquoi, consulter son profil et la
+ * documentation de jeu. Tout le reste — y compris les composants, qui sont des
+ * actions déguisées en boutons — est refusé.
+ */
+const ECO_BAN_READONLY = new Set([
+  'help',
+  'profile',
+  'stats',
+  'settings',
+  'lang',
+  'crops',
+  'encyclopedia',
+  'recipes',
+  'item',
+  'leaderboard',
+  'season',
+  'weather',
+  'tutorial',
+  'achievements',
+]);
+
 export async function buildContext(
   interaction: Interaction,
   options: BuildContextOptions = {},
@@ -65,6 +90,14 @@ export async function buildContext(
       return guestContext(interaction);
     }
     return null;
+  }
+
+  // Bannissement économique. `assertNotEcoBanned` existait mais n'avait aucun
+  // appelant : `/admin eco-ban` comme les bannissements automatiques de
+  // `flagSuspicion` n'écrivaient qu'une date en base, sans le moindre effet.
+  const commandName = interaction.isChatInputCommand() ? interaction.commandName : undefined;
+  if (!commandName || !ECO_BAN_READONLY.has(commandName)) {
+    assertNotEcoBanned(result.player);
   }
 
   const locale = normalizeLocale(result.player.locale);

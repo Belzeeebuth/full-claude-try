@@ -838,15 +838,42 @@
     "tips_field": "💡 Did you know?",
     "tips_value": "• Weather is shared by the whole village: on rainy days, watering is free.\n• Market prices fall when everyone sells the same thing.\n• A co-op grants permanent bonuses to all its members.",
     "category": {
-      "demarrage": { "label": "Getting started", "description": "Create and configure your farm" },
-      "agriculture": { "label": "Farming", "description": "Plant, water, harvest" },
-      "elevage": { "label": "Livestock", "description": "Animals, buildings, production" },
-      "inventaire": { "label": "Inventory", "description": "Items, crafting, processing" },
-      "economie": { "label": "Economy", "description": "Shop, market, bank, trading" },
-      "progression": { "label": "Progression", "description": "Quests, achievements, pass, prestige" },
-      "social": { "label": "Social", "description": "Co-ops, leaderboards, visits" },
-      "monde": { "label": "World", "description": "Weather, seasons, events" },
-      "admin": { "label": "Administration", "description": "Staff-only commands" }
+      "demarrage": {
+        "label": "Getting started",
+        "description": "Create and configure your farm"
+      },
+      "agriculture": {
+        "label": "Farming",
+        "description": "Plant, water, harvest"
+      },
+      "elevage": {
+        "label": "Livestock",
+        "description": "Animals, buildings, production"
+      },
+      "inventaire": {
+        "label": "Inventory",
+        "description": "Items, crafting, processing"
+      },
+      "economie": {
+        "label": "Economy",
+        "description": "Shop, market, bank, trading"
+      },
+      "progression": {
+        "label": "Progression",
+        "description": "Quests, achievements, pass, prestige"
+      },
+      "social": {
+        "label": "Social",
+        "description": "Co-ops, leaderboards, visits"
+      },
+      "monde": {
+        "label": "World",
+        "description": "Weather, seasons, events"
+      },
+      "admin": {
+        "label": "Administration",
+        "description": "Staff-only commands"
+      }
     }
   },
   "tutorial": {
@@ -1305,8 +1332,8 @@
     "webhook_deleted_title": "Webhook deleted",
     "webhook_deleted_body": "It will no longer receive any events.",
     "webhook_test_ok_title": "✅ Test succeeded",
-    "webhook_test_ok_body": "Your endpoint responded (HTTP {status}).",
+    "webhook_test_ok_body": "Your endpoint received the test delivery.",
     "webhook_test_failed_title": "❌ Test failed",
-    "webhook_test_failed_body": "Delivery failed: {error}"
+    "webhook_test_failed_body": "The test delivery did not go through. Check that the address is public, uses HTTPS, and answers within a few seconds."
   }
 }

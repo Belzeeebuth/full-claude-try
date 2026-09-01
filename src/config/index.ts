@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
+import { env } from './env';
 import { moduleLogger } from '../utils/logger';
 import {
   achievementSchema,
@@ -363,8 +364,45 @@ function validateReferences(config: Omit<GameConfig, 'loadedAt'>): void {
   }
 }
 
+/**
+ * Applique les surcharges d'environnement à l'équilibrage.
+ *
+ * `SEASON_LENGTH_DAYS`, `MARKET_UPDATE_MINUTES` et `ENERGY_SYSTEM_ENABLED`
+ * étaient déclarées et validées dans `env.ts`, documentées dans les commentaires
+ * du code de jeu — `energy.ts` annonce noir sur blanc que le système est
+ * « désactivable par `ENERGY_SYSTEM_ENABLED=false` » — et lues NULLE PART. Tout
+ * passait par `balance.json`.
+ *
+ * La surcharge ne s'applique que si la variable est RÉELLEMENT présente dans
+ * l'environnement : sinon la valeur par défaut du schéma écraserait
+ * silencieusement le fichier d'équilibrage, ce qui reproduirait le problème dans
+ * l'autre sens.
+ */
+function applyEnvOverrides(balance: Balance): Balance {
+  const isSet = (name: string): boolean => {
+    const raw = process.env[name];
+    return raw !== undefined && raw !== '';
+  };
+
+  return {
+    ...balance,
+    seasons: {
+      ...balance.seasons,
+      ...(isSet('SEASON_LENGTH_DAYS') ? { lengthDays: env.SEASON_LENGTH_DAYS } : {}),
+    },
+    market: {
+      ...balance.market,
+      ...(isSet('MARKET_UPDATE_MINUTES') ? { updateMinutes: env.MARKET_UPDATE_MINUTES } : {}),
+    },
+    energy: {
+      ...balance.energy,
+      ...(isSet('ENERGY_SYSTEM_ENABLED') ? { enabled: env.ENERGY_SYSTEM_ENABLED } : {}),
+    },
+  };
+}
+
 function build(): GameConfig {
-  const balance = balanceSchema.parse(readJson('balance.json'));
+  const balance = applyEnvOverrides(balanceSchema.parse(readJson('balance.json')));
   const cropList = parseArray('crops.json', cropSchema).sort((a, b) => a.sortOrder - b.sortOrder);
   const animalList = parseArray('animals.json', animalSchema).sort(
     (a, b) => a.sortOrder - b.sortOrder,

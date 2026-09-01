@@ -6,6 +6,7 @@ import {
   itemsConfig,
   marketPriceHistory,
   marketPrices,
+  shopPurchases,
   shopStock,
   transactions,
   users,
@@ -112,13 +113,19 @@ export async function debit(
 }
 
 /**
- * Écrit une ligne de journal SANS toucher au solde.
- * Réservé au cas « genèse » : la création d'un joueur pose son solde de départ
- * directement dans `INSERT INTO users`, il faut donc la ligne comptable
- * correspondante pour que `SUM(transactions) = users.coins` reste vrai dès la
- * première seconde. Tout autre usage serait un bug.
+ * Écrit une ligne de journal pour un solde posé DIRECTEMENT par un `INSERT` ou
+ * un `UPDATE`, sans passer par `credit`/`debit`.
+ *
+ * Deux cas seulement, et pas un de plus :
+ *  - la CRÉATION d'un joueur, dont le solde de départ vient de l'`INSERT` ;
+ *  - le PRESTIGE, qui ramène le solde à une fraction de sa valeur.
+ *
+ * Dans les deux cas `amount` est la VARIATION du solde — négative au prestige,
+ * qui détruit des pièces — et jamais le solde lui-même : c'est la somme des
+ * variations que compare `SUM(transactions.amount) = users.coins`. Y écrire le
+ * solde entier créait un écart permanent, signalé en boucle par l'audit horaire.
  */
-export async function recordGenesisLedger(
+export async function recordDirectBalanceLedger(
   entry: LedgerEntry & { amount: number; balanceAfter: number },
   executor: Executor,
 ): Promise<void> {
@@ -252,18 +259,52 @@ export async function upgradeBankTier(
 }
 
 /** Comptes éligibles aux intérêts (job quotidien). */
+/**
+ * Comptes éligibles aux intérêts (job quotidien).
+ *
+ * Le filtre porte sur un solde MINIMUM et non sur « > 0 » : un compte dont
+ * l'intérêt s'arrondit à zéro était re-sélectionné chaque jour, en tête de tri,
+ * et consommait indéfiniment la limite du lot. Passé quelques centaines de
+ * petits comptes, plus personne ne touchait d'intérêts.
+ */
 export async function findAccountsForInterest(
   before: Date,
   limit: number,
+  minimumBalance: number,
   executor: Executor = getDb(),
 ) {
   return executor
     .select()
     .from(bankAccounts)
-    .where(and(lte(bankAccounts.lastInterestAt, before), sql`${bankAccounts.balance} > 0`))
+    .where(
+      and(
+        lte(bankAccounts.lastInterestAt, before),
+        gte(bankAccounts.balance, Math.max(1, minimumBalance)),
+      ),
+    )
+    .orderBy(asc(bankAccounts.lastInterestAt))
     .limit(limit);
 }
 
+/** Repousse l'échéance sans verser d'intérêt (montant arrondi à zéro). */
+export async function skipInterest(
+  accountId: string,
+  now: Date,
+  executor: Executor = getDb(),
+): Promise<void> {
+  await executor
+    .update(bankAccounts)
+    .set({ lastInterestAt: now, updatedAt: now })
+    .where(eq(bankAccounts.id, accountId));
+}
+
+/**
+ * Verse les intérêts, plafonnés par la capacité du coffre.
+ *
+ * `total_interest` n'additionne que la part RÉELLEMENT créditée : additionner le
+ * montant brut alors que le solde est écrêté par `LEAST` faisait diverger les
+ * deux compteurs sur les comptes pleins.
+ */
 export async function applyInterest(
   accountId: string,
   amount: number,
@@ -274,7 +315,7 @@ export async function applyInterest(
     .update(bankAccounts)
     .set({
       balance: sql`LEAST(${bankAccounts.balance} + ${amount}, ${bankAccounts.capacity})`,
-      totalInterest: sql`${bankAccounts.totalInterest} + ${amount}`,
+      totalInterest: sql`${bankAccounts.totalInterest} + GREATEST(0, LEAST(${amount}, ${bankAccounts.capacity} - ${bankAccounts.balance}))`,
       lastInterestAt: now,
       updatedAt: now,
     })
@@ -339,6 +380,13 @@ export async function listMarket(
     .where(and(...conditions))
     .orderBy(asc(itemsConfig.sortOrder))
     .limit(options.limit ?? 200);
+}
+
+/** Toutes les lignes de marché, avec les champs nécessaires au recalcul horaire. */
+export async function listMarketPrices(
+  executor: Executor = getDb(),
+): Promise<MarketPriceRow[]> {
+  return executor.select().from(marketPrices);
 }
 
 export async function recordSaleVolume(
@@ -491,6 +539,43 @@ export async function reserveShopStock(
   return (result.rowCount ?? 0) > 0;
 }
 
+/**
+ * Quantité déjà achetée par un joueur sur un article du jour.
+ * Appelé sous le verrou de la ligne joueur (`lockUserRow` dans `buy()`), donc
+ * la lecture puis l'écriture ne peuvent pas s'entrelacer pour un même joueur.
+ */
+export async function countUserPurchases(
+  userId: string,
+  shopStockId: string,
+  executor: Executor = getDb(),
+): Promise<number> {
+  const [row] = await executor
+    .select({ quantity: shopPurchases.quantity })
+    .from(shopPurchases)
+    .where(and(eq(shopPurchases.userId, userId), eq(shopPurchases.shopStockId, shopStockId)))
+    .limit(1);
+  return row?.quantity ?? 0;
+}
+
+/** Incrémente le compteur d'achats du joueur pour cet article. */
+export async function recordUserPurchase(
+  userId: string,
+  shopStockId: string,
+  quantity: number,
+  executor: Executor,
+): Promise<void> {
+  await executor
+    .insert(shopPurchases)
+    .values({ userId, shopStockId, quantity })
+    .onConflictDoUpdate({
+      target: [shopPurchases.userId, shopPurchases.shopStockId],
+      set: {
+        quantity: sql`${shopPurchases.quantity} + ${quantity}`,
+        updatedAt: new Date(),
+      },
+    });
+}
+
 export async function insertShopStock(
   rows: Array<typeof shopStock.$inferInsert>,
   executor: Executor = getDb(),
@@ -601,8 +686,21 @@ export async function recordSnapshotHealth(
     .where(eq(economySnapshots.id, snapshotId));
 }
 
-/** Détecte un écart entre le solde d'un joueur et son journal (anti-triche). */
-export async function findLedgerMismatches(limit: number, executor: Executor = getDb()) {
+/**
+ * Détecte un écart entre le solde d'un joueur et son journal (anti-triche).
+ *
+ * Borné aux joueurs ACTIFS récemment. La version précédente agrégeait toute la
+ * table `transactions` — sans borne temporelle, chaque heure : le journal ne
+ * faisant que croître, la requête finissait par dépasser `statement_timeout` et
+ * l'audit s'arrêtait sans bruit, puisque le job attrape l'erreur. Un écart ne
+ * peut de toute façon apparaître que sur un compte qui bouge, et l'index
+ * `transactions_user_currency_idx` rend l'agrégation indexable par joueur.
+ */
+export async function findLedgerMismatches(
+  limit: number,
+  since: Date = new Date(Date.now() - 7 * 86_400_000),
+  executor: Executor = getDb(),
+) {
   const rows = await executor.execute<{
     user_id: string;
     coins: string;
@@ -611,6 +709,7 @@ export async function findLedgerMismatches(limit: number, executor: Executor = g
     SELECT u.id AS user_id, u.coins::text AS coins, COALESCE(SUM(t.amount), 0)::text AS ledger
     FROM users u
     LEFT JOIN transactions t ON t.user_id = u.id AND t.currency = 'coins'
+    WHERE u.deleted_at IS NULL AND u.last_seen_at >= ${since}
     GROUP BY u.id, u.coins
     HAVING u.coins <> COALESCE(SUM(t.amount), 0)
     LIMIT ${limit}

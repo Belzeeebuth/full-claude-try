@@ -100,8 +100,19 @@ export function incidentStats(): Array<{ signature: string; count: number }> {
     .slice(0, 10);
 }
 
+export interface ProcessHandlerOptions {
+  /** Arrêt propre à déclencher avant de quitter sur exception non capturée. */
+  onFatal?: (reason: string) => void;
+}
+
+/** Délai laissé au rapport d'incident pour partir avant l'arrêt. */
+const FATAL_GRACE_MS = 2_000;
+
 /** Branche les gestionnaires d'erreurs process (dernier filet de sécurité). */
-export function registerProcessHandlers(client: Client): void {
+export function registerProcessHandlers(
+  client: Client,
+  options: ProcessHandlerOptions = {},
+): void {
   process.on('unhandledRejection', (reason) => {
     log.error({ err: toError(reason) }, 'promesse rejetée non gérée');
     void reportIncident(client, reason, { command: 'unhandledRejection' });
@@ -109,10 +120,22 @@ export function registerProcessHandlers(client: Client): void {
 
   process.on('uncaughtException', (error) => {
     log.fatal({ err: error }, 'exception non capturée');
-    void reportIncident(client, error, { command: 'uncaughtException' });
-    // On ne quitte PAS le process : discord.js survit à la plupart des
-    // exceptions isolées, et un redémarrage coûte une reconnexion complète des
-    // shards. Un superviseur externe (PM2/systemd) reste le filet ultime.
+
+    // On QUITTE, contrairement à la version précédente qui laissait tourner.
+    // Après une exception non capturée l'état du process est indéterminé : une
+    // transaction peut être restée ouverte, un client du pool jamais relâché,
+    // un verrou Redis orphelin. Sur du code qui manipule de la monnaie, c'est
+    // un pari qui coûte plus cher qu'une reconnexion des shards — et le bot
+    // tourne en conteneur avec une politique de redémarrage.
+    void reportIncident(client, error, { command: 'uncaughtException' }).finally(() => {
+      if (options.onFatal) {
+        options.onFatal('uncaughtException');
+        // Filet de dernier recours si l'arrêt propre se bloque lui-même.
+        setTimeout(() => process.exit(1), FATAL_GRACE_MS).unref();
+      } else {
+        process.exit(1);
+      }
+    });
   });
 
   client.on('error', (error) => {

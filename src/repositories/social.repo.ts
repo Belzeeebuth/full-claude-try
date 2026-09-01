@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../db/client';
 import {
   coopMembers,
@@ -107,6 +107,24 @@ export async function leaveCoop(
     .set({ memberCount: sql`GREATEST(${coops.memberCount} - 1, 0)`, updatedAt: new Date() })
     .where(eq(coops.id, coopId));
   return true;
+}
+
+/**
+ * Supprime définitivement une coopérative vidée de ses membres.
+ *
+ * Sans cela, la ligne survivait au départ du dernier membre : sa trésorerie
+ * sortait de l'économie sans être détruite, son nom et son tag restaient
+ * réservés à jamais, et `listPublicCoops` proposait des coops fantômes dont le
+ * premier arrivant héritait du magot. Le service annonçait pourtant
+ * « dissoute » au joueur.
+ *
+ * Les objectifs, le journal de trésorerie et les membres partent en cascade.
+ */
+export async function dissolveCoop(coopId: string, executor: Executor): Promise<boolean> {
+  const result = await executor
+    .delete(coops)
+    .where(and(eq(coops.id, coopId), lte(coops.memberCount, 0)));
+  return (result.rowCount ?? 0) > 0;
 }
 
 export async function listMembers(coopId: string, executor: Executor = getDb()) {

@@ -10,7 +10,7 @@ import {
 import { balance as getBalance, getConfig } from '../config';
 import { env } from '../config/env';
 import { normalizeLocale, translatorFor } from '../i18n';
-import { checkAndSet, checkGlobalRate, cooldownSecondsFor } from '../framework/cooldown';
+import { checkAndSet, checkGlobalRate, clear as clearCooldown, cooldownSecondsFor } from '../framework/cooldown';
 import {
   buildContext,
   cooldownMessage,
@@ -22,8 +22,10 @@ import { findHandler, getCommand, getContextMenu } from '../framework/registry';
 import { warningEmbed } from '../framework/ui';
 import * as playerRepo from '../repositories/player.repo';
 import { assertOwner, parseCustomId } from '../utils/custom-id';
+import { isGameError } from '../utils/errors';
 import { withUserLock } from '../utils/lock';
 import { moduleLogger } from '../utils/logger';
+import { recordCommand, recordInteraction } from '../http/health';
 import { reportIncident } from './error-reporter';
 import type { CommandContext } from '../types';
 
@@ -54,6 +56,10 @@ async function handleInteraction(interaction: Interaction): Promise<void> {
     await handleAutocomplete(interaction);
     return;
   }
+
+  // `recordInteraction` et `recordCommand` étaient exportés sans aucun appelant :
+  // les trois compteurs Prometheus correspondants restaient à zéro.
+  recordInteraction();
 
   // --- 1. Limitation de débit -------------------------------------------
   const rate = await checkGlobalRate(interaction.user.id);
@@ -130,8 +136,13 @@ async function handleCommand(
     }
 
     // --- 5. Cooldown ------------------------------------------------------
+    //
+    // La table `balance.cooldowns` PRIME sur la valeur codée dans la commande.
+    // L'ordre inverse la rendait entièrement morte — les 66 commandes déclarent
+    // toutes une durée — et un game designer qui réglait `prestige` à 24 h dans
+    // le JSON obtenait silencieusement les 30 s du code.
     const bucket = command.cooldown?.bucket ?? interaction.commandName;
-    const seconds = command.cooldown?.seconds ?? cooldownSecondsFor(interaction.commandName);
+    const seconds = cooldownSecondsFor(bucket, command.cooldown?.seconds);
     if (seconds > 0) {
       const cooldown = await checkAndSet(context.player.id, bucket, seconds);
       if (cooldown.active) {
@@ -152,6 +163,7 @@ async function handleCommand(
       await command.execute(interaction, context!);
     });
 
+    recordCommand(true);
     log.debug(
       {
         command: interaction.commandName,
@@ -161,6 +173,17 @@ async function handleCommand(
       'commande exécutée',
     );
   } catch (error) {
+    // Une `GameError` est une erreur ATTENDUE (pas assez de graines, aucune
+    // parcelle libre) : l'action n'a rien fait, le cooldown posé avant
+    // l'exécution n'a donc pas lieu d'être conservé. Sans cette libération, une
+    // simple faute de frappe sur `/prestige` enfermait le joueur 24 h.
+    if (context && isGameError(error)) {
+      const bucket = command.cooldown?.bucket ?? interaction.commandName;
+      await clearCooldown(context.player.id, bucket);
+    }
+
+    recordCommand(false);
+
     const report = await replyError(interaction, error, context ?? undefined);
     if (report.report) {
       await reportIncident(interaction.client, error, {

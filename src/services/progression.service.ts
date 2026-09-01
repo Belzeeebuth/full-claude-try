@@ -11,12 +11,14 @@ import * as inventoryService from './inventory.service';
 import { grantXp } from './player.service';
 import { getWorldState } from './world.service';
 import {
+  calendarDaysBetween,
   currentWeekStart,
   dailyCycleKey,
   nextMidnight,
   nextMondayMidnight,
   weeklyCycleKey,
 } from '../utils/time';
+import { DateTime } from 'luxon';
 import type { PlayerContext } from '../types';
 
 const log = moduleLogger('progression');
@@ -577,13 +579,25 @@ export async function claimDaily(
       streak = 1;
     } else if (streakRow.lastClaimDate === yesterday) {
       streak += 1;
-    } else if (freezeTokens > 0) {
-      freezeTokens -= 1;
-      usedFreeze = true;
-      streak += 1;
     } else {
-      streak = 1;
-      streakBroken = true;
+      // UN jeton par jour manqué, et non un jeton pour un trou de longueur
+      // quelconque : un seul jeton couvrait auparavant une absence de six mois.
+      const missedDays = Math.max(
+        0,
+        calendarDaysBetween(
+          DateTime.fromISO(streakRow.lastClaimDate, { zone: timezone }).toJSDate(),
+          now,
+          timezone,
+        ) - 1,
+      );
+      if (missedDays > 0 && freezeTokens >= missedDays) {
+        freezeTokens -= missedDays;
+        usedFreeze = true;
+        streak += 1;
+      } else {
+        streak = 1;
+        streakBroken = true;
+      }
     }
 
     const eventMultiplier = world.eventModifiers.dailyRewardMultiplier;

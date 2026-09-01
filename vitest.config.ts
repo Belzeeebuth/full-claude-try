@@ -12,7 +12,9 @@ export default defineConfig({
     // valide : les tests chargent le registre sans infrastructure réelle.
     setupFiles: ['tests/setup-env.ts'],
     environment: 'node',
-    include: ['tests/**/*.test.ts'],
+    // Les tests d'intégration ont leur propre configuration : ils exigent une
+    // base PostgreSQL, ce que `npm test` ne doit jamais supposer.
+    include: ['tests/*.test.ts'],
     globals: false,
     reporters: ['default'],
     coverage: {

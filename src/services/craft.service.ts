@@ -6,7 +6,8 @@ import * as animalRepo from '../repositories/animal.repo';
 import * as playerRepo from '../repositories/player.repo';
 import * as economyService from './economy.service';
 import * as inventoryService from './inventory.service';
-import { consumeEnergy, getFarmModifiers, grantXp } from './player.service';
+import { invalidateFarmModifiers } from './modifier-cache';
+import { consumeEnergy, getEnergy, getFarmModifiers, grantXp } from './player.service';
 import { grantPassXp, passXpFor, trackAction, type TrackResult } from './tracker.service';
 import { getWorldState } from './world.service';
 import type { PlayerContext } from '../types';
@@ -562,9 +563,17 @@ export async function buildOrUpgrade(
       await playerRepo.updateFarm(player.farmId, farmPatch, tx);
     }
     if (buildingKey === 'house' && next.effect?.energyMax) {
+      // L'énergie se calcule à la lecture depuis `energyUpdatedAt` : repositionner
+      // l'horodatage à `now` en réécrivant la valeur STOCKÉE annulait toute la
+      // régénération accumulée — un joueur à 100/100 pouvait retomber à 12.
+      const projected = await getEnergy(player.id, new Date(), tx);
       await playerRepo.setEnergy(
         player.id,
-        { energy: player.energy, energyUpdatedAt: new Date(), energyMax: next.effect.energyMax },
+        {
+          energy: projected.current,
+          energyUpdatedAt: new Date(),
+          energyMax: next.effect.energyMax,
+        },
         tx,
       );
     }
@@ -578,6 +587,10 @@ export async function buildOrUpgrade(
       next.costCoins,
       tx,
     );
+
+    // Un bâtiment change les modificateurs (serre, puits, grainerie, vitesse) :
+    // le cache doit tomber immédiatement, pas au bout de sa minute.
+    await invalidateFarmModifiers(player.id);
 
     return {
       name: building.name,

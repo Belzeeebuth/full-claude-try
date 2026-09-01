@@ -18,7 +18,7 @@ import * as economyRepo from '../repositories/economy.repo';
 import * as inventoryRepo from '../repositories/inventory.repo';
 import * as inventoryService from './inventory.service';
 import * as economyService from './economy.service';
-import { trackAction, type TrackResult } from './tracker.service';
+import { mergeResults, trackAction, type TrackResult } from './tracker.service';
 import { eventPriceMultiplier, getWorldState } from './world.service';
 import { toSqlDate } from '../utils/time';
 import { uuidv7 } from '../utils/uuid';
@@ -274,29 +274,13 @@ export async function sell(
     );
 
     const totalQuantity = lines.reduce((sum, line) => sum + line.quantity, 0);
-    const tracking = await Promise.all([
-      trackAction(
-        { userId: player.id, coopId: player.coopId, level: player.level },
-        'sell_item',
-        totalQuantity,
-        {},
-        tx,
-      ),
-      trackAction(
-        { userId: player.id, coopId: player.coopId, level: player.level },
-        'sell_value',
-        gross,
-        {},
-        tx,
-      ),
-      trackAction(
-        { userId: player.id, coopId: player.coopId, level: player.level },
-        'earn_coins',
-        net,
-        {},
-        tx,
-      ),
-    ]);
+    // Séquentiel : une transaction ne dispose que d'un client PostgreSQL, un
+    // `Promise.all` n'y parallélise rien et brouille l'ordre des écritures.
+    const trackContext = { userId: player.id, coopId: player.coopId, level: player.level };
+    const tracking: TrackResult[] = [];
+    tracking.push(await trackAction(trackContext, 'sell_item', totalQuantity, {}, tx));
+    tracking.push(await trackAction(trackContext, 'sell_value', gross, {}, tx));
+    tracking.push(await trackAction(trackContext, 'earn_coins', net, {}, tx));
 
     log.debug({ userId: player.id, gross, net, tax, lines: lines.length }, 'vente au village');
 
@@ -305,7 +289,7 @@ export async function sell(
       gross,
       tax,
       net,
-      tracking: (await import('./tracker.service')).mergeResults(tracking),
+      tracking: mergeResults(tracking),
     };
   });
 }
@@ -600,12 +584,23 @@ export async function buy(
         params: { level: stock.requiredLevel },
       });
     }
-    if (stock.perUserLimit > 0 && quantity > stock.perUserLimit) {
-      throw gameError(
-        'forbidden',
-        `Limit of ${stock.perUserLimit} unit(s) per player for this article.`,
-        { i18nKey: 'errors.market.per_user_limit', params: { limit: stock.perUserLimit } },
-      );
+    // Limite PAR JOUEUR, cumulée sur la journée — et non par achat. La
+    // comparaison portait auparavant sur la seule quantité demandée : un joueur
+    // bloqué à 1 exemplaire en achetait dix en dix commandes, ce qui vidait de
+    // son sens la rareté des cosmétiques et du marché noir.
+    if (stock.perUserLimit > 0) {
+      const already = await economyRepo.countUserPurchases(player.id, stock.id, tx);
+      if (already + quantity > stock.perUserLimit) {
+        throw gameError(
+          'forbidden',
+          `Limit of ${stock.perUserLimit} unit(s) per player for this article.`,
+          {
+            i18nKey: 'errors.market.per_user_limit',
+            params: { limit: stock.perUserLimit },
+            context: { already, requested: quantity },
+          },
+        );
+      }
     }
 
     const reserved = await economyRepo.reserveShopStock(stock.id, quantity, tx);
@@ -637,6 +632,10 @@ export async function buy(
       [{ itemKey: input.itemKey, quantity }],
       tx,
     );
+
+    if (stock.perUserLimit > 0) {
+      await economyRepo.recordUserPurchase(player.id, stock.id, quantity, tx);
+    }
 
     if (stock.currency === 'coins') {
       await economyService.trackSpending(
@@ -671,21 +670,22 @@ export async function buy(
 export async function updateMarket(now: Date = new Date()): Promise<number> {
   const config = getConfig();
   const balance = getBalance();
-  const rows = await economyRepo.listMarket({});
+  // Une seule lecture pour tout le marché : la version précédente listait les
+  // prix puis relisait CHAQUE ligne une par une dans la transaction, soit une
+  // centaine d'allers-retours séquentiels par heure pour des données déjà
+  // chargées.
+  const prices = await economyRepo.listMarketPrices();
   const nextUpdateAt = new Date(now.getTime() + balance.market.updateMinutes * 60_000);
   const rng = dailyRng('market', `${toSqlDate(now)}-${now.getUTCHours()}`);
 
   let updated = 0;
   await withTransaction(async (tx) => {
-    for (const row of rows) {
-      const item = config.items.get(row.itemKey);
+    for (const price of prices) {
+      const item = config.items.get(price.itemKey);
       if (!item) continue;
 
-      const price = await economyRepo.getMarketPrice(row.itemKey, tx);
-      if (!price) continue;
-
       const state: MarketState = {
-        itemKey: row.itemKey,
+        itemKey: price.itemKey,
         basePrice: price.basePrice,
         currentPrice: price.currentPrice,
         previousPrice: price.previousPrice,
@@ -714,10 +714,15 @@ export async function ensureMarketRows(): Promise<number> {
   const balance = getBalance();
   let created = 0;
 
+  // Un seul chargement des lignes existantes : une requête par objet au
+  // démarrage, sur plusieurs centaines d'objets, retardait le boot pour rien.
+  const existingKeys = new Set(
+    (await economyRepo.listMarketPrices()).map((row) => row.itemKey),
+  );
+
   for (const item of config.itemList) {
     if (!item.marketTracked || !item.enabled || item.sellPrice <= 0) continue;
-    const existing = await economyRepo.getMarketPrice(item.key);
-    if (existing) continue;
+    if (existingKeys.has(item.key)) continue;
 
     await economyRepo.upsertMarketPrice({
       itemKey: item.key,

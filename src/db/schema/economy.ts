@@ -171,6 +171,35 @@ export const shopStock = pgTable(
   ],
 );
 
+/**
+ * Achats en boutique, agrégés par joueur et par article en vente.
+ *
+ * `shop_stock.per_user_limit` n'était comparé qu'à la quantité d'un achat
+ * unique : la limite « 1 par joueur » des cosmétiques et du marché noir se
+ * contournait en achetant dix fois de suite. Le stock global, lui, était bien
+ * décrémenté — c'est la limite PAR JOUEUR qui n'existait pas. Une ligne par
+ * (joueur, article), incrémentée dans la transaction d'achat.
+ */
+export const shopPurchases = pgTable(
+  'shop_purchases',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    shopStockId: uuid('shop_stock_id')
+      .notNull()
+      .references(() => shopStock.id, { onDelete: 'cascade' }),
+    quantity: integer('quantity').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('shop_purchases_user_stock_uq').on(t.userId, t.shopStockId),
+    check('shop_purchases_quantity_positive', sql`${t.quantity} >= 0`),
+  ],
+);
+
 /** Hôtel des ventes : vente directe (buyout) et/ou enchères. */
 export const auctionListings = pgTable(
   'auction_listings',

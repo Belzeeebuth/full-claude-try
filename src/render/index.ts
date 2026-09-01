@@ -1,13 +1,21 @@
 import { createHash } from 'node:crypto';
 import { AttachmentBuilder } from 'discord.js';
 import { env } from '../config/env';
-import { cacheGet, cacheSet, key as redisKey } from '../db/redis';
+import { getRedis, key as redisKey } from '../db/redis';
 import { moduleLogger } from '../utils/logger';
 import { renderMarketChart, type ChartInput } from './chart';
+import { renderInline, type RenderInputs, type RenderKind } from './dispatch';
 import { renderFarm, type FarmRenderInput } from './farm';
 import { renderFishing, type FishingRenderInput } from './fishing';
 import { renderLeaderboard, type LeaderboardRenderInput } from './leaderboard';
 import { renderMining, type MiningRenderInput } from './mining';
+import {
+  RenderPoolUnavailableError,
+  RenderQueueFullError,
+  renderPoolAvailable,
+  renderPoolStats,
+  submitRender,
+} from './pool';
 import { renderProfile, type ProfileRenderInput } from './profile';
 
 const log = moduleLogger('render');
@@ -28,6 +36,11 @@ const log = moduleLogger('render');
  *  3. REPLI — toute erreur de rendu est capturée et journalisée, jamais propagée
  *     à l'utilisateur. `renderOrNull()` renvoie `null` et l'appelant affiche sa
  *     version texte.
+ *  4. HORS DU THREAD PRINCIPAL — le dessin part dans un worker (voir `pool.ts`).
+ *     Le canvas est synchrone : rendu ici, il bloquerait l'event loop et donc la
+ *     passerelle Discord pendant toute la durée de l'image. Si le pool est
+ *     indisponible (`RENDER_WORKERS=0`, worker impossible à démarrer), on
+ *     dessine sur place — une image tardive vaut mieux que pas d'image.
  */
 
 export interface RenderOutcome {
@@ -52,6 +65,35 @@ function hashState(state: unknown): string {
   return createHash('sha1').update(JSON.stringify(state)).digest('hex').slice(0, 16);
 }
 
+/**
+ * Lecture et écriture du cache d'images en BINAIRE.
+ *
+ * Les PNG étaient stockés en base64 dans une valeur JSON : un tiers d'octets en
+ * plus, plus un aller-retour d'encodage à chaque lecture, sur des images de
+ * ~300 Ko et une clé par état de ferme. `getBuffer` d'ioredis évite les deux.
+ */
+async function readCachedImage(cacheKey: string): Promise<Buffer | undefined> {
+  if (env.RENDER_CACHE_TTL <= 0) return undefined;
+  try {
+    return (await getRedis().getBuffer(cacheKey)) ?? undefined;
+  } catch (error) {
+    log.debug({ err: error }, 'lecture du cache de rendu impossible');
+    return undefined;
+  }
+}
+
+async function writeCachedImage(cacheKey: string, buffer: Buffer): Promise<void> {
+  // Discord accepte 8 Mo, mais un PNG de ferme dépasse rarement 300 Ko ;
+  // au-delà de 2 Mo on considère que quelque chose ne va pas et on ne met pas
+  // en cache une image aussi lourde.
+  if (env.RENDER_CACHE_TTL <= 0 || buffer.byteLength >= 2_000_000) return;
+  try {
+    await getRedis().set(cacheKey, buffer, 'EX', env.RENDER_CACHE_TTL);
+  } catch (error) {
+    log.debug({ err: error }, 'écriture du cache de rendu impossible');
+  }
+}
+
 async function withBudget<T>(promise: Promise<T>, budgetMs: number): Promise<T | undefined> {
   let timer: NodeJS.Timeout | undefined;
   const timeout = new Promise<undefined>((resolve) => {
@@ -65,48 +107,70 @@ async function withBudget<T>(promise: Promise<T>, budgetMs: number): Promise<T |
 }
 
 /**
+ * Lance le dessin, de préférence dans un worker.
+ *
+ * Le repli en ligne ne concerne QUE l'indisponibilité du pool (désactivé,
+ * worker impossible à démarrer) : redessiner ici après une saturation de la
+ * file reviendrait à bloquer le thread principal exactement quand il est le
+ * plus sollicité, c'est-à-dire à faire le contraire de ce qu'on cherche.
+ */
+function produce<K extends RenderKind>(kind: K, input: RenderInputs[K]): Promise<Buffer> {
+  if (!renderPoolAvailable()) return renderInline(kind, input);
+  return submitRender(kind, input).catch((error: unknown) => {
+    if (error instanceof RenderPoolUnavailableError) return renderInline(kind, input);
+    throw error;
+  });
+}
+
+/**
  * Rendu générique avec cache Redis et budget de temps.
  * `stateKey` doit capturer TOUT ce qui influence l'image.
  */
-async function render(
-  namespace: string,
+async function render<K extends RenderKind>(
+  kind: K,
   stateKey: unknown,
   fileName: string,
-  producer: () => Promise<Buffer>,
+  input: RenderInputs[K],
 ): Promise<RenderOutcome> {
   if (!env.RENDER_ENABLED) return EMPTY;
 
   const started = Date.now();
-  const cacheKey = redisKey('render', namespace, hashState(stateKey));
+  const cacheKey = redisKey('render', kind, hashState(stateKey));
 
   try {
-    const cached = await cacheGet<string>(cacheKey);
+    const cached = await readCachedImage(cacheKey);
     if (cached) {
-      const buffer = Buffer.from(cached, 'base64');
       return {
-        attachment: new AttachmentBuilder(buffer, { name: fileName }),
+        attachment: new AttachmentBuilder(cached, { name: fileName }),
         fileName,
         cached: true,
         durationMs: Date.now() - started,
       };
     }
 
-    const buffer = await withBudget(producer(), env.RENDER_TIMEOUT_MS);
+    // Le rendu est lancé une fois et référencé : dépasser le budget n'ANNULE
+    // rien — le worker va au bout de l'image quoi qu'il arrive. Plutôt que de
+    // gaspiller ce CPU, on laisse la promesse alimenter le cache en arrière-plan,
+    // et l'affichage suivant est immédiat. Seul un rendu manifestement bloqué est
+    // interrompu, par le seuil dur du pool.
+    const producing = produce(kind, input);
+    const buffer = await withBudget(producing, env.RENDER_TIMEOUT_MS);
     if (!buffer) {
-      log.warn({ namespace, budget: env.RENDER_TIMEOUT_MS }, 'budget de rendu dépassé, repli texte');
+      log.warn(
+        { namespace: kind, budget: env.RENDER_TIMEOUT_MS, ...renderPoolStats() },
+        'budget de rendu dépassé, repli texte',
+      );
+      void producing
+        .then((late) => writeCachedImage(cacheKey, late))
+        .catch(() => undefined);
       return EMPTY;
     }
 
-    // Discord accepte 8 Mo, mais un PNG de ferme dépasse rarement 300 Ko ;
-    // au-delà de 2 Mo on considère que quelque chose ne va pas et on ne met pas
-    // en cache une image aussi lourde.
-    if (env.RENDER_CACHE_TTL > 0 && buffer.byteLength < 2_000_000) {
-      await cacheSet(cacheKey, buffer.toString('base64'), env.RENDER_CACHE_TTL);
-    }
+    await writeCachedImage(cacheKey, buffer);
 
     const durationMs = Date.now() - started;
     if (durationMs > 1_500) {
-      log.warn({ namespace, durationMs, bytes: buffer.byteLength }, 'rendu lent');
+      log.warn({ namespace: kind, durationMs, bytes: buffer.byteLength }, 'rendu lent');
     }
 
     return {
@@ -116,7 +180,13 @@ async function render(
       durationMs,
     };
   } catch (error) {
-    log.error({ err: error, namespace }, 'échec du rendu, repli sur l\'embed texte');
+    if (error instanceof RenderQueueFullError) {
+      // Saturation : c'est une information de capacité, pas un bug. On le dit
+      // une fois par rendu refusé, sans la pile d'appel.
+      log.warn({ namespace: kind, ...renderPoolStats() }, 'file de rendu saturée, repli texte');
+      return EMPTY;
+    }
+    log.error({ err: error, namespace: kind }, 'échec du rendu, repli sur l\'embed texte');
     return EMPTY;
   }
 }
@@ -144,7 +214,7 @@ export async function renderFarmImage(input: FarmRenderInput): Promise<RenderOut
     ]),
   };
 
-  return render('farm', stateKey, 'farm.png', () => renderFarm(input));
+  return render('farm', stateKey, 'farm.png', input);
 }
 
 export async function renderProfileImage(input: ProfileRenderInput): Promise<RenderOutcome> {
@@ -163,7 +233,7 @@ export async function renderProfileImage(input: ProfileRenderInput): Promise<Ren
     badges: input.badges,
   };
 
-  return render('profile', stateKey, 'profil.png', () => renderProfile(input));
+  return render('profile', stateKey, 'profil.png', input);
 }
 
 export async function renderChartImage(input: ChartInput): Promise<RenderOutcome> {
@@ -175,7 +245,7 @@ export async function renderChartImage(input: ChartInput): Promise<RenderOutcome
     points: input.points.map((point) => point.price),
   };
 
-  return render('chart', stateKey, 'marche.png', () => renderMarketChart(input));
+  return render('chart', stateKey, 'marche.png', input);
 }
 
 export async function renderLeaderboardImage(
@@ -189,12 +259,12 @@ export async function renderLeaderboardImage(
     viewer: input.viewer?.rank ?? 0,
   };
 
-  return render('leaderboard', stateKey, 'classement.png', () => renderLeaderboard(input));
+  return render('leaderboard', stateKey, 'classement.png', input);
 }
 
 export async function renderFishingImage(input: FishingRenderInput): Promise<RenderOutcome> {
   const stateKey = { locale: input.locale, season: input.season, weather: input.weather };
-  return render('fishing', stateKey, 'peche.png', () => renderFishing(input));
+  return render('fishing', stateKey, 'peche.png', input);
 }
 
 export async function renderMiningImage(input: MiningRenderInput): Promise<RenderOutcome> {
@@ -204,8 +274,17 @@ export async function renderMiningImage(input: MiningRenderInput): Promise<Rende
     maxDepth: input.maxDepth,
     deepestReached: input.deepestReached,
   };
-  return render('mining', stateKey, 'mine.png', () => renderMining(input));
+  return render('mining', stateKey, 'mine.png', input);
 }
+
+export {
+  closeRenderPool,
+  renderPoolAvailable,
+  renderPoolStats,
+  warmRenderPool,
+} from './pool';
+export type { RenderInputs, RenderKind };
+export { renderInline };
 
 export type {
   ChartInput,

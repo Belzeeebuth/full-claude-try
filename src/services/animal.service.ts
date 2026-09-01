@@ -19,6 +19,7 @@ import * as animalRepo from '../repositories/animal.repo';
 import * as playerRepo from '../repositories/player.repo';
 import * as economyService from './economy.service';
 import * as inventoryService from './inventory.service';
+import { invalidateFarmModifiers } from './modifier-cache';
 import { consumeEnergy, getFarmModifiers, grantXp } from './player.service';
 import { grantPassXp, mergeResults, passXpFor, trackAction, type TrackResult } from './tracker.service';
 import { uuidv7 } from '../utils/uuid';
@@ -64,6 +65,12 @@ export interface HerdView {
     tier: number;
   }>;
   totals: { alive: number; hungry: number; sick: number; readyToCollect: number };
+  /**
+   * TOUS les bâtiments possédés, pas seulement ceux qui logent des animaux.
+   * La vue de ferme les dessine autour du champ : un joueur qui a payé 90 000
+   * pièces pour une serre doit la voir quelque part.
+   */
+  ownedBuildings: Array<{ key: string; tier: number }>;
 }
 
 function toAnimalState(row: animalRepo.OwnedAnimalRow): AnimalState {
@@ -145,7 +152,17 @@ export async function getHerd(
       tier: entry.building.tier,
     }));
 
-  return { animals, capacityByBuilding, totals };
+  return {
+    animals,
+    capacityByBuilding,
+    totals,
+    // `buildings` est déjà chargé plus haut pour les capacités : aucune requête
+    // supplémentaire sur ce chemin, qui est celui de `/farm`.
+    ownedBuildings: buildings.map((entry) => ({
+      key: entry.buildingKey,
+      tier: entry.building.tier,
+    })),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -275,6 +292,9 @@ export async function buyAnimal(
         tx,
       );
     }
+
+    // Les bonus passifs du troupeau entrent dans les modificateurs.
+    await invalidateFarmModifiers(player.id);
 
     return {
       animalKey: input.animalKey,
@@ -423,6 +443,10 @@ export async function collect(
     let totalQuantity = 0;
     let xpTotal = 0;
     const trackings: TrackResult[] = [];
+    const buildingsByKey = new Map<
+      string,
+      Awaited<ReturnType<typeof animalRepo.getBuilding>> | null
+    >();
 
     for (const row of selected) {
       const animalConfig = config.animals.get(row.animalKey);
@@ -441,9 +465,13 @@ export async function collect(
         { allowOverflow: true },
       );
 
-      const building = row.animal.buildingId
-        ? await animalRepo.getBuilding(player.farmId, animalConfig.buildingKey, tx)
-        : undefined;
+      // Le bâtiment était rechargé pour CHAQUE bête : un troupeau de vingt
+      // animaux du même enclos faisait vingt fois la même requête.
+      let building = buildingsByKey.get(animalConfig.buildingKey);
+      if (building === undefined) {
+        building = (await animalRepo.getBuilding(player.farmId, animalConfig.buildingKey, tx)) ?? null;
+        buildingsByKey.set(animalConfig.buildingKey, building);
+      }
 
       await animalRepo.updateAnimal(
         row.animal.id,
@@ -659,6 +687,7 @@ export async function sellAnimal(
       tx,
     );
 
+    await invalidateFarmModifiers(player.id);
     return { name: row.nickname ?? animalConfig.name, emoji: animalConfig.emoji, price };
   });
 }
@@ -780,6 +809,7 @@ export async function breed(
     );
 
     await playerRepo.incrementStats(player.id, { totalAnimalsRaised: 1 }, tx);
+    await invalidateFarmModifiers(player.id);
     log.debug({ userId: player.id, animalKey: first.animalKey, generation: outcome.generation }, 'naissance');
 
     return {

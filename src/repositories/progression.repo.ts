@@ -538,15 +538,30 @@ export async function claimPassTier(
   return (result.rowCount ?? 0) > 0;
 }
 
+/**
+ * Débloque la voie premium du passe. Upsert et non simple `UPDATE` : un joueur
+ * qui vote avant d'avoir gagné la moindre XP de passe n'a pas encore de ligne,
+ * et l'ancienne écriture ne touchait alors rien du tout — ce qui, combiné à
+ * l'absence d'appelant, rendait toute la voie premium inatteignable.
+ */
 export async function grantPassPremium(
   userId: string,
   seasonPassId: string,
   executor: Executor = getDb(),
 ): Promise<void> {
   await executor
-    .update(userSeasonPass)
-    .set({ premium: true, premiumGrantedAt: new Date(), updatedAt: new Date() })
-    .where(and(eq(userSeasonPass.userId, userId), eq(userSeasonPass.seasonPassId, seasonPassId)));
+    .insert(userSeasonPass)
+    .values({
+      id: uuidv7(),
+      userId,
+      seasonPassId,
+      premium: true,
+      premiumGrantedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [userSeasonPass.userId, userSeasonPass.seasonPassId],
+      set: { premium: true, premiumGrantedAt: new Date(), updatedAt: new Date() },
+    });
 }
 
 // ---------------------------------------------------------------------------

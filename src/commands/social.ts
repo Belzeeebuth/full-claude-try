@@ -555,6 +555,12 @@ export async function helpFarmer(
     throw gameError('not_found', context.t('economy.target_no_farm', { name: targetName }));
   }
 
+  // Le plafond d'aides du jour est vérifié AVANT d'arroser : `recordVisit` et
+  // `helpFarmer` ouvrent deux transactions distinctes, et l'ordre inverse
+  // arrosait la ferme hôte puis refusait l'action — travail fait, joueur
+  // sanctionné, compteur d'aides incrémenté sans limite.
+  await miscService.assertCanHelp(context.player);
+
   const helped = await farmService.helpFarmer(context.player, bundle.farm.id, bundle.user.id);
   const reward = await miscService.recordVisit(
     context.player,

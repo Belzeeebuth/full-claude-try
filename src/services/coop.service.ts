@@ -248,6 +248,7 @@ export async function leaveCoop(player: PlayerContext): Promise<{ coopName: stri
   const membership = await requireMembership(player.id);
 
   return withTransaction(async (tx) => {
+    await lockUserRow(tx, player.id);
     const coop = await socialRepo.lockCoop(tx, membership.coop.id);
     if (!coop) throw gameError('coop_not_found', 'Co-op not found.', { i18nKey: 'errors.coop.not_found' });
 
@@ -262,7 +263,37 @@ export async function leaveCoop(player: PlayerContext): Promise<{ coopName: stri
     }
 
     await socialRepo.leaveCoop(coop.id, player.id, tx);
+
+    // Dernier membre : la coopérative disparaît réellement. Sa trésorerie est
+    // rendue au partant — c'est nécessairement lui qui l'a majoritairement
+    // constituée, et la laisser dans une ligne orpheline la retirerait de
+    // l'économie sans la détruire ni la journaliser.
     const dissolved = coop.memberCount <= 1;
+    if (dissolved) {
+      if (coop.treasury > 0) {
+        await socialRepo.withdrawTreasury(
+          coop.id,
+          player.id,
+          coop.treasury,
+          'withdraw',
+          'Co-op dissolved',
+          tx,
+        );
+        await economyService.pay(
+          {
+            userId: player.id,
+            amount: coop.treasury,
+            type: 'coop_payout',
+            referenceType: 'coop',
+            referenceId: coop.id,
+          },
+          tx,
+        );
+      }
+      await socialRepo.dissolveCoop(coop.id, tx);
+      log.info({ coopId: coop.id, name: coop.name }, 'co-op dissolved');
+    }
+
     return { coopName: coop.name, dissolved };
   });
 }
@@ -413,6 +444,11 @@ export async function withdrawTreasury(
   amount: number,
 ): Promise<{ treasury: number; amount: number }> {
   const balance = getBalance();
+  if (amount <= 0) {
+    throw gameError('quantity_invalid', 'The amount must be positive.', {
+      i18nKey: 'errors.economy.amount_must_be_positive',
+    });
+  }
   const membership = await requireMembership(player.id);
   if (!canWithdrawTreasury(membership.member.role as CoopRole, balance)) {
     throw gameError('coop_forbidden', 'Your rank does not allow withdrawing from the treasury.', {
@@ -514,13 +550,17 @@ export async function distributeObjectiveRewards(limit = 20): Promise<number> {
       const members = await socialRepo.listMembers(objective.guildId, tx);
       if (members.length === 0) return;
 
-      const perMember = Math.floor(objective.rewardCoins / members.length);
+      // Pièces ET gemmes sont partagées. Les gemmes étaient versées EN ENTIER à
+      // chaque membre : une coop de trente personnes produisait trente fois la
+      // récompense prévue, sur la monnaie premium.
+      const coinsPerMember = Math.floor(objective.rewardCoins / members.length);
+      const gemsPerMember = Math.floor(objective.rewardGems / members.length);
       for (const member of members) {
-        if (perMember > 0) {
+        if (coinsPerMember > 0) {
           await economyService.pay(
             {
               userId: member.member.userId,
-              amount: perMember,
+              amount: coinsPerMember,
               type: 'coop_payout',
               referenceType: 'coop_objective',
               referenceId: objective.id,
@@ -528,13 +568,15 @@ export async function distributeObjectiveRewards(limit = 20): Promise<number> {
             tx,
           );
         }
-        if (objective.rewardGems > 0) {
+        if (gemsPerMember > 0) {
           await economyService.pay(
             {
               userId: member.member.userId,
-              amount: objective.rewardGems,
+              amount: gemsPerMember,
               currency: 'gems',
               type: 'coop_payout',
+              referenceType: 'coop_objective',
+              referenceId: objective.id,
             },
             tx,
           );

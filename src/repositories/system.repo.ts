@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../db/client';
 import {
   auditLogs,
@@ -85,28 +85,99 @@ export async function enqueueNotification(
   return (result.rowCount ?? 0) > 0;
 }
 
+/** Une réservation abandonnée (process tué en plein envoi) redevient libre. */
+const CLAIM_STALE_MS = 5 * 60_000;
+
+export interface ClaimedNotification {
+  notification: {
+    id: number;
+    userId: string;
+    type: string;
+    title: string | null;
+    body: string | null;
+    payload: unknown;
+  };
+  discordId: string;
+  locale: string;
+}
+
+/**
+ * RÉSERVE des notifications à distribuer, au lieu de simplement les lire.
+ *
+ * La distribution des MP est un `setInterval` présent sur chaque shard — elle ne
+ * passe pas par BullMQ, qui dédoublonne les crons. Une simple lecture faisait
+ * donc envoyer le même message par tous les shards, et un lot plus lent que
+ * l'intervalle le faisait renvoyer par le tick suivant du même process.
+ *
+ * `FOR UPDATE SKIP LOCKED` sur la sous-requête donne à chaque appelant un lot
+ * disjoint ; `claimed_at` protège au-delà de la transaction, et expire au bout
+ * de `CLAIM_STALE_MS` pour qu'un process mort ne bloque pas la file.
+ *
+ * La jointure porte sur `picked.user_id`, PAS sur `n.user_id` : dans un
+ * `UPDATE … FROM`, la clause `FROM` ne peut pas référencer la table cible. La
+ * requête était rejetée à l'exécution (42P01) — invisible à la relecture comme à
+ * la compilation, d'où le test d'intégration qui l'accompagne.
+ */
 export async function claimPendingNotifications(
   now: Date,
   limit: number,
+  claimedBy: string,
   executor: Executor = getDb(),
-) {
-  return executor
-    .select({
-      notification: notifications,
-      discordId: users.discordId,
-      locale: users.locale,
-    })
-    .from(notifications)
-    .innerJoin(users, eq(users.id, notifications.userId))
-    .where(
-      and(
-        eq(notifications.delivered, false),
-        lte(notifications.deliverAt, now),
-        lte(notifications.attempts, 3),
-      ),
-    )
-    .orderBy(asc(notifications.deliverAt))
-    .limit(limit);
+): Promise<ClaimedNotification[]> {
+  const staleBefore = new Date(now.getTime() - CLAIM_STALE_MS);
+
+  const result = await executor.execute<{
+    id: string;
+    user_id: string;
+    type: string;
+    title: string | null;
+    body: string | null;
+    payload: unknown;
+    discord_id: string;
+    locale: string;
+  }>(sql`
+    UPDATE notifications AS n
+       SET claimed_at = ${now}, claimed_by = ${claimedBy}
+      FROM (
+             SELECT id, user_id
+               FROM notifications
+              WHERE delivered = false
+                AND deliver_at <= ${now}
+                AND attempts <= 3
+                AND (claimed_at IS NULL OR claimed_at < ${staleBefore})
+              ORDER BY deliver_at
+              LIMIT ${limit}
+                FOR UPDATE SKIP LOCKED
+           ) AS picked
+      JOIN users AS u ON u.id = picked.user_id
+     WHERE n.id = picked.id
+ RETURNING n.id, n.user_id, n.type, n.title, n.body, n.payload,
+           u.discord_id, u.locale
+  `);
+
+  return result.rows.map((row) => ({
+    notification: {
+      id: Number(row.id),
+      userId: row.user_id,
+      type: row.type,
+      title: row.title,
+      body: row.body,
+      payload: row.payload,
+    },
+    discordId: row.discord_id,
+    locale: row.locale,
+  }));
+}
+
+/** Libère une réservation sans marquer la notification délivrée (erreur transitoire). */
+export async function releaseNotificationClaim(
+  id: number,
+  executor: Executor = getDb(),
+): Promise<void> {
+  await executor
+    .update(notifications)
+    .set({ claimedAt: null, claimedBy: null })
+    .where(eq(notifications.id, id));
 }
 
 export async function markNotificationDelivered(
@@ -140,6 +211,25 @@ export async function countNotificationsToday(
     .from(notifications)
     .where(and(eq(notifications.userId, userId), gte(notifications.createdAt, since)));
   return row?.count ?? 0;
+}
+
+/**
+ * Compte les notifications du jour pour un LOT de joueurs, en une requête.
+ * Le worker appliquait le plafond quotidien avec un `COUNT` par notification :
+ * un lot de 20 coûtait 20 allers-retours pour une information agrégeable.
+ */
+export async function countNotificationsTodayFor(
+  userIds: string[],
+  since: Date,
+  executor: Executor = getDb(),
+): Promise<Map<string, number>> {
+  if (userIds.length === 0) return new Map();
+  const rows = await executor
+    .select({ userId: notifications.userId, count: sql<number>`count(*)::int` })
+    .from(notifications)
+    .where(and(inArray(notifications.userId, userIds), gte(notifications.createdAt, since)))
+    .groupBy(notifications.userId);
+  return new Map(rows.map((row) => [row.userId, row.count]));
 }
 
 // ---------------------------------------------------------------------------

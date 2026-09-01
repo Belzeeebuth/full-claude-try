@@ -95,10 +95,20 @@ export async function clear(userId: string, bucket: string): Promise<void> {
   }
 }
 
-/** Cooldown configuré pour une commande (`balance.cooldowns`). */
-export function cooldownSecondsFor(commandName: string): number {
+/**
+ * Cooldown applicable à un bucket.
+ *
+ * `balance.cooldowns` PRIME sur la valeur déclarée par la commande : c'est le
+ * fichier d'équilibrage qui doit gagner, sinon la table entière est morte —
+ * toutes les commandes déclarant la leur, aucune valeur du JSON n'était jamais
+ * lue, et régler `prestige` à 24 h n'avait aucun effet.
+ *
+ * `fallback` est la valeur codée dans la commande, utilisée quand le bucket
+ * n'apparaît pas dans la configuration.
+ */
+export function cooldownSecondsFor(bucket: string, fallback?: number): number {
   const cooldowns = getBalance().cooldowns;
-  return cooldowns[commandName] ?? cooldowns.default ?? 0;
+  return cooldowns[bucket] ?? fallback ?? cooldowns.default ?? 0;
 }
 
 // ---------------------------------------------------------------------------

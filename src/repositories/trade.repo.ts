@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, lte, ne, or, sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../db/client';
 import {
   auctionBids,
@@ -130,39 +130,62 @@ export async function cancelListing(
   return row;
 }
 
+export interface OutbidRow {
+  id: number;
+  bidderId: string;
+  amount: number;
+  refunded: boolean;
+}
+
+/**
+ * Enregistre une mise sur une annonce DÉJÀ verrouillée par `lockListing`.
+ *
+ * ⚠ Ne JAMAIS lire l'ancienne mise dans le `RETURNING` de cet `UPDATE` :
+ * PostgreSQL y renvoie les valeurs NOUVELLES, pas les anciennes. Une version
+ * précédente s'y fiait et remboursait donc à chaque enchérisseur sa propre mise
+ * — les enchères étaient gratuites. L'ancienne valeur est celle que l'appelant a
+ * lue sous verrou ; la source de vérité du séquestre reste `auction_bids`.
+ *
+ * Renvoie les mises détrônées pour que l'appelant les rembourse ET les marque
+ * `refunded` dans la même transaction : rembourser sans marquer laisserait le
+ * job d'expiration rembourser une seconde fois.
+ */
 export async function placeBid(
   listingId: string,
   bidderId: string,
   amount: number,
-  minimum: number,
   executor: Executor,
-): Promise<{ previousBidderId: string | null; previousBid: number | null } | null> {
-  const [row] = await executor
+): Promise<{ outbid: OutbidRow[] } | null> {
+  const result = await executor
     .update(auctionListings)
     .set({ currentBid: amount, currentBidderId: bidderId, updatedAt: new Date() })
     .where(
       and(
         eq(auctionListings.id, listingId),
         eq(auctionListings.status, 'active'),
-        sql`(${auctionListings.currentBid} IS NULL AND ${amount} >= ${minimum}) OR ${amount} >= ${minimum}`,
-        sql`${auctionListings.sellerId} <> ${bidderId}`,
+        ne(auctionListings.sellerId, bidderId),
+        // Garde réelle : la mise doit battre celle en place. L'ancienne écriture
+        // se réduisait à `amount >= minimum`, toujours vraie ici.
+        sql`(${auctionListings.currentBid} IS NULL OR ${auctionListings.currentBid} < ${amount})`,
       ),
-    )
-    .returning({
-      previousBidderId: auctionListings.currentBidderId,
-      previousBid: auctionListings.currentBid,
-    });
+    );
 
-  if (!row) return null;
+  if ((result.rowCount ?? 0) === 0) return null;
 
-  await executor
+  const outbid = await executor
     .update(auctionBids)
     .set({ isWinning: false })
-    .where(and(eq(auctionBids.listingId, listingId), eq(auctionBids.isWinning, true)));
+    .where(and(eq(auctionBids.listingId, listingId), eq(auctionBids.isWinning, true)))
+    .returning({
+      id: auctionBids.id,
+      bidderId: auctionBids.bidderId,
+      amount: auctionBids.amount,
+      refunded: auctionBids.refunded,
+    });
 
   await executor.insert(auctionBids).values({ listingId, bidderId, amount, isWinning: true });
 
-  return row;
+  return { outbid };
 }
 
 export async function extendListing(
@@ -195,9 +218,19 @@ export async function markExpired(listingId: string, executor: Executor): Promis
   return (result.rowCount ?? 0) > 0;
 }
 
-export async function findUnrefundedLosingBids(
+/**
+ * Mises encore en séquestre pour une annonce.
+ *
+ * `includeWinning` distingue les deux clôtures possibles :
+ *  - expiration AVEC gagnant : la mise gagnante finance le vendeur, seules les
+ *    perdantes sont rendues (`includeWinning = false`) ;
+ *  - achat immédiat : l'acheteur évince TOUT LE MONDE, y compris l'enchérisseur
+ *    en tête, qui doit donc être remboursé lui aussi (`includeWinning = true`).
+ */
+export async function findUnrefundedBids(
   listingId: string,
   executor: Executor = getDb(),
+  includeWinning = false,
 ) {
   return executor
     .select()
@@ -206,7 +239,7 @@ export async function findUnrefundedLosingBids(
       and(
         eq(auctionBids.listingId, listingId),
         eq(auctionBids.refunded, false),
-        eq(auctionBids.isWinning, false),
+        ...(includeWinning ? [] : [eq(auctionBids.isWinning, false)]),
       ),
     );
 }
@@ -329,6 +362,12 @@ export async function confirmTrade(
     .for('update');
   if (!trade || trade.revision !== revision || trade.status !== 'pending') return undefined;
 
+  // Contrôle d'appartenance. Sans lui, `isInitiator` valant faux pour un tiers,
+  // celui-ci confirmait À LA PLACE du partenaire. Les boutons portent bien un
+  // `ownerId`, ce qui rendait la faille inatteignable depuis l'interface — mais
+  // c'était la seule barrière, et elle n'est pas du ressort de cette couche.
+  if (trade.initiatorId !== userId && trade.partnerId !== userId) return undefined;
+
   const isInitiator = trade.initiatorId === userId;
   const [row] = await executor
     .update(trades)
@@ -341,6 +380,13 @@ export async function confirmTrade(
   return row;
 }
 
+/**
+ * Change le statut d'un échange.
+ *
+ * Quand `by` est renseigné (annulation par un joueur), l'auteur doit être partie
+ * à l'échange : autrement, connaître un identifiant suffisait à annuler
+ * l'échange de deux inconnus.
+ */
 export async function setTradeStatus(
   tradeId: string,
   status: 'completed' | 'cancelled' | 'expired',
@@ -355,7 +401,13 @@ export async function setTradeStatus(
       ...(status === 'cancelled' ? { cancelledAt: new Date(), cancelledBy: by } : {}),
       updatedAt: new Date(),
     })
-    .where(and(eq(trades.id, tradeId), eq(trades.status, 'pending')));
+    .where(
+      and(
+        eq(trades.id, tradeId),
+        eq(trades.status, 'pending'),
+        ...(by ? [or(eq(trades.initiatorId, by), eq(trades.partnerId, by))!] : []),
+      ),
+    );
   return (result.rowCount ?? 0) > 0;
 }
 

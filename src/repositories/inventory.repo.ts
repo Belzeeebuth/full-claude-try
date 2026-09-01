@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, inArray, notInArray, sql } from 'drizzle-orm';
 import { getDb, type Executor } from '../db/client';
 import { inventory, itemsConfig } from '../db/schema';
 import { uuidv7 } from '../utils/uuid';
@@ -305,11 +305,16 @@ export async function wipeInventoryExcept(
     .where(inArray(itemsConfig.category, keepCategories as never[]));
 
   const keys = keepKeys.map((row) => row.key);
+  // `<> ALL(${keys})` liait le tableau JS comme un simple paramètre : PostgreSQL
+  // le recevait en texte et refusait la requête (42809, « op ANY/ALL (array)
+  // requires array on right side »). La transaction de prestige avortait donc
+  // TOUJOURS, à la cinquième étape. `notInArray` produit un `NOT IN (…)` avec un
+  // paramètre par clé, ce que le moteur accepte.
   const result =
     keys.length > 0
       ? await executor
           .delete(inventory)
-          .where(and(eq(inventory.userId, userId), sql`${inventory.itemKey} <> ALL(${keys})`))
+          .where(and(eq(inventory.userId, userId), notInArray(inventory.itemKey, keys)))
       : await executor.delete(inventory).where(eq(inventory.userId, userId));
 
   return result.rowCount ?? 0;

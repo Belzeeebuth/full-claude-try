@@ -1,4 +1,5 @@
 import { balance as getBalance, getConfig, harvestKeyOf, seedKeyOf, type CropConfig } from '../config';
+import type { Balance } from '../config/gameplay/schemas';
 import { getDb, lockUserRow, withTransaction, type Executor } from '../db/client';
 import { computeGrowth, computeWaterStatus, planCrop, type GrowthContext, type GrowthState } from '../game/growth';
 import { gridSizeFor, plotUnlockCost } from '../game/grid';
@@ -103,19 +104,8 @@ export async function getFarmView(
   let unlockedPlots = 0;
 
   const plots: PlotView[] = rows.map(({ plot, crop }) => {
-    const fertility =
-      plot.fallowUntil && plot.state === 'empty'
-        ? fallowRecovery(plot.fertility, now.getTime() - (plot.lastHarvestAt?.getTime() ?? now.getTime()), balance)
-        : plot.fertility;
-
-    const weedLevel =
-      plot.state === 'locked'
-        ? 0
-        : weedGrowth(
-            plot.weedLevel,
-            now.getTime() - (plot.lastHarvestAt ?? plot.unlockedAt ?? plot.createdAt).getTime(),
-            balance,
-          );
+    const fertility = effectiveFertility(plot, now, balance);
+    const weedLevel = currentWeedLevel(plot, now, balance);
 
     if (plot.state !== 'locked') unlockedPlots += 1;
     if (plot.pestType) counts.pests += 1;
@@ -198,6 +188,56 @@ export async function getFarmView(
     unlockedPlots,
     nextPlotCost: nextSlot ? plotUnlockCost(nextSlot, balance) : 0,
   };
+}
+
+/**
+ * Origine du temps pour l'accumulation des mauvaises herbes : le dernier
+ * « remue-ménage » sur la parcelle.
+ *
+ * `lastWeededAt` manquait à cette liste — la colonne n'existait pas. Désherber
+ * remettait donc `weed_level` à zéro sans déplacer l'origine, et la pénalité
+ * revenait intégralement à la lecture suivante : sur une parcelle jamais
+ * récoltée, les herbes plafonnaient à 100 sans aucun recours.
+ */
+function weedAnchor(plot: {
+  lastWeededAt: Date | null;
+  lastHarvestAt: Date | null;
+  unlockedAt: Date | null;
+  createdAt: Date;
+}): Date {
+  let latest = plot.createdAt;
+  for (const candidate of [plot.lastWeededAt, plot.lastHarvestAt, plot.unlockedAt]) {
+    if (candidate && candidate.getTime() > latest.getTime()) latest = candidate;
+  }
+  return latest;
+}
+
+function currentWeedLevel(
+  plot: Parameters<typeof weedAnchor>[0] & { weedLevel: number; state: string },
+  now: Date,
+  balance: Balance,
+): number {
+  if (plot.state === 'locked') return 0;
+  return weedGrowth(plot.weedLevel, now.getTime() - weedAnchor(plot).getTime(), balance);
+}
+
+/**
+ * Fertilité réelle d'une parcelle, jachère comprise.
+ *
+ * `fallowUntil` porte l'instant de MISE en jachère malgré son nom : c'est la
+ * seule façon dont il est écrit et lu. La valeur récupérée était jusqu'ici
+ * calculée à l'affichage mais jamais persistée — et comme rien n'écrivait
+ * `fallowUntil`, la branche était morte et la fertilité ne remontait jamais.
+ * Elle est désormais posée à la libération de la parcelle et encaissée à la
+ * plantation, pour que l'affichage et le calcul de récolte ne divergent pas.
+ */
+function effectiveFertility(
+  plot: { state: string; fertility: number; fallowUntil: Date | null },
+  now: Date,
+  balance: Balance,
+): number {
+  if (plot.state !== 'empty' || !plot.fallowUntil) return plot.fertility;
+  return fallowRecovery(plot.fertility, now.getTime() - plot.fallowUntil.getTime(), balance);
 }
 
 function growthContext(world: WorldState, modifiers: FarmModifiers): GrowthContext {
@@ -324,6 +364,11 @@ export async function plant(
     const plan = planCrop(crop, context, now, { extraWaterMultiplier: waterMultiplier });
 
     for (const plot of plantable) {
+      // La fertilité regagnée en jachère est ENCAISSÉE ici : tant qu'elle
+      // restait un calcul d'affichage, la vue montrait un sol reposé et la
+      // récolte utilisait la valeur épuisée stockée en base.
+      const bankedFertility = effectiveFertility(plot, now, balance);
+
       await farmRepo.insertPlantedCrop(
         {
           plotId: plot.id,
@@ -342,7 +387,11 @@ export async function plant(
         },
         tx,
       );
-      await farmRepo.updatePlot(plot.id, { state: 'planted' }, tx);
+      await farmRepo.updatePlot(
+        plot.id,
+        { state: 'planted', fertility: bankedFertility, fallowUntil: null },
+        tx,
+      );
     }
 
     await playerRepo.incrementStats(player.id, { totalPlanted: quantity }, tx);
@@ -556,7 +605,12 @@ export async function harvest(
         await farmRepo.deletePlantedCrop(crop.id, tx);
         await farmRepo.updatePlot(
           plot.id,
-          { state: 'empty', lastHarvestAt: now, weedLevel: Math.min(100, plot.weedLevel + 10) },
+          {
+            state: 'empty',
+            lastHarvestAt: now,
+            fallowUntil: now,
+            weedLevel: Math.min(100, plot.weedLevel + 10),
+          },
           tx,
         );
         continue;
@@ -585,11 +639,7 @@ export async function harvest(
       const result = computeHarvest({
         crop: cropConfig,
         fertility: plot.fertility,
-        weedLevel: weedGrowth(
-          plot.weedLevel,
-          now.getTime() - (plot.lastHarvestAt ?? plot.unlockedAt ?? plot.createdAt).getTime(),
-          balance,
-        ),
+        weedLevel: currentWeedLevel(plot, now, balance),
         missedWaterings: Math.max(crop.missedWaterings, water.missed),
         damagePenalty,
         fertilizerBoost: Number(crop.fertilizerBoost),
@@ -673,6 +723,9 @@ export async function harvest(
             state: 'empty',
             lastHarvestAt: now,
             fertility: result.fertilityAfter,
+            // Départ de la jachère : la fertilité remonte tant que la parcelle
+            // reste vide, et sera encaissée à la prochaine plantation.
+            fallowUntil: now,
             weedLevel: Math.min(100, plot.weedLevel + balance.weeds.weedsPerClear),
             pestType: null,
             pestAppearedAt: null,
@@ -778,7 +831,7 @@ export async function fertilize(
     const candidates = rows
       .filter(({ plot }) => plot.state !== 'locked')
       .filter(({ plot }) => (input.slot ? plot.slot === input.slot : true))
-      .filter(({ plot }) => plot.fertility < balance.fertility.max)
+      .filter(({ plot }) => effectiveFertility(plot, now, balance) < balance.fertility.max)
       .slice(0, input.all ? 64 : 1);
 
     if (candidates.length === 0) {
@@ -796,9 +849,17 @@ export async function fertilize(
 
     let lastFertility = 0;
     for (const { plot, crop } of candidates) {
-      const applied = applyFertilizer(plot.fertility, item.effect ?? {}, balance);
+      const applied = applyFertilizer(
+        effectiveFertility(plot, now, balance),
+        item.effect ?? {},
+        balance,
+      );
       lastFertility = applied.fertility;
-      await farmRepo.updatePlot(plot.id, { fertility: applied.fertility }, tx);
+      await farmRepo.updatePlot(
+        plot.id,
+        { fertility: applied.fertility, fallowUntil: null },
+        tx,
+      );
       if (crop) {
         await farmRepo.updatePlantedCrop(
           crop.id,
@@ -842,7 +903,7 @@ export async function weed(
     const candidates = rows
       .filter(({ plot }) => plot.state !== 'locked')
       .filter(({ plot }) => (input.slot ? plot.slot === input.slot : true))
-      .filter(({ plot }) => plot.weedLevel > 0)
+      .filter(({ plot }) => currentWeedLevel(plot, now, balance) > 0)
       .slice(0, input.all ? 64 : 1);
 
     if (candidates.length === 0) {
@@ -860,9 +921,12 @@ export async function weed(
     // Désherber produit des mauvaises herbes, matière première du compost :
     // une corvée qui rapporte est une corvée qu'on fait.
     const weedsCollected = candidates.length * balance.weeds.weedsPerClear;
+    // `lastWeededAt` est l'essentiel : remettre `weedLevel` à zéro sans déplacer
+    // l'origine du temps ne retirait que le socle stocké — au plus 3 points sur
+    // 100 — et la pénalité revenait intacte à la lecture suivante.
     await farmRepo.updatePlots(
       candidates.map(({ plot }) => plot.id),
-      { weedLevel: 0 },
+      { weedLevel: 0, lastWeededAt: now },
       tx,
     );
     await inventoryService.addItems(player.id, [{ itemKey: 'weeds', quantity: weedsCollected }], tx, {

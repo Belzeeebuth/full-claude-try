@@ -215,14 +215,16 @@ const webhook: Command = {
         const outcome = await webhookService.sendTestPing(context.player, id);
         await interaction.editReply({
           embeds: [
+            // Volontairement sans statut HTTP ni message d'erreur : les rendre
+            // au joueur transformait cette commande en scanner de ports.
             outcome.ok
               ? successEmbed(
                   t('integrations.webhook_test_ok_title'),
-                  t('integrations.webhook_test_ok_body', { status: outcome.status ?? 0 }),
+                  t('integrations.webhook_test_ok_body'),
                 )
               : errorEmbed(
                   t('integrations.webhook_test_failed_title'),
-                  t('integrations.webhook_test_failed_body', { error: outcome.error ?? '?' }),
+                  t('integrations.webhook_test_failed_body'),
                 ),
           ],
         });

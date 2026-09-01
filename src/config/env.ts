@@ -108,6 +108,10 @@ const envSchema = z.object({
   RENDER_ENABLED: booleanish.default(true),
   RENDER_CACHE_TTL: intFromEnv(0, 86_400, 120),
   RENDER_TIMEOUT_MS: intFromEnv(250, 30_000, 4_000),
+  // Threads dédiés au dessin. 0 = rendu sur le thread principal (l'event loop
+  // est alors bloqué pendant chaque image). Au-delà de 2, on consomme surtout
+  // de la mémoire : chaque worker charge sa propre copie de la configuration.
+  RENDER_WORKERS: intFromEnv(0, 8, 2),
   ASSETS_DIR: z.string().default('./assets'),
 
   // --- Intégrations ---

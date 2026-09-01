@@ -113,7 +113,9 @@ export const users = pgTable(
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (t) => [
-    uniqueIndex('users_discord_id_uq').on(t.discordId),
+    // Unicité limitée aux comptes vivants : `/admin reset` fait une suppression
+    // logique, et un unique total empêchait la victime de refaire `/start`.
+    uniqueIndex('users_discord_id_uq').on(t.discordId).where(sql`deleted_at IS NULL`),
     uniqueIndex('users_referral_code_uq').on(t.referralCode),
     index('users_coins_idx').on(t.coins.desc()),
     index('users_level_idx').on(t.level.desc(), t.totalXp.desc()),
@@ -224,6 +226,12 @@ export const plots = pgTable(
     pestDeadlineAt: timestamp('pest_deadline_at', { withTimezone: true }),
     lastWateredAt: timestamp('last_watered_at', { withTimezone: true }),
     lastHarvestAt: timestamp('last_harvest_at', { withTimezone: true }),
+    /**
+     * Ancre du calcul des mauvaises herbes, au même titre que `lastHarvestAt`.
+     * Sans elle, désherber remettait `weed_level` à zéro sans déplacer l'origine
+     * du temps écoulé : la pénalité revenait intégralement à la lecture suivante.
+     */
+    lastWeededAt: timestamp('last_weeded_at', { withTimezone: true }),
     /** Date de mise en jachère volontaire (restaure la fertilité). */
     fallowUntil: timestamp('fallow_until', { withTimezone: true }),
     unlockedAt: timestamp('unlocked_at', { withTimezone: true }),

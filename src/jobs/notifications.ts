@@ -24,24 +24,49 @@ const log = moduleLogger('notifications');
  */
 
 let timer: NodeJS.Timeout | undefined;
+/** Un lot à la fois : `setInterval` n'attend pas la fin du précédent. */
+let inFlight = false;
+
+/**
+ * Identifiant du process, écrit dans `notifications.claimed_by`.
+ * Sert au diagnostic (« quel shard a envoyé ce MP ? ») autant qu'à la
+ * réservation elle-même.
+ */
+const WORKER_ID = `${process.env.SHARDS ?? 'mono'}#${process.pid}`.slice(0, 64);
 
 export function startNotificationWorker(client: Client): void {
   const balance = getBalance();
-  const intervalMs = Math.max(250, Math.floor(1_000 / balance.notifications.dispatchRatePerSecond));
+  const rate = Math.max(1, balance.notifications.dispatchRatePerSecond);
 
+  // Un tick par seconde, `rate` envois par tick : la cadence demandée est donc
+  // respectée telle quelle. L'ancien calcul multipliait un intervalle déjà
+  // planchonné à 250 ms par le débit, ce qui plafonnait silencieusement à 4/s
+  // quelle que soit la valeur configurée.
   timer = setInterval(() => {
-    void dispatchBatch(client, balance.notifications.dispatchRatePerSecond).catch((error: unknown) =>
-      log.error({ err: error }, 'distribution des notifications en échec'),
-    );
-  }, intervalMs * balance.notifications.dispatchRatePerSecond);
+    if (inFlight) return;
+    inFlight = true;
+    void dispatchBatch(client, rate)
+      .catch((error: unknown) => log.error({ err: error }, 'distribution des notifications en échec'))
+      .finally(() => {
+        inFlight = false;
+      });
+  }, 1_000);
 
-  log.info({ rate: balance.notifications.dispatchRatePerSecond }, 'worker de notifications démarré');
+  log.info({ rate, worker: WORKER_ID }, 'worker de notifications démarré');
 }
 
 export async function dispatchBatch(client: Client, limit: number): Promise<number> {
   const balance = getBalance();
-  const pending = await systemRepo.claimPendingNotifications(new Date(), limit);
+  const pending = await systemRepo.claimPendingNotifications(new Date(), limit, WORKER_ID);
   if (pending.length === 0) return 0;
+
+  // Plafond quotidien : un seul comptage groupé pour tout le lot, au lieu d'une
+  // requête par notification.
+  const since = new Date(Date.now() - 86_400_000);
+  const dailyCounts = await systemRepo.countNotificationsTodayFor(
+    [...new Set(pending.map((entry) => entry.notification.userId))],
+    since,
+  );
 
   let sent = 0;
   for (const entry of pending) {
@@ -77,9 +102,8 @@ export async function dispatchBatch(client: Client, limit: number): Promise<numb
         continue;
       }
 
-      const today = new Date(Date.now() - 86_400_000);
-      const todayCount = await systemRepo.countNotificationsToday(notification.userId, today);
-      if (todayCount > balance.notifications.maxPerUserPerDay) {
+      const todayCount = dailyCounts.get(notification.userId) ?? 0;
+      if (todayCount >= balance.notifications.maxPerUserPerDay) {
         await systemRepo.markNotificationDelivered(notification.id);
         continue;
       }
@@ -116,7 +140,11 @@ export async function dispatchBatch(client: Client, limit: number): Promise<numb
         continue;
       }
 
+      // La réservation est relâchée : l'échec peut être transitoire (coupure
+      // réseau), et une notification réservée par un process mort resterait
+      // sinon bloquée jusqu'à l'expiration du délai de péremption.
       await systemRepo.markNotificationFailed(notification.id, normalized.message);
+      await systemRepo.releaseNotificationClaim(notification.id);
       log.warn({ err: normalized, id: notification.id }, 'notification non délivrée');
     }
   }

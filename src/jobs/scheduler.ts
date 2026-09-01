@@ -76,26 +76,46 @@ async function startWithBullMq(): Promise<void> {
   const connection = getQueueConnection();
   queue = new Queue(QUEUE_NAME, { connection, prefix: QUEUE_PREFIX });
 
-  // On repart d'une base propre : si un cron a changé dans le code, l'ancien
-  // job répétable resterait sinon programmé indéfiniment.
-  const existing = await queue.getRepeatableJobs();
-  for (const repeatable of existing) {
-    await queue.removeRepeatableByKey(repeatable.key);
-  }
+  // Un SEUL process réenregistre les tâches répétables.
+  //
+  // Tous les shards démarrent à peu près en même temps et exécutaient ce bloc
+  // en parallèle : la purge de l'un pouvait effacer l'enregistrement qu'un autre
+  // venait de poser, et certaines tâches se retrouvaient tout simplement non
+  // programmées. Le verrou n'est jamais relâché : il expire, ce qui suffit à
+  // couvrir la fenêtre de démarrage.
+  const registrar = await connection.set(
+    `${QUEUE_PREFIX}:scheduler:register`,
+    process.pid.toString(),
+    'EX',
+    60,
+    'NX',
+  );
 
-  for (const definition of jobs) {
-    await queue.add(
-      definition.key,
-      { key: definition.key },
-      {
-        repeat: { pattern: definition.cron, tz: 'UTC' },
-        jobId: definition.key,
-        removeOnComplete: 50,
-        removeOnFail: 100,
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 30_000 },
-      },
-    );
+  if (registrar === 'OK') {
+    // On repart d'une base propre : si un cron a changé dans le code, l'ancien
+    // job répétable resterait sinon programmé indéfiniment.
+    const existing = await queue.getRepeatableJobs();
+    for (const repeatable of existing) {
+      await queue.removeRepeatableByKey(repeatable.key);
+    }
+
+    for (const definition of jobs) {
+      await queue.add(
+        definition.key,
+        { key: definition.key },
+        {
+          repeat: { pattern: definition.cron, tz: 'UTC' },
+          jobId: definition.key,
+          removeOnComplete: 50,
+          removeOnFail: 100,
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 30_000 },
+        },
+      );
+    }
+    log.info({ jobs: jobs.length }, 'tâches répétables enregistrées par ce process');
+  } else {
+    log.info('tâches répétables déjà enregistrées par un autre process');
   }
 
   worker = new Worker(
@@ -113,24 +133,34 @@ async function startWithBullMq(): Promise<void> {
   });
 }
 
+/**
+ * Périodicité de chaque forme de cron utilisée par `definitions.ts`.
+ * Sert au repli sans Redis et à l'estimation de la prochaine exécution.
+ */
+const CRON_INTERVALS: Record<string, number> = {
+  '* * * * *': 60_000,
+  '*/5 * * * *': 5 * 60_000,
+  '*/10 * * * *': 10 * 60_000,
+  '*/15 * * * *': 15 * 60_000,
+  '0 * * * *': 60 * 60_000,
+  '15 * * * *': 60 * 60_000,
+  '30 * * * *': 60 * 60_000,
+  '0 */2 * * *': 2 * 60 * 60_000,
+  '30 */2 * * *': 2 * 60 * 60_000,
+  '0 */3 * * *': 3 * 60 * 60_000,
+};
+
 function startWithTimers(): void {
   // Repli minimaliste : on approxime le cron par un intervalle. Suffisant en
   // développement, jamais recommandé en production (pas de coordination).
-  const intervals: Record<string, number> = {
-    '* * * * *': 60_000,
-    '*/5 * * * *': 5 * 60_000,
-    '*/10 * * * *': 10 * 60_000,
-    '*/15 * * * *': 15 * 60_000,
-    '0 * * * *': 60 * 60_000,
-    '15 * * * *': 60 * 60_000,
-    '30 * * * *': 60 * 60_000,
-    '0 */2 * * *': 2 * 60 * 60_000,
-    '30 */2 * * *': 2 * 60 * 60_000,
-    '0 */3 * * *': 3 * 60 * 60_000,
-  };
-
+  //
+  // ⚠ Les crons journaliers et hebdomadaires ne figurent pas dans la table et
+  // retombent sur 24 h à partir du démarrage : en particulier
+  // `leaderboard:weekly` s'exécuterait alors CHAQUE JOUR, remettant à zéro les
+  // compteurs hebdomadaires. Raison de plus pour ne pas l'utiliser ailleurs
+  // qu'en développement.
   for (const definition of jobs) {
-    const interval = intervals[definition.cron] ?? 24 * 60 * 60_000;
+    const interval = CRON_INTERVALS[definition.cron] ?? 24 * 60 * 60_000;
     timers.push(
       setInterval(() => {
         void runJob(definition).catch((error: unknown) =>
@@ -139,6 +169,19 @@ function startWithTimers(): void {
       }, interval),
     );
   }
+}
+
+/**
+ * Prochaine exécution attendue, déduite du cron.
+ *
+ * `/admin stats` affichait « dans une minute » pour toutes les tâches, valeur
+ * codée en dur sans rapport avec leur planification réelle. On se contente d'une
+ * lecture des formes de cron utilisées ici, plutôt que d'embarquer un
+ * analyseur complet pour une colonne d'affichage.
+ */
+function nextRunFor(definition: JobDefinition): Date {
+  const intervalMs = CRON_INTERVALS[definition.cron] ?? 24 * 60 * 60_000;
+  return new Date(Date.now() + intervalMs);
 }
 
 async function runJob(definition: JobDefinition): Promise<string> {
@@ -150,7 +193,7 @@ async function runJob(definition: JobDefinition): Promise<string> {
     const durationMs = Date.now() - started;
     await systemRepo.completeTask(definition.key, {
       durationMs,
-      nextRunAt: new Date(Date.now() + 60_000),
+      nextRunAt: nextRunFor(definition),
     });
     log.info({ job: definition.key, durationMs, result }, 'job terminé');
     return result;
@@ -159,7 +202,7 @@ async function runJob(definition: JobDefinition): Promise<string> {
     await systemRepo.completeTask(definition.key, {
       durationMs: Date.now() - started,
       error: normalized.message,
-      nextRunAt: new Date(Date.now() + 300_000),
+      nextRunAt: nextRunFor(definition),
     });
     log.error({ err: normalized, job: definition.key }, 'job en échec');
     throw normalized;

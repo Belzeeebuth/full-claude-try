@@ -1,6 +1,6 @@
 import { Events } from 'discord.js';
 import { createClient, login } from './client';
-import { getConfig } from './config';
+import { getConfig, reloadConfig } from './config';
 import { env } from './config/env';
 import { closeDatabase, pingDatabase } from './db/client';
 import { closeRedis } from './db/redis';
@@ -11,6 +11,10 @@ import { loadCommands, loadComponents, getRegistry } from './framework/registry'
 import { startHealthServer } from './http/health';
 import { startScheduler, stopScheduler } from './jobs/scheduler';
 import { stopNotificationWorker } from './jobs/notifications';
+import { reloadCatalogs } from './i18n';
+import { closeRenderPool, warmRenderPool } from './render';
+import { subscribeToCluster } from './services/cluster';
+import { applyMaintenanceLocally } from './services/misc.service';
 import { ensureMarketRows } from './services/market.service';
 import { ensureSeasonCalendar } from './services/world.service';
 import { moduleLogger } from './utils/logger';
@@ -67,7 +71,54 @@ async function main(): Promise<void> {
 
   // 4. Client et événements
   const client = createClient();
-  registerProcessHandlers(client);
+  let httpServer: ReturnType<typeof startHealthServer>;
+  let shuttingDown = false;
+
+  /**
+   * Arrêt propre. Défini AVANT `registerProcessHandlers` pour que le filet de
+   * sécurité des exceptions non capturées puisse s'en servir : un process qui
+   * survit à une exception inattendue peut porter une transaction déchirée ou un
+   * client du pool jamais relâché, ce qui n'a pas sa place dans du code qui
+   * manipule de la monnaie.
+   */
+  const shutdown = async (signal: string, exitCode = 0): Promise<void> => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    log.warn({ signal, exitCode }, 'arrêt demandé');
+    try {
+      stopNotificationWorker();
+      await stopScheduler();
+      httpServer?.close();
+      client.removeAllListeners();
+      await client.destroy();
+      await closeRenderPool();
+      await closeRedis();
+      await closeDatabase();
+      log.info('arrêt terminé');
+      process.exit(exitCode);
+    } catch (error) {
+      log.error({ err: error }, "échec de l'arrêt propre");
+      process.exit(1);
+    }
+  };
+
+  // L'abonnement inter-shards précède la connexion : un ordre de maintenance
+  // envoyé pendant le démarrage doit être capté, pas manqué.
+  subscribeToCluster((message) => {
+    if (message.type === 'maintenance') {
+      applyMaintenanceLocally(message.enabled, message.message);
+      return;
+    }
+    if (message.type === 'reload-config') {
+      reloadConfig();
+      reloadCatalogs();
+      log.warn('configuration rechargée (ordre inter-shards)');
+    }
+  });
+
+  registerProcessHandlers(client, {
+    onFatal: (reason) => void shutdown(reason, 1),
+  });
   registerInteractionHandler(client);
   registerGuildHandlers(client);
 
@@ -90,26 +141,10 @@ async function main(): Promise<void> {
   await ensureMarketRows();
   await ensureSeasonCalendar();
   await startScheduler(client);
-  const httpServer = startHealthServer(client);
-
-  // Arrêt propre
-  const shutdown = async (signal: string): Promise<void> => {
-    log.warn({ signal }, 'arrêt demandé');
-    try {
-      stopNotificationWorker();
-      await stopScheduler();
-      httpServer?.close();
-      client.removeAllListeners();
-      await client.destroy();
-      await closeRedis();
-      await closeDatabase();
-      log.info('arrêt terminé');
-      process.exit(0);
-    } catch (error) {
-      log.error({ err: error }, "échec de l'arrêt propre");
-      process.exit(1);
-    }
-  };
+  // Les workers de rendu démarrent maintenant : le premier joueur à taper
+  // `/ferme` ne paie ni le lancement du thread ni le chargement des polices.
+  warmRenderPool();
+  httpServer = startHealthServer(client);
 
   process.on('SIGINT', () => void shutdown('SIGINT'));
   process.on('SIGTERM', () => void shutdown('SIGTERM'));

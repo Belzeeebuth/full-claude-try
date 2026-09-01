@@ -116,7 +116,41 @@ export async function trackAction(
     eventPoints: 0,
   };
 
+  // ⚠ POINT DE REPRISE OBLIGATOIRE.
+  //
+  // Cette fonction s'exécute DANS la transaction de l'action de jeu. En
+  // PostgreSQL, une requête en échec fait basculer toute la transaction en état
+  // « aborted » : chaque instruction suivante renvoie 25P02 et le COMMIT échoue.
+  // Un simple `try/catch` ne sauvait donc rien — il transformait juste un
+  // message clair en « erreur interne » et masquait la cause.
+  //
+  // `tx.transaction()` ouvre un SAVEPOINT quand on lui passe une transaction en
+  // cours : l'échec de la progression annule alors la seule progression, et la
+  // récolte qui l'a déclenchée survit vraiment.
   try {
+    await tx.transaction(async (scope) => {
+      await trackWithin(scope, context, action, amount, target, result);
+    });
+  } catch (error) {
+    // La progression est un système SECONDAIRE : son échec ne doit pas coûter au
+    // joueur l'action qu'il vient de faire. L'incohérence éventuelle est
+    // rattrapée au cycle suivant.
+    log.error({ err: error, action, userId: context.userId }, 'progress tracking failed');
+  }
+
+  return result;
+}
+
+/** Corps de `trackAction`, exécuté sous point de reprise. */
+async function trackWithin(
+  tx: Executor,
+  context: TrackContext,
+  action: TrackedAction,
+  amount: number,
+  target: TrackTarget,
+  result: TrackResult,
+): Promise<void> {
+  {
     const completedQuests = await progressionRepo.progressQuests(
       context.userId,
       action,
@@ -170,14 +204,7 @@ export async function trackAction(
         result.eventPoints += points;
       }
     }
-  } catch (error) {
-    // La progression est un système SECONDAIRE : si elle échoue, l'action de jeu
-    // principale (la récolte) ne doit pas être perdue. On journalise et on
-    // continue — l'incohérence éventuelle est rattrapée au cycle suivant.
-    log.error({ err: error, action, userId: context.userId }, 'progress tracking failed');
   }
-
-  return result;
 }
 
 /**
@@ -213,11 +240,18 @@ export async function trackHarvest(
   input: { cropKey: string; quantity: number; rarity: string },
   tx: Executor,
 ): Promise<TrackResult> {
-  const results = await Promise.all([
-    trackAction(context, 'harvest_any', input.quantity, {}, tx),
-    trackAction(context, 'harvest_crop', input.quantity, { cropKey: input.cropKey }, tx),
-    trackAction(context, 'harvest_category', input.quantity, { category: 'harvest' }, tx),
-  ]);
+  // Séquentiel, et non `Promise.all` : une transaction Drizzle tient UN SEUL
+  // client PostgreSQL. Les paralléliser ne gagnait rien — node-postgres les
+  // sérialise de toute façon — et laissait l'ordre d'écriture indéterminé sur
+  // des lignes de quête communes.
+  const results: TrackResult[] = [];
+  results.push(await trackAction(context, 'harvest_any', input.quantity, {}, tx));
+  results.push(
+    await trackAction(context, 'harvest_crop', input.quantity, { cropKey: input.cropKey }, tx),
+  );
+  results.push(
+    await trackAction(context, 'harvest_category', input.quantity, { category: 'harvest' }, tx),
+  );
   return mergeResults(results);
 }
 

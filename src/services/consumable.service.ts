@@ -8,6 +8,7 @@ import { moduleLogger } from '../utils/logger';
 import * as farmRepo from '../repositories/farm.repo';
 import * as playerRepo from '../repositories/player.repo';
 import * as inventoryService from './inventory.service';
+import { invalidateFarmModifiers } from './modifier-cache';
 import type { PlayerContext } from '../types';
 
 const log = moduleLogger('consumables');
@@ -54,6 +55,9 @@ async function setBoost(userId: string, boost: ActiveBoost, ttlSeconds: number):
   } catch (error) {
     log.warn({ err: error }, 'impossible de poser le boost');
   }
+  // Les modificateurs de ferme sont mis en cache : sans cette invalidation, le
+  // joueur verrait « boost actif » et attendrait jusqu'à une minute son effet.
+  await invalidateFarmModifiers(userId);
 }
 
 export interface UseResult {
@@ -210,10 +214,14 @@ export async function useConsumable(
 
       case 'theme':
       case 'banner': {
-        const field = effect.type === 'theme' ? 'profileTheme' : 'profileTheme';
+        // Thèmes et bannières alimentent le MÊME rendu : `profileTheme` sert de
+        // clé dans la table `BANNERS` du renderer de profil, qui couvre les deux
+        // familles de valeurs. Les deux types d'objet écrivent donc la même
+        // colonne — un ternaire dont les deux branches étaient identiques le
+        // laissait croire à une distinction qui n'existe pas.
         await tx
           .update((await import('../db/schema')).users)
-          .set({ [field]: effect.value ?? 'classic' })
+          .set({ profileTheme: effect.value ?? 'classic' })
           .where(
             (await import('drizzle-orm')).eq((await import('../db/schema')).users.id, player.id),
           );

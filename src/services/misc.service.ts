@@ -1,4 +1,4 @@
-import { balance as getBalance, getConfig, reloadConfig } from '../config';
+import { balance as getBalance, getActiveSeasonPass, getConfig, reloadConfig } from '../config';
 import { env } from '../config/env';
 import { lockUserRow, withTransaction } from '../db/client';
 import { checkPrestigeEligibility, planPrestige, prestigeBadge } from '../game/prestige';
@@ -10,12 +10,16 @@ import * as economyRepo from '../repositories/economy.repo';
 import * as farmRepo from '../repositories/farm.repo';
 import * as inventoryRepo from '../repositories/inventory.repo';
 import * as playerRepo from '../repositories/player.repo';
+import * as progressionRepo from '../repositories/progression.repo';
 import * as socialRepo from '../repositories/social.repo';
 import * as systemRepo from '../repositories/system.repo';
+import { broadcast } from './cluster';
 import * as economyService from './economy.service';
 import * as inventoryService from './inventory.service';
 import { grantXp, removeXpAmount } from './player.service';
-import { toSqlDate } from '../utils/time';
+import { claimOnce } from '../utils/lock';
+import { checkAndSet as setCooldown } from '../framework/cooldown';
+import { dailyCycleKey, isWeekend, toSqlDate } from '../utils/time';
 import type { PlayerContext } from '../types';
 
 const log = moduleLogger('misc');
@@ -175,7 +179,7 @@ export async function doPrestige(player: PlayerContext): Promise<{
   pointsGained: number;
 }> {
   const balance = getBalance();
-  const { eligibility, plan, unlockedPlots } = await previewPrestige(player);
+  const { eligibility, unlockedPlots } = await previewPrestige(player);
   if (!eligibility.eligible) {
     throw gameError('level_too_low', 'Prestige unavailable.', {
       i18nKey: eligibility.reasonKey ?? 'errors.player.prestige_unavailable',
@@ -184,9 +188,30 @@ export async function doPrestige(player: PlayerContext): Promise<{
   }
 
   return withTransaction(async (tx) => {
-    await lockUserRow(tx, player.id);
+    const locked = await lockUserRow(tx, player.id);
+    if (!locked) {
+      throw gameError('not_registered', 'Player not found.', {
+        i18nKey: 'errors.player_not_found',
+      });
+    }
     const schema = await import('../db/schema');
-    const { eq, sql, gt } = await import('drizzle-orm');
+    const { eq, sql, gt, inArray } = await import('drizzle-orm');
+
+    // Le plan est REJOUÉ sous verrou : celui de l'aperçu s'appuie sur le solde
+    // du contexte, lu hors transaction, et une récolte encaissée entre-temps
+    // fausserait le montant conservé.
+    const lockedPlan = planPrestige(
+      {
+        level: locked.level,
+        xp: locked.xp,
+        coins: locked.coins,
+        prestige: player.prestige,
+        unlockedPlots,
+      },
+      balance,
+    );
+    const coinsBefore = locked.coins;
+    const coinsAfter = lockedPlan.coinsKept + lockedPlan.startingCoins;
 
     // 1. Niveau, XP, énergie, prestige et points.
     await tx
@@ -194,22 +219,30 @@ export async function doPrestige(player: PlayerContext): Promise<{
       .set({
         level: 1,
         xp: 0,
-        coins: plan.coinsKept + plan.startingCoins,
-        prestige: plan.newPrestige,
-        prestigePoints: sql`${schema.users.prestigePoints} + ${plan.pointsGained}`,
+        coins: coinsAfter,
+        prestige: lockedPlan.newPrestige,
+        prestigePoints: sql`${schema.users.prestigePoints} + ${lockedPlan.pointsGained}`,
         energy: balance.energy.startingMax,
         energyUpdatedAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(schema.users.id, player.id));
 
-    await economyRepo.recordGenesisLedger(
+    // La VARIATION du solde, jamais le solde lui-même : le prestige détruit des
+    // pièces, la ligne doit donc être négative pour que
+    // `SUM(transactions) = users.coins` continue de tenir. Y écrire le solde
+    // entier créait un écart permanent, signalé chaque heure par l'audit.
+    await economyRepo.recordDirectBalanceLedger(
       {
         userId: player.id,
         type: 'prestige_reset',
-        amount: plan.coinsKept + plan.startingCoins,
-        balanceAfter: plan.coinsKept + plan.startingCoins,
-        metadata: { prestige: plan.newPrestige, kept: plan.coinsKept },
+        amount: coinsAfter - coinsBefore,
+        balanceAfter: coinsAfter,
+        metadata: {
+          prestige: lockedPlan.newPrestige,
+          kept: lockedPlan.coinsKept,
+          before: coinsBefore,
+        },
       },
       tx,
     );
@@ -217,33 +250,51 @@ export async function doPrestige(player: PlayerContext): Promise<{
     // 2. Parcelles : on reverrouille au-delà de la moitié conservée.
     await tx
       .update(schema.plots)
-      .set({ state: 'locked', unlockedAt: null, fertility: balance.fertility.start, weedLevel: 0 })
+      .set({
+        state: 'locked',
+        unlockedAt: null,
+        fertility: balance.fertility.start,
+        weedLevel: 0,
+        lastWeededAt: null,
+        lastHarvestAt: null,
+        pestType: null,
+        pestAppearedAt: null,
+        pestDeadlineAt: null,
+      })
       .where(
         (await import('drizzle-orm')).and(
           eq(schema.plots.farmId, player.farmId),
-          gt(schema.plots.slot, plan.plotsKept),
+          gt(schema.plots.slot, lockedPlan.plotsKept),
         ),
       );
 
-    // 3. Cultures en cours : perdues.
+    // 3. Cultures en cours : perdues. Les parcelles conservées repartent à
+    // « vide » quel que soit leur état — `withered` compris, écrit par le job de
+    // flétrissement. Sans lui, la parcelle restait comptée comme libre à
+    // l'affichage mais refusée par `plant()`, donc définitivement morte.
     await tx.delete(schema.plantedCrops).where(eq(schema.plantedCrops.userId, player.id));
     await tx
       .update(schema.plots)
-      .set({ state: 'empty' })
+      .set({
+        state: 'empty',
+        pestType: null,
+        pestAppearedAt: null,
+        pestDeadlineAt: null,
+      })
       .where(
         (await import('drizzle-orm')).and(
           eq(schema.plots.farmId, player.farmId),
-          eq(schema.plots.state, 'planted'),
+          inArray(schema.plots.state, ['planted', 'growing', 'ready', 'withered']),
         ),
       );
 
     // 4. Animaux (non conservés par défaut).
-    if (!plan.animalsKept) {
+    if (!lockedPlan.animalsKept) {
       await tx.delete(schema.ownedAnimals).where(eq(schema.ownedAnimals.userId, player.id));
     }
 
     // 5. Inventaire : seules les catégories listées survivent.
-    await inventoryRepo.wipeInventoryExcept(player.id, plan.inventoryCategoriesKept, tx);
+    await inventoryRepo.wipeInventoryExcept(player.id, lockedPlan.inventoryCategoriesKept, tx);
     await inventoryService.addItems(
       player.id,
       [
@@ -261,20 +312,20 @@ export async function doPrestige(player: PlayerContext): Promise<{
         action: 'prestige',
         targetType: 'user',
         targetId: player.id,
-        payload: { from: player.level, prestige: plan.newPrestige, unlockedPlots },
+        payload: { from: locked.level, prestige: lockedPlan.newPrestige, unlockedPlots },
         severity: 'info',
       },
       tx,
     );
 
-    log.info({ userId: player.id, prestige: plan.newPrestige }, 'rebirth completed');
+    log.info({ userId: player.id, prestige: lockedPlan.newPrestige }, 'rebirth completed');
 
     return {
-      newPrestige: plan.newPrestige,
-      multiplier: plan.newMultiplier,
-      plotsKept: plan.plotsKept,
-      coinsKept: plan.coinsKept,
-      pointsGained: plan.pointsGained,
+      newPrestige: lockedPlan.newPrestige,
+      multiplier: lockedPlan.newMultiplier,
+      plotsKept: lockedPlan.plotsKept,
+      coinsKept: lockedPlan.coinsKept,
+      pointsGained: lockedPlan.pointsGained,
     };
   });
 }
@@ -282,6 +333,25 @@ export async function doPrestige(player: PlayerContext): Promise<{
 // ---------------------------------------------------------------------------
 // VISITES ET PARRAINAGE
 // ---------------------------------------------------------------------------
+
+/**
+ * Vérifie le plafond quotidien d'aides, sans rien modifier.
+ *
+ * Exposé séparément pour que l'appelant le contrôle AVANT d'arroser la ferme
+ * hôte : les deux opérations vivent dans des transactions distinctes, et
+ * l'ancien ordre laissait le travail fait avant de le refuser.
+ */
+export async function assertCanHelp(visitor: PlayerContext): Promise<void> {
+  const balance = getBalance();
+  const helpsToday = await socialRepo.countHelpsToday(visitor.id, toSqlDate(new Date()));
+  if (helpsToday >= balance.social.maxHelpsPerDay) {
+    throw gameError(
+      'forbidden',
+      `You have already helped ${balance.social.maxHelpsPerDay} farmers today.`,
+      { i18nKey: 'errors.social.help_limit', params: { max: balance.social.maxHelpsPerDay } },
+    );
+  }
+}
 
 export async function recordVisit(
   visitor: PlayerContext,
@@ -294,14 +364,7 @@ export async function recordVisit(
 
   if (visitor.id === host.id) return { rewarded: false, coins: 0, xp: 0 };
 
-  const helpsToday = await socialRepo.countHelpsToday(visitor.id, today);
-  if (helped && helpsToday >= balance.social.maxHelpsPerDay) {
-    throw gameError(
-      'forbidden',
-      `You have already helped ${balance.social.maxHelpsPerDay} farmers today.`,
-      { i18nKey: 'errors.social.help_limit', params: { max: balance.social.maxHelpsPerDay } },
-    );
-  }
+  if (helped) await assertCanHelp(visitor);
 
   const coins = helped ? balance.social.helpRewardCoins : balance.social.visitRewardCoins;
   const xp = helped ? balance.social.helpRewardXp : balance.social.visitRewardXp;
@@ -376,6 +439,93 @@ export async function referralStatus(userId: string) {
 // ---------------------------------------------------------------------------
 // VOTES
 // ---------------------------------------------------------------------------
+
+export interface VoteResult {
+  userId: string;
+  gems: number;
+  coins: number;
+  weekend: boolean;
+  premiumGranted: boolean;
+  nextVoteAt: Date;
+}
+
+/**
+ * Enregistre un vote confirmé par top.gg et verse la récompense.
+ *
+ * Cette fonction manquait entièrement : `/vote` affichait un lien et un montant,
+ * mais rien ne créditait jamais quoi que ce soit, et `grantPassPremium` n'avait
+ * aucun appelant — la moitié des récompenses de chaque palier du passe était
+ * donc inaccessible.
+ *
+ * L'idempotence passe par `claimOnce` : top.gg relivre son webhook en cas de
+ * réponse lente, et un vote ne doit payer qu'une fois.
+ */
+export async function recordVote(
+  discordId: string,
+  options: { weekend?: boolean; voteId?: string } = {},
+): Promise<VoteResult | null> {
+  const balance = getBalance();
+  const user = await playerRepo.findUserByDiscordId(discordId);
+  if (!user) return null;
+
+  const weekend = options.weekend ?? isWeekend();
+  const multiplier = weekend ? balance.vote.weekendMultiplier : 1;
+  const gems = Math.max(0, Math.round(balance.vote.rewardGems * multiplier));
+  const coins = Math.max(0, Math.round(balance.vote.rewardCoins * multiplier));
+
+  // Fenêtre d'idempotence alignée sur le cooldown : deux livraisons du même
+  // vote ne peuvent pas payer deux fois, y compris à cheval sur un redémarrage.
+  const token = `vote:${options.voteId ?? `${user.id}:${dailyCycleKey(new Date())}`}`;
+  if (!(await claimOnce(token, balance.vote.cooldownHours * 3_600))) {
+    return null;
+  }
+
+  const pass = getActiveSeasonPass();
+  let premiumGranted = false;
+
+  await withTransaction(async (tx) => {
+    await lockUserRow(tx, user.id);
+    if (gems > 0) {
+      await economyService.pay(
+        { userId: user.id, amount: gems, currency: 'gems', type: 'vote_reward' },
+        tx,
+      );
+    }
+    if (coins > 0) {
+      await economyService.pay({ userId: user.id, amount: coins, type: 'vote_reward' }, tx);
+    }
+
+    // Voter débloque la voie premium du passe en cours.
+    if (pass) {
+      await progressionRepo.grantPassPremium(user.id, pass.id, tx);
+      premiumGranted = true;
+    }
+  });
+
+  // Le cooldown affiché par `/vote` était consulté mais jamais posé.
+  await setCooldown(user.id, 'vote', balance.vote.cooldownHours * 3_600);
+
+  await systemRepo.audit({
+    actorId: user.id,
+    actorDiscordId: discordId,
+    action: 'vote',
+    targetType: 'user',
+    targetId: user.id,
+    payload: { gems, coins, weekend, premiumGranted },
+    severity: 'info',
+  });
+
+  log.info({ userId: user.id, gems, coins, weekend }, 'vote enregistré');
+
+  return {
+    userId: user.id,
+    gems,
+    coins,
+    weekend,
+    premiumGranted,
+    nextVoteAt: new Date(Date.now() + balance.vote.cooldownHours * 3_600_000),
+  };
+}
 
 export function voteInfo() {
   const balance = getBalance();
@@ -584,6 +734,9 @@ export async function adminReloadConfig(actor: PlayerContext): Promise<{
 }> {
   const config = reloadConfig();
   reloadCatalogs();
+  // Même raison que la maintenance : sans diffusion, seuls les joueurs servis
+  // par ce shard voient la nouvelle configuration.
+  await broadcast({ type: 'reload-config' });
 
   await systemRepo.audit({
     actorId: actor.id,
@@ -645,6 +798,16 @@ export function getMaintenance(): { enabled: boolean; message: string } {
   return { ...maintenanceState };
 }
 
+/**
+ * Applique l'état de maintenance au process courant, sans le rediffuser.
+ * Appelé par le récepteur inter-shards ; l'ordre initial passe par
+ * `setMaintenance`.
+ */
+export function applyMaintenanceLocally(enabled: boolean, message: string): void {
+  maintenanceState = { enabled, message };
+  log.warn({ enabled }, 'maintenance appliquée (ordre inter-shards)');
+}
+
 export async function setMaintenance(
   actor: PlayerContext,
   enabled: boolean,
@@ -654,6 +817,13 @@ export async function setMaintenance(
     enabled,
     message: message ?? maintenanceState.message,
   };
+  // `maintenanceState` est une variable de PROCESS : sans diffusion, la
+  // maintenance n'éteignait que le shard qui a reçu la commande.
+  await broadcast({
+    type: 'maintenance',
+    enabled: maintenanceState.enabled,
+    message: maintenanceState.message,
+  });
   await systemRepo.audit({
     actorId: actor.id,
     actorDiscordId: actor.discordId,

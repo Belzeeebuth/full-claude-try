@@ -113,12 +113,20 @@ export const notifications = pgTable(
     deliveredAt: timestamp('delivered_at', { withTimezone: true }),
     attempts: smallint('attempts').notNull().default(0),
     lastError: text('last_error'),
+    /**
+     * Réservation par un process. La distribution des MP tourne sur CHAQUE
+     * shard sans passer par BullMQ : sans réservation atomique, tous envoient
+     * le même message. Voir `claimPendingNotifications`.
+     */
+    claimedAt: timestamp('claimed_at', { withTimezone: true }),
+    claimedBy: varchar('claimed_by', { length: 64 }),
     /** Clé d'idempotence : évite deux DM « culture prête » pour la même parcelle. */
     dedupeKey: varchar('dedupe_key', { length: 96 }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index('notifications_pending_idx').on(t.delivered, t.deliverAt),
+    index('notifications_claimable_idx').on(t.deliverAt).where(sql`delivered = false`),
     index('notifications_user_idx').on(t.userId, t.createdAt.desc()),
     uniqueIndex('notifications_dedupe_uq').on(t.dedupeKey),
     check('notifications_attempts_range', sql`${t.attempts} BETWEEN 0 AND 10`),

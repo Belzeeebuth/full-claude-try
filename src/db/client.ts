@@ -55,14 +55,19 @@ export function getDb(): Database {
 }
 
 /**
- * Exécute `fn` dans une transaction SÉRIALISABLE en lecture/écriture.
+ * Exécute `fn` dans une transaction en lecture/écriture, isolation READ
+ * COMMITTED — le défaut de PostgreSQL.
  *
- * Toute opération économique (achat, vente, échange, craft, enchère) DOIT
- * passer par ici : c'est ce qui garantit qu'un double-clic ne débite pas deux
- * fois, et que le débit du solde et l'écriture du journal `transactions` sont
- * atomiques. On complète par des `SELECT ... FOR UPDATE` sur les lignes
- * touchées (voir `lockUserRow`), ce qui sérialise les accès concurrents au même
- * joueur sans verrou global.
+ * Ce n'est délibérément PAS du SERIALIZABLE : ce niveau ferait échouer des
+ * transactions concurrentes avec `40001` qu'il faudrait rejouer, pour un
+ * bénéfice nul ici. La correction vient des verrous de ligne explicites
+ * (`lockUserRow`, `lockListing`, `lockPlot`) et des écritures conditionnelles
+ * (`WHERE coins >= amount`), qui sérialisent les accès au même joueur sans
+ * verrou global ni rejeu.
+ *
+ * Toute opération économique (achat, vente, échange, craft, enchère) DOIT passer
+ * par ici : c'est ce qui garantit qu'un double-clic ne débite pas deux fois, et
+ * que le débit du solde et l'écriture du journal `transactions` sont atomiques.
  */
 export async function withTransaction<T>(fn: (tx: Transaction) => Promise<T>): Promise<T> {
   return getDb().transaction(async (tx) => fn(tx), {
