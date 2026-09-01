@@ -74,7 +74,7 @@ function build(unlocked: number, season: string, weather: string): FarmRenderInp
       name: 'La Grande Ferme des Trois Chênes Centenaires',
       grid,
       plots: plots as never,
-      counts: { ready: 4, growing: 10, empty: 5, locked: 4, withered: 1, pests: 1 },
+      counts: countsOf(plots),
       world: {
         season: { season, index: 1, gameYear: 1, startsAt: new Date(), endsAt: new Date(), key: `${season}_y1`, progress: 0.4 },
         weather: {
@@ -103,12 +103,44 @@ function build(unlocked: number, season: string, weather: string): FarmRenderInp
   };
 }
 
+/**
+ * Compteurs DÉRIVÉS des parcelles construites, et non codés en dur : le pied de
+ * page annonçait « 4 prêtes • 10 en croissance • 5 vides • 4 verrouillées » sur
+ * toutes les images, y compris une grille 3×3 qui ne contient que 9 parcelles.
+ * Une matrice de cas limites qui ment sur ce qu'elle montre ne sert à rien.
+ */
+function countsOf(
+  plots: ReadonlyArray<{
+    state: string;
+    pestType: string | null;
+    crop?: { growth: { ready: boolean; withered: boolean } } | undefined;
+  }>,
+) {
+  const counts = { ready: 0, growing: 0, empty: 0, locked: 0, withered: 0, pests: 0 };
+  for (const plot of plots) {
+    if (plot.pestType) counts.pests += 1;
+    if (plot.state === 'locked') counts.locked += 1;
+    else if (!plot.crop) counts.empty += 1;
+    else if (plot.crop.growth.withered) counts.withered += 1;
+    else if (plot.crop.growth.ready) counts.ready += 1;
+    else counts.growing += 1;
+  }
+  return counts;
+}
+
 async function main(): Promise<void> {
   const outDir = join(process.cwd(), 'out', 'matrix');
   mkdirSync(outDir, { recursive: true });
 
   const cases: Array<[string, number, string, string]> = [
     ['min-3x3', 9, 'spring', 'sunny'],
+    // ENTRE deux paliers. Tous les autres cas tombent sur une borne exacte
+    // (9, 25, 64) — c'est exactement pour cela que le décalage entre
+    // `gridSizeFor` et `slotToCoords` n'apparaissait sur aucune image : les
+    // parcelles 10 et 26, pourtant payées, n'étaient tout simplement pas
+    // dessinées. Elles doivent être visibles ici.
+    ['entre-paliers-10', 10, 'spring', 'sunny'],
+    ['entre-paliers-26', 26, 'autumn', 'cloudy'],
     ['max-8x8', 64, 'summer', 'rainy'],
     ['automne', 25, 'autumn', 'sunny'],
     ['hiver-neige', 25, 'winter', 'snow'],

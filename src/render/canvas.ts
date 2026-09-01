@@ -92,14 +92,32 @@ function fontFamilyFromFile(file: string): string {
   return file.replace(/\.(ttf|otf|woff2?)$/i, '').replace(/[-_].*$/, '');
 }
 
-/** Famille de police à utiliser : la police du projet si présente, sinon sans-serif. */
+/**
+ * Famille de police à utiliser : la police du projet si présente, sinon sans-serif.
+ *
+ * Renvoie une PILE et non une famille unique, avec la police couleur des emoji
+ * en dernier recours. C'est indispensable : `hasEmojiFont()` répond bien « oui »
+ * dès que `fonts-noto-color-emoji` est installé — ce que fait l'image Docker —
+ * et tout le code prend alors la branche « dessine l'emoji », mais une police de
+ * texte n'a aucun glyphe emoji. Sans repli déclaré, chaque emoji sortait en
+ * carré « tofu » : badges du profil, titre du graphique de marché, libellés de
+ * classement. Canvas n'applique le repli que sur les familles listées ici, pas
+ * sur celles simplement enregistrées dans le process.
+ */
 export function fontFamily(): string {
   ensureFonts();
   const families = GlobalFonts.families.map((family) => family.family);
+
+  let base = 'sans-serif';
   for (const preferred of ['Harvest', 'Inter', 'Nunito', 'DejaVu Sans']) {
-    if (families.includes(preferred)) return preferred;
+    if (families.includes(preferred)) {
+      base = preferred;
+      break;
+    }
   }
-  return 'sans-serif';
+
+  const emoji = families.find((family) => /emoji/i.test(family));
+  return emoji ? `"${base}", "${emoji}"` : `"${base}"`;
 }
 
 export function font(size: number, weight: 'normal' | 'bold' = 'normal'): string {

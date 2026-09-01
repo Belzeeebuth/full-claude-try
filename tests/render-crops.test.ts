@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getConfig } from '../src/config';
 import { cropForms } from '../src/config/gameplay/schemas';
-import { fitFont, newCanvas } from '../src/render/canvas';
+import { font, fontFamily, hasEmojiFont, fitFont, newCanvas } from '../src/render/canvas';
 import { cropSkin } from '../src/render/sprites';
 
 /**
@@ -97,5 +97,51 @@ describe('ajustement du texte', () => {
   it('garde la plus grande taille quand le texte tient déjà', () => {
     const { ctx } = newCanvas(400, 100);
     expect(fitFont(ctx, 'Ferme', 300, [30, 24, 18])).toContain('30px');
+  });
+});
+
+/**
+ * Les emoji du rendu doivent être RÉELLEMENT dessinés, pas approximés.
+ *
+ * `hasEmojiFont()` répond « oui » dès qu'une police emoji est enregistrée dans
+ * le process — ce qui est le cas de l'image Docker, qui installe
+ * `fonts-noto-color-emoji` — et tout le code prend alors la branche « dessine
+ * l'emoji ». Mais `font()` ne déclarait qu'une seule famille, celle du texte,
+ * qui n'a aucun glyphe emoji : chaque emoji sortait en carré « tofu ». Canvas
+ * n'applique le repli qu'aux familles LISTÉES dans `ctx.font`, jamais à celles
+ * simplement enregistrées. Ce test échoue si la pile de polices reperd son
+ * repli emoji.
+ */
+describe('repli emoji de la pile de polices', () => {
+  it('déclare la police emoji dans la pile quand elle est disponible', () => {
+    const stack = fontFamily();
+    expect(stack.startsWith('"')).toBe(true);
+    if (hasEmojiFont()) {
+      expect(stack).toMatch(/emoji/i);
+      expect(stack.split(',').length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('dessine un vrai glyphe emoji, et non un carré vide', () => {
+    if (!hasEmojiFont()) return; // machine sans police emoji : rien à prouver
+
+    const { canvas, ctx } = newCanvas(48, 48);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, 48, 48);
+    ctx.font = font(28);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('🏅', 6, 36);
+
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let colored = 0;
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i]!;
+      const g = pixels[i + 1]!;
+      const b = pixels[i + 2]!;
+      // Un emoji couleur produit des pixels saturés ; un carré « tofu » est
+      // dessiné dans la couleur de remplissage, donc parfaitement gris.
+      if (Math.max(r, g, b) - Math.min(r, g, b) > 25) colored += 1;
+    }
+    expect(colored).toBeGreaterThan(50);
   });
 });
