@@ -364,6 +364,20 @@
     "sortOrder": 2020
   },
   {
+    "key": "garlic_bread",
+    "name": "Pain à l'ail",
+    "nameEn": "Garlic bread",
+    "emoji": "🥖",
+    "category": "product",
+    "rarity": "uncommon",
+    "sellPrice": 490,
+    "marketTracked": true,
+    "sourceKey": "garlic_bread",
+    "description": "Du pain de la veille, deux gousses d'ail, et plus personne ne parle de la veille.",
+    "descriptionEn": "Yesterday's bread, two cloves of garlic, and nobody mentions yesterday again.",
+    "sortOrder": 2025
+  },
+  {
     "key": "vegetable_soup",
     "name": "Soupe de légumes",
     "nameEn": "Vegetable soup",
@@ -376,6 +390,34 @@
     "description": "Recycle les légumes de base en produit vendable.",
     "descriptionEn": "Turns basic vegetables into a sellable product.",
     "sortOrder": 2030
+  },
+  {
+    "key": "pea_veloute",
+    "name": "Velouté de petits pois",
+    "nameEn": "Creamy pea soup",
+    "emoji": "🍲",
+    "category": "product",
+    "rarity": "uncommon",
+    "sellPrice": 500,
+    "marketTracked": true,
+    "sourceKey": "pea_veloute",
+    "description": "Des petits pois de printemps liés au lait de chèvre. Vert, doux, vite parti.",
+    "descriptionEn": "Spring peas bound with goat milk. Green, mild, gone in no time.",
+    "sortOrder": 2035
+  },
+  {
+    "key": "harvest_soup",
+    "name": "Soupe de la moisson",
+    "nameEn": "Harvest soup",
+    "emoji": "🥘",
+    "category": "product",
+    "rarity": "uncommon",
+    "sellPrice": 370,
+    "marketTracked": true,
+    "sourceKey": "harvest_soup",
+    "description": "Oignon, brocoli et patate douce : ce que l'automne laisse dans le panier finit dans la marmite.",
+    "descriptionEn": "Onion, broccoli and sweet potato: whatever autumn leaves in the basket ends up in the pot.",
+    "sortOrder": 2037
   },
   {
     "key": "ketchup",
@@ -434,6 +476,20 @@
     "sortOrder": 2070
   },
   {
+    "key": "jam_blueberry",
+    "name": "Confiture de myrtilles",
+    "nameEn": "Blueberry jam",
+    "emoji": "🫐",
+    "category": "product",
+    "rarity": "rare",
+    "sellPrice": 1000,
+    "marketTracked": true,
+    "sourceKey": "jam_blueberry",
+    "description": "Tache tout ce qu'elle touche, y compris la réputation des autres confitures.",
+    "descriptionEn": "Stains everything it touches, including the reputation of every other jam.",
+    "sortOrder": 2075
+  },
+  {
     "key": "grape_juice",
     "name": "Jus de raisin",
     "nameEn": "Grape juice",
@@ -460,6 +516,20 @@
     "description": "Plus chère que la fraise, et tout aussi facile à produire en série.",
     "descriptionEn": "Pricier than strawberry, and just as easy to mass-produce.",
     "sortOrder": 2090
+  },
+  {
+    "key": "mandarin_chutney",
+    "name": "Chutney de mandarine",
+    "nameEn": "Mandarin chutney",
+    "emoji": "🥫",
+    "category": "product",
+    "rarity": "epic",
+    "sellPrice": 3800,
+    "marketTracked": true,
+    "sourceKey": "mandarin_chutney",
+    "description": "Mandarines d'hiver, piment et miel : sucré d'abord, piquant ensuite, longtemps.",
+    "descriptionEn": "Winter mandarins, chili and honey: sweet first, then hot, for a long while.",
+    "sortOrder": 2095
   },
   {
     "key": "goat_cheese",
@@ -518,6 +588,20 @@
     "sortOrder": 2130
   },
   {
+    "key": "kiwi_ice_cream",
+    "name": "Glace au kiwi",
+    "nameEn": "Kiwi ice cream",
+    "emoji": "🍦",
+    "category": "product",
+    "rarity": "rare",
+    "sellPrice": 1980,
+    "marketTracked": true,
+    "sourceKey": "kiwi_ice_cream",
+    "description": "Acidulée, fondante, et la seule bonne raison d'attendre l'hiver pour les kiwis.",
+    "descriptionEn": "Tangy, melting, and the only good reason to wait for winter kiwis.",
+    "sortOrder": 2135
+  },
+  {
     "key": "spun_wool",
     "name": "Laine filée",
     "nameEn": "Spun wool",
@@ -532,6 +616,34 @@
     "sortOrder": 2140
   },
   {
+    "key": "down_duvet",
+    "name": "Couette en duvet",
+    "nameEn": "Down duvet",
+    "emoji": "🛏️",
+    "category": "product",
+    "rarity": "uncommon",
+    "sellPrice": 710,
+    "marketTracked": true,
+    "sourceKey": "down_duvet",
+    "description": "Duvet d'oie, poil soyeux et une plume de dinde pour la tenue. On y dort jusqu'à la récolte.",
+    "descriptionEn": "Goose down, silky hair and one turkey feather for structure. Sleep in it until harvest.",
+    "sortOrder": 2145
+  },
+  {
+    "key": "silk_cloth",
+    "name": "Soie",
+    "nameEn": "Silk cloth",
+    "emoji": "🎀",
+    "category": "product",
+    "rarity": "epic",
+    "sellPrice": 2700,
+    "marketTracked": true,
+    "sourceKey": "silk_cloth",
+    "description": "Cinq cocons dévidés pour un seul coupon. Il faut le toucher pour comprendre le prix.",
+    "descriptionEn": "Five cocoons unwound for a single bolt. You have to touch it to understand the price.",
+    "sortOrder": 2147
+  },
+  {
     "key": "fine_cloth",
     "name": "Tissu fin",
     "nameEn": "Fine cloth",
@@ -544,6 +656,20 @@
     "description": "Trois laines fines. Très recherché à l'hôtel des ventes.",
     "descriptionEn": "Three fine wools. Highly sought after at the auction house.",
     "sortOrder": 2150
+  },
+  {
+    "key": "yak_felt",
+    "name": "Feutre de yack",
+    "nameEn": "Yak felt",
+    "emoji": "🧥",
+    "category": "product",
+    "rarity": "legendary",
+    "sellPrice": 8700,
+    "marketTracked": true,
+    "sourceKey": "yak_felt",
+    "description": "Laine de yack foulée avec de la laine filée : le seul tissu qui rit du blizzard.",
+    "descriptionEn": "Yak wool fulled together with spun wool: the one fabric that laughs at a blizzard.",
+    "sortOrder": 2155
   },
   {
     "key": "beer",
@@ -588,6 +714,20 @@
     "sortOrder": 2180
   },
   {
+    "key": "bamboo_liquor",
+    "name": "Liqueur de bambou",
+    "nameEn": "Bamboo liquor",
+    "emoji": "🍶",
+    "category": "product",
+    "rarity": "legendary",
+    "sellPrice": 11350,
+    "marketTracked": true,
+    "sourceKey": "bamboo_liquor",
+    "description": "Huit heures de macération dans le miel. Se boit tiède, à petites gorgées, entre initiés.",
+    "descriptionEn": "Eight hours steeped in honey. Drunk warm, in small sips, among those in the know.",
+    "sortOrder": 2185
+  },
+  {
     "key": "roasted_coffee",
     "name": "Café torréfié",
     "nameEn": "Roasted coffee",
@@ -630,6 +770,20 @@
     "sortOrder": 2210
   },
   {
+    "key": "phoenix_incense",
+    "name": "Encens de phénix",
+    "nameEn": "Phoenix incense",
+    "emoji": "🪔",
+    "category": "product",
+    "rarity": "mythic",
+    "sellPrice": 66000,
+    "marketTracked": true,
+    "sourceKey": "phoenix_incense",
+    "description": "Cendres de phénix, roses des glaces et sakura pressés et séchés au fumoir. Brûle sans jamais se consumer.",
+    "descriptionEn": "Phoenix ash, frost roses and sakura pressed and dried in the smokehouse. Burns without ever running out.",
+    "sortOrder": 2215
+  },
+  {
     "key": "sunflower_oil",
     "name": "Huile de tournesol",
     "nameEn": "Sunflower oil",
@@ -644,6 +798,20 @@
     "sortOrder": 2220
   },
   {
+    "key": "olive_oil",
+    "name": "Huile d'olive",
+    "nameEn": "Olive oil",
+    "emoji": "🏺",
+    "category": "product",
+    "rarity": "epic",
+    "sellPrice": 4000,
+    "marketTracked": true,
+    "sourceKey": "olive_oil",
+    "description": "Première pression, à froid. Quatre olives d'automne pour une amphore qui vaut le champ.",
+    "descriptionEn": "First cold pressing. Four autumn olives for an amphora worth the whole field.",
+    "sortOrder": 2225
+  },
+  {
     "key": "lavender_soap",
     "name": "Savon de lavande",
     "nameEn": "Lavender soap",
@@ -656,6 +824,20 @@
     "description": "Le produit cosmétique du village.",
     "descriptionEn": "The village cosmetic product.",
     "sortOrder": 2230
+  },
+  {
+    "key": "rose_milk_soap",
+    "name": "Savon rose au lait d'ânesse",
+    "nameEn": "Rose and donkey milk soap",
+    "emoji": "🫧",
+    "category": "product",
+    "rarity": "epic",
+    "sellPrice": 2920,
+    "marketTracked": true,
+    "sourceKey": "rose_milk_soap",
+    "description": "Pétales de rose et lait d'ânesse, le secret de beauté le plus ancien de la ferme.",
+    "descriptionEn": "Rose petals and donkey milk, the oldest beauty secret on the farm.",
+    "sortOrder": 2235
   },
   {
     "key": "truffle_oil",
@@ -742,6 +924,20 @@
     "sortOrder": 2290
   },
   {
+    "key": "sakura_mochi",
+    "name": "Mochi au sakura",
+    "nameEn": "Sakura mochi",
+    "emoji": "🍡",
+    "category": "product",
+    "rarity": "legendary",
+    "sellPrice": 5900,
+    "marketTracked": true,
+    "sourceKey": "sakura_mochi",
+    "description": "Pâte de riz au miel enroulée autour de fleurs de cerisier. Le printemps, en bouchée.",
+    "descriptionEn": "Honeyed rice dough wrapped around cherry blossoms. Spring, in one bite.",
+    "sortOrder": 2295
+  },
+  {
     "key": "ginseng_elixir",
     "name": "Élixir de ginseng",
     "nameEn": "Ginseng elixir",
@@ -756,6 +952,20 @@
     "sortOrder": 2300
   },
   {
+    "key": "antler_knife",
+    "name": "Couteau en bois de cerf",
+    "nameEn": "Antler knife",
+    "emoji": "🔪",
+    "category": "product",
+    "rarity": "legendary",
+    "sellPrice": 13200,
+    "marketTracked": true,
+    "sourceKey": "antler_knife",
+    "description": "Lame de fer, manche en bois de cerf incrusté d'écaille de tortue. Un couteau qui se transmet.",
+    "descriptionEn": "Iron blade, antler handle inlaid with tortoise scute. A knife that gets handed down.",
+    "sortOrder": 2305
+  },
+  {
     "key": "dragon_potion",
     "name": "Potion de dragon",
     "nameEn": "Dragon potion",
@@ -765,9 +975,23 @@
     "sellPrice": 38400,
     "marketTracked": true,
     "sourceKey": "dragon_potion",
-    "description": "L'objet artisanal le plus précieux du jeu.",
-    "descriptionEn": "The most valuable crafted item in the game.",
+    "description": "Longtemps l'objet artisanal le plus précieux du jeu ; seuls la tapisserie de licorne et l'encens de phénix la dépassent.",
+    "descriptionEn": "Long the most valuable crafted item in the game; only the unicorn tapestry and the phoenix incense surpass it.",
     "sortOrder": 2310
+  },
+  {
+    "key": "unicorn_tapestry",
+    "name": "Tapisserie de licorne",
+    "nameEn": "Unicorn tapestry",
+    "emoji": "🖼️",
+    "category": "product",
+    "rarity": "mythic",
+    "sellPrice": 67000,
+    "marketTracked": true,
+    "sourceKey": "unicorn_tapestry",
+    "description": "Crin de licorne et plumes de cygne tissés sur fond de soie. L'objet artisanal le plus précieux du jeu.",
+    "descriptionEn": "Unicorn hair and swan feathers woven on a silk ground. The most valuable crafted item in the game.",
+    "sortOrder": 2315
   },
   {
     "key": "feed_grain",
@@ -949,6 +1173,26 @@
     "sortOrder": 4030
   },
   {
+    "key": "fertilizer_mythic",
+    "name": "Engrais mythique",
+    "nameEn": "Mythic fertilizer",
+    "emoji": "🌟",
+    "category": "consumable",
+    "rarity": "legendary",
+    "basePrice": 2400,
+    "sellPrice": 800,
+    "requiredLevel": 30,
+    "effect": {
+      "type": "fertilizer",
+      "fertility": 60,
+      "yieldBoost": 0.4,
+      "qualityBoost": 0.4
+    },
+    "description": "Ramène une parcelle épuisée à sa pleine fertilité et dope rendement et qualité. Hors de prix : réservé aux cultures qui le méritent.",
+    "descriptionEn": "Brings an exhausted plot back to full fertility and boosts both yield and quality. Overpriced on purpose: save it for crops that deserve it.",
+    "sortOrder": 4035
+  },
+  {
     "key": "watering_can_magic",
     "name": "Arrosoir magique",
     "nameEn": "Magic watering can",
@@ -1002,6 +1246,25 @@
     "sortOrder": 4060
   },
   {
+    "key": "farmer_hourglass",
+    "name": "Sablier du fermier",
+    "nameEn": "Farmer's hourglass",
+    "emoji": "⏳",
+    "category": "consumable",
+    "rarity": "epic",
+    "basePrice": 4000,
+    "sellPrice": 1300,
+    "requiredLevel": 24,
+    "effect": {
+      "type": "growth_boost",
+      "multiplier": 2,
+      "durationSeconds": 7200
+    },
+    "description": "Les cultures poussent deux fois plus vite pendant deux heures. À retourner avant une longue absence.",
+    "descriptionEn": "Crops grow twice as fast for two hours. Flip it right before a long absence.",
+    "sortOrder": 4065
+  },
+  {
     "key": "luck_ticket",
     "name": "Ticket de chance",
     "nameEn": "Luck ticket",
@@ -1020,6 +1283,25 @@
     "sortOrder": 4070
   },
   {
+    "key": "four_leaf_clover",
+    "name": "Trèfle à quatre feuilles",
+    "nameEn": "Four-leaf clover",
+    "emoji": "🍀",
+    "category": "consumable",
+    "rarity": "rare",
+    "basePrice": 1800,
+    "sellPrice": 600,
+    "requiredLevel": 15,
+    "effect": {
+      "type": "luck",
+      "bonus": 0.2,
+      "durationSeconds": 14400
+    },
+    "description": "+20 % de chance de qualité et de mutation pendant quatre heures.",
+    "descriptionEn": "+20% quality and mutation chance for four hours.",
+    "sortOrder": 4075
+  },
+  {
     "key": "pest_bait",
     "name": "Appât répulsif",
     "nameEn": "Repellent bait",
@@ -1035,6 +1317,24 @@
     "description": "Aucun nuisible sur votre ferme pendant 12 heures.",
     "descriptionEn": "No pests on your farm for 12 hours.",
     "sortOrder": 4080
+  },
+  {
+    "key": "scarecrow_charm",
+    "name": "Charme d'épouvantail",
+    "nameEn": "Scarecrow charm",
+    "emoji": "🧿",
+    "category": "consumable",
+    "rarity": "uncommon",
+    "basePrice": 600,
+    "sellPrice": 200,
+    "requiredLevel": 8,
+    "effect": {
+      "type": "pest_repel",
+      "durationSeconds": 259200
+    },
+    "description": "Éloigne les nuisibles pendant trois jours. Les corbeaux ne savent pas pourquoi, et ça leur suffit.",
+    "descriptionEn": "Keeps pests away for three days. The crows don't know why, and that's enough for them.",
+    "sortOrder": 4085
   },
   {
     "key": "pesticide",
@@ -1068,6 +1368,24 @@
     "description": "Restaure 50 points d'énergie.",
     "descriptionEn": "Restores 50 energy points.",
     "sortOrder": 4100
+  },
+  {
+    "key": "energy_elixir",
+    "name": "Élixir d'énergie",
+    "nameEn": "Energy elixir",
+    "emoji": "⚡",
+    "category": "consumable",
+    "rarity": "uncommon",
+    "basePrice": 800,
+    "sellPrice": 260,
+    "requiredLevel": 12,
+    "effect": {
+      "type": "energy",
+      "amount": 150
+    },
+    "description": "Restaure 150 points d'énergie. Au-delà du maximum, le surplus est perdu : à boire fatigué.",
+    "descriptionEn": "Restores 150 energy points. Anything above the maximum is lost: drink it tired.",
+    "sortOrder": 4105
   },
   {
     "key": "streak_freeze",
@@ -1499,6 +1817,21 @@
     "sortOrder": 9040
   },
   {
+    "key": "fish_catfish",
+    "name": "Silure",
+    "nameEn": "Catfish",
+    "emoji": "🐟",
+    "category": "fish",
+    "rarity": "uncommon",
+    "sellPrice": 110,
+    "requiredLevel": 21,
+    "seasons": ["summer", "autumn"],
+    "timeOfDay": "night",
+    "description": "Fouille la vase à la nuit tombée. Se ferre à l'oreille plus qu'à la vue.",
+    "descriptionEn": "Rummages through the mud after dark. Hooked by ear more than by sight.",
+    "sortOrder": 9045
+  },
+  {
     "key": "fish_pike",
     "name": "Brochet",
     "nameEn": "Pike",
@@ -1514,6 +1847,21 @@
     "sortOrder": 9050
   },
   {
+    "key": "fish_black_bass",
+    "name": "Achigan",
+    "nameEn": "Black bass",
+    "emoji": "🐟",
+    "category": "fish",
+    "rarity": "rare",
+    "sellPrice": 250,
+    "requiredLevel": 24,
+    "seasons": ["spring", "summer"],
+    "timeOfDay": "day",
+    "description": "Combatif, bondissant, et fier de l'être. Le trophée des beaux jours.",
+    "descriptionEn": "A fighter, a jumper, and proud of it. The trophy of sunny days.",
+    "sortOrder": 9055
+  },
+  {
     "key": "fish_salmon",
     "name": "Saumon",
     "nameEn": "Salmon",
@@ -1527,6 +1875,21 @@
     "description": "Remonte le courant à l'automne.",
     "descriptionEn": "Swims upstream in autumn.",
     "sortOrder": 9060
+  },
+  {
+    "key": "fish_arctic_char",
+    "name": "Omble chevalier",
+    "nameEn": "Arctic char",
+    "emoji": "🐠",
+    "category": "fish",
+    "rarity": "rare",
+    "sellPrice": 300,
+    "requiredLevel": 27,
+    "seasons": ["winter"],
+    "timeOfDay": "day",
+    "description": "Ne mord que sous la glace, par grand jour. Chair rose, patience obligatoire.",
+    "descriptionEn": "Only bites under the ice, in broad daylight. Pink flesh, patience required.",
+    "sortOrder": 9065
   },
   {
     "key": "fish_sturgeon",
@@ -1559,6 +1922,21 @@
     "sortOrder": 9080
   },
   {
+    "key": "fish_moonfish",
+    "name": "Poisson-lune",
+    "nameEn": "Moonfish",
+    "emoji": "🐡",
+    "category": "fish",
+    "rarity": "epic",
+    "sellPrice": 720,
+    "requiredLevel": 33,
+    "seasons": ["spring"],
+    "timeOfDay": "night",
+    "description": "Remonte les nuits de printemps, rond et pâle comme son homonyme.",
+    "descriptionEn": "Surfaces on spring nights, round and pale like its namesake.",
+    "sortOrder": 9085
+  },
+  {
     "key": "fish_swordfish",
     "name": "Espadon",
     "nameEn": "Swordfish",
@@ -1572,6 +1950,21 @@
     "description": "Personne ne sait vraiment ce qu'il fait dans un étang.",
     "descriptionEn": "Nobody really knows what it's doing in a pond.",
     "sortOrder": 9090
+  },
+  {
+    "key": "fish_coelacanth",
+    "name": "Cœlacanthe",
+    "nameEn": "Coelacanth",
+    "emoji": "🦈",
+    "category": "fish",
+    "rarity": "legendary",
+    "sellPrice": 1800,
+    "requiredLevel": 38,
+    "seasons": ["winter"],
+    "timeOfDay": "night",
+    "description": "Un fossile qui nage. Il a survécu à tout, sauf peut-être à votre ferrage.",
+    "descriptionEn": "A swimming fossil. It has survived everything, except perhaps your hook.",
+    "sortOrder": 9095
   },
   {
     "key": "fish_golden_koi",
@@ -1588,6 +1981,21 @@
     "sortOrder": 9100
   },
   {
+    "key": "fish_crystal_carp",
+    "name": "Carpe de cristal",
+    "nameEn": "Crystal carp",
+    "emoji": "🐠",
+    "category": "fish",
+    "rarity": "mythic",
+    "sellPrice": 4800,
+    "requiredLevel": 46,
+    "seasons": ["autumn"],
+    "timeOfDay": "day",
+    "description": "Transparente au soleil d'automne : on voit l'étang à travers. Personne ne sait ce qu'elle mange.",
+    "descriptionEn": "See-through in the autumn sun: you can watch the pond through it. Nobody knows what it eats.",
+    "sortOrder": 9105
+  },
+  {
     "key": "ore_copper",
     "name": "Cuivre brut",
     "nameEn": "Raw copper",
@@ -1600,6 +2008,20 @@
     "description": "Le minerai le plus commun des galeries.",
     "descriptionEn": "The most common ore in the tunnels.",
     "sortOrder": 9200
+  },
+  {
+    "key": "ore_tin",
+    "name": "Étain brut",
+    "nameEn": "Raw tin",
+    "emoji": "🪨",
+    "category": "ore",
+    "rarity": "common",
+    "sellPrice": 32,
+    "requiredLevel": 22,
+    "minDepth": 2,
+    "description": "Tendre et terne. Avec le cuivre, il fait du bronze ; seul, il fait des cuillères.",
+    "descriptionEn": "Soft and dull. With copper it makes bronze; alone, it makes spoons.",
+    "sortOrder": 9205
   },
   {
     "key": "ore_iron_raw",
@@ -1644,6 +2066,20 @@
     "sortOrder": 9230
   },
   {
+    "key": "gem_amethyst",
+    "name": "Améthyste",
+    "nameEn": "Amethyst",
+    "emoji": "💎",
+    "category": "ore",
+    "rarity": "uncommon",
+    "sellPrice": 130,
+    "requiredLevel": 25,
+    "minDepth": 7,
+    "description": "Violette dans la lampe, grise dans la poche. Se cache dans les géodes de la septième galerie.",
+    "descriptionEn": "Purple in the lamplight, grey in the pocket. Hides in the geodes of the seventh tunnel.",
+    "sortOrder": 9235
+  },
+  {
     "key": "ore_gold",
     "name": "Or brut",
     "nameEn": "Raw gold",
@@ -1656,6 +2092,20 @@
     "description": "Ce qui fait creuser plus profond que de raison.",
     "descriptionEn": "The reason people dig deeper than they should.",
     "sortOrder": 9240
+  },
+  {
+    "key": "ore_platinum",
+    "name": "Platine brut",
+    "nameEn": "Raw platinum",
+    "emoji": "🪨",
+    "category": "ore",
+    "rarity": "rare",
+    "sellPrice": 320,
+    "requiredLevel": 30,
+    "minDepth": 10,
+    "description": "Plus lourd que l'or, plus discret aussi : il ne brille qu'une fois poli.",
+    "descriptionEn": "Heavier than gold, and more discreet: it only shines once polished.",
+    "sortOrder": 9245
   },
   {
     "key": "ore_mithril",
@@ -1700,6 +2150,20 @@
     "sortOrder": 9270
   },
   {
+    "key": "gem_emerald",
+    "name": "Émeraude",
+    "nameEn": "Emerald",
+    "emoji": "💎",
+    "category": "ore",
+    "rarity": "epic",
+    "sellPrice": 800,
+    "requiredLevel": 37,
+    "minDepth": 14,
+    "description": "Vert profond, toujours fêlée quelque part. Les mineurs disent que c'est sa façon de respirer.",
+    "descriptionEn": "Deep green, always cracked somewhere. Miners say that is how it breathes.",
+    "sortOrder": 9275
+  },
+  {
     "key": "ore_adamant",
     "name": "Adamant",
     "nameEn": "Adamant",
@@ -1712,6 +2176,20 @@
     "description": "On raconte que rien ne l'entame. Personne n'a encore essayé de le vendre pour vérifier.",
     "descriptionEn": "Said to be unbreakable. Nobody's tried selling it to find out.",
     "sortOrder": 9280
+  },
+  {
+    "key": "ore_star_iron",
+    "name": "Fer stellaire",
+    "nameEn": "Star iron",
+    "emoji": "🪨",
+    "category": "ore",
+    "rarity": "legendary",
+    "sellPrice": 1900,
+    "requiredLevel": 42,
+    "minDepth": 19,
+    "description": "Tombé du ciel il y a longtemps, enfoui dix-neuf galeries plus bas. Encore tiède, jurent certains.",
+    "descriptionEn": "Fell from the sky long ago, buried nineteen tunnels down. Still warm, some swear.",
+    "sortOrder": 9285
   },
   {
     "key": "gem_diamond_raw",
