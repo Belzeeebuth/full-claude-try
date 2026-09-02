@@ -1,3 +1,5 @@
+import type { AnimalsRenderInput } from './animals';
+import { renderAnimals } from './animals';
 import type { ChartInput } from './chart';
 import { renderMarketChart } from './chart';
 import type { FarmRenderInput } from './farm';
@@ -30,6 +32,7 @@ export interface RenderInputs {
   leaderboard: LeaderboardRenderInput;
   fishing: FishingRenderInput;
   mining: MiningRenderInput;
+  animals: AnimalsRenderInput;
 }
 
 export type RenderKind = keyof RenderInputs;
@@ -64,6 +67,8 @@ export async function renderInline<K extends RenderKind>(
       return renderFishing(input as FishingRenderInput);
     case 'mining':
       return renderMining(input as MiningRenderInput);
+    case 'animals':
+      return renderAnimals(input as AnimalsRenderInput);
     default: {
       // `kind` est typé `never` ici : ajouter une entrée à `RenderInputs` sans
       // la traiter au-dessus devient une erreur de compilation.

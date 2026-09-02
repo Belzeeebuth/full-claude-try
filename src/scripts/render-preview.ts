@@ -2,6 +2,7 @@ import './offline-env';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { balance as getBalance, getConfig } from '../config';
+import { renderAnimals, type AnimalsRenderAnimal } from '../render/animals';
 import { renderFarm } from '../render/farm';
 import { renderMarketChart } from '../render/chart';
 import { renderProfile } from '../render/profile';
@@ -17,17 +18,19 @@ const log = moduleLogger('preview');
  *
  *   npm run render:preview
  *
- * Écrit quatre PNG dans `out/`. Indispensable pour itérer sur le visuel : on
+ * Écrit cinq PNG dans `out/`. Indispensable pour itérer sur le visuel : on
  * modifie `src/render/**`, on relance, on regarde — au lieu de démarrer le bot,
  * de peupler une ferme et de taper une commande.
  */
 async function main(): Promise<void> {
-  const config = getConfig();
-  const balance = getBalance();
   // Une langue par exécution, dans son propre dossier : c'est la façon la plus
   // simple de comparer côte à côte les deux rendus.
   //   PREVIEW_LOCALE=en npm run render:preview
   const locale = process.env.PREVIEW_LOCALE ?? 'fr';
+  // Catalogue LOCALISÉ, comme le reçoivent les vues : sinon la prévisualisation
+  // anglaise montre des enclos et des bêtes aux noms français.
+  const config = getConfig(locale);
+  const balance = getBalance();
   const outDir = join(process.cwd(), 'out', locale);
   mkdirSync(outDir, { recursive: true });
 
@@ -128,11 +131,14 @@ async function main(): Promise<void> {
     player: { username: 'Marion', level: 24, coins: 1_284_500, gems: 148, avatarUrl: null },
     xp: { current: 4_200, needed: 9_800 },
     theme: 'classic',
-    animalsPreview: [
-      { emoji: '🐔', animalKey: 'chicken' },
-      { emoji: '🐄', animalKey: 'cow' },
-      { emoji: '🐝', animalKey: 'bee' },
-    ],
+    // Comme dans `farmView` : silhouette et palette du catalogue, pour voir le
+    // pied de page tel que le joueur le verra.
+    animalsPreview: ['chicken', 'cow', 'bee', 'sheep', 'dragonet'].map((key) => ({
+      emoji: config.animals.get(key)?.emoji ?? '🐾',
+      animalKey: key,
+      form: config.animals.get(key)?.form ?? null,
+      palette: config.animals.get(key)?.palette ?? null,
+    })),
     buildingsPreview: [
       { key: 'house', tier: 2 },
       { key: 'barn', tier: 3 },
@@ -213,14 +219,78 @@ async function main(): Promise<void> {
   });
   writeFileSync(join(outDir, 'classement.png'), leaderboardBuffer);
 
+  // Basse-cour : une bête de chaque silhouette au moins, et chaque pastille
+  // représentée une fois — c'est ici qu'on voit si une forme est illisible.
+  const species = (key: string, index: number, overrides: Partial<AnimalsRenderAnimal> = {}): AnimalsRenderAnimal => {
+    const animal = config.animals.get(key);
+    if (!animal) throw new Error(`espèce inconnue dans la prévisualisation : ${key}`);
+    const product = config.items.get(animal.productItemKey);
+    return {
+      id: `preview-${index}-${key}`,
+      animalKey: key,
+      name: animal.name,
+      nickname: null,
+      emoji: animal.emoji,
+      form: animal.form ?? null,
+      palette: animal.palette ?? null,
+      buildingKey: animal.buildingKey,
+      hunger: 80,
+      happiness: 75,
+      health: 100,
+      hungry: false,
+      sick: false,
+      canCollect: false,
+      canFeed: true,
+      canPet: false,
+      readyProduction: 0,
+      productEmoji: product?.emoji ?? '📦',
+      ...overrides,
+    };
+  };
+  const barnyard = [
+    species('chicken', 1, { nickname: 'Poulette', hungry: true, hunger: 20 }),
+    species('chicken', 2, { canCollect: true, readyProduction: 2 }),
+    species('duck', 3, { happiness: 92 }),
+    species('goose', 4, { canPet: true, happiness: 40 }),
+    species('turkey', 5),
+    species('rabbit', 6, { nickname: 'Pompon', canPet: true, happiness: 55 }),
+    species('sheep', 7, { sick: true, health: 45 }),
+    species('tortoise', 8, { happiness: 95, hunger: 90 }),
+    species('peacock', 9, { canCollect: true, readyProduction: 1 }),
+    species('cow', 10, { nickname: 'Marguerite', canCollect: true, readyProduction: 3 }),
+    species('pig', 11, { hungry: true, hunger: 10, canPet: true, happiness: 30 }),
+    species('horse', 12),
+    species('bee', 13, { canCollect: true, readyProduction: 4 }),
+    species('dragonet', 14, { happiness: 96, hunger: 88 }),
+    species('unicorn', 15, { sick: true, health: 60 }),
+  ];
+  const animalsBuffer = await renderAnimals({
+    locale,
+    farmId: 'preview',
+    ownerName: 'Marion',
+    season: 'summer',
+    weather: 'sunny',
+    buildings: [
+      { key: 'coop', name: config.buildings.get('coop')?.name ?? 'coop', tier: 2, capacity: 8, used: 5 },
+      { key: 'pen', name: config.buildings.get('pen')?.name ?? 'pen', tier: 1, capacity: 4, used: 4 },
+      { key: 'barn', name: config.buildings.get('barn')?.name ?? 'barn', tier: 2, capacity: 6, used: 3 },
+      { key: 'apiary', name: config.buildings.get('apiary')?.name ?? 'apiary', tier: 1, capacity: 3, used: 1 },
+      { key: 'mythic_pen', name: config.buildings.get('mythic_pen')?.name ?? 'lair', tier: 1, capacity: 3, used: 2 },
+    ],
+    animals: barnyard,
+    totals: { alive: barnyard.length, hungry: 2, sick: 2, ready: 5 },
+  });
+  writeFileSync(join(outDir, 'animaux.png'), animalsBuffer);
+
   log.info(
     {
       ferme: farmBuffer.byteLength,
       profil: profileBuffer.byteLength,
       marche: chartBuffer.byteLength,
       classement: leaderboardBuffer.byteLength,
+      animaux: animalsBuffer.byteLength,
     },
-    `✅ 4 images écrites dans ${outDir} (langue : ${locale})`,
+    `✅ 5 images écrites dans ${outDir} (langue : ${locale})`,
   );
 }
 

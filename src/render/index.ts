@@ -3,6 +3,12 @@ import { AttachmentBuilder } from 'discord.js';
 import { env } from '../config/env';
 import { getRedis, key as redisKey } from '../db/redis';
 import { moduleLogger } from '../utils/logger';
+import {
+  animalIndicators,
+  describeAnimals,
+  renderAnimals,
+  type AnimalsRenderInput,
+} from './animals';
 import { describeChart, renderMarketChart, type ChartInput } from './chart';
 import { renderInline, type RenderInputs, type RenderKind } from './dispatch';
 import { describeFarm, renderFarm, type FarmRenderInput } from './farm';
@@ -294,6 +300,44 @@ export async function renderMiningImage(input: MiningRenderInput): Promise<Rende
   return render('mining', stateKey, 'mine.png', describeMining(input), input);
 }
 
+export async function renderAnimalsImage(input: AnimalsRenderInput): Promise<RenderOutcome> {
+  // L'état capture ce qui change le DESSIN : la disposition (ferme, bâtiments,
+  // bêtes et leur ordre), les libellés, et les pastilles telles que l'image les
+  // décide — pas les jauges brutes, qui bougent chaque minute sans rien changer
+  // à l'écran tant qu'aucun seuil n'est franchi.
+  const stateKey = {
+    locale: input.locale,
+    farmId: input.farmId,
+    owner: input.ownerName,
+    season: input.season,
+    weather: input.weather,
+    buildings: input.buildings.map((building) => [
+      building.key,
+      building.name,
+      building.tier,
+      building.capacity,
+      building.used,
+    ]),
+    animals: input.animals.map((animal) => {
+      const flags = animalIndicators(animal);
+      return [
+        animal.id,
+        animal.animalKey,
+        animal.buildingKey,
+        animal.form ?? '',
+        animal.nickname ?? animal.name,
+        flags.ready ? 1 : 0,
+        flags.feed ? 1 : 0,
+        flags.sick ? 1 : 0,
+        flags.pet ? 1 : 0,
+        flags.sleeping ? 1 : 0,
+      ];
+    }),
+    totals: input.totals,
+  };
+  return render('animals', stateKey, 'animaux.png', describeAnimals(input), input);
+}
+
 export {
   closeRenderPool,
   renderPoolAvailable,
@@ -304,6 +348,7 @@ export type { RenderInputs, RenderKind };
 export { renderInline };
 
 export type {
+  AnimalsRenderInput,
   ChartInput,
   FarmRenderInput,
   FishingRenderInput,
@@ -311,8 +356,17 @@ export type {
   MiningRenderInput,
   ProfileRenderInput,
 };
-export { renderFarm, renderProfile, renderMarketChart, renderLeaderboard, renderFishing, renderMining };
 export {
+  renderAnimals,
+  renderFarm,
+  renderProfile,
+  renderMarketChart,
+  renderLeaderboard,
+  renderFishing,
+  renderMining,
+};
+export {
+  describeAnimals,
   describeChart,
   describeFarm,
   describeFishing,

@@ -64,6 +64,20 @@
       "position": "Current depth: level {depth} of {accessible}.",
       "best": "Personal record: level {deepest}.",
       "locked": "{count} level(s) out of reach, darkened."
+    },
+    "animals": {
+      "header": "{name}'s barnyard — {season}, {weather}.",
+      "totals": "{alive} animal(s), {hungry} hungry, {sick} sick, {ready} to collect.",
+      "no_building": "No livestock building: a signpost invites you to build a coop.",
+      "building": "{name} (tier {tier}), {used} / {capacity}: {animals}.",
+      "building_empty": "{name} (tier {tier}), empty, {capacity} slot(s).",
+      "named": "{nickname} ({species})",
+      "more": "and {count} more",
+      "ready_list": "To collect: {animals}.",
+      "feed_list": "To feed: {animals}.",
+      "sick_list": "Sick, to treat: {animals}.",
+      "pet_list": "To pet: {animals}.",
+      "hidden": "{count} animal(s) not drawn beyond the {max} visible."
     }
   }
 }

@@ -64,6 +64,20 @@
       "position": "Profondeur actuelle : palier {depth} sur {accessible}.",
       "best": "Record personnel : palier {deepest}.",
       "locked": "{count} palier(s) hors de portée, assombris."
+    },
+    "animals": {
+      "header": "Basse-cour de {name} — {season}, {weather}.",
+      "totals": "{alive} animal(aux), {hungry} affamé(s), {sick} malade(s), {ready} à collecter.",
+      "no_building": "Aucun bâtiment d'élevage : un panneau invite à construire un poulailler.",
+      "building": "{name} (palier {tier}), {used} / {capacity} : {animals}.",
+      "building_empty": "{name} (palier {tier}), vide, {capacity} place(s).",
+      "named": "{nickname} ({species})",
+      "more": "et {count} autre(s)",
+      "ready_list": "À collecter : {animals}.",
+      "feed_list": "À nourrir : {animals}.",
+      "sick_list": "Malades, à soigner : {animals}.",
+      "pet_list": "À caresser : {animals}.",
+      "hidden": "{count} animal(aux) non dessiné(s) au-delà des {max} visibles."
     }
   }
 }
