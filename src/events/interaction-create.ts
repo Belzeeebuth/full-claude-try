@@ -26,6 +26,13 @@ import { isGameError } from '../utils/errors';
 import { withUserLock } from '../utils/lock';
 import { moduleLogger } from '../utils/logger';
 import { recordCommand, recordInteraction } from '../http/health';
+import {
+  OTHER_LABEL,
+  boundedLabel,
+  observeCommandDuration,
+  observeComponentDuration,
+  recordError,
+} from '../http/metrics';
 import { reportIncident } from './error-reporter';
 import type { CommandContext } from '../types';
 
@@ -105,7 +112,7 @@ async function handleCommand(
     return;
   }
 
-  const started = Date.now();
+  const started = performance.now();
   let context: CommandContext | null = null;
 
   try {
@@ -177,7 +184,7 @@ async function handleCommand(
       {
         command: interaction.commandName,
         userId: context.player.discordId,
-        ms: Date.now() - started,
+        ms: Math.round(performance.now() - started),
       },
       'commande exécutée',
     );
@@ -194,6 +201,9 @@ async function handleCommand(
     recordCommand(false);
 
     const report = await replyError(interaction, error, context ?? undefined);
+    // `report.code` est le code documenté dans `utils/errors.ts` comme destiné
+    // à `errors_total{code=…}` — métrique qui n'existait pas jusqu'ici.
+    recordError('command', report.code);
     if (report.report) {
       await reportIncident(interaction.client, error, {
         command: interaction.commandName,
@@ -201,6 +211,16 @@ async function handleCommand(
         guildId: interaction.guildId,
       });
     }
+  } finally {
+    // Mesurée quel que soit le dénouement — succès, refus, erreur, cooldown :
+    // c'est la durée jusqu'à la réponse qui compte, et c'est elle qui aurait
+    // montré le budget de 3 s de Discord dépassé avant qu'un joueur ne lise
+    // « L'application ne répond pas ». Le nom vient du registre (≤ 70 valeurs) ;
+    // `boundedLabel` le garantit même si cette fonction est restructurée.
+    observeCommandDuration(
+      boundedLabel(interaction.commandName, (name) => getCommand(name) !== undefined),
+      (performance.now() - started) / 1_000,
+    );
   }
 }
 
@@ -212,7 +232,12 @@ async function handleComponent(
   interaction: ButtonInteraction | StringSelectMenuInteraction | ModalSubmitInteraction,
   kind: 'button' | 'select' | 'modal',
 ): Promise<void> {
+  const started = performance.now();
   let context: CommandContext | null = null;
+  // Le namespace n'est retenu comme étiquette qu'une fois un gestionnaire
+  // trouvé : les valeurs possibles sont donc celles des composants enregistrés
+  // (≤ 30), et un custom_id forgé ou expiré reste compté sous `other`.
+  let namespaceLabel = OTHER_LABEL;
 
   try {
     const parsed = parseCustomId(interaction.customId);
@@ -225,6 +250,7 @@ async function handleComponent(
       });
       return;
     }
+    namespaceLabel = parsed.namespace;
 
     // --- 3. Propriété du composant ---------------------------------------
     if (handler.checkOwner !== false) {
@@ -258,6 +284,7 @@ async function handleComponent(
     });
   } catch (error) {
     const report = await replyError(interaction, error, context ?? undefined);
+    recordError('component', report.code);
     if (report.report) {
       await reportIncident(interaction.client, error, {
         command: `component:${interaction.customId}`,
@@ -265,6 +292,8 @@ async function handleComponent(
         guildId: interaction.guildId,
       });
     }
+  } finally {
+    observeComponentDuration(namespaceLabel, (performance.now() - started) / 1_000);
   }
 }
 
@@ -280,6 +309,7 @@ async function handleContextMenu(
   const menu = getContextMenu(interaction.commandName);
   if (!menu) return;
 
+  const started = performance.now();
   let context: CommandContext | null = null;
   try {
     context = await buildContext(interaction, {});
@@ -289,7 +319,15 @@ async function handleContextMenu(
     }
     await menu.execute(interaction, context);
   } catch (error) {
-    await replyError(interaction, error, context ?? undefined);
+    // Un menu contextuel est une commande d'application au sens de Discord :
+    // même famille de métriques que les commandes slash, sous son nom de menu.
+    const report = await replyError(interaction, error, context ?? undefined);
+    recordError('command', report.code);
+  } finally {
+    observeCommandDuration(
+      boundedLabel(interaction.commandName, (name) => getContextMenu(name) !== undefined),
+      (performance.now() - started) / 1_000,
+    );
   }
 }
 
