@@ -11,3 +11,6 @@ coverage/
 tmp/
 out/
 *.tsbuildinfo
+
+# Worktrees git des agents d'orchestration (copies de travail transitoires)
+.claude/worktrees/
