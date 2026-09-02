@@ -13,7 +13,11 @@ import {
   fitFont,
   font,
   newCanvas,
+  offscreen,
+  outlineCanvas,
   progressBar,
+  rainbowGradient,
+  tintCanvas,
   withDropShadow,
 } from './canvas';
 import {
@@ -127,6 +131,23 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
 
   drawSky(ctx, width, horizon, palette, weather);
   drawGrass(ctx, width, horizon, height, palette);
+  // Décor de saison SUR l'herbe, avant le chemin et les bâtiments qui le
+  // recouvrent naturellement. Graine dérivée de la ferme mais distincte de
+  // celle des bâtiments : ajouter une feuille ne doit pas déplacer la grange.
+  drawSeasonalGroundDecor(ctx, {
+    width,
+    horizon,
+    height,
+    season,
+    weather,
+    exclusion: {
+      x: boardX - FENCE_MARGIN - 14,
+      y: boardY - FENCE_MARGIN - 24,
+      width: boardWidth + (FENCE_MARGIN + 14) * 2,
+      height: boardHeight + (FENCE_MARGIN + 14) * 2 + 10,
+    },
+    random: seededRandom(seedFrom(`${input.view.farmId}:decor`)),
+  });
   drawPath(ctx, width, boardY + boardHeight + FENCE_MARGIN + 14);
   drawBuildings(ctx, {
     buildings: input.buildingsPreview ?? [],
@@ -174,6 +195,13 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
         wet: weather === 'rainy' || weather === 'storm',
       });
     }
+    // Sol épuisé : la fertilité pilote déjà la teinte de la planche, mais un
+    // dégradé continu ne se lit pas d'un coup d'œil. Sous le seuil où le jeu
+    // pénalise le rendement, la terre pâlit et se craquelle — c'est à ce
+    // moment-là que laisser la parcelle en jachère devient une décision.
+    if (plot.fertility < balance.fertility.lowThreshold) {
+      drawDepletedSoil(ctx, x, y, size, plot.slot);
+    }
 
     if (plot.crop) {
       const stageIndex = STAGE_INDEX[plot.crop.growth.stage] ?? 1;
@@ -181,13 +209,7 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
       if (cropSprite) {
         ctx.drawImage(cropSprite, x, y, size, size);
       } else {
-        // Une plante peut dépasser vers le HAUT — c'est naturel — mais jamais
-        // sur les parcelles voisines : sans ce clip, un caféier mûr en mange trois.
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(x - 1, y - size * 0.3, size + 2, size * 1.3);
-        ctx.clip();
-        drawCrop(ctx, {
+        drawPlotCrop(ctx, {
           x,
           y,
           size,
@@ -196,8 +218,8 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
           ready: plot.crop.growth.ready,
           withered: plot.crop.growth.withered,
           seed: plot.slot,
+          mutation: plot.crop.mutation,
         });
-        ctx.restore();
       }
 
       // Badges : uniquement ce sur quoi le joueur peut agir.
@@ -244,43 +266,6 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
 
   const avatarSize = 68;
   await drawAvatar(ctx, input.player.avatarUrl, config.padding + 16, 26, avatarSize);
-
-  // Compagnon équipé : badge rond superposé au coin bas-droit de l'avatar,
-  // comme une pastille de statut plutôt qu'une case séparée dans l'en-tête.
-  if (input.equippedPetKey) {
-    const petSprite = await sprite('pets', input.equippedPetKey);
-    const badgeRadius = 20;
-    const badgeX = config.padding + 16 + avatarSize - 10;
-    const badgeY = 26 + avatarSize - 10;
-
-    withDropShadow(
-      ctx,
-      () => {
-        ctx.beginPath();
-        ctx.arc(badgeX, badgeY, badgeRadius + 4, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(20,24,33,0.9)';
-        ctx.fill();
-      },
-      { blur: 8, offsetY: 3 },
-    );
-
-    if (petSprite) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(badgeX, badgeY, badgeRadius, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.drawImage(petSprite, badgeX - badgeRadius, badgeY - badgeRadius, badgeRadius * 2, badgeRadius * 2);
-      ctx.restore();
-    } else {
-      drawPetIcon(ctx, badgeX, badgeY, badgeRadius, input.equippedPetKey);
-    }
-
-    ctx.beginPath();
-    ctx.arc(badgeX, badgeY, badgeRadius, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
 
   // Compagnon équipé : badge rond superposé au coin bas-droit de l'avatar,
   // comme une pastille de statut plutôt qu'une case séparée dans l'en-tête.
@@ -721,6 +706,280 @@ function drawCountdown(ctx: SKRSContext2D, x: number, y: number, size: number, l
   fillRoundRect(ctx, x + (size - boxWidth) / 2, y + size * 0.72, boxWidth, boxHeight, boxHeight / 2, 'rgba(20,24,33,0.86)');
   ctx.fillStyle = PALETTE.gold;
   ctx.fillText(label, x + (size - textWidth) / 2, y + size * 0.72 + boxHeight * 0.16);
+}
+
+/**
+ * Sol épuisé (fertilité sous `balance.fertility.lowThreshold`) : voile pâle
+ * et craquelures. Les fissures sont semées sur le numéro de parcelle, pas sur
+ * la fertilité exacte — une parcelle qui passe de 12 à 11 % ne doit pas
+ * changer de dessin, seulement de teinte (ce que `drawBed` fait déjà).
+ */
+function drawDepletedSoil(ctx: SKRSContext2D, x: number, y: number, size: number, seed: number): void {
+  const topHeight = size * 0.9;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, size, topHeight);
+  ctx.clip();
+
+  ctx.fillStyle = 'rgba(232,218,190,0.30)';
+  ctx.fillRect(x, y, size, topHeight);
+
+  const random = seededRandom(seed * 7919 + 17);
+  ctx.strokeStyle = 'rgba(70,45,25,0.36)';
+  ctx.lineWidth = Math.max(1.2, size / 60);
+  ctx.lineCap = 'round';
+  // Quatre fissures principales, chacune ramifiée une fois : assez pour lire
+  // « terre sèche », pas assez pour cacher la plante.
+  for (let crack = 0; crack < 4; crack += 1) {
+    let px = x + size * (0.12 + random() * 0.76);
+    let py = y + topHeight * (0.1 + random() * 0.8);
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    const segments = 3 + Math.floor(random() * 3);
+    let angle = random() * Math.PI * 2;
+    for (let segment = 0; segment < segments; segment += 1) {
+      angle += (random() - 0.5) * 1.4;
+      const length = size * (0.07 + random() * 0.08);
+      px += Math.cos(angle) * length;
+      py += Math.sin(angle) * length;
+      ctx.lineTo(px, py);
+      if (segment === 1) {
+        // Ramification courte, en angle franc.
+        const branch = angle + (random() > 0.5 ? 1 : -1) * (0.9 + random() * 0.5);
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + Math.cos(branch) * size * 0.08, py + Math.sin(branch) * size * 0.08);
+        ctx.moveTo(px, py);
+      }
+    }
+    ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+  ctx.restore();
+}
+
+/**
+ * Culture d'une parcelle, avec sa MUTATION rendue visible.
+ *
+ * Le badge violet disait « mutée » sans dire laquelle ; or les trois mutations
+ * du moteur (`game/quality.ts`) n'ont ni la même valeur ni la même rareté. On
+ * leur donne une apparence propre, lisible à la taille d'une tuile :
+ *  - `giant` : la plante est dessinée un quart plus grande, débordant vers le
+ *    haut — jamais sur les voisines, grâce au clip latéral ;
+ *  - `rainbow` : liseré irisé autour de la silhouette ;
+ *  - `ancient` : teinte sépia dorée et halo chaud, comme une relique.
+ * Les deux dernières passent par une toile hors écran : c'est ce qui permet
+ * de traiter n'importe quelle silhouette sans toucher à `drawCrop`.
+ */
+function drawPlotCrop(
+  ctx: SKRSContext2D,
+  options: {
+    x: number;
+    y: number;
+    size: number;
+    stage: number;
+    skin: ReturnType<typeof cropSkin>;
+    ready: boolean;
+    withered: boolean;
+    seed: number;
+    mutation: string;
+  },
+): void {
+  const { x, y, size } = options;
+  const giant = options.mutation === 'giant' && !options.withered;
+  // Une plante peut dépasser vers le HAUT — c'est naturel — mais jamais sur
+  // les parcelles voisines : sans ce clip, un caféier mûr en mange trois.
+  const overflowTop = size * (giant ? 0.5 : 0.3);
+  const clip = { x: x - 1, y: y - overflowTop, width: size + 2, height: size + overflowTop };
+
+  // Géante : même ligne de base (la plante reste plantée dans SA planche),
+  // taille × 1,25, donc décalée vers le haut et centrée sur la tuile.
+  const drawSize = giant ? size * 1.25 : size;
+  const drawX = x - (drawSize - size) / 2;
+  const drawY = y - (drawSize - size) * 0.8;
+  const cropOptions = {
+    x: drawX,
+    y: drawY,
+    size: drawSize,
+    stage: options.stage,
+    skin: options.skin,
+    ready: options.ready,
+    withered: options.withered,
+    seed: options.seed,
+  };
+
+  const decorated =
+    !options.withered && (options.mutation === 'rainbow' || options.mutation === 'ancient');
+  if (!decorated) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(clip.x, clip.y, clip.width, clip.height);
+    ctx.clip();
+    drawCrop(ctx, cropOptions);
+    ctx.restore();
+    return;
+  }
+
+  // Toile hors écran de la taille du clip : la plante y est dessinée avec le
+  // même décalage, puis habillée et recopiée d'un bloc.
+  const layer = offscreen(clip.width, clip.height);
+  drawCrop(layer.ctx, { ...cropOptions, x: drawX - clip.x, y: drawY - clip.y });
+
+  if (options.mutation === 'ancient') {
+    const glow = ctx.createRadialGradient(
+      x + size / 2, y + size * 0.62, size * 0.05,
+      x + size / 2, y + size * 0.62, size * 0.5,
+    );
+    glow.addColorStop(0, 'rgba(255,214,120,0.45)');
+    glow.addColorStop(1, 'rgba(255,214,120,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(clip.x, clip.y, clip.width, clip.height);
+    tintCanvas(layer.canvas, 'rgba(184,140,58,0.48)');
+    ctx.drawImage(layer.canvas, clip.x, clip.y);
+    return;
+  }
+
+  // Irisé : un contour fin aux couleurs de l'arc-en-ciel, sous la plante.
+  const halo = outlineCanvas(layer.canvas, Math.max(2, size * 0.035), rainbowGradient);
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  ctx.drawImage(halo, clip.x, clip.y);
+  ctx.restore();
+  ctx.drawImage(layer.canvas, clip.x, clip.y);
+}
+
+/**
+ * Décor de saison posé sur l'herbe : fleurs au printemps, feuilles mortes en
+ * automne, neige au sol en hiver, herbe jaunie en canicule. Rien n'est dessiné
+ * dans la zone du champ (`exclusion`), qui doit rester lisible, ni sous
+ * l'horizon (ciel). Tout est semé sur `random`, donc reproductible.
+ */
+function drawSeasonalGroundDecor(
+  ctx: SKRSContext2D,
+  options: {
+    width: number;
+    horizon: number;
+    height: number;
+    season: string;
+    weather: string;
+    exclusion: { x: number; y: number; width: number; height: number };
+    random: () => number;
+  },
+): void {
+  const { random, exclusion } = options;
+  const top = options.horizon + 4;
+  const bottom = options.height - 70;
+  if (bottom <= top) return;
+
+  // Tirage d'un point sur l'herbe, hors du champ. Le rejet est borné : sur une
+  // grille 8×8, le champ occupe presque toute la largeur.
+  const spot = (): { x: number; y: number } | null => {
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const px = 8 + random() * (options.width - 16);
+      const py = top + random() * (bottom - top);
+      const inside =
+        px > exclusion.x &&
+        px < exclusion.x + exclusion.width &&
+        py > exclusion.y &&
+        py < exclusion.y + exclusion.height;
+      if (!inside) return { x: px, y: py };
+    }
+    return null;
+  };
+
+  if (options.weather === 'heatwave') {
+    // Herbe jaunie : voile paille sur toute la bande, puis brins secs. La
+    // canicule coûte des récoltes ; le sol doit le dire avant le voile chaud.
+    ctx.fillStyle = 'rgba(214,186,72,0.30)';
+    ctx.fillRect(0, options.horizon - 10, options.width, options.height - options.horizon + 10);
+    ctx.strokeStyle = 'rgba(120,90,30,0.28)';
+    ctx.lineWidth = 1.4;
+    for (let index = 0; index < 90; index += 1) {
+      const point = spot();
+      if (!point) continue;
+      ctx.beginPath();
+      ctx.moveTo(point.x, point.y);
+      ctx.lineTo(point.x + 2.5, point.y - 6);
+      ctx.moveTo(point.x + 1, point.y);
+      ctx.lineTo(point.x - 2, point.y - 5);
+      ctx.stroke();
+    }
+  }
+
+  switch (options.season) {
+    case 'spring': {
+      // Petites fleurs : cinq pétales et un cœur, trois teintes.
+      const petals = ['#fff5f8', '#ffd6e7', '#fff2a8'];
+      for (let index = 0; index < 34; index += 1) {
+        const point = spot();
+        if (!point) continue;
+        const radius = 2 + random() * 1.6;
+        ctx.fillStyle = petals[Math.floor(random() * petals.length)]!;
+        for (let petal = 0; petal < 5; petal += 1) {
+          const angle = (petal / 5) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.arc(point.x + Math.cos(angle) * radius, point.y + Math.sin(angle) * radius, radius * 0.7, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#f2b632';
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, radius * 0.55, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      return;
+    }
+    case 'autumn': {
+      // Feuilles mortes : ellipses orientées au hasard, nervure centrale.
+      const tones = ['#d9782a', '#c0451f', '#e0a83a', '#8f5a2b'];
+      for (let index = 0; index < 46; index += 1) {
+        const point = spot();
+        if (!point) continue;
+        const length = 5 + random() * 4;
+        const angle = random() * Math.PI;
+        ctx.save();
+        ctx.translate(point.x, point.y);
+        ctx.rotate(angle);
+        ctx.fillStyle = tones[Math.floor(random() * tones.length)]!;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, length, length * 0.45, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(60,30,10,0.35)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-length * 0.8, 0);
+        ctx.lineTo(length * 0.8, 0);
+        ctx.stroke();
+        ctx.restore();
+      }
+      return;
+    }
+    case 'winter': {
+      // Neige au sol : plaques floues et flocons posés. Distinct de la neige
+      // qui TOMBE (voile météo) : ici, elle reste même par temps clair.
+      for (let index = 0; index < 14; index += 1) {
+        const point = spot();
+        if (!point) continue;
+        const radius = 14 + random() * 22;
+        const patch = ctx.createRadialGradient(point.x, point.y, 1, point.x, point.y, radius);
+        patch.addColorStop(0, 'rgba(255,255,255,0.55)');
+        patch.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = patch;
+        ctx.beginPath();
+        ctx.ellipse(point.x, point.y, radius, radius * 0.45, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      for (let index = 0; index < 70; index += 1) {
+        const point = spot();
+        if (!point) continue;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 1 + random() * 1.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      return;
+    }
+    default:
+      return;
+  }
 }
 
 function drawEmptyPlot(ctx: SKRSContext2D, x: number, y: number, size: number, weedy: boolean): void {
