@@ -63,3 +63,15 @@ Les étiquettes sont bornées à la source (`src/http/metrics.ts`) : codes d'err
 issus de l'union `GameErrorCode` + `internal|not_owner|busy|maintenance`, noms de
 commandes du registre, namespaces de composants enregistrés. Toute autre valeur
 apparaît sous `other`.
+
+## Seuils d'alerte et carnet d'incidents
+
+Le tableau montre ; il ne décide pas. Les seuils qui ont un sens pour ce bot,
+et ce qu'il faut faire quand ils sont franchis, sont dans
+[docs/08-exploitation.md](../../docs/08-exploitation.md) — par symptôme :
+`harvester_economy_ledger_mismatches > 0` (§ 1), ratio faucet/sink > 1 durable
+(§ 2), `harvester_guilds == 0` sur une cible (§ 3), `harvester_render_queued`
+qui ne redescend pas (§ 5), p95 de `harvester_command_duration_seconds` au-dessus
+de 2,5 s (§ 5). En profil `sharded`, chaque shard est une cible distincte
+(un port par process n'est pas encore possible : voir § 3 et § 11 du même
+document).
