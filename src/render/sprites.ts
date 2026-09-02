@@ -1090,8 +1090,10 @@ function drawStar(ctx: SKRSContext2D, x: number, y: number, radius: number, fill
  *    corps, à des angles SEMÉS sur la graine de la bête — deux shiny voisines
  *    ne scintillent pas au même endroit, mais la même bête scintille toujours
  *    pareil (cache d'images) ;
- *  - dorée : un reflet clair sur l'épaule et une étoile d'or en haut à
- *    droite — la teinte seule ne suffit pas à 34 px, l'étoile la confirme.
+ *  - dorée : un reflet clair sur l'épaule et une étoile d'or au-dessus de la
+ *    tête, en couronne — la teinte seule ne suffit pas à 34 px, l'étoile la
+ *    confirme. Au centre et non dans un coin : les quatre coins sont ceux
+ *    des pastilles d'action (`drawResident`), qui la recouvriraient.
  *
  * Volontairement petit : la variante est un bonus, pas l'espèce.
  */
@@ -1114,7 +1116,9 @@ export function drawVariantMark(
       const wobble = ((seed * 3 + index * 5) % 10) / 10;
       const rx = size * (0.36 + wobble * 0.06);
       const ry = size * (0.33 + wobble * 0.05);
-      const radius = size * (index % 2 === 0 ? 0.075 : 0.05);
+      // Plancher en pixels : à 34 px, une étincelle proportionnelle ferait
+      // deux pixels et ne se verrait plus.
+      const radius = Math.max(index % 2 === 0 ? 3.2 : 2.4, size * (index % 2 === 0 ? 0.075 : 0.05));
       drawStar(ctx, cx + Math.cos(angle) * rx, cy + Math.sin(angle) * ry, radius, colors[index]!);
     }
     return;
@@ -1126,11 +1130,11 @@ export function drawVariantMark(
   ctx.lineWidth = Math.max(1.5, size * 0.045);
   ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(cx - size * 0.2, y + size * 0.46);
-  ctx.lineTo(cx - size * 0.08, y + size * 0.36);
+  ctx.moveTo(cx - size * 0.2, y + size * 0.5);
+  ctx.lineTo(cx - size * 0.08, y + size * 0.4);
   ctx.stroke();
   ctx.lineCap = 'butt';
-  drawStar(ctx, x + size * 0.86, y + size * 0.14, size * 0.1, '#ffd84a');
+  drawStar(ctx, cx, y + size * 0.08, Math.max(4, size * 0.1), '#ffd84a');
 }
 
 /** Œil : sclère claire et pupille sombre — lisible sur un corps clair comme sombre. */

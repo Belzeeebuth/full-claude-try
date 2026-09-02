@@ -40,7 +40,7 @@
   "render_alt": {
     "animals": {
       "variant_list": "Rare variants: {animals}.",
-      "variant_entry": "{label}, {variant}"
+      "variant_entry": "{label} — {variant}"
     }
   }
 }
