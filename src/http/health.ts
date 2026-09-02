@@ -7,7 +7,9 @@ import { pingRedis } from '../db/redis';
 import { getConfig } from '../config';
 import { getRegistry } from '../framework/registry';
 import * as economyRepo from '../repositories/economy.repo';
+import { renderPoolStats } from '../render/pool';
 import { handleApiRequest } from './api';
+import { metricsRegistry, setRenderPoolGauges } from './metrics';
 import { moduleLogger } from '../utils/logger';
 
 const log = moduleLogger('http');
@@ -233,7 +235,13 @@ async function renderMetrics(client: Client): Promise<string> {
     log.warn({ err: error }, "lecture de l'instantané économique impossible pour /metrics");
   }
 
-  return `${lines.join('\n')}\n`;
+  // Jauges du pool de rendu lues à l'instant du scrape : elles décrivent un
+  // état, pas un flux, et `renderPoolStats()` est une lecture mémoire sans
+  // coût. Le registre à étiquettes (erreurs par code, latences) est rendu à
+  // la suite des compteurs historiques, dont noms et sémantique restent
+  // inchangés pour ne pas casser un tableau de bord déjà branché.
+  setRenderPoolGauges(renderPoolStats());
+  return `${lines.join('\n')}\n${metricsRegistry.render()}`;
 }
 
 export { metrics };
