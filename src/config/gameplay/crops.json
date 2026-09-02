@@ -67,6 +67,40 @@
     "sortOrder": 20
   },
   {
+    "key": "onion",
+    "name": "Oignon",
+    "nameEn": "Onion",
+    "emoji": "🧅",
+    "form": "root",
+    "palette": {
+      "leaf": "#6aa85a",
+      "leafDark": "#41733a",
+      "fruit": "#c98a4b",
+      "fruitDark": "#915d2c"
+    },
+    "rarity": "common",
+    "seedPrice": 16,
+    "growthSeconds": 600,
+    "baseYield": 4,
+    "sellPrice": 8,
+    "requiredLevel": 1,
+    "seasons": [
+      "spring",
+      "autumn",
+      "winter"
+    ],
+    "qualityMultiplier": 1.0,
+    "waterRequired": 1,
+    "fertilityCost": 2,
+    "xpReward": 6,
+    "regrowCycles": 0,
+    "regrowSeconds": 0,
+    "mutationChance": 0.012,
+    "description": "Dix minutes, trois saisons dont l'hiver : dès le premier jour, une culture qui ne craint pas le gel.",
+    "descriptionEn": "Ten minutes, three seasons including winter: from day one, a crop that shrugs off frost.",
+    "sortOrder": 25
+  },
+  {
     "key": "potato",
     "name": "Pomme de terre",
     "nameEn": "Potato",
@@ -167,6 +201,39 @@
     "sortOrder": 50
   },
   {
+    "key": "garlic",
+    "name": "Ail",
+    "nameEn": "Garlic",
+    "emoji": "🧄",
+    "form": "root",
+    "palette": {
+      "leaf": "#6fa55e",
+      "leafDark": "#4a7340",
+      "fruit": "#efe6d2",
+      "fruitDark": "#c4b493"
+    },
+    "rarity": "common",
+    "seedPrice": 45,
+    "growthSeconds": 1200,
+    "baseYield": 5,
+    "sellPrice": 17,
+    "requiredLevel": 4,
+    "seasons": [
+      "autumn",
+      "winter"
+    ],
+    "qualityMultiplier": 1.0,
+    "waterRequired": 1,
+    "fertilityCost": 3,
+    "xpReward": 9,
+    "regrowCycles": 0,
+    "regrowSeconds": 0,
+    "mutationChance": 0.012,
+    "description": "Planté à l'automne, déterré sous la neige. Vingt minutes, et l'hiver n'est plus un désert.",
+    "descriptionEn": "Planted in autumn, dug up under the snow. Twenty minutes, and winter is no longer a wasteland.",
+    "sortOrder": 55
+  },
+  {
     "key": "tomato",
     "name": "Tomate",
     "nameEn": "Tomato",
@@ -264,6 +331,38 @@
     "sortOrder": 80
   },
   {
+    "key": "peas",
+    "name": "Petits pois",
+    "nameEn": "Peas",
+    "emoji": "🫛",
+    "form": "vine",
+    "palette": {
+      "leaf": "#6bb35a",
+      "leafDark": "#43803a",
+      "fruit": "#9ad35f",
+      "fruitDark": "#6a9f3c"
+    },
+    "rarity": "uncommon",
+    "seedPrice": 65,
+    "growthSeconds": 1500,
+    "baseYield": 4,
+    "sellPrice": 22,
+    "requiredLevel": 6,
+    "seasons": [
+      "spring"
+    ],
+    "qualityMultiplier": 1.05,
+    "waterRequired": 2,
+    "fertilityCost": 4,
+    "xpReward": 11,
+    "regrowCycles": 2,
+    "regrowSeconds": 900,
+    "mutationChance": 0.015,
+    "description": "Vingt-cinq minutes, puis deux cueillettes d'un quart d'heure : la repousseuse du printemps.",
+    "descriptionEn": "Twenty-five minutes, then two quarter-hour pickings: spring's regrowing crop.",
+    "sortOrder": 85
+  },
+  {
     "key": "eggplant",
     "name": "Aubergine",
     "nameEn": "Eggplant",
@@ -297,6 +396,39 @@
     "sortOrder": 90
   },
   {
+    "key": "broccoli",
+    "name": "Brocoli",
+    "nameEn": "Broccoli",
+    "emoji": "🥦",
+    "form": "leafy",
+    "palette": {
+      "leaf": "#7fb07a",
+      "leafDark": "#4f7a4c",
+      "fruit": "#2e7a45",
+      "fruitDark": "#1f5530"
+    },
+    "rarity": "uncommon",
+    "seedPrice": 100,
+    "growthSeconds": 3600,
+    "baseYield": 6,
+    "sellPrice": 42,
+    "requiredLevel": 7,
+    "seasons": [
+      "autumn",
+      "winter"
+    ],
+    "qualityMultiplier": 1.05,
+    "waterRequired": 2,
+    "fertilityCost": 5,
+    "xpReward": 16,
+    "regrowCycles": 0,
+    "regrowSeconds": 0,
+    "mutationChance": 0.015,
+    "description": "Une heure tout rond, et il aime le froid : le légume d'hiver du milieu de partie.",
+    "descriptionEn": "A full hour, and it loves the cold: the mid-game winter vegetable.",
+    "sortOrder": 95
+  },
+  {
     "key": "pepper",
     "name": "Poivron",
     "nameEn": "Pepper",
@@ -327,6 +459,39 @@
     "description": "Ingrédient unique de la sauce piquante, très demandée au marché.",
     "descriptionEn": "The only ingredient of hot sauce, in high demand at the market.",
     "sortOrder": 100
+  },
+  {
+    "key": "chili",
+    "name": "Piment",
+    "nameEn": "Chili",
+    "emoji": "🌶️",
+    "form": "bush",
+    "palette": {
+      "leaf": "#4f9a4a",
+      "leafDark": "#356b32",
+      "fruit": "#d7261e",
+      "fruitDark": "#9c1a14"
+    },
+    "rarity": "uncommon",
+    "seedPrice": 110,
+    "growthSeconds": 3300,
+    "baseYield": 4,
+    "sellPrice": 32,
+    "requiredLevel": 9,
+    "seasons": [
+      "summer",
+      "autumn"
+    ],
+    "qualityMultiplier": 1.08,
+    "waterRequired": 2,
+    "fertilityCost": 5,
+    "xpReward": 13,
+    "regrowCycles": 3,
+    "regrowSeconds": 1200,
+    "mutationChance": 0.015,
+    "description": "Cinquante-cinq minutes, puis trois repousses de vingt : brûlant, et jamais à court.",
+    "descriptionEn": "Fifty-five minutes, then three twenty-minute regrowths: fiery, and never runs out.",
+    "sortOrder": 105
   },
   {
     "key": "melon",
@@ -394,6 +559,38 @@
     "sortOrder": 120
   },
   {
+    "key": "sweet_potato",
+    "name": "Patate douce",
+    "nameEn": "Sweet potato",
+    "emoji": "🍠",
+    "form": "root",
+    "palette": {
+      "leaf": "#5a9a48",
+      "leafDark": "#3b6a30",
+      "fruit": "#b5533a",
+      "fruitDark": "#7e3526"
+    },
+    "rarity": "rare",
+    "seedPrice": 170,
+    "growthSeconds": 4500,
+    "baseYield": 6,
+    "sellPrice": 70,
+    "requiredLevel": 11,
+    "seasons": [
+      "autumn"
+    ],
+    "qualityMultiplier": 1.1,
+    "waterRequired": 2,
+    "fertilityCost": 6,
+    "xpReward": 21,
+    "regrowCycles": 0,
+    "regrowSeconds": 0,
+    "mutationChance": 0.02,
+    "description": "Soixante-quinze minutes sous terre. Sucrée, sobre en eau, taillée pour l'automne.",
+    "descriptionEn": "Seventy-five minutes underground. Sweet, thrifty with water, built for autumn.",
+    "sortOrder": 125
+  },
+  {
     "key": "watermelon",
     "name": "Pastèque",
     "nameEn": "Watermelon",
@@ -424,6 +621,39 @@
     "description": "Lourde, sucrée, chère. Les mutations géantes y sont spectaculaires.",
     "descriptionEn": "Heavy, sweet, expensive. Giant mutations are spectacular here.",
     "sortOrder": 130
+  },
+  {
+    "key": "blueberry",
+    "name": "Myrtille",
+    "nameEn": "Blueberry",
+    "emoji": "🫐",
+    "form": "bush",
+    "palette": {
+      "leaf": "#5f9e5c",
+      "leafDark": "#3d6b3a",
+      "fruit": "#4a5fb8",
+      "fruitDark": "#2f3f82"
+    },
+    "rarity": "rare",
+    "seedPrice": 250,
+    "growthSeconds": 6000,
+    "baseYield": 5,
+    "sellPrice": 70,
+    "requiredLevel": 13,
+    "seasons": [
+      "spring",
+      "summer"
+    ],
+    "qualityMultiplier": 1.12,
+    "waterRequired": 3,
+    "fertilityCost": 6,
+    "xpReward": 22,
+    "regrowCycles": 3,
+    "regrowSeconds": 2700,
+    "mutationChance": 0.02,
+    "description": "Un buisson qui donne quatre fois : la première culture rare du printemps.",
+    "descriptionEn": "A bush that bears four times: spring's first rare crop.",
+    "sortOrder": 135
   },
   {
     "key": "hops",
@@ -523,6 +753,39 @@
     "sortOrder": 160
   },
   {
+    "key": "kiwi",
+    "name": "Kiwi",
+    "nameEn": "Kiwi",
+    "emoji": "🥝",
+    "form": "vine",
+    "palette": {
+      "leaf": "#4f8f47",
+      "leafDark": "#34622f",
+      "fruit": "#8a6a3f",
+      "fruitDark": "#5e4629"
+    },
+    "rarity": "rare",
+    "seedPrice": 340,
+    "growthSeconds": 13500,
+    "baseYield": 7,
+    "sellPrice": 190,
+    "requiredLevel": 16,
+    "seasons": [
+      "autumn",
+      "winter"
+    ],
+    "qualityMultiplier": 1.15,
+    "waterRequired": 3,
+    "fertilityCost": 7,
+    "xpReward": 36,
+    "regrowCycles": 0,
+    "regrowSeconds": 0,
+    "mutationChance": 0.022,
+    "description": "Cueilli à l'automne, il mûrit tout l'hiver : trois heures trois quarts sur la treille.",
+    "descriptionEn": "Picked in autumn, it ripens all winter long: three and three-quarter hours on the trellis.",
+    "sortOrder": 165
+  },
+  {
     "key": "tea",
     "name": "Thé",
     "nameEn": "Tea",
@@ -587,6 +850,39 @@
     "description": "Torréfié, il alimente les meilleures marges du milieu de partie.",
     "descriptionEn": "Roasted, it powers the best mid-game margins.",
     "sortOrder": 180
+  },
+  {
+    "key": "rose",
+    "name": "Rose",
+    "nameEn": "Rose",
+    "emoji": "🌹",
+    "form": "flower",
+    "palette": {
+      "leaf": "#3f7d3f",
+      "leafDark": "#2a5529",
+      "fruit": "#d6284b",
+      "fruitDark": "#921a33"
+    },
+    "rarity": "epic",
+    "seedPrice": 600,
+    "growthSeconds": 11700,
+    "baseYield": 8,
+    "sellPrice": 135,
+    "requiredLevel": 19,
+    "seasons": [
+      "spring",
+      "summer"
+    ],
+    "qualityMultiplier": 1.2,
+    "waterRequired": 4,
+    "fertilityCost": 8,
+    "xpReward": 37,
+    "regrowCycles": 2,
+    "regrowSeconds": 5400,
+    "mutationChance": 0.025,
+    "description": "Trois heures et quart, puis deux coupes d'une heure et demie. Chaque bouquet se vend au prix fort.",
+    "descriptionEn": "Three and a quarter hours, then two cuts of an hour and a half. Every bouquet fetches a premium.",
+    "sortOrder": 185
   },
   {
     "key": "cacao",
@@ -654,6 +950,38 @@
     "sortOrder": 200
   },
   {
+    "key": "olive",
+    "name": "Olive",
+    "nameEn": "Olive",
+    "emoji": "🫒",
+    "form": "tree",
+    "palette": {
+      "leaf": "#7d9b6e",
+      "leafDark": "#56714b",
+      "fruit": "#4d5a2f",
+      "fruitDark": "#2c3418"
+    },
+    "rarity": "epic",
+    "seedPrice": 850,
+    "growthSeconds": 23400,
+    "baseYield": 9,
+    "sellPrice": 480,
+    "requiredLevel": 22,
+    "seasons": [
+      "autumn"
+    ],
+    "qualityMultiplier": 1.22,
+    "waterRequired": 3,
+    "fertilityCost": 9,
+    "xpReward": 66,
+    "regrowCycles": 0,
+    "regrowSeconds": 0,
+    "mutationChance": 0.025,
+    "description": "Six heures et demie et presque pas d'eau : l'automne a enfin son arbre de luxe.",
+    "descriptionEn": "Six and a half hours and hardly any water: autumn finally has its luxury tree.",
+    "sortOrder": 205
+  },
+  {
     "key": "vanilla",
     "name": "Vanille",
     "nameEn": "Vanilla",
@@ -684,6 +1012,39 @@
     "description": "Exigeante en eau, mais la praline de vanille est un produit de luxe.",
     "descriptionEn": "Thirsty, but vanilla praline is a luxury product.",
     "sortOrder": 210
+  },
+  {
+    "key": "mandarin",
+    "name": "Mandarine",
+    "nameEn": "Mandarin",
+    "emoji": "🍊",
+    "form": "tree",
+    "palette": {
+      "leaf": "#3f8a4a",
+      "leafDark": "#2a5c31",
+      "fruit": "#f28c28",
+      "fruitDark": "#c4651a"
+    },
+    "rarity": "epic",
+    "seedPrice": 1000,
+    "growthSeconds": 19800,
+    "baseYield": 6,
+    "sellPrice": 400,
+    "requiredLevel": 25,
+    "seasons": [
+      "autumn",
+      "winter"
+    ],
+    "qualityMultiplier": 1.25,
+    "waterRequired": 4,
+    "fertilityCost": 10,
+    "xpReward": 54,
+    "regrowCycles": 2,
+    "regrowSeconds": 9000,
+    "mutationChance": 0.028,
+    "description": "Cinq heures et demie, puis deux cueillettes de deux heures et demie. L'agrume qui fait passer l'hiver.",
+    "descriptionEn": "Five and a half hours, then two pickings of two and a half hours. The citrus that carries you through winter.",
+    "sortOrder": 215
   },
   {
     "key": "ginseng",
@@ -717,6 +1078,38 @@
     "description": "Racine d'hiver : la culture qui rend la saison froide intéressante.",
     "descriptionEn": "A winter root: the crop that makes the cold season interesting.",
     "sortOrder": 220
+  },
+  {
+    "key": "sakura",
+    "name": "Sakura",
+    "nameEn": "Sakura",
+    "emoji": "🌸",
+    "form": "tree",
+    "palette": {
+      "leaf": "#7aa36a",
+      "leafDark": "#4f7043",
+      "fruit": "#f5a9c4",
+      "fruitDark": "#d4708f"
+    },
+    "rarity": "legendary",
+    "seedPrice": 2000,
+    "growthSeconds": 32400,
+    "baseYield": 8,
+    "sellPrice": 1300,
+    "requiredLevel": 30,
+    "seasons": [
+      "spring"
+    ],
+    "qualityMultiplier": 1.3,
+    "waterRequired": 5,
+    "fertilityCost": 12,
+    "xpReward": 102,
+    "regrowCycles": 0,
+    "regrowSeconds": 0,
+    "mutationChance": 0.03,
+    "description": "Neuf heures pour une floraison qui ne dure qu'un instant, et se vend comme telle.",
+    "descriptionEn": "Nine hours for a bloom that lasts only a moment, and sells like one.",
+    "sortOrder": 225
   },
   {
     "key": "truffle",
@@ -784,6 +1177,39 @@
     "sortOrder": 240
   },
   {
+    "key": "bamboo",
+    "name": "Bambou",
+    "nameEn": "Bamboo",
+    "emoji": "🎍",
+    "form": "stalk",
+    "palette": {
+      "leaf": "#7fbf5a",
+      "leafDark": "#4f8a35",
+      "fruit": "#d9e4a1",
+      "fruitDark": "#a4b56a"
+    },
+    "rarity": "legendary",
+    "seedPrice": 4000,
+    "growthSeconds": 25200,
+    "baseYield": 6,
+    "sellPrice": 1300,
+    "requiredLevel": 39,
+    "seasons": [
+      "spring",
+      "summer"
+    ],
+    "qualityMultiplier": 1.32,
+    "waterRequired": 5,
+    "fertilityCost": 13,
+    "xpReward": 97,
+    "regrowCycles": 4,
+    "regrowSeconds": 10800,
+    "mutationChance": 0.032,
+    "description": "Sept heures, puis quatre coupes de trois heures : la canne repousse tant qu'on la taille.",
+    "descriptionEn": "Seven hours, then four three-hour cuts: the cane keeps coming back as long as you trim it.",
+    "sortOrder": 245
+  },
+  {
     "key": "dragonfruit",
     "name": "Fruit du dragon",
     "nameEn": "Dragon fruit",
@@ -814,6 +1240,38 @@
     "description": "18 heures de pousse : on plante le soir, on récolte le lendemain soir.",
     "descriptionEn": "18 hours of growth: plant at night, harvest the next evening.",
     "sortOrder": 250
+  },
+  {
+    "key": "frost_rose",
+    "name": "Rose des glaces",
+    "nameEn": "Frost rose",
+    "emoji": "❄️",
+    "form": "flower",
+    "palette": {
+      "leaf": "#4d8a8f",
+      "leafDark": "#2f5c60",
+      "fruit": "#d8f1ff",
+      "fruitDark": "#8fc3e6"
+    },
+    "rarity": "mythic",
+    "seedPrice": 7000,
+    "growthSeconds": 72000,
+    "baseYield": 9,
+    "sellPrice": 6600,
+    "requiredLevel": 45,
+    "seasons": [
+      "winter"
+    ],
+    "qualityMultiplier": 1.42,
+    "waterRequired": 6,
+    "fertilityCost": 18,
+    "xpReward": 244,
+    "regrowCycles": 0,
+    "regrowSeconds": 0,
+    "mutationChance": 0.042,
+    "description": "Vingt heures sous la neige. Le miroir hivernal du fruit du dragon.",
+    "descriptionEn": "Twenty hours under the snow. Winter's mirror of the dragon fruit.",
+    "sortOrder": 255
   },
   {
     "key": "star_lotus",
