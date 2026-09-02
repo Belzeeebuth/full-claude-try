@@ -29,6 +29,9 @@ const log = moduleLogger('render');
  * documenté dans docs/02-architecture.md.
  */
 
+/** Type du dégradé de @napi-rs/canvas, qui ne l'exporte pas sous son nom. */
+export type Gradient = ReturnType<SKRSContext2D['createLinearGradient']>;
+
 export const PALETTE = {
   skyTop: '#8fd3f4',
   skyBottom: '#c9f0d2',
@@ -178,6 +181,117 @@ export function drawableText(text: string): string {
     .replace(/\p{Extended_Pictographic}[\uFE0F\u200D]*/gu, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
+}
+
+/**
+ * Toile HORS ÉCRAN pour composer un motif avant de le poser sur l'image.
+ *
+ * Un dessin vectoriel (plante, silhouette) ne se teinte ni ne se contourne
+ * facilement pendant qu'on le trace : on le dessine d'abord seul, sur fond
+ * transparent, puis on le traite comme une image — teinte par `tintCanvas`,
+ * liseré par `outlineCanvas` — avant de le composer. C'est ce qui permet
+ * d'habiller une culture mutée sans toucher au code de chaque silhouette.
+ */
+export function offscreen(width: number, height: number): { canvas: Canvas; ctx: SKRSContext2D } {
+  const canvas = createCanvas(Math.max(1, Math.ceil(width)), Math.max(1, Math.ceil(height)));
+  const ctx = canvas.getContext('2d');
+  ctx.textBaseline = 'top';
+  return { canvas, ctx };
+}
+
+/** Teinte les pixels DÉJÀ peints d'une toile (le fond transparent reste transparent). */
+export function tintCanvas(source: Canvas, color: string): void {
+  const ctx = source.getContext('2d');
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-atop';
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, source.width, source.height);
+  ctx.restore();
+}
+
+/**
+ * Liseré autour d'une silhouette : la toile source est recopiée en couronne
+ * (huit décalages), puis le tout est rempli de `fill` — une couleur ou un
+ * dégradé, ce qui permet un contour irisé. Renvoie une nouvelle toile de la
+ * même taille, à poser SOUS la source.
+ */
+export function outlineCanvas(
+  source: Canvas,
+  thickness: number,
+  fill: string | ((ctx: SKRSContext2D, width: number, height: number) => string | Gradient),
+): Canvas {
+  const { canvas, ctx } = offscreen(source.width, source.height);
+  const steps = 8;
+  for (let step = 0; step < steps; step += 1) {
+    const angle = (step / steps) * Math.PI * 2;
+    ctx.drawImage(source, Math.cos(angle) * thickness, Math.sin(angle) * thickness);
+  }
+  ctx.globalCompositeOperation = 'source-in';
+  ctx.fillStyle = typeof fill === 'string' ? fill : fill(ctx, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = 'source-over';
+  return canvas;
+}
+
+/** Dégradé arc-en-ciel diagonal, réutilisé par tout ce qui doit « iriser ». */
+export function rainbowGradient(ctx: SKRSContext2D, width: number, height: number): Gradient {
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  const stops = ['#ff5a5a', '#ffb347', '#ffe95a', '#5ee07a', '#4fc3f7', '#8e7cff', '#ff7ad9'];
+  stops.forEach((color, index) => gradient.addColorStop(index / (stops.length - 1), color));
+  return gradient;
+}
+
+/**
+ * Étiquette « pilule » : texte sur fond arrondi sombre, pour annoter une
+ * courbe ou un repère sans que le libellé se fonde dans ce qu'il annote.
+ * Renvoie la boîte dessinée, pour que l'appelant évite les chevauchements.
+ */
+export function drawPill(
+  ctx: SKRSContext2D,
+  options: {
+    x: number;
+    y: number;
+    text: string;
+    fontSize: number;
+    color: string;
+    background?: string;
+    /** Point d'ancrage horizontal : `x` est le bord gauche, le centre ou le bord droit. */
+    align?: 'left' | 'center' | 'right';
+    paddingX?: number;
+    height?: number;
+  },
+): { x: number; y: number; width: number; height: number } {
+  ctx.font = font(options.fontSize, 'bold');
+  const paddingX = options.paddingX ?? 8;
+  const height = options.height ?? Math.round(options.fontSize * 1.7);
+  const width = ctx.measureText(options.text).width + paddingX * 2;
+  const align = options.align ?? 'left';
+  const x = align === 'left' ? options.x : align === 'center' ? options.x - width / 2 : options.x - width;
+  fillRoundRect(ctx, x, options.y, width, height, height / 2, options.background ?? 'rgba(20,24,33,0.88)');
+  ctx.fillStyle = options.color;
+  ctx.textAlign = 'left';
+  // `textBaseline` est « top » partout dans le rendu : on centre la hauteur
+  // de capitale (≈ 0,72 × la taille) dans la pilule.
+  ctx.fillText(options.text, x + paddingX, options.y + (height - options.fontSize * 1.16) / 2);
+  return { x, y: options.y, width, height };
+}
+
+/**
+ * Étoile à `points` branches, tracée d'un seul chemin. Sert aux bannières de
+ * prestige et aux médailles : un motif vectoriel, jamais un glyphe « ★ » dont
+ * la présence dépendrait de la police installée.
+ */
+export function starPath(ctx: SKRSContext2D, cx: number, cy: number, outer: number, inner: number, points = 5): void {
+  ctx.beginPath();
+  for (let index = 0; index < points * 2; index += 1) {
+    const radius = index % 2 === 0 ? outer : inner;
+    const angle = -Math.PI / 2 + (index * Math.PI) / points;
+    const px = cx + Math.cos(angle) * radius;
+    const py = cy + Math.sin(angle) * radius;
+    if (index === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
 }
 
 export function newCanvas(width: number, height: number): { canvas: Canvas; ctx: SKRSContext2D } {

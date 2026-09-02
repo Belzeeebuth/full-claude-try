@@ -12,10 +12,13 @@ import {
   font,
   newCanvas,
   progressBar,
+  starPath,
   verticalGradient,
   withDropShadow,
 } from './canvas';
+import { seedFrom, seededRandom } from './scenery';
 import { drawCoin, drawGem, rarityColor } from './sprites';
+import type { SKRSContext2D } from '@napi-rs/canvas';
 
 /** Carte de profil : avatar, bannière, niveau, XP, statistiques clés, badges. */
 
@@ -75,6 +78,10 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
   const banner = BANNERS[input.bannerStyle ?? 'default'] ?? BANNERS.default!;
   ctx.fillStyle = verticalGradient(ctx, 0, 0, bannerHeight, banner[0], banner[1]);
   ctx.fillRect(0, 0, dims.width, bannerHeight);
+  // Le prestige se lit sur la bannière : le motif est semé sur le pseudo pour
+  // que deux joueurs de même rang n'aient pas le même ciel, et reste identique
+  // d'un affichage à l'autre (le cache d'images en dépend).
+  drawPrestigeBanner(ctx, dims.width, bannerHeight, input.prestige, seedFrom(input.username));
   ctx.fillStyle = PALETTE.card;
   ctx.fillRect(0, bannerHeight, dims.width, dims.height - bannerHeight);
 
@@ -84,7 +91,12 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
 
   // --- Identité ---------------------------------------------------------
   // L'avatar chevauche la bannière et la carte : repère visuel classique.
-  await drawAvatar(ctx, input.avatarUrl, 36, bannerHeight - 56, 112, input.themeColor);
+  const avatarSize = 112;
+  const avatarX = 36;
+  const avatarY = bannerHeight - 56;
+  await drawAvatar(ctx, input.avatarUrl, avatarX, avatarY, avatarSize, input.themeColor);
+  // Anneau de niveau : la couleur dit la tranche avant même de lire le chiffre.
+  drawLevelRing(ctx, avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, input.level);
 
   const nameX = 172;
   ctx.fillStyle = PALETTE.text;
@@ -243,6 +255,112 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
   ctx.textAlign = 'left';
 
   return encode(canvas);
+}
+
+/**
+ * Couleur de l'anneau d'avatar selon la tranche de niveau. Les paliers suivent
+ * les grandes étapes du jeu (déblocage des enclos, de la mine, du prestige) ;
+ * la couleur monte la même échelle que les raretés d'objets, déjà connue du
+ * joueur, pour que « violet » veuille dire la même chose partout.
+ */
+export function levelRingColor(level: number): string {
+  if (level >= 100) return rarityColor('mythic');
+  if (level >= 75) return rarityColor('legendary');
+  if (level >= 50) return PALETTE.gold;
+  if (level >= 25) return rarityColor('epic');
+  if (level >= 10) return rarityColor('rare');
+  return PALETTE.grass;
+}
+
+function drawLevelRing(ctx: SKRSContext2D, cx: number, cy: number, radius: number, level: number): void {
+  const ringRadius = radius + 4;
+  // Liseré sombre extérieur : sépare l'anneau d'une bannière de teinte proche.
+  ctx.beginPath();
+  ctx.arc(cx, cy, ringRadius + 2.5, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(20,24,33,0.55)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+  ctx.strokeStyle = levelRingColor(level);
+  ctx.lineWidth = 5;
+  ctx.stroke();
+  // Au-delà du niveau 100, un second anneau fin : le plafond est franchi.
+  if (level >= 100) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, ringRadius + 6, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+}
+
+/**
+ * Motif de bannière selon le prestige : uni (0), étoiles semées (1),
+ * constellation reliée (2 et plus, plus dense à chaque rang). Blanc
+ * translucide uniquement : la bannière est de la couleur choisie par le
+ * joueur, un motif coloré pourrait jurer avec n'importe laquelle.
+ */
+function drawPrestigeBanner(ctx: SKRSContext2D, width: number, height: number, prestige: number, seed: number): void {
+  if (prestige <= 0) return;
+  const random = seededRandom(seed);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, width, height);
+  ctx.clip();
+
+  // Poussière d'étoiles : présente dès le rang 1.
+  for (let index = 0; index < 60; index += 1) {
+    const x = random() * width;
+    const y = random() * height;
+    ctx.fillStyle = `rgba(255,255,255,${(0.25 + random() * 0.45).toFixed(2)})`;
+    ctx.beginPath();
+    ctx.arc(x, y, 0.8 + random() * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Étoiles à quatre branches, plus grandes.
+  for (let index = 0; index < 14; index += 1) {
+    const x = random() * width;
+    const y = random() * height;
+    const size = 3 + random() * 4;
+    ctx.fillStyle = `rgba(255,255,255,${(0.45 + random() * 0.4).toFixed(2)})`;
+    starPath(ctx, x, y, size, size * 0.35, 4);
+    ctx.fill();
+  }
+
+  if (prestige >= 2) {
+    // Constellation : des nœuds reliés de proche en proche, tracés d'un trait
+    // fin. Le nombre de nœuds croît avec le rang, dans la limite du lisible.
+    const nodes = Math.min(22, 8 + prestige * 3);
+    const points: Array<{ x: number; y: number }> = [];
+    let x = width * 0.28 + random() * width * 0.1;
+    for (let index = 0; index < nodes; index += 1) {
+      x += (width * 0.62) / nodes;
+      points.push({ x, y: 14 + random() * (height - 28) });
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    points.forEach((point, index) => {
+      if (index === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    });
+    ctx.stroke();
+    // Quelques branches latérales, pour que la ligne ne soit pas une polyligne.
+    for (let index = 1; index < points.length - 1; index += 3) {
+      const from = points[index]!;
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(from.x + (random() - 0.5) * 60, from.y + (random() - 0.5) * 50);
+      ctx.stroke();
+    }
+    for (const point of points) {
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      starPath(ctx, point.x, point.y, 4, 1.6, 4);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
 }
 
 /**

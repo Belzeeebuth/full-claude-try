@@ -4,6 +4,7 @@ import { formatCompact, formatNumber, formatPercent } from '../utils/format';
 import { clampAltText, joinSentences } from './alt-text';
 import {
   PALETTE,
+  drawPill,
   drawableText,
   encode,
   fillRoundRect,
@@ -133,21 +134,36 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   }
 
   // Ligne du prix de référence : repère immédiat pour juger cher / bon marché.
+  // Plus contrastée qu'avant, et son libellé en pilule : sur un fond déjà
+  // strié de grille, un pointillé gris et un mot gris se perdaient.
   const baseY = toY(input.basePrice);
-  ctx.setLineDash([6, 6]);
-  ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+  ctx.setLineDash([8, 6]);
+  ctx.strokeStyle = 'rgba(255,255,255,0.42)';
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.moveTo(plot.x, baseY);
   ctx.lineTo(plot.x + plot.width, baseY);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.font = font(11);
-  ctx.fillStyle = PALETTE.textMuted;
-  ctx.fillText(t('render.chart.reference'), plot.x + plot.width - 62, baseY - 16);
+  // À GAUCHE : le bord droit reçoit déjà l'étiquette du dernier prix, et un
+  // prix proche de la référence les ferait se chevaucher.
+  drawPill(ctx, {
+    x: plot.x + 6,
+    y: baseY - 11,
+    text: `${t('render.chart.reference')} ${formatCompact(input.basePrice, locale)}`,
+    fontSize: 11,
+    color: PALETTE.text,
+    background: 'rgba(61,70,87,0.92)',
+    align: 'left',
+  });
 
   // --- Aire sous la courbe ---------------------------------------------
+  // Dégradé en trois paliers : franc sous la courbe, puis qui s'éteint vite.
+  // Un dégradé linéaire sur toute la hauteur délavait la zone au lieu de la
+  // détacher du fond.
   const gradient = ctx.createLinearGradient(0, plot.y, 0, plot.y + plot.height);
-  gradient.addColorStop(0, rising ? 'rgba(92,184,92,0.35)' : 'rgba(224,90,79,0.35)');
+  gradient.addColorStop(0, rising ? 'rgba(92,184,92,0.55)' : 'rgba(224,90,79,0.55)');
+  gradient.addColorStop(0.55, rising ? 'rgba(92,184,92,0.16)' : 'rgba(224,90,79,0.16)');
   gradient.addColorStop(1, 'rgba(0,0,0,0)');
 
   ctx.beginPath();
@@ -171,9 +187,51 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   ctx.lineJoin = 'round';
   ctx.stroke();
 
-  // Dernier point mis en évidence
-  const lastX = toX(points.length - 1);
-  const lastY = toY(points[points.length - 1]!.price);
+  // --- Repères min / max et dernier point --------------------------------
+  // Les extrêmes de la SÉRIE (pas du prix de référence, déjà tracé) sont
+  // pointés et étiquetés sur la courbe : la légende en bas donnait les
+  // chiffres, mais pas où ni quand. Un extrême confondu avec le dernier point
+  // n'est pas répété : l'étiquette du dernier point suffit.
+  const lastIndex = points.length - 1;
+  const lastX = toX(lastIndex);
+  const lastY = toY(points[lastIndex]!.price);
+  let minIndex = 0;
+  let maxIndex = 0;
+  points.forEach((point, index) => {
+    if (point.price < points[minIndex]!.price) minIndex = index;
+    if (point.price > points[maxIndex]!.price) maxIndex = index;
+  });
+  const marker = (index: number, kind: 'min' | 'max'): void => {
+    const x = toX(index);
+    const y = toY(points[index]!.price);
+    ctx.beginPath();
+    ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = PALETTE.cardAlt;
+    ctx.fill();
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    const text = t(`render.chart.marker_${kind}`, { value: formatCompact(points[index]!.price, locale) });
+    ctx.font = font(11, 'bold');
+    const pillWidth = ctx.measureText(text).width + 16;
+    // La pilule reste dans la zone de tracé, même pour un extrême au bord.
+    const pillX = Math.min(plot.x + plot.width - pillWidth / 2, Math.max(plot.x + pillWidth / 2, x));
+    drawPill(ctx, {
+      x: pillX,
+      y: kind === 'max' ? y - 28 : y + 9,
+      text,
+      fontSize: 11,
+      color: PALETTE.text,
+      align: 'center',
+    });
+  };
+  if (points.length > 1 && minIndex !== maxIndex) {
+    if (maxIndex !== lastIndex) marker(maxIndex, 'max');
+    if (minIndex !== lastIndex) marker(minIndex, 'min');
+  }
+
+  // Dernier point mis en évidence, avec son prix : c'est le chiffre que le
+  // joueur cherche. L'étiquette se place du côté d'où la courbe ne vient pas.
   ctx.beginPath();
   ctx.arc(lastX, lastY, 6, 0, Math.PI * 2);
   ctx.fillStyle = accent;
@@ -181,6 +239,16 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   ctx.strokeStyle = PALETTE.text;
   ctx.lineWidth = 2;
   ctx.stroke();
+  const previousY = points.length > 1 ? toY(points[lastIndex - 1]!.price) : lastY;
+  const labelAbove = previousY >= lastY;
+  drawPill(ctx, {
+    x: lastX - 10,
+    y: Math.min(plot.y + plot.height - 24, Math.max(plot.y + 2, labelAbove ? lastY - 30 : lastY + 10)),
+    text: formatCompact(points[lastIndex]!.price, locale),
+    fontSize: 13,
+    color: accent,
+    align: 'right',
+  });
 
   // --- Axe temporel -----------------------------------------------------
   ctx.font = font(12);
