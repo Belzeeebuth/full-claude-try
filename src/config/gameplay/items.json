@@ -14,6 +14,20 @@
     "sortOrder": 1010
   },
   {
+    "key": "goose_down",
+    "name": "Duvet d'oie",
+    "nameEn": "Goose down",
+    "emoji": "☁️",
+    "category": "animal_product",
+    "rarity": "common",
+    "sellPrice": 30,
+    "marketTracked": true,
+    "sourceKey": "goose",
+    "description": "Léger, chaud, et une oie en fournit sans arrêt.",
+    "descriptionEn": "Light, warm, and a goose never stops providing it.",
+    "sortOrder": 1015
+  },
+  {
     "key": "duck_egg",
     "name": "Œuf de canard",
     "nameEn": "Duck egg",
@@ -42,6 +56,20 @@
     "sortOrder": 1030
   },
   {
+    "key": "guinea_pig_hair",
+    "name": "Poil soyeux",
+    "nameEn": "Silky hair",
+    "emoji": "🧶",
+    "category": "animal_product",
+    "rarity": "common",
+    "sellPrice": 36,
+    "marketTracked": true,
+    "sourceKey": "guinea_pig",
+    "description": "Brossé sur les cochons d'Inde à robe longue. Se file avec l'angora.",
+    "descriptionEn": "Brushed from long-coated guinea pigs. Spun together with angora.",
+    "sortOrder": 1035
+  },
+  {
     "key": "wool",
     "name": "Laine",
     "nameEn": "Wool",
@@ -56,6 +84,20 @@
     "sortOrder": 1040
   },
   {
+    "key": "turkey_feather",
+    "name": "Plume de dinde",
+    "nameEn": "Turkey feather",
+    "emoji": "🪶",
+    "category": "animal_product",
+    "rarity": "uncommon",
+    "sellPrice": 120,
+    "marketTracked": true,
+    "sourceKey": "turkey",
+    "description": "Grande et bronzée : les archers en empennent leurs flèches.",
+    "descriptionEn": "Large and bronze: archers fletch their arrows with it.",
+    "sortOrder": 1045
+  },
+  {
     "key": "goat_milk",
     "name": "Lait de chèvre",
     "nameEn": "Goat milk",
@@ -68,6 +110,20 @@
     "description": "Base du fromage de chèvre.",
     "descriptionEn": "The base of goat cheese.",
     "sortOrder": 1050
+  },
+  {
+    "key": "donkey_milk",
+    "name": "Lait d'ânesse",
+    "nameEn": "Donkey milk",
+    "emoji": "🥛",
+    "category": "animal_product",
+    "rarity": "uncommon",
+    "sellPrice": 150,
+    "marketTracked": true,
+    "sourceKey": "donkey",
+    "description": "Rare et délicat. Les savonniers du village se l'arrachent.",
+    "descriptionEn": "Rare and delicate. The village soap makers fight over it.",
+    "sortOrder": 1055
   },
   {
     "key": "honey",
@@ -112,6 +168,34 @@
     "sortOrder": 1080
   },
   {
+    "key": "silk_cocoon",
+    "name": "Cocon de soie",
+    "nameEn": "Silk cocoon",
+    "emoji": "🪡",
+    "category": "animal_product",
+    "rarity": "rare",
+    "sellPrice": 260,
+    "marketTracked": true,
+    "sourceKey": "silkworm",
+    "description": "Un kilomètre de fil dans chaque cocon, à dévider avec patience.",
+    "descriptionEn": "A kilometre of thread in every cocoon, unwound with patience.",
+    "sortOrder": 1085
+  },
+  {
+    "key": "tortoise_scute",
+    "name": "Écaille de tortue",
+    "nameEn": "Tortoise scute",
+    "emoji": "🐢",
+    "category": "animal_product",
+    "rarity": "rare",
+    "sellPrice": 1600,
+    "marketTracked": true,
+    "sourceKey": "tortoise",
+    "description": "Perdue naturellement à chaque mue. Les artisans en font des peignes.",
+    "descriptionEn": "Shed naturally with each moult. Artisans turn it into combs.",
+    "sortOrder": 1087
+  },
+  {
     "key": "fine_wool",
     "name": "Laine fine",
     "nameEn": "Fine wool",
@@ -124,6 +208,20 @@
     "description": "Tissée en tissu fin, l'un des produits les plus stables du marché.",
     "descriptionEn": "Woven into fine cloth, one of the steadiest products on the market.",
     "sortOrder": 1090
+  },
+  {
+    "key": "yak_wool",
+    "name": "Laine de yack",
+    "nameEn": "Yak wool",
+    "emoji": "🧣",
+    "category": "animal_product",
+    "rarity": "epic",
+    "sellPrice": 1400,
+    "marketTracked": true,
+    "sourceKey": "yak",
+    "description": "Le duvet des hauts plateaux, plus chaud que n'importe quelle laine.",
+    "descriptionEn": "Highland down, warmer than any wool.",
+    "sortOrder": 1095
   },
   {
     "key": "giant_egg",
@@ -140,6 +238,20 @@
     "sortOrder": 1100
   },
   {
+    "key": "antler",
+    "name": "Bois de cerf",
+    "nameEn": "Antler",
+    "emoji": "🦌",
+    "category": "animal_product",
+    "rarity": "epic",
+    "sellPrice": 4600,
+    "marketTracked": true,
+    "sourceKey": "deer",
+    "description": "Tombés d'eux-mêmes. Les couteliers les sculptent en manches.",
+    "descriptionEn": "Shed on their own. Cutlers carve them into handles.",
+    "sortOrder": 1105
+  },
+  {
     "key": "horse_hair",
     "name": "Crin de cheval",
     "nameEn": "Horsehair",
@@ -152,6 +264,20 @@
     "description": "Recherché par les luthiers du village.",
     "descriptionEn": "Sought after by the village luthiers.",
     "sortOrder": 1110
+  },
+  {
+    "key": "swan_feather",
+    "name": "Plume de cygne",
+    "nameEn": "Swan feather",
+    "emoji": "🪶",
+    "category": "animal_product",
+    "rarity": "legendary",
+    "sellPrice": 5800,
+    "marketTracked": true,
+    "sourceKey": "swan",
+    "description": "Immaculée. Les calligraphes n'écrivent qu'avec ça.",
+    "descriptionEn": "Immaculate. Calligraphers write with nothing else.",
+    "sortOrder": 1115
   },
   {
     "key": "peacock_feather",
@@ -180,6 +306,34 @@
     "description": "Chaude au toucher. Composant unique de la potion de dragon.",
     "descriptionEn": "Warm to the touch. The unique component of the dragon potion.",
     "sortOrder": 1130
+  },
+  {
+    "key": "unicorn_hair",
+    "name": "Crin de licorne",
+    "nameEn": "Unicorn hair",
+    "emoji": "🦄",
+    "category": "animal_product",
+    "rarity": "legendary",
+    "sellPrice": 9000,
+    "marketTracked": true,
+    "sourceKey": "unicorn",
+    "description": "Nacré, incassable. Un seul suffit à corder un arc légendaire.",
+    "descriptionEn": "Pearly, unbreakable. A single one strings a legendary bow.",
+    "sortOrder": 1135
+  },
+  {
+    "key": "phoenix_ash",
+    "name": "Cendre de phénix",
+    "nameEn": "Phoenix ash",
+    "emoji": "🔥",
+    "category": "animal_product",
+    "rarity": "mythic",
+    "sellPrice": 16000,
+    "marketTracked": true,
+    "sourceKey": "phoenix",
+    "description": "Encore tiède. Composant d'alchimie sans équivalent.",
+    "descriptionEn": "Still warm. An alchemy component without equal.",
+    "sortOrder": 1140
   },
   {
     "key": "flour",

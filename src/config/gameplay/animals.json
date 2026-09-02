@@ -21,9 +21,49 @@
     "happinessRate": 2.5,
     "passiveBonus": {},
     "eventOnly": false,
+    "form": "fowl",
+    "palette": {
+      "body": "#e8d9b5",
+      "bodyDark": "#c7b284",
+      "accent": "#d9463c",
+      "accentDark": "#9e2e26"
+    },
     "description": "Deux œufs toutes les 45 minutes. Le premier animal de toute ferme.",
     "descriptionEn": "Two eggs every 45 minutes. The first animal on any farm.",
     "sortOrder": 10
+  },
+  {
+    "key": "goose",
+    "name": "Oie",
+    "nameEn": "Goose",
+    "emoji": "🪿",
+    "rarity": "common",
+    "price": 500,
+    "priceGems": 0,
+    "buildingKey": "coop",
+    "productItemKey": "goose_down",
+    "productQuantity": 2,
+    "productionSeconds": 3600,
+    "feedItemKey": "feed_grain",
+    "feedPerCycle": 1,
+    "requiredLevel": 3,
+    "lifespanDays": 0,
+    "breedable": true,
+    "breedingCooldownSeconds": 43200,
+    "hungerRate": 4.5,
+    "happinessRate": 2.5,
+    "passiveBonus": {},
+    "eventOnly": false,
+    "form": "longneck",
+    "palette": {
+      "body": "#b9b0a0",
+      "bodyDark": "#8a8172",
+      "accent": "#f0932b",
+      "accentDark": "#b8661a"
+    },
+    "description": "Un duvet toutes les heures, et un gardien qui cacarde à la moindre visite.",
+    "descriptionEn": "Down every hour, and a guard that honks at every visitor.",
+    "sortOrder": 15
   },
   {
     "key": "duck",
@@ -47,6 +87,13 @@
     "happinessRate": 2.5,
     "passiveBonus": {},
     "eventOnly": false,
+    "form": "fowl",
+    "palette": {
+      "body": "#7d6b4c",
+      "bodyDark": "#5a4b33",
+      "accent": "#2e7d4f",
+      "accentDark": "#1f5a36"
+    },
     "description": "Œufs plus chers que ceux de la poule, cycle un peu plus long.",
     "descriptionEn": "Eggs worth more than a hen’s, with a slightly longer cycle.",
     "sortOrder": 20
@@ -75,9 +122,49 @@
       "breedingSpeed": 0.25
     },
     "eventOnly": false,
+    "form": "smallfurry",
+    "palette": {
+      "body": "#b9b2a8",
+      "bodyDark": "#8c857a",
+      "accent": "#f2c2c8",
+      "accentDark": "#d98f9a"
+    },
     "description": "Se reproduit deux fois plus vite que les autres. Évidemment.",
     "descriptionEn": "Breeds twice as fast as the others. Obviously.",
     "sortOrder": 30
+  },
+  {
+    "key": "guinea_pig",
+    "name": "Cochon d'Inde",
+    "nameEn": "Guinea pig",
+    "emoji": "🐹",
+    "rarity": "common",
+    "price": 720,
+    "priceGems": 0,
+    "buildingKey": "pen",
+    "productItemKey": "guinea_pig_hair",
+    "productQuantity": 2,
+    "productionSeconds": 3600,
+    "feedItemKey": "feed_hay",
+    "feedPerCycle": 1,
+    "requiredLevel": 6,
+    "lifespanDays": 0,
+    "breedable": true,
+    "breedingCooldownSeconds": 28800,
+    "hungerRate": 5.5,
+    "happinessRate": 3.5,
+    "passiveBonus": {},
+    "eventOnly": false,
+    "form": "smallfurry",
+    "palette": {
+      "body": "#c98a4b",
+      "bodyDark": "#94612f",
+      "accent": "#f2b8bf",
+      "accentDark": "#c98a94"
+    },
+    "description": "Petit, bavard, brossé chaque heure : sa robe longue se file avec l'angora.",
+    "descriptionEn": "Small, chatty, brushed every hour: its long coat is spun with angora.",
+    "sortOrder": 35
   },
   {
     "key": "sheep",
@@ -101,9 +188,49 @@
     "happinessRate": 2.0,
     "passiveBonus": {},
     "eventOnly": false,
+    "form": "woolly",
+    "palette": {
+      "body": "#f4f1e8",
+      "bodyDark": "#d6d0c0",
+      "accent": "#3d3229",
+      "accentDark": "#241c15"
+    },
     "description": "Trois toisons par cycle : la laine filée est un produit stable.",
     "descriptionEn": "Three fleeces per cycle: spun wool is a stable product.",
     "sortOrder": 40
+  },
+  {
+    "key": "turkey",
+    "name": "Dinde",
+    "nameEn": "Turkey",
+    "emoji": "🦃",
+    "rarity": "uncommon",
+    "price": 1300,
+    "priceGems": 0,
+    "buildingKey": "coop",
+    "productItemKey": "turkey_feather",
+    "productQuantity": 2,
+    "productionSeconds": 9000,
+    "feedItemKey": "feed_grain",
+    "feedPerCycle": 2,
+    "requiredLevel": 9,
+    "lifespanDays": 0,
+    "breedable": true,
+    "breedingCooldownSeconds": 64800,
+    "hungerRate": 4.5,
+    "happinessRate": 2.5,
+    "passiveBonus": {},
+    "eventOnly": false,
+    "form": "fowl",
+    "palette": {
+      "body": "#5a3d2b",
+      "bodyDark": "#3b2619",
+      "accent": "#c8382b",
+      "accentDark": "#8c2419"
+    },
+    "description": "Deux grandes plumes toutes les 2 h 30. Glougloute plus fort qu'elle ne mange.",
+    "descriptionEn": "Two large feathers every 2.5 h. Gobbles louder than it eats.",
+    "sortOrder": 45
   },
   {
     "key": "goat",
@@ -127,9 +254,51 @@
     "happinessRate": 2.5,
     "passiveBonus": {},
     "eventOnly": false,
+    "form": "hoofed",
+    "palette": {
+      "body": "#dcd3c1",
+      "bodyDark": "#b2a48c",
+      "accent": "#7a6350",
+      "accentDark": "#52402f"
+    },
     "description": "Grimpe partout, mange tout, donne un lait qui fait un excellent fromage.",
     "descriptionEn": "Climbs everywhere, eats anything, gives milk that makes excellent cheese.",
     "sortOrder": 50
+  },
+  {
+    "key": "donkey",
+    "name": "Âne",
+    "nameEn": "Donkey",
+    "emoji": "🫏",
+    "rarity": "uncommon",
+    "price": 1450,
+    "priceGems": 0,
+    "buildingKey": "barn",
+    "productItemKey": "donkey_milk",
+    "productQuantity": 2,
+    "productionSeconds": 10800,
+    "feedItemKey": "feed_hay",
+    "feedPerCycle": 2,
+    "requiredLevel": 11,
+    "lifespanDays": 0,
+    "breedable": true,
+    "breedingCooldownSeconds": 129600,
+    "hungerRate": 4.0,
+    "happinessRate": 2.0,
+    "passiveBonus": {
+      "marketSellBonus": 0.02
+    },
+    "eventOnly": false,
+    "form": "hoofed",
+    "palette": {
+      "body": "#8f8a83",
+      "bodyDark": "#625d56",
+      "accent": "#3f3a35",
+      "accentDark": "#262220"
+    },
+    "description": "Son lait est rare, et il porte vos sacs au marché : +2 % sur vos prix de vente.",
+    "descriptionEn": "Its milk is rare, and it carries your bags to market: +2% on your sale prices.",
+    "sortOrder": 55
   },
   {
     "key": "bee",
@@ -155,6 +324,13 @@
       "cropYield": 0.02
     },
     "eventOnly": false,
+    "form": "insect",
+    "palette": {
+      "body": "#f5c542",
+      "bodyDark": "#3a2f0b",
+      "accent": "#d8e8f0",
+      "accentDark": "#9db7c7"
+    },
     "description": "Chaque essaim pollinise vos cultures : +2 % de rendement par ruche.",
     "descriptionEn": "Each swarm pollinates your crops: +2% yield per hive.",
     "sortOrder": 60
@@ -181,6 +357,13 @@
     "happinessRate": 2.0,
     "passiveBonus": {},
     "eventOnly": false,
+    "form": "hoofed",
+    "palette": {
+      "body": "#f3efe6",
+      "bodyDark": "#3b3b3b",
+      "accent": "#e6d3a3",
+      "accentDark": "#b59f6a"
+    },
     "description": "Le lait alimente fromagerie, beurre et confiserie : investissement clé.",
     "descriptionEn": "Milk feeds the creamery, butter and confectionery: a key investment.",
     "sortOrder": 70
@@ -207,9 +390,84 @@
     "happinessRate": 3.0,
     "passiveBonus": {},
     "eventOnly": false,
+    "form": "swine",
+    "palette": {
+      "body": "#f4b7c0",
+      "bodyDark": "#d9909b",
+      "accent": "#d97a90",
+      "accentDark": "#b05a70"
+    },
     "description": "Déniche une truffe sauvage toutes les 6 h — sans occuper de parcelle.",
     "descriptionEn": "Digs up a wild truffle every 6 h — without using a plot.",
     "sortOrder": 80
+  },
+  {
+    "key": "silkworm",
+    "name": "Ver à soie",
+    "nameEn": "Silkworm",
+    "emoji": "🐛",
+    "rarity": "rare",
+    "price": 3350,
+    "priceGems": 0,
+    "buildingKey": "apiary",
+    "productItemKey": "silk_cocoon",
+    "productQuantity": 3,
+    "productionSeconds": 14400,
+    "feedItemKey": "feed_hay",
+    "feedPerCycle": 1,
+    "requiredLevel": 16,
+    "lifespanDays": 0,
+    "breedable": false,
+    "breedingCooldownSeconds": 0,
+    "hungerRate": 3.0,
+    "happinessRate": 1.5,
+    "passiveBonus": {},
+    "eventOnly": false,
+    "form": "insect",
+    "palette": {
+      "body": "#f3ead9",
+      "bodyDark": "#cfc3a8",
+      "accent": "#fbf6ea",
+      "accentDark": "#b9ad90"
+    },
+    "description": "Trois cocons de soie toutes les 4 h, logés au rucher. Presque aucun entretien.",
+    "descriptionEn": "Three silk cocoons every 4 h, housed in the apiary. Almost no upkeep.",
+    "sortOrder": 85
+  },
+  {
+    "key": "tortoise",
+    "name": "Tortue",
+    "nameEn": "Tortoise",
+    "emoji": "🐢",
+    "rarity": "rare",
+    "price": 3500,
+    "priceGems": 0,
+    "buildingKey": "pen",
+    "productItemKey": "tortoise_scute",
+    "productQuantity": 1,
+    "productionSeconds": 28800,
+    "feedItemKey": "feed_hay",
+    "feedPerCycle": 2,
+    "requiredLevel": 17,
+    "lifespanDays": 0,
+    "breedable": true,
+    "breedingCooldownSeconds": 345600,
+    "hungerRate": 1.5,
+    "happinessRate": 1.0,
+    "passiveBonus": {
+      "luck": 0.01
+    },
+    "eventOnly": false,
+    "form": "shelled",
+    "palette": {
+      "body": "#6d5a2f",
+      "bodyDark": "#4a3c1e",
+      "accent": "#8fa05a",
+      "accentDark": "#5e6b3a"
+    },
+    "description": "Lente, sobre, centenaire : une écaille de mue toutes les 8 h et presque rien à manger. Porte-bonheur : +1 % de chance.",
+    "descriptionEn": "Slow, frugal, centenarian: one shed scute every 8 h and barely anything to eat. A lucky charm: +1% luck.",
+    "sortOrder": 87
   },
   {
     "key": "alpaca",
@@ -233,9 +491,49 @@
     "happinessRate": 2.0,
     "passiveBonus": {},
     "eventOnly": false,
+    "form": "woolly",
+    "palette": {
+      "body": "#cfae82",
+      "bodyDark": "#a68355",
+      "accent": "#5c4633",
+      "accentDark": "#3e2e20"
+    },
     "description": "Laine fine : matière première du tissu fin, très recherché à l'hôtel des ventes.",
     "descriptionEn": "Fine wool: the raw material of fine cloth, sought after at the auction house.",
     "sortOrder": 90
+  },
+  {
+    "key": "yak",
+    "name": "Yack",
+    "nameEn": "Yak",
+    "emoji": "🦬",
+    "rarity": "epic",
+    "price": 7200,
+    "priceGems": 0,
+    "buildingKey": "barn",
+    "productItemKey": "yak_wool",
+    "productQuantity": 2,
+    "productionSeconds": 28800,
+    "feedItemKey": "feed_premium",
+    "feedPerCycle": 2,
+    "requiredLevel": 22,
+    "lifespanDays": 0,
+    "breedable": true,
+    "breedingCooldownSeconds": 172800,
+    "hungerRate": 3.5,
+    "happinessRate": 2.0,
+    "passiveBonus": {},
+    "eventOnly": false,
+    "form": "woolly",
+    "palette": {
+      "body": "#4a3826",
+      "bodyDark": "#2e2216",
+      "accent": "#d8cfbf",
+      "accentDark": "#a89c88"
+    },
+    "description": "Sa laine des hauts plateaux tient chaud par tous les temps. Deux toisons toutes les 8 h.",
+    "descriptionEn": "Its highland wool keeps you warm in any weather. Two fleeces every 8 h.",
+    "sortOrder": 95
   },
   {
     "key": "ostrich",
@@ -259,9 +557,49 @@
     "happinessRate": 2.0,
     "passiveBonus": {},
     "eventOnly": false,
+    "form": "longneck",
+    "palette": {
+      "body": "#3a3a3a",
+      "bodyDark": "#1e1e1e",
+      "accent": "#e8c9a8",
+      "accentDark": "#c49a78"
+    },
     "description": "Un œuf géant toutes les 8 h. Peu d'entretien, gros revenu.",
     "descriptionEn": "One giant egg every 8 h. Low upkeep, high income.",
     "sortOrder": 100
+  },
+  {
+    "key": "deer",
+    "name": "Cerf",
+    "nameEn": "Deer",
+    "emoji": "🦌",
+    "rarity": "epic",
+    "price": 8500,
+    "priceGems": 0,
+    "buildingKey": "pen",
+    "productItemKey": "antler",
+    "productQuantity": 1,
+    "productionSeconds": 43200,
+    "feedItemKey": "feed_premium",
+    "feedPerCycle": 2,
+    "requiredLevel": 28,
+    "lifespanDays": 0,
+    "breedable": true,
+    "breedingCooldownSeconds": 259200,
+    "hungerRate": 3.0,
+    "happinessRate": 2.5,
+    "passiveBonus": {},
+    "eventOnly": false,
+    "form": "hoofed",
+    "palette": {
+      "body": "#a8743f",
+      "bodyDark": "#7a5228",
+      "accent": "#d9c8a6",
+      "accentDark": "#a8956f"
+    },
+    "description": "Perd ses bois toutes les 12 h et les refait aussitôt. Discret, peu gourmand.",
+    "descriptionEn": "Sheds its antlers every 12 h and regrows them at once. Discreet, a light eater.",
+    "sortOrder": 105
   },
   {
     "key": "horse",
@@ -287,9 +625,51 @@
       "marketSellBonus": 0.05
     },
     "eventOnly": false,
+    "form": "hoofed",
+    "palette": {
+      "body": "#8b5a2b",
+      "bodyDark": "#5e3a1a",
+      "accent": "#2e1d10",
+      "accentDark": "#1a100a"
+    },
     "description": "Transporte vos récoltes au marché : +5 % sur tous vos prix de vente.",
     "descriptionEn": "Carries your harvest to market: +5% on all your sale prices.",
     "sortOrder": 110
+  },
+  {
+    "key": "swan",
+    "name": "Cygne",
+    "nameEn": "Swan",
+    "emoji": "🦢",
+    "rarity": "legendary",
+    "price": 11200,
+    "priceGems": 0,
+    "buildingKey": "pen",
+    "productItemKey": "swan_feather",
+    "productQuantity": 1,
+    "productionSeconds": 43200,
+    "feedItemKey": "feed_premium",
+    "feedPerCycle": 2,
+    "requiredLevel": 33,
+    "lifespanDays": 0,
+    "breedable": true,
+    "breedingCooldownSeconds": 345600,
+    "hungerRate": 2.5,
+    "happinessRate": 3.5,
+    "passiveBonus": {
+      "xpBonus": 0.03
+    },
+    "eventOnly": false,
+    "form": "longneck",
+    "palette": {
+      "body": "#fbfaf6",
+      "bodyDark": "#d9d6cc",
+      "accent": "#f28c28",
+      "accentDark": "#b5641a"
+    },
+    "description": "Une plume immaculée toutes les 12 h. Sa grâce inspire toute la ferme : +3 % d'XP.",
+    "descriptionEn": "One immaculate feather every 12 h. Its grace inspires the whole farm: +3% XP.",
+    "sortOrder": 115
   },
   {
     "key": "peacock",
@@ -315,6 +695,13 @@
       "luck": 0.03
     },
     "eventOnly": false,
+    "form": "longneck",
+    "palette": {
+      "body": "#1f6fb2",
+      "bodyDark": "#144a7a",
+      "accent": "#2ea36b",
+      "accentDark": "#1c6b45"
+    },
     "description": "Superbe et capricieux : +3 % de chance sur les qualités et mutations.",
     "descriptionEn": "Splendid and temperamental: +3% chance on qualities and mutations.",
     "sortOrder": 120
@@ -343,8 +730,85 @@
       "xpBonus": 0.1
     },
     "eventOnly": true,
+    "form": "winged",
+    "palette": {
+      "body": "#c93a3a",
+      "bodyDark": "#8a2424",
+      "accent": "#f2a93b",
+      "accentDark": "#b8771f"
+    },
     "description": "Récompense d'événement. Affamé, exigeant, et +10 % d'XP sur tout.",
     "descriptionEn": "An event reward. Hungry, demanding, and +10% XP on everything.",
     "sortOrder": 130
+  },
+  {
+    "key": "unicorn",
+    "name": "Licorne",
+    "nameEn": "Unicorn",
+    "emoji": "🦄",
+    "rarity": "legendary",
+    "price": 24000,
+    "priceGems": 0,
+    "buildingKey": "mythic_pen",
+    "productItemKey": "unicorn_hair",
+    "productQuantity": 1,
+    "productionSeconds": 43200,
+    "feedItemKey": "feed_premium",
+    "feedPerCycle": 3,
+    "requiredLevel": 40,
+    "lifespanDays": 0,
+    "breedable": false,
+    "breedingCooldownSeconds": 0,
+    "hungerRate": 4.0,
+    "happinessRate": 4.0,
+    "passiveBonus": {
+      "luck": 0.04
+    },
+    "eventOnly": false,
+    "form": "hoofed",
+    "palette": {
+      "body": "#f7f3ff",
+      "bodyDark": "#cfc3e6",
+      "accent": "#d4af37",
+      "accentDark": "#9c7d1f"
+    },
+    "description": "Un crin toutes les 12 h, et sa présence attire les mutations : +4 % de chance.",
+    "descriptionEn": "One hair every 12 h, and its presence draws mutations: +4% luck.",
+    "sortOrder": 135
+  },
+  {
+    "key": "phoenix",
+    "name": "Phénix",
+    "nameEn": "Phoenix",
+    "emoji": "🔥",
+    "rarity": "mythic",
+    "price": 0,
+    "priceGems": 300,
+    "buildingKey": "mythic_pen",
+    "productItemKey": "phoenix_ash",
+    "productQuantity": 1,
+    "productionSeconds": 28800,
+    "feedItemKey": "feed_premium",
+    "feedPerCycle": 3,
+    "requiredLevel": 45,
+    "lifespanDays": 0,
+    "breedable": false,
+    "breedingCooldownSeconds": 0,
+    "hungerRate": 7.0,
+    "happinessRate": 4.5,
+    "passiveBonus": {
+      "cropYield": 0.05
+    },
+    "eventOnly": false,
+    "form": "winged",
+    "palette": {
+      "body": "#e8542b",
+      "bodyDark": "#a83417",
+      "accent": "#f7c948",
+      "accentDark": "#c9921a"
+    },
+    "description": "Vendu contre des gemmes. Se consume et renaît toutes les 8 h ; sa chaleur nourrit les champs : +5 % de rendement.",
+    "descriptionEn": "Sold for gems. Burns and is reborn every 8 h; its heat feeds the fields: +5% yield.",
+    "sortOrder": 140
   }
 ]
