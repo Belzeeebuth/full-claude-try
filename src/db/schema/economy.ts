@@ -23,6 +23,8 @@ import {
   auctionStatusEnum,
   currencyEnum,
   mutationEnum,
+  priceAlertDirectionEnum,
+  priceAlertStatusEnum,
   qualityEnum,
   standingOrderStatusEnum,
   tradeStatusEnum,
@@ -402,4 +404,42 @@ export const economySnapshots = pgTable(
     notes: text('notes'),
   },
   (t) => [index('economy_snapshots_time_idx').on(t.capturedAt.desc())],
+);
+
+/**
+ * Alerte de prix : « préviens-moi quand {item} passe {above|below} {threshold} ».
+ *
+ * Le pendant VENDEUR des ordres d'achat permanents : là où `standing_orders`
+ * achète tout seul, une alerte ne fait qu'envoyer un message privé (et un
+ * évènement webhook) quand le marché dynamique franchit le seuil. Elle ne crée
+ * ni ne détruit aucun objet — c'est ce qui la rend acceptable là où un vrai
+ * « côté achat » du marché ouvrirait un puits d'objets. Évaluée une fois par
+ * heure, à la fin de `updateMarket`, sur `market_prices.current_price` (hors
+ * qualité et hors bonus d'événement — la seule valeur que bornent
+ * `price_floor_pct` / `price_ceil_pct`, donc la seule où un seuil a un sens).
+ */
+export const priceAlerts = pgTable(
+  'price_alerts',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    itemKey: varchar('item_key', { length: 48 })
+      .notNull()
+      .references(() => itemsConfig.key, { onUpdate: 'cascade' }),
+    direction: priceAlertDirectionEnum('direction').notNull(),
+    threshold: bigint('threshold', { mode: 'number' }).notNull(),
+    status: priceAlertStatusEnum('status').notNull().default('active'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    triggeredAt: timestamp('triggered_at', { withTimezone: true }),
+    /** Prix qui a fait partir l'alerte — ce que le joueur relira, pas le prix courant. */
+    triggeredPrice: bigint('triggered_price', { mode: 'number' }),
+  },
+  (t) => [
+    index('price_alerts_status_item_idx').on(t.status, t.itemKey),
+    index('price_alerts_user_status_idx').on(t.userId, t.status),
+    check('price_alerts_threshold_positive', sql`${t.threshold} > 0`),
+  ],
 );

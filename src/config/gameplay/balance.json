@@ -674,5 +674,9 @@
     "batchWindowMinutes": 10,
     "maxPerUserPerDay": 12,
     "dispatchRatePerSecond": 4
+  },
+  "alerts": {
+    "maxPerUser": 5,
+    "durationDays": 14
   }
 }

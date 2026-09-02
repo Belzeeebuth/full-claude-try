@@ -866,5 +866,10 @@ export const balanceSchema = z.object({
     maxPerUserPerDay: positiveInt,
     dispatchRatePerSecond: positiveInt,
   }),
+  /** Alertes de prix (`/alert`) : plafond par joueur et durée de vie d'une alerte. */
+  alerts: z.object({
+    maxPerUser: positiveInt,
+    durationDays: positiveInt,
+  }),
 });
 export type Balance = z.infer<typeof balanceSchema>;

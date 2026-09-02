@@ -134,6 +134,21 @@ export const standingOrderStatusEnum = pgEnum('standing_order_status', [
   'expired',
 ]);
 
+/**
+ * Alerte de prix : le pendant vendeur de l'ordre permanent. `above` prévient
+ * quand le marché atteint ou dépasse le seuil, `below` quand il l'atteint ou
+ * passe dessous — l'égalité compte dans les deux sens (voir game/alerts.ts).
+ */
+export const priceAlertDirectionEnum = pgEnum('price_alert_direction', ['above', 'below']);
+
+/** `triggered` est terminal : une alerte part une seule fois, puis reste consultable. */
+export const priceAlertStatusEnum = pgEnum('price_alert_status', [
+  'active',
+  'triggered',
+  'cancelled',
+  'expired',
+]);
+
 export const tradeStatusEnum = pgEnum('trade_status', [
   'pending',
   'confirmed',
@@ -230,6 +245,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'event_start',
   'admin_message',
   'order_filled',
+  'price_alert',
 ]);
 
 export const notificationChannelEnum = pgEnum('notification_channel', ['dm', 'none']);

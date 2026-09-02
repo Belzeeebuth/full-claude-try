@@ -1,0 +1,29 @@
+{
+  "$comment": "Alertes de prix (/alert). Fragment fusionné avec fr.json au chargement ; même arborescence que en/alerts.json.",
+  "alerts": {
+    "created_title": "🔔 Alerte de prix créée",
+    "created_body": "{emoji} **{name}** {symbol} {threshold}\nPrix actuel : {price} • expire {relative}\nIdentifiant : `{id}`",
+    "created_already_met": "ℹ️ Le prix remplit déjà cette condition : l'alerte partira à la prochaine mise à jour du marché ({when}).",
+    "created_footer": "Vous recevrez un message privé dès que le marché franchira ce seuil.",
+    "list_title": "🔔 Vos alertes de prix",
+    "list_line": "{emoji} **{name}** {symbol} {threshold} — actuel : {price} — expire {relative}\n`{id}`",
+    "list_empty": "Aucune alerte active. Créez-en une avec `/alert create`.",
+    "list_footer": "{count}/{max} alertes • prix du marché, hors qualité et bonus d'événement",
+    "deleted_title": "🔕 Alerte supprimée",
+    "deleted_body": "{emoji} **{name}** {symbol} {threshold} ne vous préviendra plus."
+  },
+  "errors": {
+    "alerts": {
+      "not_tracked": "{item} n'est pas suivi par le marché : impossible d'y poser une alerte.",
+      "threshold_out_of_bounds": "Ce seuil ne sera jamais atteint : le prix de {item} reste toujours entre {min} et {max}.",
+      "too_many": "Vous avez déjà {active} alertes actives (maximum {max}). Supprimez-en une avec `/alert delete`.",
+      "not_found": "Alerte introuvable. Retrouvez son identifiant avec `/alert list`.",
+      "ambiguous_id": "Plusieurs alertes commencent par `{prefix}` : indiquez davantage de caractères."
+    }
+  },
+  "notifications": {
+    "price_alert_title": "🔔 Alerte de prix",
+    "price_alert_above_body": "{emoji} **{item}** est monté à {price} 🪙, au-dessus de votre seuil de {threshold} 🪙. C'est le moment de vendre : `/sell` ou `/auction sell`.",
+    "price_alert_below_body": "{emoji} **{item}** est descendu à {price} 🪙, sous votre seuil de {threshold} 🪙. Bon moment pour acheter à l'hôtel des ventes : `/auction list`."
+  }
+}

@@ -25,7 +25,7 @@ const dnsLookup = lookup;
  * automatique d'un abonnement qui échoue en boucle (`webhookMaxFailures`).
  */
 
-export const WEBHOOK_EVENT_TYPES = ['crop_ready', 'auction_won'] as const;
+export const WEBHOOK_EVENT_TYPES = ['crop_ready', 'auction_won', 'price_alert'] as const;
 export type WebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[number];
 
 function generateSecret(): string {

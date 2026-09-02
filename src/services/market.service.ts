@@ -8,6 +8,7 @@ import {
   referenceVolumeFor,
   updatePrice,
   type MarketState,
+  type MarketUpdate,
 } from '../game/market';
 import { qualityMultiplier } from '../game/quality';
 import { dailyRng, liveRng } from '../game/rng';
@@ -18,6 +19,7 @@ import * as economyRepo from '../repositories/economy.repo';
 import * as inventoryRepo from '../repositories/inventory.repo';
 import * as inventoryService from './inventory.service';
 import * as economyService from './economy.service';
+import * as alertService from './alert.service';
 import { mergeResults, trackAction, type TrackResult } from './tracker.service';
 import { eventPriceMultiplier, getWorldState } from './world.service';
 import { toSqlDate } from '../utils/time';
@@ -681,6 +683,10 @@ export async function updateMarket(now: Date = new Date()): Promise<number> {
   const rng = dailyRng('market', `${toSqlDate(now)}-${now.getUTCHours()}`);
 
   let updated = 0;
+  // Les prix écrits sont conservés pour l'évaluation des alertes : relire la
+  // table après la transaction coûterait une requête de plus pour retrouver
+  // exactement ce que l'on vient d'écrire.
+  const updates: MarketUpdate[] = [];
   await withTransaction(async (tx) => {
     for (const price of prices) {
       const item = config.items.get(price.itemKey);
@@ -702,11 +708,27 @@ export async function updateMarket(now: Date = new Date()): Promise<number> {
 
       const update = updatePrice(state, balance, rng);
       await economyRepo.applyMarketUpdate(update, nextUpdateAt, tx);
+      updates.push(update);
       updated += 1;
     }
   });
 
   log.info({ updated, nextUpdateAt }, 'market updated');
+
+  // Alertes de prix, APRÈS la validation des prix : elles doivent voir des
+  // prix réellement écrits, et un incident sur les alertes (notification en
+  // échec, base indisponible entre-temps) ne doit jamais annuler la mise à
+  // jour du marché — l'évaluation est rejouée au cycle suivant, de façon
+  // idempotente.
+  try {
+    await alertService.evaluate(
+      updates.map((update) => ({ itemKey: update.itemKey, price: update.price })),
+      now,
+    );
+  } catch (error) {
+    log.error({ err: error }, 'évaluation des alertes de prix en échec');
+  }
+
   return updated;
 }
 
