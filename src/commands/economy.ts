@@ -1,5 +1,6 @@
 import { MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { COLORS, baseEmbed, successEmbed } from '../framework/ui';
+import { safeReply } from '../framework/interaction';
 import { inventoryView, marketView, shopView } from '../framework/views';
 import { NO_IMAGE, renderChartImage } from '../render';
 import * as economyService from '../services/economy.service';
@@ -128,7 +129,7 @@ const vendre: Command = {
       option.setName('item').setDescription("The item to sell").setRequired(true).setAutocomplete(true),
     )
     .addStringOption((option) =>
-      option.setName('quantity').setDescription('A number, or \"all\"').setMaxLength(10),
+      option.setName('quantity').setDescription('A number, or "all"').setMaxLength(10),
     )
     .toJSON(),
 
@@ -388,7 +389,7 @@ const objet: Command = {
     );
     const producedBy = context.config.recipeList.filter((recipe) => recipe.outputItemKey === item.key);
 
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [
         baseEmbed({
           title: `${item.emoji} ${item.name}`,
@@ -537,7 +538,7 @@ const jeter: Command = {
     const quantity = interaction.options.getInteger('quantity', true);
     const item = inventoryService.requireItem(itemKey, context.locale);
 
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [
         baseEmbed({
           title: context.t('economy.discard_confirm_title'),
@@ -713,7 +714,7 @@ const donner: Command = {
         successEmbed(
           context.t('economy.gift_title'),
           context.t('economy.gift_body', {
-            target: `${target}`,
+            target: target.toString(),
             received: formatCoins(result.received, false, context.locale),
             tax: formatCoins(result.tax, false, context.locale),
             rate: (context.balance.economy.giftTaxRate * 100).toFixed(0),

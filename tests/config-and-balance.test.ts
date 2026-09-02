@@ -23,15 +23,22 @@ import { loadMergedCatalog } from '../src/i18n';
 // production par `require` dynamique sur le système de fichiers, ce que le
 // résolveur de vitest ne sait pas suivre ; ici l'objectif est de contrôler les
 // payloads, pas le chargeur.
+import * as accountModule from '../src/commands/account';
 import * as adminModule from '../src/commands/admin';
+import * as alertsModule from '../src/commands/alerts';
+import * as almanacModule from '../src/commands/almanac';
 import * as animalsModule from '../src/commands/animals';
+import * as collectionModule from '../src/commands/collection';
 import * as contextMenusModule from '../src/commands/context-menus';
 import * as craftModule from '../src/commands/craft';
 import * as economyModule from '../src/commands/economy';
 import * as farmModule from '../src/commands/farm';
+import * as historyModule from '../src/commands/history';
 import * as languageModule from '../src/commands/language';
+import * as postcardModule from '../src/commands/postcard';
 import * as profileModule from '../src/commands/profile';
 import * as progressionModule from '../src/commands/progression';
+import * as serverModule from '../src/commands/server';
 import * as socialModule from '../src/commands/social';
 import * as startModule from '../src/commands/start';
 import * as tradeModule from '../src/commands/trade';
@@ -403,9 +410,10 @@ describe('commandes Discord', () => {
    * précisément par là que trois libellés français étaient passés.
    */
   const modules: Array<Record<string, unknown>> = [
-    adminModule, animalsModule, contextMenusModule, craftModule, economyModule,
-    farmModule, languageModule, profileModule, progressionModule, socialModule,
-    startModule, tradeModule, worldModule,
+    accountModule, adminModule, alertsModule, almanacModule, animalsModule,
+    collectionModule, contextMenusModule, craftModule, economyModule, farmModule,
+    historyModule, languageModule, postcardModule, profileModule, progressionModule,
+    serverModule, socialModule, startModule, tradeModule, worldModule,
   ] as Array<Record<string, unknown>>;
 
   const payloads = modules.flatMap((module) => [
@@ -484,14 +492,14 @@ describe('contenu bilingue', () => {
   const localized = getConfig('en');
 
   const groups: Array<[string, Array<Record<string, unknown>>, 'name' | 'title']> = [
-    ['crops', config.cropList as unknown as Array<Record<string, unknown>>, 'name'],
-    ['animals', config.animalList as unknown as Array<Record<string, unknown>>, 'name'],
-    ['items', config.itemList as unknown as Array<Record<string, unknown>>, 'name'],
-    ['recipes', config.recipeList as unknown as Array<Record<string, unknown>>, 'name'],
-    ['buildings', config.buildingList as unknown as Array<Record<string, unknown>>, 'name'],
-    ['quests', config.questList as unknown as Array<Record<string, unknown>>, 'title'],
-    ['achievements', config.achievementList as unknown as Array<Record<string, unknown>>, 'name'],
-    ['events', config.eventList as unknown as Array<Record<string, unknown>>, 'name'],
+    ['crops', config.cropList, 'name'],
+    ['animals', config.animalList, 'name'],
+    ['items', config.itemList, 'name'],
+    ['recipes', config.recipeList, 'name'],
+    ['buildings', config.buildingList, 'name'],
+    ['quests', config.questList, 'title'],
+    ['achievements', config.achievementList, 'name'],
+    ['events', config.eventList, 'name'],
   ];
 
 
@@ -561,14 +569,14 @@ describe('contenu bilingue', () => {
     const FRENCH = /[éèêàùôûçÉÈÀîï]/;
     const problems: string[] = [];
     const lists: Array<[string, Array<Record<string, unknown>>]> = [
-      ['crops', localized.cropList as unknown as Array<Record<string, unknown>>],
-      ['animals', localized.animalList as unknown as Array<Record<string, unknown>>],
-      ['items', localized.itemList as unknown as Array<Record<string, unknown>>],
-      ['recipes', localized.recipeList as unknown as Array<Record<string, unknown>>],
-      ['buildings', localized.buildingList as unknown as Array<Record<string, unknown>>],
-      ['quests', localized.questList as unknown as Array<Record<string, unknown>>],
-      ['achievements', localized.achievementList as unknown as Array<Record<string, unknown>>],
-      ['events', localized.eventList as unknown as Array<Record<string, unknown>>],
+      ['crops', localized.cropList],
+      ['animals', localized.animalList],
+      ['items', localized.itemList],
+      ['recipes', localized.recipeList],
+      ['buildings', localized.buildingList],
+      ['quests', localized.questList],
+      ['achievements', localized.achievementList],
+      ['events', localized.eventList],
     ];
     for (const [group, list] of lists) {
       for (const entry of list) {

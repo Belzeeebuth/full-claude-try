@@ -40,7 +40,7 @@ const log = moduleLogger('boot');
  */
 async function main(): Promise<void> {
   log.info(
-    { env: env.NODE_ENV, node: process.version, shard: process.env.SHARDS ?? 'mono' },
+    { env: env.NODE_ENV, node: process.version, shard: env.SHARDS ?? 'mono' },
     'démarrage de Harvester',
   );
 

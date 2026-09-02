@@ -11,7 +11,6 @@ import * as animalRepo from '../repositories/animal.repo';
 import * as economyRepo from '../repositories/economy.repo';
 import * as farmRepo from '../repositories/farm.repo';
 import * as inventoryRepo from '../repositories/inventory.repo';
-import * as progressionRepo from '../repositories/progression.repo';
 import * as systemRepo from '../repositories/system.repo';
 import * as coopService from '../services/coop.service';
 import * as economyService from '../services/economy.service';

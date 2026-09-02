@@ -80,7 +80,7 @@ const proposerEchange: ContextMenuCommand = {
     }
 
     const trade = await tradeService.openTrade(context.player, targetUser.id);
-    await menu.editReply(await tradeView(context, trade, target.displayName));
+    await menu.editReply(tradeView(context, trade, target.displayName));
   },
 };
 

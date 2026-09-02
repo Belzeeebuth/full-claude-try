@@ -1,6 +1,6 @@
 import { balance as getBalance, getConfig, type ItemConfig } from '../config';
 import { getDb, lockUserRow, withTransaction, type Executor } from '../db/client';
-import { scaleMoney } from '../game/money';
+import { scaleMoney, scaleMoneyUp } from '../game/money';
 import {
   auctionCommission,
   describeTrend,
@@ -509,7 +509,8 @@ export async function rotateShop(now: Date = new Date()): Promise<number> {
       itemKey: item.key,
       rotationDate,
       category: 'daily',
-      price: Math.max(1, Math.round((basePrice * (100 - discount)) / 100)),
+      // Prix payé par le joueur : arrondi au supérieur (money.ts), jamais au plus proche.
+      price: Math.max(1, scaleMoneyUp(basePrice, (100 - discount) / 100)),
       currency: useGems ? 'gems' : 'coins',
       discountPercent: discount,
       stockTotal: rng.int(minStock, maxStock),
@@ -563,7 +564,6 @@ export async function buy(
   player: PlayerContext,
   input: { itemKey: string; quantity: number; discordGuildId?: string },
 ): Promise<BuyResult> {
-  const config = getConfig(player.locale);
   const item = inventoryService.requireItem(input.itemKey, player.locale);
   const quantity = Math.max(1, Math.floor(input.quantity));
   const rotationDate = toSqlDate(new Date());

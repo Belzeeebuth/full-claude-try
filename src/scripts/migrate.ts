@@ -106,7 +106,7 @@ export async function migrate(): Promise<{ applied: string[]; skipped: number }>
         await client.query('COMMIT');
       } catch (error) {
         await client.query('ROLLBACK');
-        throw new Error(`Migration « ${file} » en échec : ${(error as Error).message}`);
+        throw new Error(`Migration « ${file} » en échec : ${(error as Error).message}`, { cause: error });
       }
     });
 

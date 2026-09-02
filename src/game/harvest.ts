@@ -234,10 +234,9 @@ export function computeHarvest(input: HarvestInput): HarvestResult {
   // XP : proportionnelle à la culture, majorée par la qualité obtenue (récompense
   // l'optimisation) et par les multiplicateurs d'XP (coop, prestige, événement).
   const qualityXpBonus = { normal: 1, silver: 1.1, gold: 1.25, iridium: 1.5 }[quality];
-  const xp = Math.max(
-    1,
-    Math.round(crop.xpReward * qualityXpBonus * modifiers.xpMultiplier),
-  );
+  // De l'XP, pas de la monnaie : `Math.round` est légitime ici.
+  const baseXp = crop.xpReward;
+  const xp = Math.max(1, Math.round(baseXp * qualityXpBonus * modifiers.xpMultiplier));
 
   const fertilityAfter = Math.max(
     balance.fertility.min,

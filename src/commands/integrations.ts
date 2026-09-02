@@ -126,6 +126,7 @@ const webhook: Command = {
             .addChoices(
               { name: 'Crop ready', value: 'crop_ready' },
               { name: 'Auction won', value: 'auction_won' },
+              { name: 'Price alert', value: 'price_alert' },
               { name: 'All events', value: 'all' },
             ),
         ),

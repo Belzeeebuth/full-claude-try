@@ -389,6 +389,7 @@ export async function cancelProduction(
       quantity: Math.max(1, Math.floor(entry.quantity * 0.8)),
     }));
 
+    // Remboursement : la matière annulée revient au joueur, entrepôt plein ou non.
     await inventoryService.addItems(player.id, refunded, tx, { allowOverflow: true });
     await animalRepo.deleteCraftJob(jobId, tx);
 

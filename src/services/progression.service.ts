@@ -2,7 +2,7 @@ import { balance as getBalance, getActiveSeasonPass, getConfig, type QuestConfig
 import { lockUserRow, withTransaction, type Executor } from '../db/client';
 import { dailyRng, liveRng } from '../game/rng';
 import { gameError } from '../utils/errors';
-import { scaleMoney } from '../game/money';
+import { scaleMoney, scaleMoneyUp } from '../game/money';
 import { discordTimestamp } from '../utils/format';
 import { moduleLogger } from '../utils/logger';
 import * as playerRepo from '../repositories/player.repo';
@@ -79,9 +79,10 @@ function scaleReward(value: number, level: number): number {
  * Mise à l'échelle d'un OBJECTIF de quête (« récolter N blés »), pas d'un gain :
  * `Math.round` reste correct ici, ce n'est pas de la monnaie.
  */
-function scaleAmount(value: number, level: number): number {
+function scaleAmount(quantity: number, level: number): number {
   const balance = getBalance();
-  return Math.max(1, Math.round(value * (1 + balance.quests.amountLevelScale * Math.max(0, level - 1))));
+  const factor = 1 + balance.quests.amountLevelScale * Math.max(0, level - 1);
+  return Math.max(1, Math.round(quantity * factor));
 }
 
 function buildSnapshot(quest: QuestConfig, level: number): QuestSnapshotShape {
@@ -91,7 +92,7 @@ function buildSnapshot(quest: QuestConfig, level: number): QuestSnapshotShape {
     objectiveType: quest.objectiveType,
     objectiveTarget: Object.fromEntries(
       Object.entries(quest.objectiveTarget).filter(([, value]) => value !== undefined),
-    ) as Record<string, string>,
+    ),
     rewardCoins: scaleReward(quest.rewardCoins, level),
     rewardGems: quest.rewardGems,
     rewardXp: scaleReward(quest.rewardXp, level),
@@ -233,7 +234,7 @@ function toQuestConfig(row: {
     title: row.title,
     description: row.description,
     objectiveType: row.objectiveType as QuestConfig['objectiveType'],
-    objectiveTarget: (row.objectiveTarget ?? {}) as QuestConfig['objectiveTarget'],
+    objectiveTarget: (row.objectiveTarget ?? {}),
     requiredAmount: row.requiredAmount,
     rewardCoins: row.rewardCoins,
     rewardGems: row.rewardGems,
@@ -366,6 +367,7 @@ export async function claimQuest(player: PlayerContext, questId: string): Promis
       );
     }
     if (snapshot.rewardItems?.length) {
+      // Récompense de quête : ne peut pas être refusée sans être perdue.
       await inventoryService.addItems(player.id, snapshot.rewardItems, tx, { allowOverflow: true });
     }
 
@@ -456,7 +458,7 @@ export async function rerollQuest(
     const usedToken = await inventoryService.has(player.id, 'quest_reroll_token', 1, tx);
     const cost = usedToken
       ? 0
-      : Math.round(balance.quests.rerollCostCoins * balance.quests.rerollCostGrowth ** rerolls);
+      : scaleMoneyUp(balance.quests.rerollCostCoins, balance.quests.rerollCostGrowth ** rerolls);
 
     if (usedToken) {
       await inventoryService.consume(player.id, 'quest_reroll_token', 1, tx, player.locale);
@@ -609,13 +611,11 @@ export async function claimDaily(
     }
 
     const eventMultiplier = world.eventModifiers.dailyRewardMultiplier;
-    const coins = Math.round(
-      (balance.daily.baseCoins +
-        Math.min(
-          balance.daily.maxStreakBonusCoins,
-          balance.daily.coinsPerStreakDay * (streak - 1),
-        )) *
-        eventMultiplier,
+    // Gain joueur : arrondi à la baisse (money.ts), jamais au plus proche.
+    const coins = scaleMoney(
+      balance.daily.baseCoins +
+        Math.min(balance.daily.maxStreakBonusCoins, balance.daily.coinsPerStreakDay * (streak - 1)),
+      eventMultiplier,
     );
     const xp = balance.daily.baseXp + balance.daily.xpPerStreakDay * (streak - 1);
     const gems = streak % balance.daily.gemsEveryNDays === 0 ? balance.daily.gemsAmount : 0;
@@ -647,6 +647,7 @@ export async function claimDaily(
       );
     }
     if (items.length > 0) {
+      // Récompense quotidienne : ne peut pas être refusée sans être perdue.
       await inventoryService.addItems(player.id, items, tx, { allowOverflow: true });
     }
     await grantXp(player.id, xp, tx);
@@ -723,6 +724,7 @@ export async function claimAchievement(
       );
     }
     if (achievement.rewardItems.length > 0) {
+      // Récompense de succès : ne peut pas être refusée sans être perdue.
       await inventoryService.addItems(player.id, achievement.rewardItems, tx, {
         allowOverflow: true,
       });
@@ -835,6 +837,7 @@ export async function claimPassTier(
       );
     }
     if (rewards.items?.length) {
+      // Récompense du passe de saison : ne peut pas être refusée sans être perdue.
       await inventoryService.addItems(player.id, rewards.items, tx, { allowOverflow: true });
     }
     if (rewards.xp) {

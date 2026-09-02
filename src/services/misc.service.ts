@@ -88,7 +88,7 @@ export async function getLeaderboard(
     };
   }
 
-  const playerType = type as socialRepo.LeaderboardType;
+  const playerType = type;
   const rows = await socialRepo.leaderboard(playerType, {
     limit: options.limit ?? 10,
     ...(options.scope === 'discord' && options.discordGuildId
@@ -114,7 +114,7 @@ export async function getLeaderboard(
 
 export async function getUserRank(type: LeaderboardType, userId: string) {
   if (type === 'coop_score') return undefined;
-  return socialRepo.userRank(type as socialRepo.LeaderboardType, userId);
+  return socialRepo.userRank(type, userId);
 }
 
 /** Capture les classements hebdomadaires (job du lundi). */
@@ -296,6 +296,7 @@ export async function doPrestige(player: PlayerContext): Promise<{
 
     // 5. Inventaire : seules les catégories listées survivent.
     await inventoryRepo.wipeInventoryExcept(player.id, lockedPlan.inventoryCategoriesKept, tx);
+    // Kit de renaissance : une récompense de prestige, jamais refusée.
     await inventoryService.addItems(
       player.id,
       [
@@ -635,6 +636,8 @@ export async function adminGrant(
         if (remove) {
           await inventoryService.consume(target.id, input.itemKey, amount, tx, input.actor.locale);
         } else {
+          // Don administratif (compensation, support) : une récompense manuelle,
+          // jamais refusée pour un entrepôt plein.
           await inventoryService.addItems(
             target.id,
             [{ itemKey: input.itemKey, quantity: amount }],

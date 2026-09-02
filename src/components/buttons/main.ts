@@ -18,7 +18,7 @@ import {
   questsView,
   shopView,
 } from '../../framework/views';
-import { replyEphemeral } from '../../framework/interaction';
+import { followUpEphemeral, replyEphemeral } from '../../framework/interaction';
 import * as animalService from '../../services/animal.service';
 import * as craftService from '../../services/craft.service';
 import * as farmService from '../../services/farm.service';
@@ -79,9 +79,8 @@ const farmButtons: ButtonHandler = {
       case 'harvest_all': {
         await interaction.deferUpdate();
         const summary = await farmService.harvest(context.player, { all: true });
-        await interaction.followUp({
+        await followUpEphemeral(interaction, {
           embeds: [buildHarvestEmbed(summary, context.t, context.locale)],
-          flags: MessageFlags.Ephemeral,
         });
         await interaction.editReply(await farmView(context));
         return;
@@ -90,7 +89,7 @@ const farmButtons: ButtonHandler = {
       case 'water_all': {
         await interaction.deferUpdate();
         const result = await farmService.water(context.player, { all: true });
-        await interaction.followUp({
+        await followUpEphemeral(interaction, {
           embeds: [
             result.freeRain
               ? baseEmbed({
@@ -103,7 +102,6 @@ const farmButtons: ButtonHandler = {
                   context.t('farm.water_body', { count: result.watered, note: '' }),
                 ),
           ],
-          flags: MessageFlags.Ephemeral,
         });
         await interaction.editReply(await farmView(context));
         return;
@@ -112,7 +110,7 @@ const farmButtons: ButtonHandler = {
       case 'weed_all': {
         await interaction.deferUpdate();
         const result = await farmService.weed(context.player, { all: true });
-        await interaction.followUp({
+        await followUpEphemeral(interaction, {
           embeds: [
             successEmbed(
               context.t('farm.weed_title'),
@@ -122,7 +120,6 @@ const farmButtons: ButtonHandler = {
               }),
             ),
           ],
-          flags: MessageFlags.Ephemeral,
         });
         await interaction.editReply(await plotsView(context, 1));
         return;
@@ -131,7 +128,7 @@ const farmButtons: ButtonHandler = {
       case 'buy_plot': {
         await interaction.deferUpdate();
         const result = await farmService.buyPlot(context.player);
-        await interaction.followUp({
+        await followUpEphemeral(interaction, {
           embeds: [
             successEmbed(
               context.t('farm.plot_unlocked_title'),
@@ -149,7 +146,6 @@ const farmButtons: ButtonHandler = {
               }),
             ),
           ],
-          flags: MessageFlags.Ephemeral,
         });
         await interaction.editReply(await plotsView(context, 1));
         return;
@@ -391,21 +387,20 @@ const animalButtons: ButtonHandler = {
           result.lines.map((line) => `${line.emoji} **${line.quantity}× ${line.itemName}**`).join('\n'),
         );
         appendTracking(embed, result.tracking, context.t);
-        await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+        await followUpEphemeral(interaction, { embeds: [embed] });
         await interaction.editReply(await animalsView(context));
         return;
       }
       case 'feed_all': {
         await interaction.deferUpdate();
         const result = await animalService.feed(context.player, { all: true });
-        await interaction.followUp({
+        await followUpEphemeral(interaction, {
           embeds: [
             successEmbed(
               context.t('animals.feed_title'),
               context.t('animals.feed_all_body', { count: result.fed }),
             ),
           ],
-          flags: MessageFlags.Ephemeral,
         });
         await interaction.editReply(await animalsView(context));
         return;
@@ -479,7 +474,7 @@ const questButtons: ButtonHandler = {
         }),
         { coins: 0, gems: 0, xp: 0 },
       );
-      await interaction.followUp({
+      await followUpEphemeral(interaction, {
         embeds: [
           successEmbed(
             context.t('progression.quest_claim_title', { count: results.length }),
@@ -491,7 +486,6 @@ const questButtons: ButtonHandler = {
             }),
           ),
         ],
-        flags: MessageFlags.Ephemeral,
       });
       await interaction.editReply(await questsView(context));
       return;
@@ -619,7 +613,7 @@ const craftButtons: ButtonHandler = {
         result.lines.map((line) => `${line.emoji} **${line.quantity}× ${line.itemName}**`).join('\n'),
       );
       appendTracking(embed, result.tracking, context.t);
-      await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+      await followUpEphemeral(interaction, { embeds: [embed] });
       await interaction.editReply(await productionView(context));
       return;
     }

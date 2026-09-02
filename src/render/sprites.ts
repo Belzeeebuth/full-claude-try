@@ -11,7 +11,7 @@ import type {
 } from '../config/gameplay/schemas';
 import { env } from '../config/env';
 import { moduleLogger } from '../utils/logger';
-import { PALETTE, fillRoundRect, font, lighten } from './canvas';
+import { fillRoundRect, font, lighten } from './canvas';
 
 const log = moduleLogger('sprites');
 

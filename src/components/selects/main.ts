@@ -3,8 +3,8 @@ import { helpEmbed } from '../../commands/start';
 import { sendMarketChart } from '../../commands/economy';
 import { auctionListView } from '../../commands/trade';
 import { COLORS, baseEmbed, quantityModal, successEmbed } from '../../framework/ui';
-import { animalsView, buildingsView, coopView, inventoryView, marketView } from '../../framework/views';
-import { replyEphemeral } from '../../framework/interaction';
+import { buildingsView, coopView, inventoryView, marketView } from '../../framework/views';
+import { followUpEphemeral, replyEphemeral } from '../../framework/interaction';
 import * as animalService from '../../services/animal.service';
 import * as coopService from '../../services/coop.service';
 import * as craftService from '../../services/craft.service';
@@ -100,7 +100,7 @@ const plantSelect: SelectHandler = {
         .join('\n'),
     );
     appendTracking(embed, result.tracking, context.t);
-    await interaction.followUp({ embeds: [embed], flags: MessageFlags.Ephemeral });
+    await followUpEphemeral(interaction, { embeds: [embed] });
   },
 };
 
@@ -115,7 +115,7 @@ const animalPet: SelectHandler = {
     if (!animalId) return;
 
     const result = await animalService.pet(context.player, animalId);
-    await interaction.followUp({
+    await followUpEphemeral(interaction, {
       embeds: [
         successEmbed(
           context.t('animals.pet_title', { emoji: result.emoji, name: result.name }),
@@ -126,7 +126,6 @@ const animalPet: SelectHandler = {
           }),
         ),
       ],
-      flags: MessageFlags.Ephemeral,
     });
   },
 };
@@ -142,7 +141,7 @@ const buildingUpgrade: SelectHandler = {
     if (!buildingKey) return;
 
     const result = await craftService.buildOrUpgrade(context.player, buildingKey);
-    await interaction.followUp({
+    await followUpEphemeral(interaction, {
       embeds: [
         successEmbed(
           context.t('craft.build_title', {
@@ -165,7 +164,6 @@ const buildingUpgrade: SelectHandler = {
             .join('\n'),
         ),
       ],
-      flags: MessageFlags.Ephemeral,
     });
     await interaction.editReply(await buildingsView(context));
   },
@@ -182,7 +180,7 @@ const questReroll: SelectHandler = {
     if (!questId) return;
 
     const result = await progressionService.rerollQuest(context.player, questId);
-    await interaction.followUp({
+    await followUpEphemeral(interaction, {
       embeds: [
         successEmbed(
           context.t('quests.reroll_result_title'),
@@ -193,7 +191,6 @@ const questReroll: SelectHandler = {
           }\n\n**${result.newQuest.title}**\n${result.newQuest.description}`,
         ),
       ],
-      flags: MessageFlags.Ephemeral,
     });
     const { questsView } = await import('../../framework/views');
     await interaction.editReply(await questsView(context));
@@ -211,14 +208,13 @@ const coopJoin: SelectHandler = {
     if (!tag) return;
 
     const info = await coopService.joinCoop(context.player, tag);
-    await interaction.followUp({
+    await followUpEphemeral(interaction, {
       embeds: [
         successEmbed(
           context.t('coop.join_title', { emblem: info.emblem, name: info.name }),
           context.t('coop.join_body', { level: info.level }),
         ),
       ],
-      flags: MessageFlags.Ephemeral,
     });
     await interaction.editReply(await coopView({ ...context, player: { ...context.player, coopId: info.id } }));
   },
@@ -235,7 +231,7 @@ const auctionBuy: SelectHandler = {
     if (!listingId) return;
 
     const result = await tradeService.buyout(context.player, listingId);
-    await interaction.followUp({
+    await followUpEphemeral(interaction, {
       embeds: [
         successEmbed(
           context.t('trade.buy_title'),
@@ -247,7 +243,6 @@ const auctionBuy: SelectHandler = {
           }),
         ),
       ],
-      flags: MessageFlags.Ephemeral,
     });
     await interaction.editReply(await auctionListView(context, undefined, 1));
   },

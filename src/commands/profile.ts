@@ -1,5 +1,6 @@
 import { ButtonStyle, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { COLORS, baseEmbed, button, confirmRow, row } from '../framework/ui';
+import { safeReply } from '../framework/interaction';
 import { NO_IMAGE, renderProfileImage } from '../render';
 import { getProfile } from '../services/player.service';
 import * as miscService from '../services/misc.service';
@@ -326,7 +327,7 @@ const solde: Command = {
     }
     const bank = await playerRepo.getBankAccount(user.id);
 
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [
         baseEmbed({
           title: context.t('profile.balance_title', { name: user.displayName ?? user.username }),
@@ -432,7 +433,7 @@ const parametres: Command = {
         ? context.t('settings.channel_reminders_no_channel')
         : '';
 
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [
         baseEmbed({
           title: context.t('settings.title'),

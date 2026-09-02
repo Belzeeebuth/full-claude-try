@@ -126,7 +126,7 @@ function farm(options: FarmCase = {}): FarmRenderInput {
       nextReadyAt: null,
       unlockedPlots: unlocked,
       nextPlotCost: 0,
-    } as never,
+    },
     player: { username: 'Test', level: 5, coins: 0, gems: 0, avatarUrl: null },
     xp: { current: 0, needed: 100 },
   };

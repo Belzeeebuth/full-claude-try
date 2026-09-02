@@ -34,7 +34,7 @@ function chartInput(seed: number): ChartInput {
     currentPrice: 112,
     trend: 0.08,
     demandIndex: 1.1,
-  } as ChartInput;
+  };
 }
 
 function isPng(buffer: Buffer): boolean {

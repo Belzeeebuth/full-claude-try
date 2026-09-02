@@ -145,11 +145,11 @@ const guardedAgent = new Agent({
         // `all: true` a été imposé pour pouvoir inspecter TOUTES les réponses ;
         // on rend ensuite la forme attendue par l'appelant d'origine.
         if (options.all) {
-          callback(null, records as never);
+          callback(null, records);
           return;
         }
         const first = records[0]!;
-        callback(null, first.address as never, first.family);
+        callback(null, first.address, first.family);
       });
     },
   },

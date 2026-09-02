@@ -1,6 +1,6 @@
 import { balance as getBalance, getConfig, harvestKeyOf, seedKeyOf, type CropConfig } from '../config';
 import type { Balance } from '../config/gameplay/schemas';
-import { getDb, lockUserRow, withTransaction, type Executor } from '../db/client';
+import { getDb, lockUserRow, withTransaction } from '../db/client';
 import { computeGrowth, computeWaterStatus, planCrop, type GrowthContext, type GrowthState } from '../game/growth';
 import { gridSizeFor, plotUnlockCost } from '../game/grid';
 import { computeHarvest, type HarvestResult } from '../game/harvest';
@@ -118,7 +118,7 @@ export async function getFarmView(
       fertility,
       fertilityLabel: describeFertility(fertility, balance),
       weedLevel,
-      pestType: plot.pestType as PestType | null,
+      pestType: plot.pestType,
       pestDeadlineAt: plot.pestDeadlineAt,
       unlockCost: plot.unlockCost,
     };
@@ -411,7 +411,7 @@ export async function plant(
       emoji: crop.emoji,
       slots: plantable.map((plot) => plot.slot),
       readyAt: plan.readyAt,
-      offSeason: !modifiers.seasonImmunity && !crop.seasons.includes(world.season.season as never),
+      offSeason: !modifiers.seasonImmunity && !crop.seasons.includes(world.season.season),
       seedsUsed: quantity,
       waterNeeded: plan.waterNeeded,
       tracking,
@@ -439,7 +439,6 @@ export async function water(
   player: PlayerContext,
   input: { slot?: number; all?: boolean; coopLevel?: number },
 ): Promise<WaterResult> {
-  const balance = getBalance();
   const now = new Date();
   const world = await getWorldState(now);
   const modifiers = await getFarmModifiers(player, { coopLevel: input.coopLevel, now });
@@ -998,7 +997,7 @@ export async function treatPest(
 
     return {
       slot: plot.slot,
-      pestType: plot.pestType as PestType,
+      pestType: plot.pestType,
       usedItem: hasPesticide,
       tracking,
     };
@@ -1101,7 +1100,6 @@ export async function buyPlot(player: PlayerContext): Promise<BuyPlotResult> {
 export async function helpFarmer(
   helper: PlayerContext,
   hostFarmId: string,
-  hostUserId: string,
 ): Promise<{ plotsWatered: number }> {
   const now = new Date();
 

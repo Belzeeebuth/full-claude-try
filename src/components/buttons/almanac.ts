@@ -1,6 +1,7 @@
-import { MessageFlags, type ButtonInteraction } from 'discord.js';
+import type { ButtonInteraction } from 'discord.js';
 import { almanacView, tipLines } from '../../commands/almanac';
 import { COLORS, baseEmbed } from '../../framework/ui';
+import { followUpEphemeral } from '../../framework/interaction';
 import * as almanacService from '../../services/almanac.service';
 import { paramInt, paramString } from '../../utils/custom-id';
 import { discordTimestamp, formatCoins } from '../../utils/format';
@@ -34,7 +35,7 @@ const almanacButtons: ButtonHandler = {
       const weather = result.forecast.weather;
 
       await interaction.editReply(await almanacView(context, interaction.user.id));
-      await interaction.followUp({
+      await followUpEphemeral(interaction, {
         embeds: [
           baseEmbed({
             title: result.alreadyOwned
@@ -55,7 +56,6 @@ const almanacButtons: ButtonHandler = {
             fields: [{ name: t('almanac.tips_field'), value: tipLines(result.forecast, t) }],
           }),
         ],
-        flags: MessageFlags.Ephemeral,
       });
       return;
     }

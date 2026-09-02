@@ -224,8 +224,8 @@ export function collectionProgress(
   return { discovered, total: universe.length };
 }
 
-export function pageCount(total: number, pageSize = COLLECTION_PAGE_SIZE): number {
-  return Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
+export function pageCount(entryCount: number, pageSize = COLLECTION_PAGE_SIZE): number {
+  return Math.max(1, Math.ceil(entryCount / Math.max(1, pageSize)));
 }
 
 /** Ramène une page demandée (option, bouton périmé) dans les bornes réelles. */

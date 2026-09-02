@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
-import { env } from './env';
+import { env, isEnvSet } from './env';
 import { moduleLogger } from '../utils/logger';
 import { setWorldSeed } from '../game/rng';
 import {
@@ -385,24 +385,19 @@ function validateReferences(config: Omit<GameConfig, 'loadedAt'>): void {
  * l'autre sens.
  */
 function applyEnvOverrides(balance: Balance): Balance {
-  const isSet = (name: string): boolean => {
-    const raw = process.env[name];
-    return raw !== undefined && raw !== '';
-  };
-
   return {
     ...balance,
     seasons: {
       ...balance.seasons,
-      ...(isSet('SEASON_LENGTH_DAYS') ? { lengthDays: env.SEASON_LENGTH_DAYS } : {}),
+      ...(isEnvSet('SEASON_LENGTH_DAYS') ? { lengthDays: env.SEASON_LENGTH_DAYS } : {}),
     },
     market: {
       ...balance.market,
-      ...(isSet('MARKET_UPDATE_MINUTES') ? { updateMinutes: env.MARKET_UPDATE_MINUTES } : {}),
+      ...(isEnvSet('MARKET_UPDATE_MINUTES') ? { updateMinutes: env.MARKET_UPDATE_MINUTES } : {}),
     },
     energy: {
       ...balance.energy,
-      ...(isSet('ENERGY_SYSTEM_ENABLED') ? { enabled: env.ENERGY_SYSTEM_ENABLED } : {}),
+      ...(isEnvSet('ENERGY_SYSTEM_ENABLED') ? { enabled: env.ENERGY_SYSTEM_ENABLED } : {}),
     },
   };
 }
@@ -678,7 +673,7 @@ export function localizeRow<T extends object>(row: T, locale: string): T {
   if (!locale.startsWith('en')) return row;
   const config = getConfig(locale);
   const source = row as LocalizableRow;
-  const out = { ...source } as LocalizableRow;
+  const out = { ...source };
   let changed = false;
 
   const assign = (field: string, value: unknown): void => {

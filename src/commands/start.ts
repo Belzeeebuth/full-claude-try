@@ -140,8 +140,8 @@ const tutoriel: Command = {
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
-    const step = TUTORIAL_STEPS[0]!;
-    await interaction.reply({
+    const step = TUTORIAL_STEPS[0];
+    await safeReply(interaction, {
       embeds: [
         baseEmbed({
           title: `🎓 ${context.t(step.titleKey)}`,
@@ -259,7 +259,7 @@ const aide: Command = {
 
   async execute(interaction, context): Promise<void> {
     const category = interaction.options.getString('category') as CommandCategory | null;
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [helpEmbed(category ?? undefined, context.locale, context.t)],
       components: [
         selectRow(

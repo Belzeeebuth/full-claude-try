@@ -7,8 +7,8 @@
     "category": "livestock",
     "requiredLevel": 2,
     "maxTier": 4,
-    "description": "Héberge poules et canards.",
-    "descriptionEn": "Houses hens and ducks.",
+    "description": "Héberge poules, oies, canards et dindes.",
+    "descriptionEn": "Houses hens, geese, ducks and turkeys.",
     "unlocksRecipes": [],
     "sortOrder": 10,
     "tiers": [
@@ -90,8 +90,8 @@
     "category": "livestock",
     "requiredLevel": 5,
     "maxTier": 3,
-    "description": "Lapins, moutons, alpagas, autruches et paons.",
-    "descriptionEn": "Rabbits, sheep, alpacas, ostriches and peacocks.",
+    "description": "Lapins, cochons d'Inde, moutons, tortues, alpagas, autruches, cerfs, cygnes et paons.",
+    "descriptionEn": "Rabbits, guinea pigs, sheep, tortoises, alpacas, ostriches, deer, swans and peacocks.",
     "unlocksRecipes": [],
     "sortOrder": 20,
     "tiers": [
@@ -155,8 +155,8 @@
     "category": "livestock",
     "requiredLevel": 10,
     "maxTier": 4,
-    "description": "Chèvres, vaches, cochons et chevaux.",
-    "descriptionEn": "Goats, cows, pigs and horses.",
+    "description": "Chèvres, ânes, vaches, cochons, yacks et chevaux.",
+    "descriptionEn": "Goats, donkeys, cows, pigs, yaks and horses.",
     "unlocksRecipes": [],
     "sortOrder": 30,
     "tiers": [

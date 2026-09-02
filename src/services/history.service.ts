@@ -110,8 +110,8 @@ export function windowStart(now: Date, days: HistoryDays): Date {
 /** Dix lignes : au-delà, l'embed dépasse l'écran d'un téléphone et l'en-tête sort de vue. */
 export const HISTORY_PAGE_SIZE = 10;
 
-export function pageCount(total: number, pageSize = HISTORY_PAGE_SIZE): number {
-  return Math.max(1, Math.ceil(Math.max(0, total) / pageSize));
+export function pageCount(entryCount: number, pageSize = HISTORY_PAGE_SIZE): number {
+  return Math.max(1, Math.ceil(Math.max(0, entryCount) / pageSize));
 }
 
 /**

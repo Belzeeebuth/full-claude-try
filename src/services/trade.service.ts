@@ -60,7 +60,7 @@ export async function browse(
   const pageSize = options.pageSize ?? 6;
   const page = Math.max(1, options.page ?? 1);
 
-  const [rows, total] = await Promise.all([
+  const [rows, listingCount] = await Promise.all([
     tradeRepo.listActiveListings({
       itemKey: options.itemKey,
       limit: pageSize,
@@ -75,8 +75,8 @@ export async function browse(
       itemKey: row.listing.itemKey,
       itemName: config.items.get(row.listing.itemKey)?.name ?? row.itemName,
       itemEmoji: row.itemEmoji,
-      quality: row.listing.quality as Quality,
-      mutation: row.listing.mutation as Mutation,
+      quality: row.listing.quality,
+      mutation: row.listing.mutation,
       quantity: row.listing.quantity,
       startPrice: row.listing.startPrice,
       buyoutPrice: row.listing.buyoutPrice,
@@ -90,9 +90,9 @@ export async function browse(
       isOwn: row.listing.sellerId === viewerId,
       expiresAt: row.listing.expiresAt,
     })),
-    total,
+    total: listingCount,
     page,
-    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    totalPages: Math.max(1, Math.ceil(listingCount / pageSize)),
   };
 }
 
@@ -283,14 +283,15 @@ export async function executeBuyout(
     tx,
   );
 
+  // Livraison de l'achat immédiat : le paiement est encaissé, la marchandise doit suivre.
   await inventoryService.addItems(
     buyerId,
     [
       {
         itemKey: listing.itemKey,
         quantity: listing.quantity,
-        quality: listing.quality as Quality,
-        mutation: listing.mutation as Mutation,
+        quality: listing.quality,
+        mutation: listing.mutation,
       },
     ],
     tx,
@@ -415,8 +416,8 @@ export async function createStandingOrder(
     itemKey: item.key,
     itemName: item.name,
     itemEmoji: item.emoji,
-    quality: row.quality as Quality | null,
-    mutation: row.mutation as Mutation | null,
+    quality: row.quality,
+    mutation: row.mutation,
     maxUnitPrice: row.maxUnitPrice,
     totalQuantity: row.totalQuantity,
     remainingQuantity: row.remainingQuantity,
@@ -431,8 +432,8 @@ export async function listStandingOrders(buyerId: string): Promise<StandingOrder
     itemKey: order.itemKey,
     itemName,
     itemEmoji,
-    quality: order.quality as Quality | null,
-    mutation: order.mutation as Mutation | null,
+    quality: order.quality,
+    mutation: order.mutation,
     maxUnitPrice: order.maxUnitPrice,
     totalQuantity: order.totalQuantity,
     remainingQuantity: order.remainingQuantity,
@@ -651,14 +652,15 @@ export async function cancelListing(
       );
     }
 
+    // Retour au vendeur de l'annonce annulée : la marchandise ne peut pas être perdue.
     await inventoryService.addItems(
       player.id,
       [
         {
           itemKey: listing.itemKey,
           quantity: listing.quantity,
-          quality: listing.quality as Quality,
-          mutation: listing.mutation as Mutation,
+          quality: listing.quality,
+          mutation: listing.mutation,
         },
       ],
       tx,
@@ -680,7 +682,6 @@ export async function myListings(userId: string, limit = 10) {
  * remboursements des mises perdantes.
  */
 export async function closeExpiredListings(limit = 50): Promise<{ sold: number; returned: number }> {
-  const balance = getBalance();
   const now = new Date();
   const expired = await tradeRepo.findExpiredListings(now, limit);
   let sold = 0;
@@ -715,14 +716,15 @@ export async function closeExpiredListings(limit = 50): Promise<{ sold: number; 
           },
           tx,
         );
+        // Livraison à l'enchérisseur : la mise est encaissée, la marchandise doit suivre.
         await inventoryService.addItems(
           locked.currentBidderId,
           [
             {
               itemKey: locked.itemKey,
               quantity: locked.quantity,
-              quality: locked.quality as Quality,
-              mutation: locked.mutation as Mutation,
+              quality: locked.quality,
+              mutation: locked.mutation,
             },
           ],
           tx,
@@ -761,14 +763,15 @@ export async function closeExpiredListings(limit = 50): Promise<{ sold: number; 
       } else {
         const marked = await tradeRepo.markExpired(locked.id, tx);
         if (!marked) return;
+        // Retour au vendeur de l'annonce expirée sans acheteur.
         await inventoryService.addItems(
           locked.sellerId,
           [
             {
               itemKey: locked.itemKey,
               quantity: locked.quantity,
-              quality: locked.quality as Quality,
-              mutation: locked.mutation as Mutation,
+              quality: locked.quality,
+              mutation: locked.mutation,
             },
           ],
           tx,
@@ -1025,21 +1028,22 @@ export async function confirmTrade(
         from,
         {
           itemKey: entry.item.itemKey,
-          quality: entry.item.quality as Quality,
-          mutation: entry.item.mutation as Mutation,
+          quality: entry.item.quality,
+          mutation: entry.item.mutation,
         },
         entry.item.quantity,
         tx,
         player.locale,
       );
+      // Livraison de l'échange : la contrepartie vient d'être retirée à l'autre joueur.
       await inventoryService.addItems(
         to,
         [
           {
             itemKey: entry.item.itemKey,
             quantity: entry.item.quantity,
-            quality: entry.item.quality as Quality,
-            mutation: entry.item.mutation as Mutation,
+            quality: entry.item.quality,
+            mutation: entry.item.mutation,
           },
         ],
         tx,

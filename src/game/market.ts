@@ -1,5 +1,5 @@
 import type { Balance } from '../config/gameplay/schemas';
-import { clampMoney } from './money';
+import { clampMoney, feeOf, scaleMoney, scaleMoneyUp } from './money';
 import type { Rng } from './rng';
 
 /**
@@ -83,8 +83,8 @@ export function updatePrice(state: MarketState, balance: Balance, rng: Rng): Mar
   const noise = 1 + (rng.next() * 2 - 1) * state.volatility;
   const featuredBonus = state.featured ? 1 + config.featuredBonus : 1;
 
-  const floor = Math.max(1, Math.floor(state.basePrice * state.priceFloorPct));
-  const ceil = Math.max(floor + 1, Math.ceil(state.basePrice * state.priceCeilPct));
+  const floor = Math.max(1, scaleMoney(state.basePrice, state.priceFloorPct));
+  const ceil = Math.max(floor + 1, scaleMoneyUp(state.basePrice, state.priceCeilPct));
   const price = clampMoney(state.basePrice * demandIndex * noise * featuredBonus, floor, ceil);
 
   const previousPrice = state.currentPrice;
@@ -107,7 +107,7 @@ export function updatePrice(state: MarketState, balance: Balance, rng: Rng): Mar
  * passer par l'hôtel des ventes. C'est aussi un puits monétaire discret.
  */
 export function directSellPrice(marketPrice: number, balance: Balance): number {
-  return Math.max(1, Math.floor(marketPrice * (1 - balance.economy.sellDirectPenalty)));
+  return Math.max(1, scaleMoney(marketPrice, 1 - balance.economy.sellDirectPenalty));
 }
 
 /**
@@ -117,7 +117,7 @@ export function directSellPrice(marketPrice: number, balance: Balance): number {
  */
 export function salesTax(amount: number, level: number, balance: Balance): number {
   if (level < balance.economy.salesTaxFreeLevel) return 0;
-  return Math.ceil(amount * balance.economy.salesTaxRate);
+  return feeOf(amount, balance.economy.salesTaxRate);
 }
 
 /** Tendance lisible : symbole et clé de libellé (résolue par l'appelant via son traducteur). */
@@ -136,14 +136,14 @@ export function describeTrend(trend: number): { emoji: string; labelKey: string 
  * transférer de l'argent coûte 5 % à chaque aller-retour).
  */
 export function auctionCommission(salePrice: number, balance: Balance): number {
-  return Math.ceil(salePrice * balance.auction.commissionRate);
+  return feeOf(salePrice, balance.auction.commissionRate);
 }
 
 /** Frais de mise en vente, non remboursables (anti-spam d'annonces). */
 export function auctionListingFee(askPrice: number, balance: Balance): number {
   return Math.max(
     balance.auction.minListingFee,
-    Math.ceil(askPrice * balance.auction.listingFeeRate),
+    feeOf(askPrice, balance.auction.listingFeeRate),
   );
 }
 
@@ -159,13 +159,13 @@ export function auctionPriceBounds(
 ): { min: number; max: number } {
   const reference = Math.max(1, marketPrice * quantity);
   return {
-    min: Math.max(1, Math.floor(reference * balance.auction.minPricePctOfMarket)),
-    max: Math.ceil(reference * balance.auction.maxPricePctOfMarket),
+    min: Math.max(1, scaleMoney(reference, balance.auction.minPricePctOfMarket)),
+    max: scaleMoneyUp(reference, balance.auction.maxPricePctOfMarket),
   };
 }
 
 /** Mise minimale acceptable sur une enchère en cours. */
 export function minimumBid(listing: { startPrice: number; currentBid: number | null }, balance: Balance): number {
   if (listing.currentBid === null) return listing.startPrice;
-  return Math.ceil(listing.currentBid * (1 + balance.auction.minBidIncrementPct));
+  return scaleMoneyUp(listing.currentBid, 1 + balance.auction.minBidIncrementPct);
 }

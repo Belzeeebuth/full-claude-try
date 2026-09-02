@@ -193,8 +193,8 @@ export async function removeItemAnyQuality(
       .set({ quantity: sql`${inventory.quantity} - ${take}`, updatedAt: new Date() })
       .where(eq(inventory.id, stack.id));
     consumed.push({
-      quality: stack.quality as Quality,
-      mutation: stack.mutation as Mutation,
+      quality: stack.quality,
+      mutation: stack.mutation,
       quantity: take,
     });
     remaining -= take;
@@ -239,8 +239,8 @@ export async function listInventory(
 
   return rows.map((row) => ({
     ...row,
-    quality: row.quality as Quality,
-    mutation: row.mutation as Mutation,
+    quality: row.quality,
+    mutation: row.mutation,
   }));
 }
 

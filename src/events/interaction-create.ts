@@ -276,11 +276,7 @@ async function handleComponent(
     await withUserLock(context.player.id, lockKey, async () => {
       // Le cast est nécessaire car un gestionnaire est enregistré pour un type
       // précis d'interaction, garanti par le dossier dont il provient.
-      await (handler.execute as (
-        i: typeof interaction,
-        p: typeof parsed,
-        c: CommandContext,
-      ) => Promise<void>)(interaction, parsed, context!);
+      await handler.execute(interaction, parsed, context!);
     });
   } catch (error) {
     const report = await replyError(interaction, error, context ?? undefined);

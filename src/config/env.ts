@@ -115,6 +115,13 @@ const envSchema = z.object({
   // démarrer avec « shardCount must be a number greater than or equal to 1 ».
   SHARDING_TOTAL: z.string().default('auto'),
   SHARDING_LIST: z.string().default('auto'),
+  /**
+   * Étiquette du shard courant, posée par le ShardingManager de discord.js dans
+   * chaque processus enfant (« 0 », « 0,1 »…) ; absente en mono-processus.
+   * Lecture seule, pour les journaux et `notifications.claimed_by` : la valeur
+   * exploitable par discord.js est vérifiée à part par `client.ts`.
+   */
+  SHARDS: z.string().optional(),
 
   // --- Gameplay ---
   /**
@@ -180,6 +187,19 @@ export function loadEnv(): Env {
 }
 
 export const env: Env = loadEnv();
+
+/**
+ * La variable est-elle RÉELLEMENT présente dans l'environnement ?
+ *
+ * `env` applique les valeurs par défaut du schéma : impossible d'y distinguer
+ * « non renseignée » de « renseignée à sa valeur par défaut ». Les surcharges
+ * de gameplay (`config/index.ts`) ont besoin de cette distinction pour ne pas
+ * écraser `balance.json` avec un défaut que personne n'a demandé.
+ */
+export function isEnvSet(name: keyof Env): boolean {
+  const raw = process.env[name];
+  return raw !== undefined && raw !== '';
+}
 
 export const isProduction = env.NODE_ENV === 'production';
 export const isTest = env.NODE_ENV === 'test';

@@ -9,7 +9,6 @@ import {
   jsonb,
   numeric,
   pgTable,
-  serial,
   smallint,
   text,
   timestamp,

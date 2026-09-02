@@ -306,12 +306,12 @@ const echange: Command = {
     }
 
     const trade = await tradeService.openTrade(context.player, targetUser.id);
-    await interaction.editReply(await tradeView(context, trade, target.displayName));
+    await interaction.editReply(tradeView(context, trade, target.displayName));
   },
 };
 
 /** Rendu d'un échange en cours, avec double confirmation. */
-export async function tradeView(
+export function tradeView(
   context: CommandContext,
   trade: tradeService.TradeView,
   partnerName: string,

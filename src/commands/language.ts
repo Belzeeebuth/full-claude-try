@@ -1,10 +1,10 @@
 import {
   ButtonStyle,
-  MessageFlags,
   SlashCommandBuilder,
   type RepliableInteraction,
 } from 'discord.js';
 import { COLORS, baseEmbed, button, row } from '../framework/ui';
+import { replyEphemeral } from '../framework/interaction';
 import { SUPPORTED_LOCALES, translate, type SupportedLocale } from '../i18n';
 import * as playerRepo from '../repositories/player.repo';
 import type { Command, CommandContext } from '../types';
@@ -94,7 +94,7 @@ export async function applyLocale(
     await interaction.editReply(payload);
     return;
   }
-  await interaction.reply({ ...payload, flags: MessageFlags.Ephemeral });
+  await replyEphemeral(interaction, payload);
 }
 
 const lang: Command = {
@@ -124,7 +124,7 @@ const lang: Command = {
     if (!requested) {
       const current = isSupported(context.locale) ? context.locale : 'fr';
       const meta = LOCALE_META[current];
-      await interaction.reply({
+      await replyEphemeral(interaction, {
         embeds: [
           baseEmbed({
             title: `${meta.flag} ${translate(current, 'settings.language_title')}`,
@@ -133,7 +133,6 @@ const lang: Command = {
           }),
         ],
         components: [localeRow(interaction.user.id, current)],
-        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -142,7 +141,7 @@ const lang: Command = {
     // interaction peut être forgée, et `SUPPORTED_LOCALES` peut évoluer.
     if (!isSupported(requested)) {
       const current = isSupported(context.locale) ? context.locale : 'fr';
-      await interaction.reply({
+      await replyEphemeral(interaction, {
         embeds: [
           baseEmbed({
             title: translate(current, 'settings.language_unknown_title'),
@@ -152,7 +151,6 @@ const lang: Command = {
             color: COLORS.danger,
           }),
         ],
-        flags: MessageFlags.Ephemeral,
       });
       return;
     }

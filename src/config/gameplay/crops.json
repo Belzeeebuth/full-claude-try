@@ -686,7 +686,7 @@
     "mutationChance": 0.02,
     "description": "Quatre repousses de 45 minutes : la culture des joueurs assidus.",
     "descriptionEn": "Four 45-minute regrowths: the crop for dedicated players.",
-    "sortOrder": 140
+    "sortOrder": 150
   },
   {
     "key": "pumpkin",
@@ -718,7 +718,7 @@
     "mutationChance": 0.022,
     "description": "Reine de la Moisson d'Automne, où son prix double.",
     "descriptionEn": "Queen of the Autumn Harvest, where its price doubles.",
-    "sortOrder": 150
+    "sortOrder": 140
   },
   {
     "key": "grape",

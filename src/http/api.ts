@@ -45,7 +45,7 @@ function readBearerToken(request: IncomingMessage): string | undefined {
 async function readJsonBody(
   request: IncomingMessage,
   maxBytes = 16_384,
-): Promise<unknown | undefined> {
+): Promise<unknown> {
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of request) {

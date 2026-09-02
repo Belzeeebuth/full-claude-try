@@ -1,13 +1,13 @@
-import { MessageFlags, type ButtonInteraction } from 'discord.js';
+import type { ButtonInteraction } from 'discord.js';
 import { tradeView } from '../../commands/trade';
 import { COLORS, baseEmbed, quantityModal, select, selectRow, successEmbed } from '../../framework/ui';
-import { replyEphemeral } from '../../framework/interaction';
+import { followUpEphemeral, replyEphemeral } from '../../framework/interaction';
 import * as tradeService from '../../services/trade.service';
 import * as inventoryRepo from '../../repositories/inventory.repo';
 import * as playerRepo from '../../repositories/player.repo';
 import { paramInt, paramString } from '../../utils/custom-id';
 import { qualityIcon, truncate } from '../../utils/format';
-import type { ButtonHandler, SelectHandler } from '../../types';
+import type { ButtonHandler } from '../../types';
 
 /**
  * Échanges directs : ajout d'objets, de pièces, confirmation et annulation.
@@ -102,11 +102,10 @@ const tradeButtons: ButtonHandler = {
             : result.trade.initiatorId;
         const partner = await playerRepo.findUserById(partnerId);
         await interaction.editReply(
-          await tradeView(context, result.trade, partner?.username ?? context.t('trade.partner_fallback')),
+          tradeView(context, result.trade, partner?.username ?? context.t('trade.partner_fallback')),
         );
-        await interaction.followUp({
+        await followUpEphemeral(interaction, {
           content: context.t('trade.confirm_recorded'),
-          flags: MessageFlags.Ephemeral,
         });
         return;
       }

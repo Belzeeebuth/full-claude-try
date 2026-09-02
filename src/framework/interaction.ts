@@ -62,6 +62,14 @@ const ECO_BAN_READONLY = new Set([
   'weather',
   'tutorial',
   'achievements',
+  // Lecture seule ajoutées avec /history, /almanac et /collection : consulter
+  // son propre journal ou sa collection n'est pas un acte économique.
+  'history',
+  'almanac',
+  'collection',
+  // RGPD : l'export et l'effacement des données ne peuvent pas dépendre d'une
+  // sanction de jeu.
+  'account',
 ]);
 
 export async function buildContext(
@@ -201,6 +209,29 @@ export async function replyEphemeral(
     }
   }
   await safeReply(interaction, { ...payload, flags: MessageFlags.Ephemeral });
+}
+
+/**
+ * Message complémentaire éphémère, après un `deferUpdate()` de composant.
+ *
+ * Le message d'origine — la vue avec ses boutons — reste en place et sera mis
+ * à jour par `editReply` ; ce helper n'y touche pas. Ce n'est PAS
+ * `replyEphemeral` : sur une interaction déférée, celui-ci SUPPRIME la réponse
+ * différée avant son followUp, ce qui ferait disparaître la vue elle-même.
+ *
+ * Comme `safeReply`, une interaction expirée est journalisée en debug plutôt
+ * que propagée : le gestionnaire poursuit (la mise à jour de la vue, par
+ * exemple) au lieu de tomber pour un message d'accompagnement.
+ */
+export async function followUpEphemeral(
+  interaction: RepliableInteraction,
+  payload: InteractionReplyOptions,
+): Promise<void> {
+  try {
+    await interaction.followUp({ ...payload, flags: MessageFlags.Ephemeral });
+  } catch (error) {
+    log.debug({ err: error }, 'followUp éphémère impossible (interaction expirée ?)');
+  }
 }
 
 // ---------------------------------------------------------------------------

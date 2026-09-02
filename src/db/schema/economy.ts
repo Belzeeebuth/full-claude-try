@@ -39,7 +39,9 @@ import {
  * n'importe quel solde par `SUM(amount)` et détecter une incohérence
  * (`users.coins <> SUM`) : c'est le socle de l'anti-triche et du suivi de la
  * masse monétaire. `amount` est signé : négatif = puits, positif = source.
- * Aucun UPDATE/DELETE n'est autorisé (trigger `transactions_immutable`).
+ * Aucun UPDATE n'est autorisé, et aucun DELETE hors de la purge nocturne du
+ * job `ledger:checkpoint`, qui pose `SET LOCAL harvester.ledger_purge = 'on'`
+ * dans sa transaction (trigger `transactions_immutable`, migration 0015).
  */
 export const transactions = pgTable(
   'transactions',

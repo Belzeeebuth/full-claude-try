@@ -147,6 +147,7 @@ export function sanitizeCaption(raw: string | null | undefined): string {
   // Caractères de contrôle, espaces de largeur nulle, marques bidi et BOM :
   // invisibles à l'écran, mais capables de retourner un texte ou de contourner
   // les filtres qui suivent.
+  // eslint-disable-next-line no-control-regex -- ce sont précisément ces caractères que l'on retire
   text = text.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u2064\ufeff]/g, '');
   // Mentions Discord : <@id>, <@!id>, <@&id>, <#id>, @everyone, @here.
   text = text.replace(/<[@#][!&]?\d+>/g, '');

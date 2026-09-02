@@ -33,7 +33,7 @@ export async function ensureWeather(
   executor: Executor = getDb(),
 ): Promise<WeatherRow> {
   await executor.insert(weather).values(values).onConflictDoNothing({ target: weather.day });
-  const row = await getWeatherForDay(values.day as string, executor);
+  const row = await getWeatherForDay(values.day, executor);
   return row!;
 }
 

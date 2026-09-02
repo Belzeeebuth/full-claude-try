@@ -114,7 +114,7 @@ function build(unlocked: number, season: string, weather: string, options: FarmC
       nextReadyAt: new Date(now + 900_000),
       unlockedPlots: unlocked,
       nextPlotCost: 4_550,
-    } as never,
+    },
     player: { username: 'Marion', level: 24, coins: 1_284_500, gems: 148, avatarUrl: null },
     xp: { current: 4_200, needed: 9_800 },
     buildingsPreview: [

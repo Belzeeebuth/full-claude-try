@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { COLORS, baseEmbed } from '../framework/ui';
+import { safeReply } from '../framework/interaction';
 import { SEASON_LABELS } from '../game/world';
 import { describeNextSeason, getWorldState } from '../services/world.service';
 import { discordTimestamp, formatPercent, progressBar, truncate } from '../utils/format';
@@ -270,7 +271,7 @@ const encyclopedie: Command = {
 
     const total = crops.length + animals.length + items.length + recipes.length + buildings.length;
 
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [
         baseEmbed({
           title: context.t('world.encyclopedia_title', { term }),

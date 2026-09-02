@@ -169,7 +169,7 @@ const admin: Command = {
             successEmbed(
               sub === 'give' ? context.t('admin.grant_title') : context.t('admin.take_title'),
               context.t('admin.grant_body', {
-                target: `${target}`,
+                target: target.toString(),
                 amount: formatNumber(result.applied, context.locale),
                 resource: context.t(`common.${resource}`),
               }),
@@ -190,7 +190,7 @@ const admin: Command = {
           embeds: [
             successEmbed(
               context.t('admin.reset_title'),
-              context.t('admin.reset_body', { target: `${target}` }),
+              context.t('admin.reset_body', { target: target.toString() }),
             ),
           ],
         });
@@ -210,7 +210,7 @@ const admin: Command = {
             successEmbed(
               context.t('admin.ecoban_title'),
               context.t('admin.ecoban_body', {
-                target: `${target}`,
+                target: target.toString(),
                 date: discordTimestamp(result.until, 'F'),
               }),
             ),

@@ -1,5 +1,6 @@
 import { EmbedBuilder, type Client } from 'discord.js';
 import { balance as getBalance } from '../config';
+import { env } from '../config/env';
 import { getRedis, key as redisKey } from '../db/redis';
 import { COLORS } from '../framework/ui';
 import { translatorFor, DEFAULT_LOCALE } from '../i18n';
@@ -48,7 +49,7 @@ let inFlight = false;
  * Sert au diagnostic (« quel shard a envoyé ce MP ? ») autant qu'à la
  * réservation elle-même.
  */
-const WORKER_ID = `${process.env.SHARDS ?? 'mono'}#${process.pid}`.slice(0, 64);
+const WORKER_ID = `${env.SHARDS ?? 'mono'}#${process.pid}`.slice(0, 64);
 
 /**
  * Rappels réservés par passage pour les salons. Bien plus que le débit des MP :

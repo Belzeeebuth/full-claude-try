@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { createServer, type Server } from 'node:http';
-import type { Client } from 'discord.js';
+import { Status, type Client } from 'discord.js';
 import { env } from '../config/env';
 import { pingDatabase } from '../db/client';
 import { pingRedis } from '../db/redis';
@@ -119,7 +119,7 @@ async function handleHealth(client: Client, response: import('node:http').Server
   const checks: Record<string, { ok: boolean; latencyMs?: number; error?: string }> = {};
 
   checks.discord = {
-    ok: client.isReady() && client.ws.status === 0,
+    ok: client.isReady() && client.ws.status === Status.Ready,
     latencyMs: Math.max(0, Math.round(client.ws.ping)),
   };
 

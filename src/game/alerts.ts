@@ -13,6 +13,7 @@
  * elle se contente de déclencher un message. Tout ce qui est ici est
  * déterministe et sans E/S, conformément à la règle de `src/game/**`.
  */
+import { scaleMoney, scaleMoneyUp } from './money';
 
 export type AlertDirection = 'above' | 'below';
 
@@ -38,8 +39,8 @@ export function alertPriceBounds(
   priceFloorPct: number,
   priceCeilPct: number,
 ): AlertBounds {
-  const min = Math.max(1, Math.floor(basePrice * priceFloorPct));
-  const max = Math.max(min + 1, Math.ceil(basePrice * priceCeilPct));
+  const min = Math.max(1, scaleMoney(basePrice, priceFloorPct));
+  const max = Math.max(min + 1, scaleMoneyUp(basePrice, priceCeilPct));
   return { min, max };
 }
 

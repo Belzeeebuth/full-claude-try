@@ -125,7 +125,7 @@ async function resolveWeather(day: string, season: SeasonState, now: Date): Prom
   });
 
   log.info({ day, weather: finalWeather.weather, season: season.season }, 'daily weather set');
-  return finalWeather as WeatherState;
+  return finalWeather;
 }
 
 /** Événements dont la fenêtre couvre l'instant donné. */

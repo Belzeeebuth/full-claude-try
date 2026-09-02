@@ -1,4 +1,5 @@
 import type { AnimalConfig, AnimalVariant, Balance } from '../config/gameplay/schemas';
+import { addMoney, scaleMoneyUp } from './money';
 import type { Quality } from './quality';
 import type { Rng } from './rng';
 
@@ -194,8 +195,10 @@ export function feedCost(config: AnimalConfig): { itemKey: string; quantity: num
 
 /** Coût du vétérinaire, croissant avec le niveau requis de l'animal. */
 export function vetCost(config: AnimalConfig, balance: Balance): number {
-  return Math.round(
-    balance.animals.vetCostBase + balance.animals.vetCostPerLevel * config.requiredLevel,
+  // Un coût s'arrondit au supérieur (money.ts) : l'arrondi ne crée jamais de monnaie.
+  return addMoney(
+    balance.animals.vetCostBase,
+    scaleMoneyUp(balance.animals.vetCostPerLevel, config.requiredLevel),
   );
 }
 

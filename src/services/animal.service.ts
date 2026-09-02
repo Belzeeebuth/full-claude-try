@@ -1,5 +1,5 @@
 import { balance as getBalance, getBuildingTier, getConfig, type AnimalConfig } from '../config';
-import { lockUserRow, withTransaction, type Executor } from '../db/client';
+import { lockUserRow, withTransaction } from '../db/client';
 import {
   breed as breedGenetics,
   collectQuantity,
@@ -550,7 +550,8 @@ export async function collect(
       // L'XP de collecte est proportionnelle à la valeur du produit : un œuf
       // rapporte moins qu'une écaille de dragon, ce qui reste cohérent avec le
       // reste de la progression.
-      const xp = Math.max(1, Math.round(Math.sqrt((product?.sellPrice ?? 10) * quantity)));
+      const xpBase = (product?.sellPrice ?? 10) * quantity;
+      const xp = Math.max(1, Math.round(Math.sqrt(xpBase)));
       xpTotal += xp;
 
       lines.push({

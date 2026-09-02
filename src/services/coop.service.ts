@@ -33,7 +33,7 @@ const log = moduleLogger('coop');
  * deux coopératives, même en cas de double clic sur deux invitations.
  */
 
-const NAME_PATTERN = /^[\p{L}\p{N} '\-]{3,32}$/u;
+const NAME_PATTERN = /^[\p{L}\p{N} '-]{3,32}$/u;
 const TAG_PATTERN = /^[A-Za-z0-9]{2,5}$/;
 
 export interface CoopInfo {
@@ -84,7 +84,7 @@ export async function getCoopInfo(coopId: string, viewerId?: string): Promise<Co
     joinRequirementLevel: coop.joinRequirementLevel,
     bonuses: coopBonuses(coop.level, balance),
     ...(membership?.member.guildId === coopId
-      ? { role: membership.member.role as CoopRole }
+      ? { role: membership.member.role }
       : {}),
   };
 }
@@ -225,7 +225,7 @@ export async function inviteMember(
   targetUserId: string,
 ): Promise<{ coopName: string }> {
   const membership = await requireMembership(player.id);
-  if (!canManageMembers(membership.member.role as CoopRole)) {
+  if (!canManageMembers(membership.member.role)) {
     throw gameError('coop_forbidden', 'Only officers and the leader can invite.', {
       i18nKey: 'errors.coop.invite_forbidden',
     });
@@ -305,7 +305,7 @@ export async function kickMember(
   targetUserId: string,
 ): Promise<{ coopName: string }> {
   const membership = await requireMembership(player.id);
-  const actorRole = membership.member.role as CoopRole;
+  const actorRole = membership.member.role;
   if (!canManageMembers(actorRole)) {
     throw gameError('coop_forbidden', 'Only officers and the leader can kick.', {
       i18nKey: 'errors.coop.kick_forbidden',
@@ -324,7 +324,7 @@ export async function kickMember(
         i18nKey: 'errors.coop.target_not_member',
       });
     }
-    if (!canActOn(actorRole, target.member.role as CoopRole)) {
+    if (!canActOn(actorRole, target.member.role)) {
       throw gameError('coop_forbidden', 'You cannot kick a member of equal or higher rank.', {
         i18nKey: 'errors.coop.cannot_kick_rank',
       });
@@ -459,7 +459,7 @@ export async function withdrawTreasury(
     });
   }
   const membership = await requireMembership(player.id);
-  if (!canWithdrawTreasury(membership.member.role as CoopRole, balance)) {
+  if (!canWithdrawTreasury(membership.member.role, balance)) {
     throw gameError('coop_forbidden', 'Your rank does not allow withdrawing from the treasury.', {
       i18nKey: 'errors.coop.withdraw_forbidden',
     });

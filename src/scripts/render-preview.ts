@@ -95,7 +95,7 @@ async function main(): Promise<void> {
       farmId: 'preview',
       name: 'Ferme des Trois Chênes',
       grid,
-      plots: plots as never,
+      plots,
       counts: { ready: 5, growing: 14, empty: 6, locked: 6, withered: 1, pests: 2 },
       world: {
         season: {

@@ -243,7 +243,8 @@ export async function incrementStats(
 
   const patch: Record<string, unknown> = { updatedAt: new Date() };
   for (const [column, value] of entries) {
-    const col = users[column as keyof typeof users];
+    // `keyof typeof deltas` : les seules colonnes autorisées, sans les méthodes de la table.
+    const col = users[column as keyof typeof deltas];
     patch[column] = sql`${col} + ${value}`;
   }
   await executor.update(users).set(patch).where(eq(users.id, userId));

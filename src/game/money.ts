@@ -53,6 +53,20 @@ export function scaleMoney(amount: number, multiplier: number): number {
   return assertMoney(Math.floor(amount * multiplier));
 }
 
+/**
+ * Applique un multiplicateur et arrondit vers le HAUT.
+ * Le pendant de `scaleMoney` pour ce que le joueur PAIE ou ne peut dépasser :
+ * coût croissant (relance de quête, vétérinaire), plafond de prix du marché,
+ * mise minimale d'une enchère. Arrondir un coût au supérieur ne crée jamais de
+ * monnaie ; l'arrondir au plus proche, si.
+ */
+export function scaleMoneyUp(amount: number, multiplier: number): number {
+  if (!Number.isFinite(multiplier) || multiplier < 0) {
+    throw new MoneyError(`invalid multiplier: ${multiplier}`);
+  }
+  return assertMoney(Math.ceil(amount * multiplier));
+}
+
 /** Part d'un montant (taxe, commission), arrondie au supérieur pour le puits. */
 export function feeOf(amount: number, rate: number): number {
   if (rate <= 0) return 0;

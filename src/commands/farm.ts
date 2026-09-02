@@ -2,6 +2,7 @@ import { MessageFlags, SlashCommandBuilder, type ChatInputCommandInteraction } f
 import { harvestKeyOf, seedKeyOf } from '../config';
 import { farmView, plotsView } from '../framework/views';
 import { COLORS, baseEmbed, successEmbed } from '../framework/ui';
+import { safeReply } from '../framework/interaction';
 import * as farmService from '../services/farm.service';
 import { qualityDistribution } from '../game/quality';
 import { expectedYield } from '../game/harvest';
@@ -524,7 +525,7 @@ const cultures: Command = {
       ].join('\n');
     });
 
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [
         baseEmbed({
           title: context.t('farm.crops_title'),

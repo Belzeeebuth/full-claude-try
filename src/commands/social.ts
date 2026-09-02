@@ -8,6 +8,7 @@ import {
   type User,
 } from 'discord.js';
 import { COLORS, baseEmbed, button, row, successEmbed } from '../framework/ui';
+import { safeReply } from '../framework/interaction';
 import { coopView, farmView } from '../framework/views';
 import { NO_IMAGE, renderLeaderboardImage } from '../render';
 import * as coopService from '../services/coop.service';
@@ -185,7 +186,7 @@ const coop: Command = {
           embeds: [
             successEmbed(
               context.t('coop.invite_title'),
-              context.t('coop.invite_body', { target: `${target}`, name: result.coopName }),
+              context.t('coop.invite_body', { target: target.toString(), name: result.coopName }),
             ),
           ],
         });
@@ -200,7 +201,7 @@ const coop: Command = {
           embeds: [
             successEmbed(
               context.t('coop.kick_title'),
-              context.t('coop.kick_body', { target: `${target}`, name: result.coopName }),
+              context.t('coop.kick_body', { target: target.toString(), name: result.coopName }),
             ),
           ],
         });
@@ -217,7 +218,7 @@ const coop: Command = {
             successEmbed(
               context.t('coop.promote_title'),
               context.t('coop.promote_body', {
-                target: `${target}`,
+                target: target.toString(),
                 role: context.t(`common.role.${result.role}`),
               }),
             ),
@@ -583,7 +584,7 @@ export async function helpFarmer(
   // sanctionné, compteur d'aides incrémenté sans limite.
   await miscService.assertCanHelp(context.player);
 
-  const helped = await farmService.helpFarmer(context.player, bundle.farm.id, bundle.user.id);
+  const helped = await farmService.helpFarmer(context.player, bundle.farm.id);
   const reward = await miscService.recordVisit(
     context.player,
     { id: bundle.user.id, farmId: bundle.farm.id },
@@ -625,7 +626,7 @@ const parrainage: Command = {
 
   async execute(interaction, context): Promise<void> {
     const status = await miscService.referralStatus(context.player.id);
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [
         baseEmbed({
           title: context.t('social.referral_title'),

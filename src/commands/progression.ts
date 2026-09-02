@@ -1,5 +1,6 @@
 import { ButtonStyle, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { COLORS, baseEmbed, button, linkButton, row, successEmbed } from '../framework/ui';
+import { safeReply } from '../framework/interaction';
 import { questsView } from '../framework/views';
 import * as progressionService from '../services/progression.service';
 import * as miscService from '../services/misc.service';
@@ -363,7 +364,7 @@ const vote: Command = {
     const info = miscService.voteInfo();
     const cooldown = await peek(context.player.id, 'vote');
 
-    await interaction.reply({
+    await safeReply(interaction, {
       embeds: [
         baseEmbed({
           title: context.t('progression.vote_title'),
