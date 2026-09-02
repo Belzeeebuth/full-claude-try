@@ -3,6 +3,7 @@ import { getDb, type Executor } from '../db/client';
 import { gameError } from '../utils/errors';
 import * as inventoryRepo from '../repositories/inventory.repo';
 import * as playerRepo from '../repositories/player.repo';
+import * as collectionService from './collection.service';
 import type { Quality, Mutation, StackKey } from '../repositories/inventory.repo';
 
 /**
@@ -134,6 +135,14 @@ export async function addItems(
     })),
     tx,
   );
+
+  // Collection du fermier : tout objet qui entre est une découverte (première
+  // fois) ou un cumul. Ici et non dans chaque appelant, parce que c'est
+  // l'unique porte d'entrée de l'inventaire — récolte, pêche, mine, artisanat,
+  // collecte d'élevage passent toutes par là. Le service ne retient que les
+  // familles qui se découvrent (récoltes, produits, poissons, minerais) et
+  // ignore le reste (graines, outils…).
+  await collectionService.recordItemDiscoveries({ userId }, positive, tx);
 }
 
 /** Retire une quantité précise d'une pile donnée. Lève si le stock manque. */

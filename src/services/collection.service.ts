@@ -15,7 +15,10 @@ import {
 } from '../game/collection';
 import * as collectionRepo from '../repositories/collection.repo';
 import type { Quality } from '../repositories/inventory.repo';
+import { moduleLogger } from '../utils/logger';
 import { mergeResults, trackAction, type TrackResult } from './tracker.service';
+
+const log = moduleLogger('collection');
 
 /**
  * Collection du fermier : enregistrement des découvertes et lecture paginée.
@@ -52,22 +55,43 @@ interface PendingDiscovery {
 
 const QUALITY_RANK: Record<Quality, number> = { normal: 0, silver: 1, gold: 2, iridium: 3 };
 
-/** Écrit un lot de découvertes et suit chaque première fois. */
+/**
+ * Écrit un lot de découvertes et suit chaque première fois.
+ *
+ * Sous POINT DE REPRISE, comme `trackAction` : la collection est un système
+ * secondaire, et elle est appelée depuis `addItems`, c'est-à-dire depuis
+ * TOUTES les récoltes. Une requête en échec ici (table absente sur un
+ * environnement pas encore migré, contrainte inattendue) ferait basculer la
+ * transaction PostgreSQL en état « aborted » et coûterait au joueur la récolte
+ * qu'il vient de faire. Le savepoint isole l'échec ; on le journalise, et le
+ * compteur se rattrape à l'obtention suivante.
+ */
 async function recordAll(
   context: DiscoveryContext,
   pending: Iterable<PendingDiscovery>,
   tx: Executor,
 ): Promise<TrackResult> {
+  const entries = [...pending];
+  if (entries.length === 0) return mergeResults([]);
   const results: TrackResult[] = [];
   const trackContext = { userId: context.userId, coopId: context.coopId, level: context.level ?? 0 };
-  for (const entry of pending) {
-    const { inserted } = await collectionRepo.upsertDiscovery(
-      { userId: context.userId, ...entry },
-      tx,
-    );
-    if (inserted) {
-      results.push(await trackAction(trackContext, 'discover_entry', 1, { kind: entry.kind }, tx));
-    }
+  try {
+    await tx.transaction(async (scope) => {
+      for (const entry of entries) {
+        const { inserted } = await collectionRepo.upsertDiscovery(
+          { userId: context.userId, ...entry },
+          scope,
+        );
+        if (inserted) {
+          results.push(
+            await trackAction(trackContext, 'discover_entry', 1, { kind: entry.kind }, scope),
+          );
+        }
+      }
+    });
+  } catch (error) {
+    log.error({ err: error, userId: context.userId }, 'enregistrement de la collection impossible');
+    return mergeResults([]);
   }
   return mergeResults(results);
 }

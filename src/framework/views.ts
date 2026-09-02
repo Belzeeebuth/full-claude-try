@@ -1,5 +1,6 @@
 import { ButtonStyle, type AttachmentBuilder, type BaseMessageOptions } from 'discord.js';
 import { getConfig } from '../config';
+import { variantIcon } from '../game/animals';
 import * as animalService from '../services/animal.service';
 import * as coopService from '../services/coop.service';
 import * as craftService from '../services/craft.service';
@@ -732,6 +733,7 @@ async function animalsRenderInput(
         emoji: animal.emoji,
         form: species?.form ?? null,
         palette: species?.palette ?? null,
+        variant: animal.variant,
         buildingKey: animal.buildingKey,
         hunger: animal.status.hunger,
         happiness: animal.status.happiness,
@@ -776,8 +778,11 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
       : animal.status.nextProductionAt
         ? `⏳ ${discordTimestamp(animal.status.nextProductionAt, 'R')}`
         : '—';
+    // L'icône de variante (✨ shiny, 🌟 dorée) suit le nom : c'est la seule
+    // trace textuelle d'une bête rare, l'image la montre par son halo.
+    const icon = variantIcon(animal.variant);
     return [
-      `${animal.emoji} **${animal.nickname ?? animal.name}** — ${animal.status.mood}`,
+      `${animal.emoji} **${animal.nickname ?? animal.name}**${icon ? ` ${icon}` : ''} — ${animal.status.mood}`,
       `   🍽️ ${gaugeBar(animal.status.hunger, 5)} ${animal.status.hunger}%  💛 ${gaugeBar(animal.status.happiness, 5)} ${animal.status.happiness}%  ❤️ ${animal.status.health}%`,
       `   ${production}${animal.generation > 1 ? ` • ${t('animals.generation_suffix', { gen: animal.generation })}` : ''}${animal.qualityMultiplier !== 1 ? ` • ×${animal.qualityMultiplier.toFixed(2)}` : ''}`,
     ].join('\n');
