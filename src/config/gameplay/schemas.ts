@@ -37,6 +37,24 @@ export const buildingCategories = ['livestock', 'production', 'storage', 'utilit
 export const qualities = ['normal', 'silver', 'gold', 'iridium'] as const;
 export const mutations = ['giant', 'rainbow', 'ancient'] as const;
 
+/**
+ * Variantes d'animaux, par ordre de rareté croissante — le même ordre que
+ * l'énumération SQL `animal_variant`, ce qui permet à PostgreSQL de comparer
+ * deux variantes (`GREATEST`) sans table de rang. Elles ne viennent QUE du jeu
+ * (tirage à l'achat, hérédité à la reproduction) : aucune boutique n'en vend.
+ */
+export const animalVariants = ['normal', 'shiny', 'golden'] as const;
+export type AnimalVariant = (typeof animalVariants)[number];
+
+/**
+ * Familles d'entrées de la collection du fermier (`/collection`). Chaque
+ * famille a son propre univers : les cultures, les produits transformés et
+ * d'élevage, les espèces, les poissons, les minerais, et les variantes
+ * (une entrée par espèce × variante rare).
+ */
+export const discoveryKinds = ['crop', 'product', 'animal', 'fish', 'ore', 'variant'] as const;
+export type DiscoveryKind = (typeof discoveryKinds)[number];
+
 const key = z.string().min(1).max(48).regex(/^[a-z0-9_]+$/, 'clé en minuscules, chiffres et _');
 const positiveInt = z.number().int().positive();
 const nonNegativeInt = z.number().int().min(0);
@@ -353,6 +371,8 @@ export const questObjectives = [
   'help_farmer',
   'auction_sale',
   'login_streak',
+  /** Première obtention d'une entrée de collection (culture, produit, espèce, variante…). */
+  'discover_entry',
 ] as const;
 
 export const objectiveTargetSchema = z
@@ -364,6 +384,8 @@ export const objectiveTargetSchema = z
     recipeCategory: z.string().max(32).optional(),
     category: z.enum(itemCategories).optional(),
     rarity: z.enum(rarities).optional(),
+    /** `discover_entry` : restreint le succès à une famille de la collection. */
+    kind: z.enum(discoveryKinds).optional(),
   })
   .default({});
 export type ObjectiveTarget = z.infer<typeof objectiveTargetSchema>;
@@ -821,6 +843,22 @@ export const balanceSchema = z.object({
     hungerYieldPenalty: ratio,
     happinessQualityBonus: z.number().min(0).max(2),
     sellPriceRatio: ratio,
+    /**
+     * Variantes shiny / dorée (`game/animals.ts`). Les chances sont des
+     * probabilités par bête achetée ou née, pondérées par la rareté de
+     * l'espèce ; les effets restent modestes pour que l'économie reste
+     * fermée (voir le commentaire de `balance.json`).
+     */
+    variants: z.object({
+      shinyChance: ratio,
+      goldenChance: ratio,
+      rarityWeights: z.record(z.enum(rarities), z.number().min(0).max(10)),
+      inheritanceChance: ratio,
+      doubleInheritanceChance: ratio,
+      shinyQualityBoost: ratio,
+      goldenProductMultiplier: z.number().min(1).max(5),
+      goldenSellMultiplier: z.number().min(1).max(10),
+    }),
   }),
   economy: z.object({
     startingCoins: nonNegativeInt,

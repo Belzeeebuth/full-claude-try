@@ -48,6 +48,24 @@ export const qualityEnum = pgEnum('quality', ['normal', 'silver', 'gold', 'iridi
 
 export const mutationEnum = pgEnum('mutation', ['none', 'giant', 'rainbow', 'ancient']);
 
+/**
+ * Variante d'un animal (`owned_animals.variant`). L'ORDRE est significatif :
+ * PostgreSQL compare un type énuméré par sa position de déclaration, et la
+ * collection s'en sert (`GREATEST`) pour retenir la meilleure variante vue.
+ * Même ordre que `animalVariants` dans `config/gameplay/schemas.ts`.
+ */
+export const animalVariantEnum = pgEnum('animal_variant', ['normal', 'shiny', 'golden']);
+
+/** Famille d'une entrée de la collection du fermier (`discoveries.kind`). */
+export const discoveryKindEnum = pgEnum('discovery_kind', [
+  'crop',
+  'product',
+  'animal',
+  'fish',
+  'ore',
+  'variant',
+]);
+
 export const itemCategoryEnum = pgEnum('item_category', [
   'seed',
   'harvest',
@@ -183,6 +201,7 @@ export const questObjectiveEnum = pgEnum('quest_objective', [
   'help_farmer',
   'auction_sale',
   'login_streak',
+  'discover_entry',
 ]);
 
 export const questStatusEnum = pgEnum('quest_status', [

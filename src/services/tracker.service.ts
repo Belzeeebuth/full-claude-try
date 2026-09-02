@@ -54,7 +54,9 @@ export type TrackedAction =
   | 'auction_sale'
   | 'login_streak'
   | 'catch_fish'
-  | 'mine_ore';
+  | 'mine_ore'
+  /** Première obtention d'une entrée de collection (`collection.service`). */
+  | 'discover_entry';
 
 export interface TrackTarget extends Record<string, string | undefined> {
   cropKey?: string;
@@ -64,6 +66,8 @@ export interface TrackTarget extends Record<string, string | undefined> {
   recipeCategory?: string;
   category?: string;
   rarity?: string;
+  /** Famille de collection d'une découverte (`crop`, `animal`, `variant`…). */
+  kind?: string;
 }
 
 export interface TrackResult {

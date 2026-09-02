@@ -1,5 +1,8 @@
-import type { AnimalConfig, Balance } from '../config/gameplay/schemas';
+import type { AnimalConfig, AnimalVariant, Balance } from '../config/gameplay/schemas';
+import type { Quality } from './quality';
 import type { Rng } from './rng';
+
+export type { AnimalVariant };
 
 /**
  * Cycle de vie et production des animaux.
@@ -155,18 +158,23 @@ export function computeReadyProduction(
 
 /**
  * Quantité réellement collectée, une fois appliqués le facteur d'état, la
- * génétique de l'animal et la vitesse du bâtiment.
+ * génétique de l'animal, la vitesse du bâtiment et la variante.
+ *
+ * Le multiplicateur d'une bête dorée s'applique à la quantité PAR CYCLE, pas
+ * au nombre de cycles : ceux-ci restent plafonnés par `maxPendingProduction`,
+ * donc revenir régulièrement reste la stratégie optimale, dorée ou pas.
  */
 export function collectQuantity(
   config: AnimalConfig,
   status: AnimalStatus,
   state: AnimalState,
   cycles: number,
+  productMultiplier = 1,
 ): number {
   if (cycles <= 0 || status.productionFactor <= 0) return 0;
   const raw =
     config.productQuantity * cycles * status.productionFactor * Math.max(0.5, state.qualityMultiplier);
-  return Math.max(1, Math.floor(raw));
+  return Math.max(1, Math.floor(raw * Math.max(1, productMultiplier)));
 }
 
 /** Prochaine échéance de production après une collecte. */
@@ -191,14 +199,136 @@ export function vetCost(config: AnimalConfig, balance: Balance): number {
   );
 }
 
-/** Prix de revente d'un animal (60 % du prix d'achat, modulé par sa santé). */
+/**
+ * Prix de revente d'un animal (60 % du prix d'achat, modulé par sa santé).
+ *
+ * Une bête dorée se revend `goldenSellMultiplier` fois plus cher : c'est le
+ * seul endroit où une variante touche directement aux pièces, et 3 × 0,6 =
+ * 1,8 fois le prix d'achat sur 0,2 % des bêtes laisse l'achat-revente en
+ * boucle largement déficitaire (voir `balance.animals.variants`).
+ */
 export function sellValue(
   config: AnimalConfig,
   status: AnimalStatus,
   balance: Balance,
+  variant: AnimalVariant = 'normal',
 ): number {
   const healthFactor = 0.5 + (status.health / 100) * 0.5;
-  return Math.max(1, Math.floor(config.price * balance.animals.sellPriceRatio * healthFactor));
+  const multiplier = variant === 'golden' ? balance.animals.variants.goldenSellMultiplier : 1;
+  return Math.max(1, Math.floor(config.price * balance.animals.sellPriceRatio * healthFactor * multiplier));
+}
+
+// ---------------------------------------------------------------------------
+// VARIANTES : SHINY ET DORÉE
+// ---------------------------------------------------------------------------
+
+/**
+ * Tirage de la variante d'une bête qui ENTRE dans le jeu (achat, naissance).
+ *
+ * Deux tirages indépendants, la dorée d'abord : c'est l'issue la plus rare,
+ * elle ne doit jamais être « mangée » par un tirage shiny réussi juste avant.
+ * Chaque chance est multipliée par le poids de rareté de l'espèce
+ * (`rarityWeights`, 1 pour une poule, 3 pour un mythique) : un joueur achète
+ * dix poules pour un dragonnet, donc à chance égale la poule shiny serait
+ * banale et le dragonnet shiny introuvable. La courbe est linéaire par cran
+ * de rareté — simple à lire dans `balance.json`, simple à retoucher.
+ *
+ * `allowGolden: false` sert à la reproduction : la dorée se TROUVE (à l'achat),
+ * elle ne s'élève pas — c'est ce qui en fait le graal.
+ */
+export function rollVariant(
+  rng: Rng,
+  balance: Balance,
+  input: { rarity: string; allowGolden?: boolean },
+): AnimalVariant {
+  const config = balance.animals.variants;
+  const weight = config.rarityWeights[input.rarity as keyof typeof config.rarityWeights] ?? 1;
+  // Plafond à 50 % : un poids mal réglé ne doit jamais rendre la variante
+  // majoritaire — elle cesserait d'être une variante.
+  const goldenChance = Math.min(0.5, config.goldenChance * weight);
+  const shinyChance = Math.min(0.5, config.shinyChance * weight);
+  if (input.allowGolden !== false && rng.chance(goldenChance)) return 'golden';
+  if (rng.chance(shinyChance)) return 'shiny';
+  return 'normal';
+}
+
+/**
+ * Variante d'un petit à la naissance.
+ *
+ * Un parent shiny transmet avec `inheritanceChance` (35 %), deux parents avec
+ * `doubleInheritanceChance` (60 %) : garder ses reproducteurs shiny finit par
+ * payer, sans que la lignée devienne shiny à coup sûr. Si l'hérédité échoue,
+ * le petit passe par le tirage ordinaire — sans dorée : un parent doré ne
+ * transmet rien, et aucune portée n'en produit.
+ */
+export function inheritVariant(
+  parents: readonly [AnimalVariant, AnimalVariant],
+  rarity: string,
+  balance: Balance,
+  rng: Rng,
+): AnimalVariant {
+  const config = balance.animals.variants;
+  const shinyParents = parents.filter((variant) => variant === 'shiny').length;
+  if (shinyParents > 0) {
+    const chance = shinyParents === 2 ? config.doubleInheritanceChance : config.inheritanceChance;
+    if (rng.chance(chance)) return 'shiny';
+  }
+  return rollVariant(rng, balance, { rarity, allowGolden: false });
+}
+
+export interface VariantEffects {
+  /** Multiplicateur de la quantité produite par cycle (dorée : ×2). */
+  productMultiplier: number;
+  /** Multiplicateur du prix de revente de la bête (dorée : ×3). */
+  sellMultiplier: number;
+  /** Probabilité qu'une collecte sorte un cran de qualité au-dessus (shiny). */
+  qualityBoost: number;
+}
+
+/** Effets d'une variante, tous lus dans `balance.animals.variants`. */
+export function variantEffects(variant: AnimalVariant, balance: Balance): VariantEffects {
+  const config = balance.animals.variants;
+  switch (variant) {
+    case 'shiny':
+      return { productMultiplier: 1, sellMultiplier: 1, qualityBoost: config.shinyQualityBoost };
+    case 'golden':
+      return {
+        productMultiplier: config.goldenProductMultiplier,
+        sellMultiplier: config.goldenSellMultiplier,
+        qualityBoost: 0,
+      };
+    default:
+      return { productMultiplier: 1, sellMultiplier: 1, qualityBoost: 0 };
+  }
+}
+
+/**
+ * Qualité des produits d'une collecte.
+ *
+ * Les produits d'élevage sortent en qualité normale ; une bête shiny les fait
+ * passer UN cran au-dessus (argent) avec la probabilité `qualityBoost`, et
+ * jamais plus : l'or et l'iridium restent réservés aux cultures et à la
+ * pêche, où ils se méritent par l'engrais et le niveau.
+ */
+export function variantProductQuality(
+  variant: AnimalVariant,
+  balance: Balance,
+  rng: Rng,
+): Quality {
+  const boost = variantEffects(variant, balance).qualityBoost;
+  return boost > 0 && rng.chance(boost) ? 'silver' : 'normal';
+}
+
+/** Icône d'une variante à côté d'un nom ; vide pour une bête ordinaire. */
+export function variantIcon(variant: AnimalVariant): string {
+  switch (variant) {
+    case 'shiny':
+      return '✨';
+    case 'golden':
+      return '🌟';
+    default:
+      return '';
+  }
 }
 
 export interface BreedingResult {
@@ -206,6 +336,8 @@ export interface BreedingResult {
   /** Multiplicateur de production hérité par le petit. */
   qualityMultiplier: number;
   generation: number;
+  /** Variante du petit ; `normal` sur un échec (aucun petit). */
+  variant: AnimalVariant;
   /** Clé de traduction de l'échec (fonction pure : jamais de texte en dur). */
   reasonKey?: string;
   reasonParams?: Record<string, string | number>;
@@ -217,9 +349,17 @@ export interface BreedingResult {
  * meilleurs reproducteurs finit par payer. L'héritage est amorti par
  * `breedingQualityInheritance` pour éviter une explosion exponentielle.
  */
+export interface BreedingParent {
+  qualityMultiplier: number;
+  generation: number;
+  status: AnimalStatus;
+  /** Absente pour les appels antérieurs aux variantes : équivaut à `normal`. */
+  variant?: AnimalVariant;
+}
+
 export function breed(
-  parentA: { qualityMultiplier: number; generation: number; status: AnimalStatus },
-  parentB: { qualityMultiplier: number; generation: number; status: AnimalStatus },
+  parentA: BreedingParent,
+  parentB: BreedingParent,
   config: AnimalConfig,
   balance: Balance,
   rng: Rng,
@@ -229,6 +369,7 @@ export function breed(
       success: false,
       qualityMultiplier: 1,
       generation: 1,
+      variant: 'normal',
       reasonKey: 'errors.animal.cannot_breed',
       reasonParams: { name: config.name },
     };
@@ -238,6 +379,7 @@ export function breed(
       success: false,
       qualityMultiplier: 1,
       generation: 1,
+      variant: 'normal',
       reasonKey: 'errors.animal.breed_sick',
     };
   }
@@ -246,6 +388,7 @@ export function breed(
       success: false,
       qualityMultiplier: 1,
       generation: 1,
+      variant: 'normal',
       reasonKey: 'errors.animal.breed_unhappy',
     };
   }
@@ -254,6 +397,7 @@ export function breed(
       success: false,
       qualityMultiplier: 1,
       generation: 1,
+      variant: 'normal',
       reasonKey: 'errors.animal.breed_failed',
     };
   }
@@ -267,6 +411,14 @@ export function breed(
     success: true,
     qualityMultiplier: Math.min(3, Math.max(0.8, Math.round(inherited * variance * 1000) / 1000)),
     generation: Math.max(parentA.generation, parentB.generation) + 1,
+    // Après la génétique : l'ordre des tirages est figé, donc une graine
+    // donnée reproduit toujours la même portée (tests, rejeu d'incident).
+    variant: inheritVariant(
+      [parentA.variant ?? 'normal', parentB.variant ?? 'normal'],
+      config.rarity,
+      balance,
+      rng,
+    ),
   };
 }
 

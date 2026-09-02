@@ -21,3 +21,4 @@ export * from './social';
 export * from './system';
 export * from './integrations';
 export * from './pets';
+export * from './collection';

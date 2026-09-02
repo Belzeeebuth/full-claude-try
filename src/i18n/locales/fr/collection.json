@@ -1,0 +1,46 @@
+{
+  "$comment": "Collection du fermier (/collection) et variantes d'animaux (shiny, dorée). Fragment fusionné avec fr.json au chargement ; même arborescence que en/collection.json. Les blocs animals.* et render_alt.* complètent des espaces de noms existants (fusion profonde).",
+  "collection": {
+    "title": "📚 Collection de {name}",
+    "kind": {
+      "crop": "Cultures",
+      "product": "Produits",
+      "animal": "Animaux",
+      "fish": "Poissons",
+      "ore": "Minerais",
+      "variant": "Variantes"
+    },
+    "progress": "{emoji} **{label}** — **{discovered}/{total}** découvert(s)\n{bar} {percent} %",
+    "rare_line": "✨ {shiny} shiny • 🌟 {golden} dorée(s)",
+    "entry_found": "✅ {emoji} **{name}** · {dot} {rarity} · ×{count}{best}",
+    "entry_hidden": "❔ **{name}** · {dot} {rarity} · {level}",
+    "entry_variant_found": "✅ {emoji} **{name}** {icon} {variant} · {dot} {rarity} · ×{count}",
+    "entry_variant_hidden": "❔ **{name}** {icon} {variant} · {dot} {rarity} · {level}",
+    "best_quality": " · {icon} {quality}",
+    "best_variant": " · {icon} {variant}",
+    "empty": "Rien à afficher sur cette page.",
+    "footer": "{discovered}/{total} entrées au total • page {page}/{pages}",
+    "hint": "Récoltez, collectez, pêchez, minez, fabriquez : chaque première fois remplit une case.",
+    "variant": {
+      "normal": "ordinaire",
+      "shiny": "shiny",
+      "golden": "dorée"
+    }
+  },
+  "animals": {
+    "variant": {
+      "normal": "ordinaire",
+      "shiny": "shiny",
+      "golden": "dorée"
+    },
+    "lucky_shiny": "✨ **SHINY !** Votre {name} scintille : ses produits sortent en qualité argent une fois sur deux.",
+    "lucky_golden": "🌟 **DORÉE !** Votre {name} est en or : production doublée, revente triplée. Le graal.",
+    "breed_variant_line": "{icon} Le petit est **{variant}** !"
+  },
+  "render_alt": {
+    "animals": {
+      "variant_list": "Variantes rares : {animals}.",
+      "variant_entry": "{label}, {variant}"
+    }
+  }
+}
