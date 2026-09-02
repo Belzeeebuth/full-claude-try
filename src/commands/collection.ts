@@ -172,9 +172,10 @@ export async function collectionView(
       emoji: KIND_EMOJI[kind],
       style: kind === view.kind ? ButtonStyle.Primary : ButtonStyle.Secondary,
     });
-  const [first, ...rest] = DISCOVERY_KINDS;
+  // Six familles pour cinq boutons par rangée : la sixième rejoint le
+  // bouton de rafraîchissement sur la seconde.
   const components: ActionRowBuilder<ButtonBuilder>[] = [
-    row(...[first, ...rest].slice(0, 5).map(filter)),
+    row(...DISCOVERY_KINDS.slice(0, 5).map(filter)),
     row(
       ...DISCOVERY_KINDS.slice(5).map(filter),
       button({
