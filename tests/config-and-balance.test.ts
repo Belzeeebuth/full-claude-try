@@ -18,8 +18,7 @@ import {
   nextMidnight,
   weeklyCycleKey,
 } from '../src/utils/time';
-import frCatalog from '../src/i18n/locales/fr.json';
-import enCatalog from '../src/i18n/locales/en.json';
+import { loadMergedCatalog } from '../src/i18n';
 // Import STATIQUE de chaque module de commandes. Le registre les charge en
 // production par `require` dynamique sur le système de fichiers, ce que le
 // résolveur de vitest ne sait pas suivre ; ici l'objectif est de contrôler les
@@ -340,6 +339,11 @@ describe('utilitaires', () => {
 });
 
 describe('internationalisation', () => {
+  // Catalogues FUSIONNÉS (fichier principal + fragments `locales/<langue>/*.json`) :
+  // la parité doit tenir sur ce que `translate()` voit réellement.
+  const frCatalog = loadMergedCatalog('fr');
+  const enCatalog = loadMergedCatalog('en');
+
   /**
    * Les deux catalogues doivent porter EXACTEMENT les mêmes clés.
    *

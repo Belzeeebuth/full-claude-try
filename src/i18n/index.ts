@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { moduleLogger } from '../utils/logger';
 import type { Translator } from '../types';
@@ -26,19 +26,76 @@ type Catalog = Record<string, unknown>;
 
 const catalogs = new Map<string, Catalog>();
 
+/**
+ * Fusion profonde de deux catalogues. Les objets se fusionnent clé par clé, les
+ * chaînes du second l'emportent — un fragment peut donc compléter un espace de
+ * noms existant (`quests.*`) sans le remplacer.
+ */
+function mergeCatalogs(base: Catalog, extra: Catalog): Catalog {
+  const result: Catalog = { ...base };
+  for (const [key, value] of Object.entries(extra)) {
+    const existing = result[key];
+    if (
+      value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      existing !== null &&
+      typeof existing === 'object' &&
+      !Array.isArray(existing)
+    ) {
+      result[key] = mergeCatalogs(existing as Catalog, value as Catalog);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+/**
+ * Charge un catalogue complet : le fichier principal `locales/<locale>.json`,
+ * puis chaque fragment `locales/<locale>/*.json` par ordre alphabétique.
+ *
+ * Les fragments existent pour que chaque fonctionnalité apporte SES clés dans
+ * SON fichier (`locales/fr/history.json`) au lieu d'éditer un fichier de 1 200
+ * clés partagé par tout le monde — c'est ce qui rend possible le développement
+ * en parallèle sans conflit de fusion, et ce qui permet de retirer une
+ * fonctionnalité en supprimant un fichier. La règle de parité fr/en s'applique
+ * au catalogue FUSIONNÉ (voir `tests/config-and-balance.test.ts`).
+ */
+export function loadMergedCatalog(locale: string): Catalog {
+  const root = join(__dirname, 'locales');
+  let catalog: Catalog = {};
+
+  try {
+    catalog = JSON.parse(readFileSync(join(root, `${locale}.json`), 'utf8')) as Catalog;
+  } catch (error) {
+    log.warn({ locale, err: error }, 'catalogue de traduction introuvable');
+  }
+
+  const fragmentsDir = join(root, locale);
+  if (existsSync(fragmentsDir)) {
+    const fragments = readdirSync(fragmentsDir)
+      .filter((file) => file.endsWith('.json'))
+      .sort();
+    for (const file of fragments) {
+      try {
+        const fragment = JSON.parse(readFileSync(join(fragmentsDir, file), 'utf8')) as Catalog;
+        catalog = mergeCatalogs(catalog, fragment);
+      } catch (error) {
+        log.warn({ locale, file, err: error }, 'fragment de traduction illisible');
+      }
+    }
+  }
+
+  return catalog;
+}
+
 function loadCatalog(locale: string): Catalog {
   const cached = catalogs.get(locale);
   if (cached) return cached;
-  try {
-    const raw = readFileSync(join(__dirname, 'locales', `${locale}.json`), 'utf8');
-    const parsed = JSON.parse(raw) as Catalog;
-    catalogs.set(locale, parsed);
-    return parsed;
-  } catch (error) {
-    log.warn({ locale, err: error }, 'catalogue de traduction introuvable');
-    catalogs.set(locale, {});
-    return {};
-  }
+  const loaded = loadMergedCatalog(locale);
+  catalogs.set(locale, loaded);
+  return loaded;
 }
 
 /** Résout `a.b.c` dans un objet imbriqué. */

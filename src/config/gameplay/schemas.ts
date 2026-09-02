@@ -118,6 +118,34 @@ export type CropConfig = z.infer<typeof cropSchema>;
 // ---------------------------------------------------------------------------
 // Animaux
 // ---------------------------------------------------------------------------
+/**
+ * Apparence d'un animal dans les images générées — même principe que
+ * `cropForms` : la SILHOUETTE dit l'espèce, la palette la colore. Sans ces
+ * champs, le rendu retombe sur la silhouette générique (corps + tête + pattes),
+ * qui reste correcte mais ne distingue pas une poule d'une vache.
+ */
+export const animalForms = [
+  'fowl',       // volaille ronde : poule, canard, dinde
+  'longneck',   // grand oiseau à long cou : autruche, oie, paon, cygne
+  'smallfurry', // petit mammifère à oreilles : lapin, cochon d'Inde, hérisson
+  'woolly',     // corps en nuage : mouton, alpaga, lama, yack
+  'hoofed',     // corps en boîte sur quatre pattes, cornes optionnelles : vache, chèvre, cheval, cerf
+  'swine',      // tonneau à groin : cochon, sanglier
+  'insect',     // petit corps ailé : abeille, papillon, ver à soie
+  'shelled',    // dôme : tortue, escargot
+  'winged',     // corps + ailes + queue : dragonnet, phénix, griffon
+] as const;
+export type AnimalForm = (typeof animalForms)[number];
+
+export const animalPaletteSchema = z.object({
+  body: hexColor,
+  bodyDark: hexColor,
+  /** Bec, cornes, ailes, crête — la touche qui distingue l'espèce. */
+  accent: hexColor,
+  accentDark: hexColor,
+});
+export type AnimalPalette = z.infer<typeof animalPaletteSchema>;
+
 export const animalSchema = z.object({
   key,
   name: z.string().min(1).max(64),
@@ -148,6 +176,8 @@ export const animalSchema = z.object({
     })
     .default({}),
   eventOnly: z.boolean().default(false),
+  form: z.enum(animalForms).optional(),
+  palette: animalPaletteSchema.optional(),
   sprite: z.string().max(64).optional(),
   description: z.string().max(512).optional(),
   descriptionEn: z.string().max(512).optional(),
