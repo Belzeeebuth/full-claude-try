@@ -1,5 +1,6 @@
 import { balance as getBalance } from '../config';
 import { translate } from '../i18n';
+import { clampAltText } from './alt-text';
 import { PALETTE, encode, fillRoundRect, font, newCanvas, verticalGradient } from './canvas';
 import { drawWeatherIcon } from './sprites';
 
@@ -114,4 +115,23 @@ export async function renderFishing(input: FishingRenderInput): Promise<Buffer> 
   ctx.fillText(t(`world.season.${input.season}`), 80, 46);
 
   return encode(canvas);
+}
+
+/**
+ * Texte alternatif de l'étang : la scène est décorative, seuls la saison et
+ * la météo y portent une information — ce sont elles qu'on annonce d'abord.
+ * Même repli que le bandeau dessiné pour une météo inconnue du catalogue.
+ */
+export function describeFishing(input: FishingRenderInput): string {
+  const t = (key: string, params?: Record<string, string | number>): string =>
+    translate(input.locale, key, params);
+  const weatherKey = `world.weather.${input.weather}`;
+  const weatherLabel = t(weatherKey);
+
+  return clampAltText(
+    t('render_alt.fishing.scene', {
+      season: t(`world.season.${input.season}`),
+      weather: weatherLabel === weatherKey ? input.weather : weatherLabel,
+    }),
+  );
 }

@@ -1,7 +1,8 @@
 import { balance as getBalance, getConfig } from '../config';
 import { translate } from '../i18n';
-import type { FarmView } from '../services/farm.service';
-import { formatCompact, formatDuration } from '../utils/format';
+import type { FarmView, PlotView } from '../services/farm.service';
+import { formatCompact, formatDuration, formatNumber } from '../utils/format';
+import { clampAltText, joinSentences, listSome } from './alt-text';
 import {
   PALETTE,
   THEME_PALETTES,
@@ -446,6 +447,125 @@ export async function renderFarm(input: FarmRenderInput): Promise<Buffer> {
   }
 
   return encode(canvas);
+}
+
+/** Une parcelle dont la présence de culture est établie : évite les `?.` en cascade. */
+type PlantedPlot = PlotView & { crop: NonNullable<PlotView['crop']> };
+
+/** Au-delà, une liste de parcelles n'apprend plus rien et mange le budget de Discord. */
+const MAX_LISTED_PLOTS = 8;
+
+/**
+ * Texte alternatif de l'image de ferme, pour les lecteurs d'écran.
+ *
+ * Même source que le dessin — `FarmView` — et aucune horloge : la prochaine
+ * récolte se lit dans `msRemaining`, déjà calculé par le service à l'instant
+ * de la vue, jamais dans `Date.now()`. La description est donc reproductible,
+ * ce qui la rend testable et lui permet d'accompagner aussi une image servie
+ * depuis le cache.
+ *
+ * On ne décrit pas les parcelles une à une : on dit ce que l'image met en
+ * avant — l'état d'ensemble, puis ce qui appelle une action (récolter,
+ * arroser, traiter) — dans la limite des 1 024 caractères de Discord.
+ */
+export function describeFarm(input: FarmRenderInput): string {
+  const locale = input.locale;
+  const t = (key: string, params?: Record<string, string | number>): string =>
+    translate(locale, key, params);
+  const view = input.view;
+  const counts = view.counts;
+
+  // Même repli que le dessin : la clé i18n d'abord, le libellé (français) de
+  // la configuration seulement si la météo est inconnue du catalogue.
+  const weatherKey = `world.weather.${view.world.weather.weather}`;
+  const weatherLabel = t(weatherKey);
+
+  const planted = view.plots.filter((plot): plot is PlantedPlot => plot.crop !== undefined);
+  const plotLabel = (plot: PlantedPlot): string =>
+    t('render_alt.farm.plot', { slot: plot.slot, crop: plot.crop.name });
+  const pestLabel = (plot: PlantedPlot): string =>
+    t('render_alt.farm.plot_pest', {
+      slot: plot.slot,
+      crop: plot.crop.name,
+      pest: t(`farm.pest_${String(plot.pestType)}`),
+    });
+  const more = (rest: number): string => t('render_alt.farm.more', { count: rest });
+  const listed = (
+    plots: PlantedPlot[],
+    key: string,
+    label: (plot: PlantedPlot) => string = plotLabel,
+  ): string | null =>
+    plots.length > 0 ? t(key, { plots: listSome(plots.map(label), MAX_LISTED_PLOTS, more) }) : null;
+
+  // Le même compte à rebours que celui dessiné : la culture qui arrive en premier.
+  let next: PlantedPlot | undefined;
+  for (const plot of planted) {
+    const growth = plot.crop.growth;
+    if (growth.ready || growth.withered) continue;
+    if (!next || growth.msRemaining < next.crop.growth.msRemaining) next = plot;
+  }
+  const nextLabel = next
+    ? t('render_alt.farm.next_harvest', {
+        duration: formatDuration(next.crop.growth.msRemaining, locale),
+        slot: next.slot,
+        crop: next.crop.name,
+      })
+    : counts.ready > 0
+      ? t('render_alt.farm.harvest_waiting')
+      : t('render_alt.farm.nothing_planted');
+
+  const animals = input.animalsPreview?.length ?? 0;
+  const buildings = input.buildingsPreview?.length ?? 0;
+
+  return clampAltText(
+    joinSentences([
+      t('render_alt.farm.header', {
+        name: view.name,
+        username: input.player.username,
+        level: input.player.level,
+      }),
+      input.xp.needed > 0
+        ? t('render_alt.farm.xp', {
+            current: formatNumber(input.xp.current, locale),
+            needed: formatNumber(input.xp.needed, locale),
+          })
+        : t('render_alt.farm.max_level'),
+      t('render_alt.farm.world', {
+        season: t(`world.season.${view.world.season.season}`),
+        weather: weatherLabel === weatherKey ? view.world.weather.label : weatherLabel,
+        temperature: view.world.weather.temperature,
+      }),
+      t('render_alt.farm.wallet', {
+        coins: formatNumber(input.player.coins, locale),
+        gems: formatNumber(input.player.gems, locale),
+      }),
+      t('render_alt.farm.grid', {
+        width: view.grid.width,
+        height: view.grid.height,
+        ready: counts.ready,
+        growing: counts.growing,
+        empty: counts.empty,
+        locked: counts.locked,
+      }),
+      counts.withered > 0 ? t('render_alt.farm.withered', { count: counts.withered }) : null,
+      nextLabel,
+      listed(planted.filter((plot) => plot.crop.growth.ready), 'render_alt.farm.ready_list'),
+      listed(
+        planted.filter((plot) => {
+          const growth = plot.crop.growth;
+          return growth.needsWater && !growth.ready && !growth.withered;
+        }),
+        'render_alt.farm.water_list',
+      ),
+      listed(planted.filter((plot) => plot.pestType !== null), 'render_alt.farm.pest_list', pestLabel),
+      listed(planted.filter((plot) => plot.crop.growth.withered), 'render_alt.farm.withered_list'),
+      animals > 0 ? t('render_alt.farm.animals', { count: animals }) : null,
+      buildings > 0 ? t('render_alt.farm.buildings', { count: buildings }) : null,
+      input.equippedPetKey
+        ? t('render_alt.farm.pet', { pet: t(`pets.catalog.${input.equippedPetKey}.title`) })
+        : null,
+    ]),
+  );
 }
 
 const STAGE_INDEX: Record<string, number> = {

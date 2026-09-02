@@ -1,6 +1,7 @@
 import { balance as getBalance } from '../config';
 import { translate } from '../i18n';
 import { formatCompact, formatNumber } from '../utils/format';
+import { clampAltText, joinSentences } from './alt-text';
 import {
   PALETTE,
   hasEmojiFont,
@@ -242,4 +243,70 @@ export async function renderProfile(input: ProfileRenderInput): Promise<Buffer> 
   ctx.textAlign = 'left';
 
   return encode(canvas);
+}
+
+/**
+ * Texte alternatif de la carte de profil : les mêmes chiffres que l'image,
+ * mais en entier — la carte abrège (« 1,3 M ») faute de place, un lecteur
+ * d'écran n'a pas cette contrainte. Les libellés des statistiques sont ceux
+ * des cases dessinées, pour qu'on parle de la même chose des deux côtés.
+ */
+export function describeProfile(input: ProfileRenderInput): string {
+  const locale = input.locale;
+  const t = (key: string, params?: Record<string, string | number>): string =>
+    translate(locale, key, params);
+  const pair = (label: string, value: string | number): string =>
+    t('render_alt.common.pair', { label, value });
+
+  const stats = [
+    pair(t('render.profile.stat.harvests'), formatNumber(input.stats.harvests, locale)),
+    pair(t('render.profile.stat.animals'), formatNumber(input.stats.animals, locale)),
+    pair(t('render.profile.stat.crafts'), formatNumber(input.stats.crafts, locale)),
+    pair(t('render.profile.stat.plots'), `${input.stats.plots}/64`),
+    pair(t('render.profile.stat.streak'), t('render_alt.profile.streak_days', { days: input.stats.streak })),
+    pair(t('render.profile.stat.achievements'), formatNumber(input.stats.achievements, locale)),
+    pair(t('render.profile.stat.best_harvest'), formatNumber(input.stats.bestHarvest, locale)),
+    pair(t('render.profile.stat.coins_earned'), formatNumber(input.stats.coinsEarned, locale)),
+  ].join(', ');
+
+  return clampAltText(
+    joinSentences([
+      t('render_alt.profile.header', {
+        name: input.displayName,
+        title: input.title ?? t('render.profile.default_title'),
+      }),
+      input.prestige > 0 ? t('render_alt.profile.prestige', { rank: input.prestige }) : null,
+      input.coop
+        ? t('render_alt.profile.coop', {
+            tag: input.coop.tag,
+            name: input.coop.name,
+            level: input.coop.level,
+          })
+        : null,
+      input.xp.needed > 0
+        ? t('render_alt.profile.level', {
+            level: input.level,
+            current: formatNumber(input.xp.current, locale),
+            needed: formatNumber(input.xp.needed, locale),
+          })
+        : t('render_alt.profile.max_level', { level: input.level }),
+      t('render_alt.profile.energy', { current: input.energy.current, max: input.energy.max }),
+      t('render_alt.profile.wallet', {
+        coins: formatNumber(input.coins, locale),
+        gems: formatNumber(input.gems, locale),
+        bank: formatNumber(input.bank, locale),
+      }),
+      t('render_alt.profile.stats', { stats }),
+      input.badges.length > 0
+        ? t('render_alt.profile.badges', {
+            count: input.badges.length,
+            badges: input.badges.join(' '),
+          })
+        : null,
+      t('render_alt.profile.since', {
+        farm: input.farmName,
+        date: input.createdAt.toLocaleDateString(locale.startsWith('en') ? 'en-US' : 'fr-FR'),
+      }),
+    ]),
+  );
 }

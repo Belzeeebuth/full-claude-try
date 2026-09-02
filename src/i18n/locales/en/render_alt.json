@@ -1,0 +1,69 @@
+{
+  "$comment": "Alt text for generated images, read by screen readers (see src/render/alt-text.ts). One key per sentence: each describeX() assembles them in the viewer's language.",
+  "render_alt": {
+    "common": {
+      "pair": "{label}: {value}"
+    },
+    "farm": {
+      "header": "Farm “{name}” owned by {username}, level {level}.",
+      "xp": "{current} / {needed} XP.",
+      "max_level": "Max level.",
+      "world": "{season}, {weather}, {temperature} °C.",
+      "wallet": "{coins} coins, {gems} gems.",
+      "grid": "{width} × {height} grid: {ready} ready, {growing} growing, {empty} empty, {locked} locked.",
+      "withered": "{count} withered.",
+      "next_harvest": "Next harvest in {duration}: plot {slot} ({crop}).",
+      "harvest_waiting": "Crops are ready to harvest.",
+      "nothing_planted": "Nothing planted.",
+      "ready_list": "To harvest: {plots}.",
+      "water_list": "To water: {plots}.",
+      "pest_list": "To treat: {plots}.",
+      "withered_list": "Withered: {plots}.",
+      "plot": "plot {slot} ({crop})",
+      "plot_pest": "plot {slot} ({crop}, {pest})",
+      "more": "and {count} more",
+      "animals": "{count} animal(s) in the footer.",
+      "buildings": "{count} building(s) around the field.",
+      "pet": "Equipped companion: {pet}."
+    },
+    "profile": {
+      "header": "Profile of {name} — {title}.",
+      "prestige": "Prestige {rank}.",
+      "coop": "Co-op [{tag}] {name}, level {level}.",
+      "level": "Level {level}, {current} / {needed} XP.",
+      "max_level": "Level {level}, max level.",
+      "energy": "Energy {current} / {max}.",
+      "wallet": "{coins} coins, {gems} gems, {bank} in the bank.",
+      "stats": "Statistics: {stats}.",
+      "streak_days": "{days} day(s)",
+      "badges": "{count} badge(s): {badges}.",
+      "since": "Farm “{farm}”, farming since {date}."
+    },
+    "chart": {
+      "header": "Price chart for {item}: {price} coins right now, {trend} over the period ({direction}).",
+      "up": "rising",
+      "down": "falling",
+      "flat": "flat",
+      "reference": "Base price: {base} coins. Demand index: {demand}.",
+      "range": "Minimum {min}, maximum {max}, over {count} history point(s) from {from} to {to}.",
+      "no_history": "No history: the curve only shows the current price."
+    },
+    "leaderboard": {
+      "header": "Leaderboard — {title} ({scope}).",
+      "entries": "Podium and runners-up: {entries}.",
+      "entry": "#{rank} {name}, {score} {unit}",
+      "entry_extra": "#{rank} {name}, {score} {unit} ({extra})",
+      "empty": "Nobody ranked yet.",
+      "viewer": "Your rank: #{rank} with {score} {unit}."
+    },
+    "fishing": {
+      "scene": "Fishing pond. Season: {season}. Weather: {weather}. A wooden dock on the left bank, a rod resting at its end with the line in the water, lily pads on the surface."
+    },
+    "mining": {
+      "scene": "Cross-section of the mine shaft: {total} levels in total, {accessible} reachable at your level.",
+      "position": "Current depth: level {depth} of {accessible}.",
+      "best": "Personal record: level {deepest}.",
+      "locked": "{count} level(s) out of reach, darkened."
+    }
+  }
+}
