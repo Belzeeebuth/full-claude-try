@@ -1,9 +1,22 @@
 {
-  "$comment": "Libellés dessinés DANS le graphique de marché (src/render/chart.ts) : étiquettes des repères min / max sur la courbe.",
+  "$comment": "Polish visuel des images (src/render/chart.ts, farm.ts) : étiquettes des repères min / max du graphique, et texte alternatif de ce que la ferme montre désormais (mutations, sol épuisé).",
   "render": {
     "chart": {
       "marker_min": "min {value}",
       "marker_max": "max {value}"
+    }
+  },
+  "render_alt": {
+    "farm": {
+      "mutation_list": "Cultures mutées : {plots}.",
+      "plot_mutation": "parcelle {slot} ({crop}, {mutation})",
+      "depleted_list": "Sol épuisé, à laisser en jachère : {plots}.",
+      "plot_bare": "parcelle {slot}",
+      "mutation": {
+        "giant": "géante",
+        "rainbow": "arc-en-ciel",
+        "ancient": "ancienne"
+      }
     }
   }
 }

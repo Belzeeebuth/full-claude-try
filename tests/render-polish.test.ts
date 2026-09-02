@@ -5,7 +5,7 @@ import { gridSizeFor, slotToCoords } from '../src/game/grid';
 import { translate } from '../src/i18n';
 import { drawPill, newCanvas, offscreen, outlineCanvas, rainbowGradient, tintCanvas } from '../src/render/canvas';
 import { renderMarketChart } from '../src/render/chart';
-import { renderFarm, type FarmRenderInput } from '../src/render/farm';
+import { describeFarm, renderFarm, type FarmRenderInput } from '../src/render/farm';
 import { renderFishing } from '../src/render/fishing';
 import { renderLeaderboard, type LeaderboardRenderInput } from '../src/render/leaderboard';
 import { depthRarity, renderMining } from '../src/render/mining';
@@ -162,6 +162,21 @@ describe('ferme : mutations et sol épuisé', () => {
     expect(pngSize(other)).toEqual(pngSize(first));
     expect(sha(other)).not.toBe(sha(first));
   }, 20_000);
+
+  it('le texte alternatif dit ce que l’image montre désormais : mutation et sol épuisé', () => {
+    const threshold = getBalance().fertility.lowThreshold;
+    for (const locale of ['fr', 'en']) {
+      const plain = describeFarm({ ...farm(), locale });
+      const mutated = describeFarm({ ...farm({ mutation: 'giant', fertility: Math.max(0, threshold - 5) }), locale });
+      expect(plain).not.toMatch(/render_alt/);
+      expect(mutated).not.toMatch(/render_alt/);
+      expect(mutated).toContain(translate(locale, 'render_alt.farm.mutation.giant'));
+      expect(mutated.length).toBeGreaterThan(plain.length);
+      // Sans mutation ni sol pauvre, aucune des deux phrases n'apparaît.
+      expect(plain).not.toContain(translate(locale, 'render_alt.farm.mutation.giant'));
+      expect(plain.includes(translate(locale, 'render_alt.farm.plot_bare', { slot: 1 }))).toBe(false);
+    }
+  });
 
   it('la canicule jaunit l’herbe au-delà du simple voile météo', async () => {
     const sunny = await renderFarm(farm({ weather: 'sunny' }));

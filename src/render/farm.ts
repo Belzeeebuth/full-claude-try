@@ -468,6 +468,18 @@ export function describeFarm(input: FarmRenderInput): string {
       crop: plot.crop.name,
       pest: t(`farm.pest_${String(plot.pestType)}`),
     });
+  const mutationLabel = (plot: PlantedPlot): string =>
+    t('render_alt.farm.plot_mutation', {
+      slot: plot.slot,
+      crop: plot.crop.name,
+      mutation: t(`render_alt.farm.mutation.${plot.crop.mutation}`),
+    });
+  // Le sol épuisé se voit désormais sur l'image (terre pâle et craquelée) :
+  // il doit s'entendre aussi. Parcelles ouvertes uniquement — une parcelle
+  // verrouillée n'a pas de sol à ménager.
+  const depleted = view.plots.filter(
+    (plot) => plot.state !== 'locked' && plot.fertility < getBalance().fertility.lowThreshold,
+  );
   const more = (rest: number): string => t('render_alt.farm.more', { count: rest });
   const listed = (
     plots: PlantedPlot[],
@@ -538,6 +550,20 @@ export function describeFarm(input: FarmRenderInput): string {
       ),
       listed(planted.filter((plot) => plot.pestType !== null), 'render_alt.farm.pest_list', pestLabel),
       listed(planted.filter((plot) => plot.crop.growth.withered), 'render_alt.farm.withered_list'),
+      listed(
+        planted.filter((plot) => plot.crop.mutation !== 'none' && !plot.crop.growth.withered),
+        'render_alt.farm.mutation_list',
+        mutationLabel,
+      ),
+      depleted.length > 0
+        ? t('render_alt.farm.depleted_list', {
+            plots: listSome(
+              depleted.map((plot) => t('render_alt.farm.plot_bare', { slot: plot.slot })),
+              MAX_LISTED_PLOTS,
+              more,
+            ),
+          })
+        : null,
       animals > 0 ? t('render_alt.farm.animals', { count: animals }) : null,
       buildings > 0 ? t('render_alt.farm.buildings', { count: buildings }) : null,
       input.equippedPetKey

@@ -145,14 +145,16 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   ctx.lineTo(plot.x + plot.width, baseY);
   ctx.stroke();
   ctx.setLineDash([]);
+  // À GAUCHE : le bord droit reçoit déjà l'étiquette du dernier prix, et un
+  // prix proche de la référence les ferait se chevaucher.
   drawPill(ctx, {
-    x: plot.x + plot.width - 6,
+    x: plot.x + 6,
     y: baseY - 11,
     text: `${t('render.chart.reference')} ${formatCompact(input.basePrice, locale)}`,
     fontSize: 11,
     color: PALETTE.text,
     background: 'rgba(61,70,87,0.92)',
-    align: 'right',
+    align: 'left',
   });
 
   // --- Aire sous la courbe ---------------------------------------------

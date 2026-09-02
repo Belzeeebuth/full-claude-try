@@ -1,9 +1,22 @@
 {
-  "$comment": "Labels drawn INSIDE the market chart (src/render/chart.ts): min / max markers on the curve.",
+  "$comment": "Visual polish of the images (src/render/chart.ts, farm.ts): min / max marker labels on the chart, and alt text for what the farm now shows (mutations, depleted soil).",
   "render": {
     "chart": {
       "marker_min": "min {value}",
       "marker_max": "max {value}"
+    }
+  },
+  "render_alt": {
+    "farm": {
+      "mutation_list": "Mutated crops: {plots}.",
+      "plot_mutation": "plot {slot} ({crop}, {mutation})",
+      "depleted_list": "Depleted soil, best left fallow: {plots}.",
+      "plot_bare": "plot {slot}",
+      "mutation": {
+        "giant": "giant",
+        "rainbow": "rainbow",
+        "ancient": "ancient"
+      }
     }
   }
 }
