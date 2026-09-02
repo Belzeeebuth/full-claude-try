@@ -867,6 +867,8 @@ export const balanceSchema = z.object({
     leaderboard: z.object({ width: positiveInt, height: positiveInt }),
     fishing: z.object({ width: positiveInt, height: positiveInt }),
     mining: z.object({ width: positiveInt, height: positiveInt }),
+    /** Basse-cour de `/animals` : la hauteur est fixe, les enclos se partagent l'espace. */
+    animals: z.object({ width: positiveInt, height: positiveInt }),
     quality: z.number().min(0.1).max(1),
   }),
   notifications: z.object({

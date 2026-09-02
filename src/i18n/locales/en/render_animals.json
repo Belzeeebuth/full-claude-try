@@ -1,0 +1,15 @@
+{
+  "$comment": "Labels drawn INSIDE the barnyard image (/animals, src/render/animals.ts). Emoji are stripped without a colour font; the alt text lives in render_alt.json.",
+  "render": {
+    "animals": {
+      "title": "{name}'s livestock",
+      "capacity": "{used} / {capacity} slots",
+      "no_building": "No livestock building yet — build a coop with /buildings",
+      "alive": "{count} animal(s)",
+      "hungry": "{count} hungry",
+      "sick": "{count} sick",
+      "ready": "{count} to collect",
+      "more": "+{count}"
+    }
+  }
+}

@@ -2,10 +2,10 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { loadImage, type Image, type SKRSContext2D } from '@napi-rs/canvas';
-import type { CropForm, CropPalette } from '../config/gameplay/schemas';
+import type { AnimalForm, AnimalPalette, CropForm, CropPalette } from '../config/gameplay/schemas';
 import { env } from '../config/env';
 import { moduleLogger } from '../utils/logger';
-import { PALETTE, fillRoundRect, lighten } from './canvas';
+import { PALETTE, fillRoundRect, font, lighten } from './canvas';
 
 const log = moduleLogger('sprites');
 
@@ -682,7 +682,7 @@ function drawWithered(ctx: SKRSContext2D, cx: number, baseY: number, size: numbe
   }
 }
 
-export type BadgeKind = 'ready' | 'water' | 'pest' | 'mutation' | 'weeds';
+export type BadgeKind = 'ready' | 'water' | 'pest' | 'mutation' | 'weeds' | 'feed' | 'sick' | 'pet';
 
 /**
  * Badge circulaire dessiné en VECTORIEL, pas en emoji.
@@ -774,6 +774,41 @@ export function drawBadge(
         );
         ctx.stroke();
       }
+      break;
+    }
+    case 'feed': {
+      // Gamelle : un bol vu de face, le repère universel du « à nourrir ».
+      ctx.beginPath();
+      ctx.arc(x, y - radius * 0.05, radius * 0.48, 0, Math.PI);
+      ctx.closePath();
+      ctx.fill();
+      ctx.lineWidth = Math.max(1.5, size / 10);
+      ctx.beginPath();
+      ctx.moveTo(x - radius * 0.58, y - radius * 0.1);
+      ctx.lineTo(x + radius * 0.58, y - radius * 0.1);
+      ctx.stroke();
+      break;
+    }
+    case 'sick': {
+      // Croix : le signe du soin, lisible même à 8 px.
+      ctx.lineWidth = Math.max(2, size / 6);
+      ctx.beginPath();
+      ctx.moveTo(x - radius * 0.45, y);
+      ctx.lineTo(x + radius * 0.45, y);
+      ctx.moveTo(x, y - radius * 0.45);
+      ctx.lineTo(x, y + radius * 0.45);
+      ctx.stroke();
+      break;
+    }
+    case 'pet': {
+      // Cœur : deux lobes et une pointe.
+      const top = y - radius * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(x, y + radius * 0.5);
+      ctx.bezierCurveTo(x - radius * 0.9, y - radius * 0.1, x - radius * 0.45, top - radius * 0.4, x, top);
+      ctx.bezierCurveTo(x + radius * 0.45, top - radius * 0.4, x + radius * 0.9, y - radius * 0.1, x, y + radius * 0.5);
+      ctx.closePath();
+      ctx.fill();
       break;
     }
     default:
@@ -882,7 +917,554 @@ export function drawWeatherIcon(
   }
 }
 
-/** Silhouette d'animal procédurale (corps + tête + pattes). */
+// ---------------------------------------------------------------------------
+// SILHOUETTES D'ANIMAUX
+// ---------------------------------------------------------------------------
+
+/**
+ * Apparence résolue d'un animal : `form` + `palette` de `animals.json`.
+ *
+ * Renvoie `undefined` quand l'espèce n'en déclare pas : l'appelant retombe
+ * alors sur `drawAnimal()`, la silhouette générique, plutôt que sur une forme
+ * devinée — mieux vaut un animal beige qu'une poule dessinée en vache.
+ */
+export interface AnimalSkin {
+  form: AnimalForm;
+  palette: AnimalPalette;
+}
+
+export function animalSkin(
+  animal?: { form?: AnimalForm | null; palette?: AnimalPalette | null },
+): AnimalSkin | undefined {
+  if (!animal?.form || !animal.palette) return undefined;
+  return { form: animal.form, palette: animal.palette };
+}
+
+export interface AnimalDrawOptions {
+  x: number;
+  y: number;
+  size: number;
+  form: AnimalForm;
+  palette: AnimalPalette;
+  /** `1` regarde vers la droite (défaut), `-1` vers la gauche. */
+  facing?: 1 | -1;
+  /** Semence de variation : deux bêtes voisines ne sont pas superposables. */
+  seed?: number;
+  /** Œil fermé et « zz » : l'animal dort (bonheur au plus haut, rien à faire). */
+  sleeping?: boolean;
+  /** Pansement sur le flanc : l'animal est malade. */
+  sick?: boolean;
+}
+
+/** Position de l'œil rendue par chaque forme, pour que l'œil soit dessiné en dernier. */
+interface EyeSpot {
+  x: number;
+  y: number;
+  r: number;
+}
+
+type FormPainter = (
+  ctx: SKRSContext2D,
+  cx: number,
+  groundY: number,
+  size: number,
+  palette: AnimalPalette,
+  seed: number,
+) => EyeSpot;
+
+/**
+ * Dessine un animal selon sa SILHOUETTE d'espèce.
+ *
+ * Même parti pris que `drawCrop()` : la forme dit l'espèce, la palette la
+ * colore, et un seul œil suffit à donner vie. Chaque silhouette tient dans
+ * la boîte `[x, x+size] × [y, y+size]`, pieds au sol vers `y + 0.86 × size`,
+ * pour rester lisible à 34 px (pied de page de la ferme) comme à 96 px.
+ *
+ * Le regard va vers la DROITE par défaut ; `facing: -1` retourne la bête par
+ * un miroir horizontal, ce qui évite de coder chaque forme deux fois. Les
+ * indicateurs (pansement, « zz ») sont posés après le miroir : un « zz »
+ * retourné se lirait à l'envers.
+ */
+export function drawAnimalForm(ctx: SKRSContext2D, options: AnimalDrawOptions): void {
+  const { x, y, size, form, palette } = options;
+  const facing = options.facing ?? 1;
+  const seed = Math.abs(Math.floor(options.seed ?? 0));
+  const cx = x + size / 2;
+  const groundY = y + size * 0.86;
+
+  // Ombre portée : sans elle, la bête flotte au-dessus de l'herbe. Un insecte
+  // vole, son ombre est plus petite et plus pâle.
+  const hovering = form === 'insect';
+  ctx.fillStyle = hovering ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.18)';
+  ctx.beginPath();
+  ctx.ellipse(cx, groundY + size * 0.02, size * (hovering ? 0.18 : 0.3), size * 0.06, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  if (facing < 0) {
+    ctx.translate(cx * 2, 0);
+    ctx.scale(-1, 1);
+  }
+  const eye = ANIMAL_PAINTERS[form](ctx, cx, groundY, size, palette, seed);
+  drawEye(ctx, eye, options.sleeping === true);
+  ctx.restore();
+
+  if (options.sick) drawBandage(ctx, cx - size * 0.08, groundY - size * 0.42, size);
+  if (options.sleeping) drawSleep(ctx, x + size * 0.72, y + size * 0.02, size);
+}
+
+/** Œil : sclère claire et pupille sombre — lisible sur un corps clair comme sombre. */
+function drawEye(ctx: SKRSContext2D, eye: EyeSpot, sleeping: boolean): void {
+  if (sleeping) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+    ctx.lineWidth = Math.max(1, eye.r * 0.6);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(eye.x, eye.y - eye.r * 0.2, eye.r, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+    return;
+  }
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(eye.x, eye.y, eye.r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.85)';
+  ctx.beginPath();
+  ctx.arc(eye.x + eye.r * 0.25, eye.y, eye.r * 0.55, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/** Pansement : un petit rectangle clair en travers du flanc, avec deux bandes. */
+function drawBandage(ctx: SKRSContext2D, x: number, y: number, size: number): void {
+  const w = size * 0.24;
+  const h = size * 0.1;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(-0.6);
+  fillRoundRect(ctx, -w / 2, -h / 2, w, h, h / 2, '#f3e9d6');
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+  ctx.lineWidth = Math.max(1, size / 60);
+  ctx.beginPath();
+  ctx.moveTo(-w * 0.2, -h / 2);
+  ctx.lineTo(-w * 0.2, h / 2);
+  ctx.moveTo(w * 0.2, -h / 2);
+  ctx.lineTo(w * 0.2, h / 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** « zz » au-dessus de la tête : deux lettres, pas une bulle. */
+function drawSleep(ctx: SKRSContext2D, x: number, y: number, size: number): void {
+  const px = Math.max(8, Math.round(size * 0.18));
+  ctx.font = font(px, 'bold');
+  ctx.textBaseline = 'top';
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+  ctx.lineWidth = Math.max(1.5, px / 6);
+  ctx.strokeText('z', x, y + px * 0.4);
+  ctx.strokeText('z', x + px * 0.7, y);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('z', x, y + px * 0.4);
+  ctx.fillText('z', x + px * 0.7, y);
+}
+
+function ellipse(ctx: SKRSContext2D, x: number, y: number, rx: number, ry: number, color: string, rotation = 0): void {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, rotation, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function legs(
+  ctx: SKRSContext2D,
+  color: string,
+  groundY: number,
+  xs: number[],
+  top: number,
+  width: number,
+): void {
+  ctx.fillStyle = color;
+  for (const lx of xs) {
+    ctx.fillRect(lx - width / 2, top, width, groundY - top);
+  }
+}
+
+/** Volaille : corps rond, queue en éventail, crête et bec en accent. */
+function paintFowl(ctx: SKRSContext2D, cx: number, groundY: number, size: number, p: AnimalPalette, seed: number): EyeSpot {
+  const bodyX = cx - size * 0.05;
+  const bodyY = groundY - size * 0.32;
+  legs(ctx, p.bodyDark, groundY, [bodyX - size * 0.06, bodyX + size * 0.08], bodyY + size * 0.12, size * 0.04);
+  // Queue : trois plumes en éventail, la tenue dépend de la graine.
+  for (const [index, angle] of [-0.9, -0.55, -0.2].entries()) {
+    const lean = angle + ((seed + index) % 3) * 0.06;
+    ellipse(ctx, bodyX - size * 0.3, bodyY - size * 0.1, size * 0.17, size * 0.06, index === 1 ? p.bodyDark : p.body, lean);
+  }
+  ellipse(ctx, bodyX, bodyY, size * 0.3, size * 0.22, p.body);
+  // Aile : un lobe plus sombre sur le flanc.
+  ellipse(ctx, bodyX - size * 0.04, bodyY + size * 0.02, size * 0.17, size * 0.1, p.bodyDark, 0.25);
+  const headX = cx + size * 0.24;
+  const headY = groundY - size * 0.54;
+  // Cou court : relie la tête au corps sans laisser d'espace.
+  ellipse(ctx, headX - size * 0.08, headY + size * 0.1, size * 0.1, size * 0.12, p.body);
+  ellipse(ctx, headX, headY, size * 0.13, size * 0.13, p.body);
+  // Crête : trois bosses, et caroncule sous le bec.
+  ctx.fillStyle = p.accent;
+  for (const [dx, r] of [[-0.07, 0.045], [0, 0.055], [0.07, 0.045]] as const) {
+    ctx.beginPath();
+    ctx.arc(headX + size * dx, headY - size * 0.12, size * r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ellipse(ctx, headX + size * 0.09, headY + size * 0.12, size * 0.035, size * 0.05, p.accent);
+  // Bec
+  ctx.fillStyle = p.accentDark;
+  ctx.beginPath();
+  ctx.moveTo(headX + size * 0.11, headY - size * 0.02);
+  ctx.lineTo(headX + size * 0.24, headY + size * 0.03);
+  ctx.lineTo(headX + size * 0.11, headY + size * 0.07);
+  ctx.closePath();
+  ctx.fill();
+  return { x: headX + size * 0.03, y: headY - size * 0.02, r: size * 0.045 };
+}
+
+/** Grand oiseau à long cou : corps ovale, cou en S, longues pattes. */
+function paintLongneck(ctx: SKRSContext2D, cx: number, groundY: number, size: number, p: AnimalPalette, seed: number): EyeSpot {
+  const bodyX = cx - size * 0.1;
+  const bodyY = groundY - size * 0.36;
+  ctx.strokeStyle = p.accentDark;
+  ctx.lineWidth = Math.max(1.5, size * 0.035);
+  ctx.lineCap = 'round';
+  for (const lx of [bodyX - size * 0.04, bodyX + size * 0.08]) {
+    ctx.beginPath();
+    ctx.moveTo(lx, bodyY + size * 0.1);
+    ctx.lineTo(lx, groundY);
+    ctx.lineTo(lx + size * 0.07, groundY);
+    ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+  // Plumes de queue relevées
+  for (const [index, angle] of [-1.1, -0.8].entries()) {
+    ellipse(ctx, bodyX - size * 0.26, bodyY - size * 0.02, size * 0.14, size * 0.05, index === 0 ? p.accentDark : p.bodyDark, angle);
+  }
+  ellipse(ctx, bodyX, bodyY, size * 0.26, size * 0.17, p.body);
+  ellipse(ctx, bodyX - size * 0.02, bodyY - size * 0.02, size * 0.16, size * 0.09, p.bodyDark, 0.2);
+  // Cou : une courbe en S dont l'inclinaison varie avec la graine.
+  const headX = cx + size * 0.26 + ((seed % 3) - 1) * size * 0.02;
+  const headY = groundY - size * 0.76;
+  ctx.strokeStyle = p.body;
+  ctx.lineWidth = size * 0.09;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(bodyX + size * 0.16, bodyY - size * 0.04);
+  ctx.bezierCurveTo(bodyX + size * 0.3, bodyY - size * 0.16, headX - size * 0.06, headY + size * 0.26, headX, headY);
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+  ellipse(ctx, headX, headY, size * 0.09, size * 0.08, p.body);
+  ctx.fillStyle = p.accent;
+  ctx.beginPath();
+  ctx.moveTo(headX + size * 0.07, headY - size * 0.03);
+  ctx.lineTo(headX + size * 0.22, headY + size * 0.01);
+  ctx.lineTo(headX + size * 0.07, headY + size * 0.05);
+  ctx.closePath();
+  ctx.fill();
+  return { x: headX + size * 0.02, y: headY - size * 0.015, r: size * 0.035 };
+}
+
+/** Petit mammifère à oreilles : boule compacte, grandes oreilles, queue en pompon. */
+function paintSmallFurry(ctx: SKRSContext2D, cx: number, groundY: number, size: number, p: AnimalPalette, seed: number): EyeSpot {
+  const bodyY = groundY - size * 0.24;
+  ellipse(ctx, cx - size * 0.3, bodyY - size * 0.04, size * 0.07, size * 0.07, lighten(p.body, 0.45));
+  ellipse(ctx, cx - size * 0.02, bodyY, size * 0.3, size * 0.22, p.body);
+  // Pattes arrière et avant, posées.
+  ellipse(ctx, cx - size * 0.12, groundY - size * 0.04, size * 0.1, size * 0.045, p.bodyDark);
+  ellipse(ctx, cx + size * 0.2, groundY - size * 0.04, size * 0.08, size * 0.04, p.bodyDark);
+  const headX = cx + size * 0.18;
+  const headY = groundY - size * 0.42;
+  // Oreilles : longues, légèrement écartées ; l'écart dépend de la graine.
+  const spread = 0.12 + (seed % 3) * 0.05;
+  for (const direction of [-1, 1]) {
+    const ex = headX + direction * size * 0.06;
+    const rot = direction * spread;
+    ellipse(ctx, ex, headY - size * 0.26, size * 0.055, size * 0.16, p.body, rot);
+    ellipse(ctx, ex, headY - size * 0.25, size * 0.028, size * 0.11, p.accent, rot);
+  }
+  ellipse(ctx, headX, headY, size * 0.17, size * 0.15, p.body);
+  ellipse(ctx, headX + size * 0.15, headY + size * 0.02, size * 0.035, size * 0.03, p.accentDark);
+  return { x: headX + size * 0.05, y: headY - size * 0.03, r: size * 0.045 };
+}
+
+/** Laineux : corps en nuage de boucles, tête et pattes fines en accent. */
+function paintWoolly(ctx: SKRSContext2D, cx: number, groundY: number, size: number, p: AnimalPalette, seed: number): EyeSpot {
+  const bodyX = cx - size * 0.04;
+  const bodyY = groundY - size * 0.38;
+  legs(ctx, p.accent, groundY, [bodyX - size * 0.18, bodyX - size * 0.06, bodyX + size * 0.08, bodyX + size * 0.18], bodyY + size * 0.14, size * 0.045);
+  // Boucles : une couronne de cercles, les plus bas plus sombres pour le volume.
+  const curls: Array<[number, number, number]> = [
+    [-0.24, 0.06, 0.13], [-0.1, 0.1, 0.14], [0.06, 0.1, 0.14], [0.2, 0.06, 0.12],
+    [-0.2, -0.08, 0.13], [-0.04, -0.12, 0.15], [0.12, -0.1, 0.14], [0.24, -0.04, 0.11],
+  ];
+  for (const [dx, dy, r] of curls) {
+    ellipse(ctx, bodyX + size * dx, bodyY + size * dy, size * r, size * r, dy > 0 ? p.bodyDark : p.body);
+  }
+  for (const [dx, dy, r] of curls) {
+    if (dy > 0) continue;
+    ellipse(ctx, bodyX + size * dx, bodyY + size * dy - size * 0.02, size * r * 0.85, size * r * 0.85, p.body);
+  }
+  // Cou court et tête en accent, oreilles tombantes.
+  const headX = cx + size * 0.3;
+  const headY = groundY - size * 0.46 - (seed % 2) * size * 0.03;
+  ctx.strokeStyle = p.accent;
+  ctx.lineWidth = size * 0.1;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(bodyX + size * 0.2, bodyY - size * 0.02);
+  ctx.lineTo(headX - size * 0.04, headY + size * 0.02);
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+  ellipse(ctx, headX - size * 0.1, headY - size * 0.04, size * 0.05, size * 0.03, p.accentDark, -0.6);
+  ellipse(ctx, headX, headY, size * 0.12, size * 0.1, p.accent);
+  ellipse(ctx, headX - size * 0.02, headY - size * 0.1, size * 0.09, size * 0.06, p.body);
+  return { x: headX + size * 0.04, y: headY - size * 0.01, r: size * 0.04 };
+}
+
+/** Ongulé : boîte sur quatre pattes, tête carrée, museau et cornes en accent. */
+function paintHoofed(ctx: SKRSContext2D, cx: number, groundY: number, size: number, p: AnimalPalette, seed: number): EyeSpot {
+  const bodyX = cx - size * 0.34;
+  const bodyY = groundY - size * 0.6;
+  const bodyW = size * 0.6;
+  const bodyH = size * 0.32;
+  legs(ctx, p.bodyDark, groundY, [bodyX + size * 0.08, bodyX + size * 0.18, bodyX + size * 0.42, bodyX + size * 0.52], bodyY + bodyH - size * 0.04, size * 0.07);
+  // Queue : un trait qui pend, terminé par une touffe.
+  ctx.strokeStyle = p.bodyDark;
+  ctx.lineWidth = size * 0.035;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(bodyX + size * 0.02, bodyY + size * 0.06);
+  ctx.quadraticCurveTo(bodyX - size * 0.06, bodyY + size * 0.16, bodyX - size * 0.04, bodyY + size * 0.3);
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+  fillRoundRect(ctx, bodyX, bodyY, bodyW, bodyH, size * 0.09, p.body);
+  // Taches : une ou deux selon la graine — vache pie, chèvre unie de dos.
+  for (let index = 0; index <= seed % 2; index += 1) {
+    ellipse(ctx, bodyX + size * (0.16 + index * 0.24), bodyY + size * (0.08 + index * 0.1), size * 0.1, size * 0.07, p.bodyDark, 0.3 * index);
+  }
+  const headX = cx + size * 0.22;
+  const headY = groundY - size * 0.74;
+  fillRoundRect(ctx, headX - size * 0.06, headY + size * 0.08, size * 0.16, size * 0.16, size * 0.04, p.body);
+  fillRoundRect(ctx, headX - size * 0.08, headY, size * 0.24, size * 0.2, size * 0.06, p.body);
+  fillRoundRect(ctx, headX + size * 0.04, headY + size * 0.1, size * 0.14, size * 0.1, size * 0.04, p.accent);
+  ellipse(ctx, headX + size * 0.13, headY + size * 0.15, size * 0.015, size * 0.015, p.accentDark);
+  // Cornes et oreilles
+  ctx.strokeStyle = p.accentDark;
+  ctx.lineWidth = size * 0.03;
+  ctx.lineCap = 'round';
+  for (const direction of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(headX + direction * size * 0.04, headY);
+    ctx.quadraticCurveTo(headX + direction * size * 0.07, headY - size * 0.1, headX + direction * size * 0.12, headY - size * 0.12);
+    ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+  ellipse(ctx, headX - size * 0.09, headY + size * 0.03, size * 0.05, size * 0.03, p.bodyDark, -0.5);
+  return { x: headX + size * 0.05, y: headY + size * 0.06, r: size * 0.035 };
+}
+
+/** Porcin : tonneau, tête ronde, groin en accent, oreilles tombantes, queue en tire-bouchon. */
+function paintSwine(ctx: SKRSContext2D, cx: number, groundY: number, size: number, p: AnimalPalette, seed: number): EyeSpot {
+  const bodyX = cx - size * 0.06;
+  const bodyY = groundY - size * 0.3;
+  legs(ctx, p.bodyDark, groundY, [bodyX - size * 0.2, bodyX - size * 0.08, bodyX + size * 0.1, bodyX + size * 0.2], bodyY + size * 0.12, size * 0.06);
+  // Queue en tire-bouchon
+  ctx.strokeStyle = p.bodyDark;
+  ctx.lineWidth = size * 0.03;
+  ctx.beginPath();
+  ctx.arc(bodyX - size * 0.34, bodyY - size * 0.06, size * 0.04, Math.PI * 0.5, Math.PI * 2.2);
+  ctx.stroke();
+  ellipse(ctx, bodyX, bodyY, size * 0.32, size * 0.22, p.body);
+  const headX = cx + size * 0.24;
+  const headY = groundY - size * 0.38;
+  // Oreilles tombantes, l'inclinaison dépend de la graine.
+  const droop = 0.3 + (seed % 3) * 0.12;
+  ellipse(ctx, headX - size * 0.06, headY - size * 0.14, size * 0.05, size * 0.09, p.bodyDark, -droop);
+  ellipse(ctx, headX + size * 0.06, headY - size * 0.14, size * 0.05, size * 0.09, p.bodyDark, droop);
+  ellipse(ctx, headX, headY, size * 0.17, size * 0.16, p.body);
+  ellipse(ctx, headX + size * 0.13, headY + size * 0.03, size * 0.09, size * 0.07, p.accent);
+  ellipse(ctx, headX + size * 0.1, headY + size * 0.03, size * 0.018, size * 0.022, p.accentDark);
+  ellipse(ctx, headX + size * 0.16, headY + size * 0.03, size * 0.018, size * 0.022, p.accentDark);
+  return { x: headX + size * 0.02, y: headY - size * 0.05, r: size * 0.04 };
+}
+
+/** Insecte : abdomen rayé, ailes translucides en accent, antennes. Il vole. */
+function paintInsect(ctx: SKRSContext2D, cx: number, groundY: number, size: number, p: AnimalPalette, seed: number): EyeSpot {
+  const cy = groundY - size * 0.46 - (seed % 2) * size * 0.03;
+  const bodyX = cx - size * 0.06;
+  // Ailes : deux ellipses claires légèrement transparentes, avec leur bord.
+  ctx.globalAlpha = 0.8;
+  ellipse(ctx, bodyX - size * 0.02, cy - size * 0.2, size * 0.18, size * 0.08, p.accent, -0.55);
+  ellipse(ctx, bodyX + size * 0.1, cy - size * 0.19, size * 0.15, size * 0.07, p.accent, -0.25);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = p.accentDark;
+  ctx.lineWidth = Math.max(1, size * 0.015);
+  ctx.beginPath();
+  ctx.ellipse(bodyX - size * 0.02, cy - size * 0.2, size * 0.18, size * 0.08, -0.55, 0, Math.PI * 2);
+  ctx.stroke();
+  // Pattes : trois traits sous le corps.
+  ctx.strokeStyle = p.bodyDark;
+  ctx.lineWidth = Math.max(1, size * 0.02);
+  for (const dx of [-0.1, 0, 0.1]) {
+    ctx.beginPath();
+    ctx.moveTo(bodyX + size * dx, cy + size * 0.08);
+    ctx.lineTo(bodyX + size * dx - size * 0.03, cy + size * 0.18);
+    ctx.stroke();
+  }
+  // Dard
+  ctx.fillStyle = p.bodyDark;
+  ctx.beginPath();
+  ctx.moveTo(bodyX - size * 0.2, cy - size * 0.03);
+  ctx.lineTo(bodyX - size * 0.3, cy + size * 0.02);
+  ctx.lineTo(bodyX - size * 0.2, cy + size * 0.06);
+  ctx.closePath();
+  ctx.fill();
+  ellipse(ctx, bodyX, cy, size * 0.22, size * 0.13, p.body);
+  // Rayures : clip sur l'abdomen pour ne pas déborder.
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(bodyX, cy, size * 0.22, size * 0.13, 0, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.fillStyle = p.bodyDark;
+  for (const dx of [-0.13, -0.02, 0.09]) {
+    ctx.fillRect(bodyX + size * dx - size * 0.025, cy - size * 0.14, size * 0.05, size * 0.28);
+  }
+  ctx.restore();
+  const headX = cx + size * 0.2;
+  ellipse(ctx, headX, cy, size * 0.1, size * 0.1, p.bodyDark);
+  ctx.strokeStyle = p.accentDark;
+  ctx.lineWidth = Math.max(1, size * 0.02);
+  ctx.lineCap = 'round';
+  for (const direction of [-0.5, 0.2]) {
+    ctx.beginPath();
+    ctx.moveTo(headX + size * 0.02, cy - size * 0.08);
+    ctx.quadraticCurveTo(headX + size * 0.08, cy - size * 0.2, headX + size * (0.12 + direction * 0.1), cy - size * 0.24);
+    ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+  return { x: headX + size * 0.03, y: cy - size * 0.02, r: size * 0.035 };
+}
+
+/** Carapace : dôme en accent orné d'écailles, tête et pattes courtes qui dépassent. */
+function paintShelled(ctx: SKRSContext2D, cx: number, groundY: number, size: number, p: AnimalPalette, seed: number): EyeSpot {
+  const shellX = cx - size * 0.04;
+  const shellBase = groundY - size * 0.1;
+  ellipse(ctx, shellX - size * 0.24, groundY - size * 0.06, size * 0.08, size * 0.06, p.bodyDark);
+  ellipse(ctx, shellX + size * 0.2, groundY - size * 0.06, size * 0.08, size * 0.06, p.bodyDark);
+  // Queue
+  ctx.fillStyle = p.body;
+  ctx.beginPath();
+  ctx.moveTo(shellX - size * 0.28, shellBase - size * 0.04);
+  ctx.lineTo(shellX - size * 0.38, shellBase);
+  ctx.lineTo(shellX - size * 0.26, shellBase + size * 0.02);
+  ctx.closePath();
+  ctx.fill();
+  const headX = cx + size * 0.3;
+  const headY = groundY - size * 0.2;
+  ellipse(ctx, headX - size * 0.1, headY + size * 0.03, size * 0.1, size * 0.06, p.body);
+  ellipse(ctx, headX, headY, size * 0.1, size * 0.08, p.body);
+  // Dôme
+  ctx.fillStyle = p.accent;
+  ctx.beginPath();
+  ctx.ellipse(shellX, shellBase, size * 0.3, size * 0.32, 0, Math.PI, 0);
+  ctx.closePath();
+  ctx.fill();
+  fillRoundRect(ctx, shellX - size * 0.32, shellBase - size * 0.04, size * 0.64, size * 0.08, size * 0.03, p.bodyDark);
+  // Écailles : quelques disques, disposés selon la graine.
+  ctx.fillStyle = p.accentDark;
+  const spots: Array<[number, number, number]> = [[0, -0.18, 0.07], [-0.14, -0.1, 0.055], [0.14, -0.1, 0.055], [-0.05, -0.05, 0.04], [0.07, -0.04, 0.04]];
+  for (const [index, [dx, dy, r]] of spots.entries()) {
+    if ((seed + index) % 5 === 4) continue;
+    ctx.beginPath();
+    ctx.arc(shellX + size * dx, shellBase + size * dy, size * r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  return { x: headX + size * 0.03, y: headY - size * 0.02, r: size * 0.035 };
+}
+
+/** Ailé : corps, cou, ailes déployées en accent, longue queue à pointe. */
+function paintWinged(ctx: SKRSContext2D, cx: number, groundY: number, size: number, p: AnimalPalette, seed: number): EyeSpot {
+  const bodyX = cx - size * 0.02;
+  const bodyY = groundY - size * 0.3;
+  legs(ctx, p.bodyDark, groundY, [bodyX - size * 0.1, bodyX + size * 0.1], bodyY + size * 0.1, size * 0.06);
+  // Queue : une courbe vers l'arrière, terminée par une pointe en accent.
+  ctx.strokeStyle = p.body;
+  ctx.lineWidth = size * 0.07;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(bodyX - size * 0.2, bodyY);
+  ctx.quadraticCurveTo(bodyX - size * 0.42, bodyY + size * 0.06, bodyX - size * 0.4, bodyY - size * 0.22);
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+  ctx.fillStyle = p.accent;
+  ctx.beginPath();
+  ctx.moveTo(bodyX - size * 0.4, bodyY - size * 0.32);
+  ctx.lineTo(bodyX - size * 0.48, bodyY - size * 0.18);
+  ctx.lineTo(bodyX - size * 0.32, bodyY - size * 0.18);
+  ctx.closePath();
+  ctx.fill();
+  // Ailes : l'arrière plus sombre, l'avant en accent, l'envergure varie avec la graine.
+  const span = 0.3 + (seed % 3) * 0.04;
+  const wing = (baseX: number, color: string, scale: number): void => {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(baseX, bodyY - size * 0.08);
+    ctx.lineTo(baseX - size * span * scale, bodyY - size * 0.62 * scale);
+    ctx.lineTo(baseX - size * 0.05 * scale, bodyY - size * 0.4 * scale);
+    ctx.lineTo(baseX + size * 0.18 * scale, bodyY - size * 0.5 * scale);
+    ctx.lineTo(baseX + size * 0.1, bodyY - size * 0.1);
+    ctx.closePath();
+    ctx.fill();
+  };
+  wing(bodyX - size * 0.06, p.accentDark, 0.85);
+  ellipse(ctx, bodyX, bodyY, size * 0.27, size * 0.17, p.body);
+  ellipse(ctx, bodyX + size * 0.02, bodyY + size * 0.06, size * 0.17, size * 0.08, lighten(p.body, 0.35));
+  wing(bodyX + size * 0.02, p.accent, 1);
+  // Cou et tête, avec une petite corne.
+  const headX = cx + size * 0.28;
+  const headY = groundY - size * 0.62;
+  ctx.strokeStyle = p.body;
+  ctx.lineWidth = size * 0.1;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(bodyX + size * 0.18, bodyY - size * 0.06);
+  ctx.quadraticCurveTo(bodyX + size * 0.26, bodyY - size * 0.22, headX - size * 0.04, headY + size * 0.04);
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+  ellipse(ctx, headX, headY, size * 0.12, size * 0.1, p.body);
+  ellipse(ctx, headX + size * 0.1, headY + size * 0.03, size * 0.06, size * 0.045, p.body);
+  ctx.fillStyle = p.accentDark;
+  ctx.beginPath();
+  ctx.moveTo(headX - size * 0.04, headY - size * 0.08);
+  ctx.lineTo(headX - size * 0.08, headY - size * 0.2);
+  ctx.lineTo(headX + size * 0.02, headY - size * 0.09);
+  ctx.closePath();
+  ctx.fill();
+  return { x: headX + size * 0.03, y: headY - size * 0.02, r: size * 0.04 };
+}
+
+const ANIMAL_PAINTERS: Record<AnimalForm, FormPainter> = {
+  fowl: paintFowl,
+  longneck: paintLongneck,
+  smallfurry: paintSmallFurry,
+  woolly: paintWoolly,
+  hoofed: paintHoofed,
+  swine: paintSwine,
+  insect: paintInsect,
+  shelled: paintShelled,
+  winged: paintWinged,
+};
+
+/**
+ * Silhouette d'animal générique (corps + tête + pattes) : le REPLI d'une espèce
+ * sans `form` dans `animals.json`. Toutes en déclarent une aujourd'hui ; on la
+ * garde pour qu'une espèce ajoutée à la va-vite s'affiche quand même.
+ */
 export function drawAnimal(
   ctx: SKRSContext2D,
   options: { x: number; y: number; size: number; color: string; emoji: string },

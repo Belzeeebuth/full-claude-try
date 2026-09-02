@@ -7,7 +7,8 @@ import * as farmService from '../services/farm.service';
 import * as inventoryService from '../services/inventory.service';
 import * as marketService from '../services/market.service';
 import * as progressionService from '../services/progression.service';
-import { NO_IMAGE, renderFarmImage } from '../render';
+import { getWorldState } from '../services/world.service';
+import { NO_IMAGE, renderAnimalsImage, renderFarmImage, type AnimalsRenderInput } from '../render';
 import {
   COIN,
   discordTimestamp,
@@ -48,6 +49,7 @@ export async function farmView(
   const player = context.player;
   const t = context.t;
   const locale = context.locale;
+  const catalog = getConfig(locale);
   const coopLevel = await coopLevelOf(player.coopId);
   const view = await farmService.getFarmView(player, { coopLevel, now: context.now });
   const herd = await animalService.getHerd(player, context.now);
@@ -66,10 +68,17 @@ export async function farmView(
     },
     xp: { current: player.xp, needed: xpForNext },
     theme: 'classic',
-    animalsPreview: herd.animals.slice(0, 6).map((animal) => ({
-      emoji: animal.emoji,
-      animalKey: animal.animalKey,
-    })),
+    // Silhouette et palette de chaque espèce, pour que l'aperçu du pied de page
+    // montre les MÊMES bêtes que `/animals` et non six formes beiges identiques.
+    animalsPreview: herd.animals.slice(0, 6).map((animal) => {
+      const species = catalog.animals.get(animal.animalKey);
+      return {
+        emoji: animal.emoji,
+        animalKey: animal.animalKey,
+        form: species?.form ?? null,
+        palette: species?.palette ?? null,
+      };
+    }),
     buildingsPreview: herd.ownedBuildings,
     equippedPetKey: player.equippedPetKey,
   });
@@ -687,10 +696,75 @@ export async function marketView(context: CommandContext, category?: string): Pr
 // ANIMAUX
 // ---------------------------------------------------------------------------
 
+/**
+ * Entrée du rendu de basse-cour, dérivée du cheptel déjà chargé.
+ *
+ * Les formes et palettes viennent du catalogue et non de `HerdView`, qui ne
+ * les porte pas : le service n'a pas à connaître l'apparence des bêtes.
+ */
+async function animalsRenderInput(
+  context: CommandContext,
+  herd: animalService.HerdView,
+): Promise<AnimalsRenderInput> {
+  const player = context.player;
+  const catalog = getConfig(context.locale);
+  const world = await getWorldState(context.now, context.locale);
+  return {
+    locale: context.locale,
+    farmId: player.farmId,
+    ownerName: player.username,
+    season: world.season.season,
+    weather: world.weather.weather,
+    buildings: herd.capacityByBuilding.map((entry) => ({
+      key: entry.buildingKey,
+      name: entry.name,
+      tier: entry.tier,
+      capacity: entry.capacity,
+      used: entry.used,
+    })),
+    animals: herd.animals.map((animal) => {
+      const species = catalog.animals.get(animal.animalKey);
+      return {
+        id: animal.id,
+        animalKey: animal.animalKey,
+        name: animal.name,
+        nickname: animal.nickname,
+        emoji: animal.emoji,
+        form: species?.form ?? null,
+        palette: species?.palette ?? null,
+        buildingKey: animal.buildingKey,
+        hunger: animal.status.hunger,
+        happiness: animal.status.happiness,
+        health: animal.status.health,
+        hungry: animal.status.hungry,
+        sick: animal.status.sick,
+        canCollect: animal.canCollect,
+        canFeed: animal.canFeed,
+        canPet: animal.canPet,
+        readyProduction: animal.status.readyProduction,
+        productEmoji: animal.productEmoji,
+      };
+    }),
+    totals: {
+      alive: herd.totals.alive,
+      hungry: herd.totals.hungry,
+      sick: herd.totals.sick,
+      ready: herd.totals.readyToCollect,
+    },
+  };
+}
+
 export async function animalsView(context: CommandContext, page = 1): Promise<View> {
   const player = context.player;
   const t = context.t;
   const herd = await animalService.getHerd(player, context.now);
+  // L'image montre tout le cheptel d'un coup ; le texte paginé garde ce qu'elle
+  // ne dit pas (prochaine production, génération). Les deux se complètent, le
+  // texte reste donc affiché même quand l'image est là — c'est aussi le repli
+  // quand le rendu échoue ou que le joueur a choisi le mode compact.
+  const image = player.compactMode
+    ? NO_IMAGE
+    : await renderAnimalsImage(await animalsRenderInput(context, herd));
   const pageSize = 8;
   const totalPages = Math.max(1, Math.ceil(herd.animals.length / pageSize));
   const current = Math.min(Math.max(1, page), totalPages);
@@ -737,6 +811,9 @@ export async function animalsView(context: CommandContext, page = 1): Promise<Vi
 
   return {
     embeds: [embed],
+    // Pièce jointe libre, hors de l'embed, pour la même raison que `farmView` :
+    // intégrée à l'embed, l'image serait réduite à sa largeur.
+    files: image.attachment ? [image.attachment] : [],
     components: [
       row(
         button({

@@ -671,6 +671,10 @@
       "width": 900,
       "height": 620
     },
+    "animals": {
+      "width": 900,
+      "height": 640
+    },
     "quality": 0.85
   },
   "notifications": {
