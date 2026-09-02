@@ -1,6 +1,7 @@
 import { balance as getBalance } from '../config';
 import { translate } from '../i18n';
-import { formatCompact } from '../utils/format';
+import { formatCompact, formatNumber } from '../utils/format';
+import { clampAltText, joinSentences } from './alt-text';
 import {
   PALETTE,
   clipText,
@@ -163,4 +164,42 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
   }
 
   return encode(canvas);
+}
+
+/**
+ * Texte alternatif du classement : le titre et sa portée, puis les dix
+ * classés dessinés (podium compris), enfin le rang du spectateur — les scores
+ * en entier, là où l'image les abrège.
+ */
+export function describeLeaderboard(input: LeaderboardRenderInput): string {
+  const locale = input.locale;
+  const t = (key: string, params?: Record<string, string | number>): string =>
+    translate(locale, key, params);
+
+  const entries = input.entries.slice(0, 10).map((entry) =>
+    t(entry.extra ? 'render_alt.leaderboard.entry_extra' : 'render_alt.leaderboard.entry', {
+      rank: entry.rank,
+      name: entry.name,
+      score: formatNumber(entry.score, locale),
+      unit: input.unit,
+      extra: entry.extra,
+    }),
+  );
+
+  return clampAltText(
+    joinSentences([
+      t('render_alt.leaderboard.header', { title: input.title, scope: input.scopeLabel }),
+      // Point-virgule entre les classés : chaque entrée contient déjà une virgule.
+      entries.length > 0
+        ? t('render_alt.leaderboard.entries', { entries: entries.join('; ') })
+        : t('render_alt.leaderboard.empty'),
+      input.viewer
+        ? t('render_alt.leaderboard.viewer', {
+            rank: input.viewer.rank,
+            score: formatNumber(input.viewer.score, locale),
+            unit: input.unit,
+          })
+        : null,
+    ]),
+  );
 }

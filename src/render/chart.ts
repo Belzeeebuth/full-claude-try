@@ -1,6 +1,7 @@
 import { balance as getBalance } from '../config';
 import { translate } from '../i18n';
-import { formatCompact, formatPercent } from '../utils/format';
+import { formatCompact, formatNumber, formatPercent } from '../utils/format';
+import { clampAltText, joinSentences } from './alt-text';
 import {
   PALETTE,
   drawableText,
@@ -215,4 +216,52 @@ export async function renderMarketChart(input: ChartInput): Promise<Buffer> {
   );
 
   return encode(canvas);
+}
+
+/**
+ * Texte alternatif du graphique : l'objet, le prix et sa tendance, puis les
+ * bornes de la courbe — calculées comme la légende dessinée (le prix de
+ * référence compte dans min/max), pour que voyants et non-voyants lisent les
+ * mêmes nombres. Sans historique, le dessin pose un point unique daté de
+ * maintenant ; la description, elle, n'invente pas de date.
+ */
+export function describeChart(input: ChartInput): string {
+  const locale = input.locale;
+  const t = (key: string, params?: Record<string, string | number>): string =>
+    translate(locale, key, params);
+
+  const prices =
+    input.points.length > 0 ? input.points.map((point) => point.price) : [input.currentPrice];
+  const min = Math.min(...prices, input.basePrice);
+  const max = Math.max(...prices, input.basePrice);
+  const direction = input.trend > 0 ? 'up' : input.trend < 0 ? 'down' : 'flat';
+  const intl = locale.startsWith('en') ? 'en-US' : 'fr-FR';
+  const stamp = (date: Date): string =>
+    date.toLocaleString(intl, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const first = input.points[0];
+  const last = input.points[input.points.length - 1];
+
+  return clampAltText(
+    joinSentences([
+      t('render_alt.chart.header', {
+        item: input.title,
+        price: formatNumber(input.currentPrice, locale),
+        trend: formatPercent(input.trend, 1, locale),
+        direction: t(`render_alt.chart.${direction}`),
+      }),
+      t('render_alt.chart.reference', {
+        base: formatNumber(input.basePrice, locale),
+        demand: input.demandIndex.toFixed(2),
+      }),
+      first && last
+        ? t('render_alt.chart.range', {
+            min: formatNumber(min, locale),
+            max: formatNumber(max, locale),
+            count: input.points.length,
+            from: stamp(first.recordedAt),
+            to: stamp(last.recordedAt),
+          })
+        : t('render_alt.chart.no_history'),
+    ]),
+  );
 }

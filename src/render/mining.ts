@@ -1,5 +1,6 @@
 import { balance as getBalance } from '../config';
 import { translate } from '../i18n';
+import { clampAltText, joinSentences } from './alt-text';
 import { PALETTE, encode, fillRoundRect, font, newCanvas, verticalGradient } from './canvas';
 
 /**
@@ -146,4 +147,28 @@ export async function renderMining(input: MiningRenderInput): Promise<Buffer> {
   }
 
   return encode(canvas);
+}
+
+/**
+ * Texte alternatif de la coupe de mine : profondeur courante, record et
+ * paliers hors de portée — les trois choses que l'image montre, avec le même
+ * total que sa règle (`balance.mining.maxDepth`), pour que l'objectif lointain
+ * soit aussi audible que visible.
+ */
+export function describeMining(input: MiningRenderInput): string {
+  const t = (key: string, params?: Record<string, string | number>): string =>
+    translate(input.locale, key, params);
+  const total = Math.max(1, getBalance().mining.maxDepth);
+  const locked = total - Math.min(total, input.maxDepth);
+
+  return clampAltText(
+    joinSentences([
+      t('render_alt.mining.scene', { total, accessible: input.maxDepth }),
+      t('render_alt.mining.position', { depth: input.depth, accessible: input.maxDepth }),
+      input.deepestReached > input.depth
+        ? t('render_alt.mining.best', { deepest: input.deepestReached })
+        : null,
+      locked > 0 ? t('render_alt.mining.locked', { count: locked }) : null,
+    ]),
+  );
 }

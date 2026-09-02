@@ -3,12 +3,12 @@ import { AttachmentBuilder } from 'discord.js';
 import { env } from '../config/env';
 import { getRedis, key as redisKey } from '../db/redis';
 import { moduleLogger } from '../utils/logger';
-import { renderMarketChart, type ChartInput } from './chart';
+import { describeChart, renderMarketChart, type ChartInput } from './chart';
 import { renderInline, type RenderInputs, type RenderKind } from './dispatch';
-import { renderFarm, type FarmRenderInput } from './farm';
-import { renderFishing, type FishingRenderInput } from './fishing';
-import { renderLeaderboard, type LeaderboardRenderInput } from './leaderboard';
-import { renderMining, type MiningRenderInput } from './mining';
+import { describeFarm, renderFarm, type FarmRenderInput } from './farm';
+import { describeFishing, renderFishing, type FishingRenderInput } from './fishing';
+import { describeLeaderboard, renderLeaderboard, type LeaderboardRenderInput } from './leaderboard';
+import { describeMining, renderMining, type MiningRenderInput } from './mining';
 import {
   RenderPoolUnavailableError,
   RenderQueueFullError,
@@ -16,7 +16,7 @@ import {
   renderPoolStats,
   submitRender,
 } from './pool';
-import { renderProfile, type ProfileRenderInput } from './profile';
+import { describeProfile, renderProfile, type ProfileRenderInput } from './profile';
 
 const log = moduleLogger('render');
 
@@ -41,6 +41,12 @@ const log = moduleLogger('render');
  *     passerelle Discord pendant toute la durée de l'image. Si le pool est
  *     indisponible (`RENDER_WORKERS=0`, worker impossible à démarrer), on
  *     dessine sur place — une image tardive vaut mieux que pas d'image.
+ *  5. TEXTE ALTERNATIF — chaque pièce jointe porte une `description`, ce que
+ *     lit un lecteur d'écran à la place de l'image (1 024 caractères max).
+ *     Elle est recalculée à chaque affichage, y compris quand le PNG vient du
+ *     cache : quelques concaténations ne valent pas un second format de cache,
+ *     et une image sans description reviendrait à exclure ceux qui ne la
+ *     voient pas — le mode compact ne doit plus être leur seule option.
  */
 
 export interface RenderOutcome {
@@ -132,12 +138,14 @@ function produce<K extends RenderKind>(kind: K, input: RenderInputs[K]): Promise
 
 /**
  * Rendu générique avec cache Redis et budget de temps.
- * `stateKey` doit capturer TOUT ce qui influence l'image.
+ * `stateKey` doit capturer TOUT ce qui influence l'image ; `description` est
+ * le texte alternatif déjà borné par `describeX()`, joint sur les deux chemins.
  */
 async function render<K extends RenderKind>(
   kind: K,
   stateKey: unknown,
   fileName: string,
+  description: string,
   input: RenderInputs[K],
 ): Promise<RenderOutcome> {
   if (!env.RENDER_ENABLED) return EMPTY;
@@ -149,7 +157,7 @@ async function render<K extends RenderKind>(
     const cached = await readCachedImage(cacheKey);
     if (cached) {
       return {
-        attachment: new AttachmentBuilder(cached, { name: fileName }),
+        attachment: new AttachmentBuilder(cached, { name: fileName, description }),
         fileName,
         cached: true,
         durationMs: Date.now() - started,
@@ -182,7 +190,7 @@ async function render<K extends RenderKind>(
     }
 
     return {
-      attachment: new AttachmentBuilder(buffer, { name: fileName }),
+      attachment: new AttachmentBuilder(buffer, { name: fileName, description }),
       fileName,
       cached: false,
       durationMs,
@@ -223,7 +231,7 @@ export async function renderFarmImage(input: FarmRenderInput): Promise<RenderOut
     ]),
   };
 
-  return render('farm', stateKey, 'farm.png', input);
+  return render('farm', stateKey, 'farm.png', describeFarm(input), input);
 }
 
 export async function renderProfileImage(input: ProfileRenderInput): Promise<RenderOutcome> {
@@ -242,7 +250,7 @@ export async function renderProfileImage(input: ProfileRenderInput): Promise<Ren
     badges: input.badges,
   };
 
-  return render('profile', stateKey, 'profil.png', input);
+  return render('profile', stateKey, 'profil.png', describeProfile(input), input);
 }
 
 export async function renderChartImage(input: ChartInput): Promise<RenderOutcome> {
@@ -254,7 +262,7 @@ export async function renderChartImage(input: ChartInput): Promise<RenderOutcome
     points: input.points.map((point) => point.price),
   };
 
-  return render('chart', stateKey, 'marche.png', input);
+  return render('chart', stateKey, 'marche.png', describeChart(input), input);
 }
 
 export async function renderLeaderboardImage(
@@ -268,12 +276,12 @@ export async function renderLeaderboardImage(
     viewer: input.viewer?.rank ?? 0,
   };
 
-  return render('leaderboard', stateKey, 'classement.png', input);
+  return render('leaderboard', stateKey, 'classement.png', describeLeaderboard(input), input);
 }
 
 export async function renderFishingImage(input: FishingRenderInput): Promise<RenderOutcome> {
   const stateKey = { locale: input.locale, season: input.season, weather: input.weather };
-  return render('fishing', stateKey, 'peche.png', input);
+  return render('fishing', stateKey, 'peche.png', describeFishing(input), input);
 }
 
 export async function renderMiningImage(input: MiningRenderInput): Promise<RenderOutcome> {
@@ -283,7 +291,7 @@ export async function renderMiningImage(input: MiningRenderInput): Promise<Rende
     maxDepth: input.maxDepth,
     deepestReached: input.deepestReached,
   };
-  return render('mining', stateKey, 'mine.png', input);
+  return render('mining', stateKey, 'mine.png', describeMining(input), input);
 }
 
 export {
@@ -304,3 +312,12 @@ export type {
   ProfileRenderInput,
 };
 export { renderFarm, renderProfile, renderMarketChart, renderLeaderboard, renderFishing, renderMining };
+export {
+  describeChart,
+  describeFarm,
+  describeFishing,
+  describeLeaderboard,
+  describeMining,
+  describeProfile,
+};
+export { ALT_TEXT_MAX_LENGTH, clampAltText } from './alt-text';

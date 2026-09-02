@@ -1,0 +1,69 @@
+{
+  "$comment": "Textes alternatifs des images générées, lus par les lecteurs d'écran (voir src/render/alt-text.ts). Une clé par phrase : chaque describeX() les assemble dans la langue du spectateur.",
+  "render_alt": {
+    "common": {
+      "pair": "{label} : {value}"
+    },
+    "farm": {
+      "header": "Ferme « {name} » de {username}, niveau {level}.",
+      "xp": "{current} / {needed} XP.",
+      "max_level": "Niveau maximum.",
+      "world": "{season}, {weather}, {temperature} °C.",
+      "wallet": "{coins} pièces, {gems} gemmes.",
+      "grid": "Grille de {width} × {height} : {ready} prête(s), {growing} en croissance, {empty} vide(s), {locked} verrouillée(s).",
+      "withered": "{count} flétrie(s).",
+      "next_harvest": "Prochaine récolte dans {duration} : parcelle {slot} ({crop}).",
+      "harvest_waiting": "Des cultures sont prêtes à récolter.",
+      "nothing_planted": "Aucune culture en terre.",
+      "ready_list": "À récolter : {plots}.",
+      "water_list": "À arroser : {plots}.",
+      "pest_list": "À traiter : {plots}.",
+      "withered_list": "Flétries : {plots}.",
+      "plot": "parcelle {slot} ({crop})",
+      "plot_pest": "parcelle {slot} ({crop}, {pest})",
+      "more": "et {count} autre(s)",
+      "animals": "{count} animal(aux) en pied de page.",
+      "buildings": "{count} bâtiment(s) autour du champ.",
+      "pet": "Compagnon équipé : {pet}."
+    },
+    "profile": {
+      "header": "Profil de {name} — {title}.",
+      "prestige": "Prestige {rank}.",
+      "coop": "Coopérative [{tag}] {name}, niveau {level}.",
+      "level": "Niveau {level}, {current} / {needed} XP.",
+      "max_level": "Niveau {level}, niveau maximum.",
+      "energy": "Énergie {current} / {max}.",
+      "wallet": "{coins} pièces, {gems} gemmes, {bank} en banque.",
+      "stats": "Statistiques : {stats}.",
+      "streak_days": "{days} jour(s)",
+      "badges": "{count} badge(s) : {badges}.",
+      "since": "Ferme « {farm} », fermier depuis le {date}."
+    },
+    "chart": {
+      "header": "Graphique du prix de {item} : {price} pièces actuellement, {trend} sur la période ({direction}).",
+      "up": "en hausse",
+      "down": "en baisse",
+      "flat": "stable",
+      "reference": "Prix de référence : {base} pièces. Indice de demande : {demand}.",
+      "range": "Minimum {min}, maximum {max}, sur {count} point(s) d'historique du {from} au {to}.",
+      "no_history": "Aucun historique : la courbe ne montre que le prix actuel."
+    },
+    "leaderboard": {
+      "header": "Classement — {title} ({scope}).",
+      "entries": "Podium et suivants : {entries}.",
+      "entry": "#{rank} {name}, {score} {unit}",
+      "entry_extra": "#{rank} {name}, {score} {unit} ({extra})",
+      "empty": "Aucun classé pour le moment.",
+      "viewer": "Votre rang : #{rank} avec {score} {unit}."
+    },
+    "fishing": {
+      "scene": "Étang de pêche. Saison : {season}. Météo : {weather}. Un ponton de bois sur la rive gauche, une canne posée à son bout et sa ligne dans l'eau, des nénuphars à la surface."
+    },
+    "mining": {
+      "scene": "Coupe du puits de mine : {total} paliers au total, {accessible} accessible(s) à votre niveau.",
+      "position": "Profondeur actuelle : palier {depth} sur {accessible}.",
+      "best": "Record personnel : palier {deepest}.",
+      "locked": "{count} palier(s) hors de portée, assombris."
+    }
+  }
+}
