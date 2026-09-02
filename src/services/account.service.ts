@@ -583,6 +583,19 @@ async function deleteAccountTransaction(
   now: Date,
 ): Promise<DeletionReport> {
   return withTransaction(async (tx) => {
+    // ORDRE DES VERROUS : `standing_orders` AVANT `users`.
+    //
+    // Le rapprochement des ordres permanents (`trade.service.matchStandingOrders`)
+    // verrouille l'ordre, puis les lignes `users` de l'acheteur et du vendeur.
+    // Prendre ici le verrou du joueur d'abord, puis écrire ses ordres, inversait
+    // les deux ordres d'acquisition : le job de 5 minutes et un clic sur
+    // « Supprimer mon compte » pouvaient s'attendre mutuellement, et PostgreSQL
+    // abandonnait l'une des deux transactions (40P01) — suppression en « erreur
+    // interne » ou achat annulé. L'annulation est sûre avant tout contrôle : son
+    // `WHERE status = 'active'` la rend idempotente, et si un blocage lève juste
+    // après, la transaction entière est annulée.
+    const ordersCancelled = await accountRepo.cancelAllStandingOrders(player.id, now, tx);
+
     const locked = await lockUserRow(tx, player.id);
     if (!locked) {
       throw gameError('not_registered', 'Player not found.', { i18nKey: 'errors.player_not_found' });
@@ -603,7 +616,6 @@ async function deleteAccountTransaction(
     const nicknamesCleared = await accountRepo.clearAnimalNicknames(player.id, tx);
     const apiKeysRevoked = await accountRepo.revokeAllApiKeys(player.id, now, tx);
     const webhooksDeleted = await accountRepo.deleteAllWebhooks(player.id, tx);
-    const ordersCancelled = await accountRepo.cancelAllStandingOrders(player.id, now, tx);
     const notificationsDropped = await accountRepo.deletePendingNotifications(player.id, tx);
 
     // Un membre ordinaire quitte sa coopérative : sans cela il y resterait

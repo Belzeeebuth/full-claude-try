@@ -36,12 +36,16 @@ const log = moduleLogger('render');
  * Façade de rendu : cache, budget de temps et repli.
  *
  * Trois garanties pour la production :
- *  1. CACHE — la clé est le hash de l'ÉTAT rendu, pas l'identifiant du joueur.
- *     Deux affichages successifs d'une ferme inchangée réutilisent le même PNG ;
- *     la moindre modification (une culture qui mûrit) change le hash. La LOCALE
- *     fait partie de l'état : les libellés sont dessinés DANS l'image, donc sans
- *     elle un joueur anglophone recevrait la version française mise en cache par
- *     un francophone.
+ *  1. CACHE — la clé est le hash de l'ÉTAT rendu, et rien d'autre : elle est
+ *     GLOBALE, sans espace de noms par joueur. Deux affichages successifs d'une
+ *     ferme inchangée réutilisent le même PNG ; la moindre modification (une
+ *     culture qui mûrit) change le hash. Corollaire : tout ce qui est DESSINÉ
+ *     doit être dans la clé, y compris ce qui identifie le joueur — pseudo,
+ *     avatar, nom de ferme — sinon deux joueurs au même état reçoivent la même
+ *     image, l'un portant l'identité de l'autre. La LOCALE en fait partie pour
+ *     la même raison : les libellés sont dessinés DANS l'image, donc sans elle
+ *     un joueur anglophone recevrait la version française mise en cache par un
+ *     francophone.
  *  2. BUDGET DE TEMPS — au-delà de `RENDER_TIMEOUT_MS`, on abandonne l'image et
  *     la commande répond en texte. Une interaction Discord doit être honorée en
  *     3 secondes : mieux vaut un embed sans image qu'une commande qui échoue.
@@ -219,22 +223,50 @@ async function render<K extends RenderKind>(
   }
 }
 
-export async function renderFarmImage(input: FarmRenderInput): Promise<RenderOutcome> {
-  // L'état capture : la grille, chaque parcelle avec son stade et son échéance
-  // arrondie à la minute, la météo, et les compteurs du joueur.
-  const stateKey = {
+/**
+ * État déterminant l'image de `/farm`, exposé pour être testé.
+ *
+ * La clé de cache est GLOBALE (aucun identifiant de joueur, voir `render()`) :
+ * tout ce que `renderFarm` dessine doit donc y figurer, sinon deux fermes
+ * différentes partagent un PNG. C'est vrai en particulier de l'IDENTITÉ —
+ * pseudo, avatar, nom de ferme, `farmId` qui sème le décor : sans elle, deux
+ * joueurs neufs (même niveau, même grille, mêmes parcelles vides) reçoivent la
+ * même image, l'un avec l'avatar et le nom de l'autre. Et de tout ce qui n'a
+ * pas d'effet de bord sur les compteurs déjà présents : gemmes, barre d'XP,
+ * température, mauvaises herbes, bâtiments et cheptel — sinon l'image reste
+ * figée pendant `RENDER_CACHE_TTL` alors que le texte alternatif, lui, est
+ * recalculé et annonce déjà le nouvel état.
+ */
+export function farmStateKey(input: FarmRenderInput): unknown {
+  return {
     locale: input.locale,
+    farmId: input.view.farmId,
+    name: input.view.name,
+    username: input.player.username,
+    avatar: input.player.avatarUrl ?? '',
     grid: input.view.grid,
     theme: input.theme,
     weather: input.view.world.weather.weather,
+    temperature: input.view.world.weather.temperature,
     season: input.view.world.season.season,
     level: input.player.level,
     coins: Math.floor(input.player.coins / 100),
+    gems: input.player.gems,
+    xp: [Math.floor(input.xp.current / 50), input.xp.needed],
     equippedPetKey: input.equippedPetKey ?? '',
+    buildings: (input.buildingsPreview ?? []).map((building) => [building.key, building.tier]),
+    animals: (input.animalsPreview ?? []).map((animal) => [
+      animal.animalKey,
+      animal.form ?? '',
+      animal.emoji,
+    ]),
     plots: input.view.plots.map((plot) => [
       plot.slot,
       plot.state,
       Math.round(plot.fertility / 5),
+      // Seul le franchissement du seuil change le dessin (`drawEmptyPlot`) :
+      // inutile de casser le cache à chaque point de mauvaise herbe.
+      plot.weedLevel > 30 ? 1 : 0,
       plot.pestType ?? '',
       plot.crop?.key ?? '',
       plot.crop?.growth.stage ?? '',
@@ -242,27 +274,50 @@ export async function renderFarmImage(input: FarmRenderInput): Promise<RenderOut
       plot.crop?.growth.needsWater ? 1 : 0,
     ]),
   };
-
-  return render('farm', stateKey, 'farm.png', describeFarm(input), input);
 }
 
-export async function renderProfileImage(input: ProfileRenderInput): Promise<RenderOutcome> {
-  const stateKey = {
+export async function renderFarmImage(input: FarmRenderInput): Promise<RenderOutcome> {
+  return render('farm', farmStateKey(input), 'farm.png', describeFarm(input), input);
+}
+
+/**
+ * État déterminant la carte de `/profile`, exposé pour être testé.
+ *
+ * `displayName` n'est pas unique sur Discord et la clé de cache ne porte aucun
+ * identifiant de joueur : deux « Alex » débutants tomberaient sur le même hash
+ * et le second verrait l'avatar du premier. On y met donc l'identité complète
+ * (pseudo — graine de la bannière de prestige —, avatar, couleur de thème,
+ * ferme, date d'inscription) et le reste de ce que `renderProfile` dessine
+ * (prestige, banque, énergie maximale).
+ */
+export function profileStateKey(input: ProfileRenderInput): unknown {
+  return {
     locale: input.locale,
     name: input.displayName,
+    username: input.username,
+    avatar: input.avatarUrl ?? '',
     level: input.level,
+    prestige: input.prestige,
     xp: Math.floor(input.xp.current / 50),
     coins: Math.floor(input.coins / 100),
     gems: input.gems,
+    bank: Math.floor(input.bank / 100),
     energy: input.energy.current,
+    energyMax: input.energy.max,
     stats: input.stats,
     coop: input.coop?.tag ?? '',
     title: input.title,
     banner: input.bannerStyle,
+    themeColor: input.themeColor,
     badges: input.badges,
+    farmName: input.farmName,
+    // Le pied de carte n'affiche que le jour : la clé n'a pas besoin de plus.
+    createdAt: input.createdAt.toISOString().slice(0, 10),
   };
+}
 
-  return render('profile', stateKey, 'profil.png', describeProfile(input), input);
+export async function renderProfileImage(input: ProfileRenderInput): Promise<RenderOutcome> {
+  return render('profile', profileStateKey(input), 'profil.png', describeProfile(input), input);
 }
 
 export async function renderChartImage(input: ChartInput): Promise<RenderOutcome> {

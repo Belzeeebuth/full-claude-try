@@ -307,8 +307,8 @@
     "category": "livestock",
     "requiredLevel": 40,
     "maxTier": 1,
-    "description": "Construit uniquement pendant un événement. Abrite les créatures mythiques.",
-    "descriptionEn": "Built only during an event. Shelters mythical creatures.",
+    "description": "Abrite les créatures rares : dragonnet, licorne et phénix.",
+    "descriptionEn": "Shelters rare creatures: dragonet, unicorn and phoenix.",
     "unlocksRecipes": [],
     "sortOrder": 50,
     "tiers": [

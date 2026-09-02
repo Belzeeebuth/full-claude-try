@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { balance as getBalance, getConfig } from '../src/config';
 import { gridSizeFor, slotToCoords } from '../src/game/grid';
 import { translate } from '../src/i18n';
+import { farmStateKey, profileStateKey } from '../src/render';
 import { drawPill, newCanvas, offscreen, outlineCanvas, rainbowGradient, tintCanvas } from '../src/render/canvas';
 import { renderMarketChart } from '../src/render/chart';
 import { describeFarm, renderFarm, type FarmRenderInput } from '../src/render/farm';
@@ -240,6 +241,113 @@ describe('profil : bannière de prestige et anneau de niveau', () => {
     // À l'intérieur d'une tranche, la couleur ne bouge pas.
     expect(levelRingColor(26)).toBe(levelRingColor(49));
     expect(levelRingColor(150)).toBe(levelRingColor(100));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Clés de cache
+// ---------------------------------------------------------------------------
+
+/**
+ * La clé de cache d'image est GLOBALE : `redisKey('render', kind, hash)` ne
+ * porte aucun identifiant de joueur. Deux entrées qui donnent des PNG
+ * différents DOIVENT donc donner des clés différentes, sinon un joueur reçoit
+ * l'image d'un autre (pseudo, avatar, nom de ferme) ou son propre PNG figé
+ * pendant tout le TTL alors que le texte alternatif, recalculé, dit autre chose.
+ *
+ * On compare la clé sérialisée : c'est exactement ce que `hashState` hache.
+ */
+const serialize = (state: unknown): string => JSON.stringify(state);
+
+describe('clés de cache : tout ce qui est dessiné les fait changer', () => {
+  it('même état, même clé — sinon le cache ne sert plus à rien', () => {
+    expect(serialize(farmStateKey(farm()))).toBe(serialize(farmStateKey(farm())));
+    expect(serialize(profileStateKey(profile()))).toBe(serialize(profileStateKey(profile())));
+  });
+
+  it('la ferme : identité, compteurs et décor distinguent deux clés', () => {
+    const base = farm();
+    const withPlayer = (patch: Partial<FarmRenderInput['player']>): FarmRenderInput => ({
+      ...base,
+      player: { ...base.player, ...patch },
+    });
+    const variants: Record<string, FarmRenderInput> = {
+      // Identité : le cas qui fait qu'un joueur voit la ferme d'un autre.
+      username: withPlayer({ username: 'Autre' }),
+      avatar: withPlayer({ avatarUrl: 'https://cdn.example/a.png' }),
+      farmName: { ...base, view: { ...base.view, name: 'Autre ferme' } },
+      farmId: farm({ farmId: 'autre-ferme' }),
+      // Péremption : le PNG change, la clé doit suivre.
+      gems: withPlayer({ gems: 7 }),
+      xp: { ...base, xp: { current: 60, needed: 100 } },
+      xpNeeded: { ...base, xp: { current: 0, needed: 200 } },
+      temperature: {
+        ...base,
+        view: {
+          ...base.view,
+          world: {
+            ...base.view.world,
+            weather: { ...base.view.world.weather, temperature: 31 },
+          },
+        },
+      },
+      buildings: { ...base, buildingsPreview: [{ key: 'barn', tier: 1 }] },
+      animals: {
+        ...base,
+        animalsPreview: [{ emoji: '🐔', animalKey: 'chicken', form: null, palette: null }],
+      },
+      weeds: {
+        ...base,
+        view: {
+          ...base.view,
+          plots: base.view.plots.map((plot, index) =>
+            index === 0 ? { ...plot, weedLevel: 80 } : plot,
+          ),
+        },
+      },
+    };
+
+    const keys = new Map<string, string>([['base', serialize(farmStateKey(base))]]);
+    for (const [name, input] of Object.entries(variants)) {
+      keys.set(name, serialize(farmStateKey(input)));
+    }
+    // Aucune collision : chaque variante a sa propre clé.
+    expect(new Set(keys.values()).size).toBe(keys.size);
+  });
+
+  it('la ferme : un bâtiment de plus change la clé même à pièces constantes', () => {
+    // La tranche `floor(coins / 100)` masquait le défaut sur les achats chers ;
+    // un cadeau ou un bâtiment offert ne touche pas les pièces du tout.
+    const before = farm();
+    const after: FarmRenderInput = { ...before, buildingsPreview: [{ key: 'coop', tier: 2 }] };
+    expect(serialize(farmStateKey(after))).not.toBe(serialize(farmStateKey(before)));
+  });
+
+  it('le profil : deux « Alex » de même progression n’ont pas la même clé', () => {
+    const alex1 = profile({ username: 'alex1', avatarUrl: 'https://cdn.example/1.png' });
+    const alex2 = profile({ username: 'alex2', avatarUrl: 'https://cdn.example/2.png' });
+    expect(alex1.displayName).toBe(alex2.displayName);
+    expect(serialize(profileStateKey(alex2))).not.toBe(serialize(profileStateKey(alex1)));
+  });
+
+  it('le profil : avatar, prestige, thème, ferme, date, banque et énergie max distinguent les clés', () => {
+    const base = profile();
+    const variants: Record<string, ProfileRenderInput> = {
+      username: profile({ username: 'autre' }),
+      avatar: profile({ avatarUrl: 'https://cdn.example/a.png' }),
+      prestige: profile({ prestige: 3 }),
+      themeColor: profile({ themeColor: '#c850c8' }),
+      farmName: profile({ farmName: 'Le Clos Vert' }),
+      createdAt: profile({ createdAt: new Date('2026-08-30T00:00:00Z') }),
+      bank: profile({ bank: 5_000 }),
+      energyMax: profile({ energy: { current: 50, max: 120 } }),
+    };
+
+    const keys = new Map<string, string>([['base', serialize(profileStateKey(base))]]);
+    for (const [name, input] of Object.entries(variants)) {
+      keys.set(name, serialize(profileStateKey(input)));
+    }
+    expect(new Set(keys.values()).size).toBe(keys.size);
   });
 });
 

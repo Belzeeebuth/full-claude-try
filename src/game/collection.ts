@@ -1,5 +1,10 @@
 import type { GameConfig } from '../config';
-import { discoveryKinds, type AnimalVariant, type DiscoveryKind } from '../config/gameplay/schemas';
+import {
+  discoveryKinds,
+  type AnimalVariant,
+  type DiscoveryKind,
+  type ItemConfig,
+} from '../config/gameplay/schemas';
 import type { Quality } from './quality';
 
 /**
@@ -40,7 +45,11 @@ export interface CollectionEntry {
   name: string;
   emoji: string;
   rarity: string;
-  /** Niveau requis, la seule chose qu'on révèle d'une entrée inconnue. */
+  /**
+   * Niveau requis, la seule chose qu'on révèle d'une entrée inconnue : celui
+   * de la SOURCE qui la débloque (culture, espèce, recette), pas le champ brut
+   * de la fiche objet, qui vaut 1 par défaut sur presque tous les produits.
+   */
   requiredLevel: number;
   sortOrder: number;
   /** Renseigné pour la famille `variant` seulement. */
@@ -122,6 +131,55 @@ export function parseVariantEntryKey(
 }
 
 /**
+ * Niveau de déblocage des recettes, indexé par objet produit.
+ *
+ * Construit une fois par univers : la recherche linéaire dans `recipeList`
+ * pour chacun des 72 produits serait quadratique pour rien.
+ * Une recette désactivée ne produit plus rien, elle ne date donc aucun accès ;
+ * si plusieurs recettes produisent le même objet, c'est la plus tôt débloquée
+ * qui compte, puisqu'elle suffit à l'obtenir.
+ */
+function recipeLevelsByOutput(config: GameConfig): Map<string, number> {
+  const levels = new Map<string, number>();
+  for (const recipe of config.recipeList) {
+    if (!recipe.enabled) continue;
+    const known = levels.get(recipe.outputItemKey);
+    if (known === undefined || recipe.requiredLevel < known) {
+      levels.set(recipe.outputItemKey, recipe.requiredLevel);
+    }
+  }
+  return levels;
+}
+
+/**
+ * Niveau auquel un objet devient RÉELLEMENT accessible.
+ *
+ * `requiredLevel` sur la fiche objet vaut 1 par défaut et n'est presque jamais
+ * renseigné : aucun des produits animaux ne le déclare, un seul produit
+ * transformé le fait. Le niveau qui date l'accès est celui de la SOURCE —
+ * l'animal qui pond ou la recette qui transforme. Sans cette résolution, la
+ * seule information révélée d'une entrée masquée (« niv. 1 ») serait FAUSSE
+ * pour un mythique de niveau 46, et le tri « prochain déblocage en tête »
+ * dégénérerait en simple tri par `sortOrder`, tous les niveaux valant 1.
+ *
+ * On garde le maximum avec le niveau déclaré sur l'objet : si une fiche exige
+ * explicitement plus que sa source, c'est elle qui commande.
+ */
+function itemAvailabilityLevel(
+  config: GameConfig,
+  item: ItemConfig,
+  recipeLevels: ReadonlyMap<string, number>,
+): number {
+  if (item.category === 'animal_product' && item.sourceKey) {
+    const animal = config.animals.get(item.sourceKey);
+    if (animal) return Math.max(animal.requiredLevel, item.requiredLevel);
+  }
+  const producerLevel = recipeLevels.get(item.key);
+  if (producerLevel !== undefined) return Math.max(producerLevel, item.requiredLevel);
+  return item.requiredLevel;
+}
+
+/**
  * Univers d'une famille, dans l'ordre d'affichage : niveau requis croissant
  * (le prochain déblocage est toujours en tête de la zone grise), puis l'ordre
  * de la configuration, puis la clé pour rester stable.
@@ -146,7 +204,10 @@ export function collectionUniverse(config: GameConfig, kind: DiscoveryKind): Col
       break;
     case 'product':
     case 'fish':
-    case 'ore':
+    case 'ore': {
+      // Poissons et minerais déclarent leur niveau ; les produits, non — d'où
+      // la résolution par la source (cf. `itemAvailabilityLevel`).
+      const recipeLevels = recipeLevelsByOutput(config);
       for (const item of config.itemList) {
         if (!item.enabled || discoveryKindForCategory(item.category) !== kind) continue;
         entries.push({
@@ -155,12 +216,13 @@ export function collectionUniverse(config: GameConfig, kind: DiscoveryKind): Col
           name: item.name,
           emoji: item.emoji,
           rarity: item.rarity,
-          requiredLevel: item.requiredLevel,
+          requiredLevel: itemAvailabilityLevel(config, item, recipeLevels),
           sortOrder: item.sortOrder,
           variant: null,
         });
       }
       break;
+    }
     case 'animal':
       for (const animal of config.animalList) {
         if (!animal.enabled) continue;

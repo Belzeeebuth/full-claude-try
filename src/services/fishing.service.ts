@@ -166,7 +166,9 @@ export async function resolveHook(
 
   await withTransaction(async (tx) => {
     await lockUserRow(tx, player.id);
-    await inventoryService.addItems(player.id, [{ itemKey: picked.key, quantity: 1, quality }], tx);
+    await inventoryService.addItems(player.id, [{ itemKey: picked.key, quantity: 1, quality }], tx, {
+      discover: true,
+    });
     await trackAction(
       { userId: player.id, coopId: player.coopId, level: player.level },
       'catch_fish',

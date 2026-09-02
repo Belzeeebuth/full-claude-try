@@ -15,7 +15,7 @@ import { assertNotEcoBanned, ensurePlayer } from '../services/player.service';
 import { getMaintenance } from '../services/misc.service';
 import { MaintenanceError, isGameError, toError } from '../utils/errors';
 import { LockBusyError } from '../utils/lock';
-import { NotOwnerError } from '../utils/custom-id';
+import { NotOwnerError, parseCustomId } from '../utils/custom-id';
 import { moduleLogger } from '../utils/logger';
 import { discordTimestamp, formatDuration } from '../utils/format';
 import { COLORS, baseEmbed, errorEmbed, suggestionRow, warningEmbed } from './ui';
@@ -44,8 +44,9 @@ export interface BuildContextOptions {
  *
  * Le bannissement doit couper les ACTIONS, pas l'information : quelqu'un de
  * sanctionné doit pouvoir lire pourquoi, consulter son profil et la
- * documentation de jeu. Tout le reste — y compris les composants, qui sont des
- * actions déguisées en boutons — est refusé.
+ * documentation de jeu. Les composants sont refusés par défaut — ce sont des
+ * actions déguisées en boutons — sauf ceux listés dans
+ * `ECO_BAN_READONLY_COMPONENTS` juste en dessous.
  */
 const ECO_BAN_READONLY = new Set([
   'help',
@@ -71,6 +72,61 @@ const ECO_BAN_READONLY = new Set([
   // sanction de jeu.
   'account',
 ]);
+
+/**
+ * Composants restant accessibles à un joueur banni de l'économie, au format
+ * `namespace:action` (`namespace:*` couvre tout un namespace).
+ *
+ * Sans cette liste, la garde s'appliquait à TOUS les composants : `commandName`
+ * vaut `undefined` dès que l'interaction n'est pas une commande slash, donc la
+ * liste blanche ci-dessus était inatteignable depuis un bouton. Conséquences
+ * concrètes : la confirmation de `/account delete` — seul chemin d'effacement
+ * des données — répondait `errors.player.eco_banned`, le droit à l'effacement
+ * se retrouvant suspendu pendant toute la sanction (7 jours pour un ban
+ * automatique de `flagSuspicion`, jusqu'à 30 pour un ban manuel) ; et la page 2
+ * de `/history`, `/collection` ou `/almanac` était refusée alors que la page 1
+ * s'affichait.
+ *
+ * `almanac:buy` en est volontairement absent : acheter une prévision dépense
+ * des pièces, c'est exactement l'action que le bannissement doit couper.
+ */
+const ECO_BAN_READONLY_COMPONENTS = new Set([
+  // RGPD : confirmer ou annuler la suppression de son compte.
+  'account:confirm_delete',
+  'account:cancel_delete',
+  // Vues en lecture seule : pagination, filtres, rafraîchissement.
+  'history:*',
+  'collection:*',
+  'almanac:refresh',
+]);
+
+/**
+ * L'interaction échappe-t-elle au bannissement économique ?
+ *
+ * Exporté pour être testable sans base : c'est la seule décision qui sépare
+ * « je peux lire » de « je peux agir » pour un joueur sanctionné.
+ */
+export function isEcoBanExempt(interaction: Interaction): boolean {
+  if (interaction.isChatInputCommand()) {
+    return ECO_BAN_READONLY.has(interaction.commandName);
+  }
+  if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
+    let parsed;
+    try {
+      parsed = parseCustomId(interaction.customId);
+    } catch {
+      // custom_id forgé ou d'une version antérieure : on refuse, le pipeline
+      // répondra « composant expiré » puisqu'aucun gestionnaire ne le résout.
+      return false;
+    }
+    return (
+      ECO_BAN_READONLY_COMPONENTS.has(`${parsed.namespace}:${parsed.action}`) ||
+      ECO_BAN_READONLY_COMPONENTS.has(`${parsed.namespace}:*`)
+    );
+  }
+  // Menus contextuels et autocomplétion : aucune exemption.
+  return false;
+}
 
 export async function buildContext(
   interaction: Interaction,
@@ -103,8 +159,7 @@ export async function buildContext(
   // Bannissement économique. `assertNotEcoBanned` existait mais n'avait aucun
   // appelant : `/admin eco-ban` comme les bannissements automatiques de
   // `flagSuspicion` n'écrivaient qu'une date en base, sans le moindre effet.
-  const commandName = interaction.isChatInputCommand() ? interaction.commandName : undefined;
-  if (!commandName || !ECO_BAN_READONLY.has(commandName)) {
+  if (!isEcoBanExempt(interaction)) {
     assertNotEcoBanned(result.player);
   }
 
@@ -191,15 +246,25 @@ export async function replyEphemeral(
   interaction: RepliableInteraction,
   payload: InteractionReplyOptions,
 ): Promise<void> {
-  // Sur une interaction DÉFÉRÉE, `safeReply` passe par `editReply`, qui ignore
-  // purement et simplement le drapeau éphémère : un message d'erreur atterrissait
-  // alors dans le salon, à la vue de tous, sur toute commande déférée
-  // publiquement (`/farm`, `/market`, `/leaderboard`…). Un `followUp` est le
-  // seul moyen d'obtenir une réponse éphémère après un `deferReply()` public.
-  if (interaction.deferred && !interaction.ephemeral) {
+  // `ephemeral` distingue les deux formes de différé, et c'est vital ici :
+  // seul `deferReply()` le renseigne (`false` public, `true` éphémère) ;
+  // `deferUpdate()` de composant le laisse à `null`.
+  //
+  //  - `deferUpdate()` (null) : `@original` EST le message porteur de la vue.
+  //    Le supprimer effacerait /farm, /animals, /almanac… — et le message
+  //    d'échange partagé par DEUX joueurs — sur la moindre `GameError`. On passe
+  //    donc par un simple `followUp`, la vue reste intacte.
+  //  - `deferReply()` public (false) : le « … réfléchit » doit être résorbé,
+  //    sinon Discord laisse un placeholder mort dans le salon pendant quinze
+  //    minutes ; et `editReply` ignorerait le drapeau éphémère, exposant
+  //    l'erreur à tout le salon.
+  //  - `deferReply()` éphémère (true) : `safeReply` → `editReply`, déjà privé.
+  if (interaction.deferred && interaction.ephemeral === null) {
+    await followUpEphemeral(interaction, payload);
+    return;
+  }
+  if (interaction.deferred && interaction.ephemeral === false) {
     try {
-      // Le « … réfléchit » public doit quand même être résolu, sinon Discord
-      // laisse un placeholder mort dans le salon pendant quinze minutes.
       await interaction.deleteReply().catch(() => undefined);
       await interaction.followUp({ ...payload, flags: MessageFlags.Ephemeral });
       return;

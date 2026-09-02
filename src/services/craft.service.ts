@@ -320,7 +320,8 @@ export async function collectProduction(
           });
         }
       }
-      await inventoryService.addItems(player.id, collected, tx);
+      // Production d'atelier : c'est le joueur qui fabrique, donc une découverte.
+      await inventoryService.addItems(player.id, collected, tx, { discover: true });
 
       xpTotal += recipe.xpReward * entry.job.quantity;
       craftedUnits += entry.job.quantity;

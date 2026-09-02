@@ -78,20 +78,78 @@ export async function ensurePlayer(input: EnsurePlayerInput): Promise<EnsurePlay
   return { player: created, created: true };
 }
 
+export interface StartingGrant {
+  /**
+   * Delta appliqué au solde de départ standard, transmis tel quel au dépôt
+   * (`coins = startingCoins + bonusDelta`). Négatif quand il faut ramener le
+   * solde à zéro.
+   */
+  bonusDelta: number;
+  /** Total réellement crédité, donc montant de la ligne `starting_bonus`. */
+  total: number;
+}
+
+/**
+ * Bonus de départ : UNE FOIS par compte Discord, jamais par ligne `users`.
+ *
+ * La suppression de compte est logique (`deleted_at`) et l'unicité de
+ * `discord_id` ne porte que sur les comptes vivants : `/account delete` puis
+ * `/start` recréaient donc un compte neuf sur la même identité Discord, avec
+ * 500 🪙 (et 1 500 🪙 de plus avec un code de parrainage) à chaque tour. Ces
+ * pièces partaient ensuite au compte principal par un achat immédiat à l'hôtel
+ * des ventes : un robinet sans puits, invisible pour l'audit comptable
+ * puisqu'un compte jetable ferme toujours à zéro. Le compte est donc toujours
+ * recréé — le droit à l'effacement ne se négocie pas — mais sans bourse.
+ */
+export function startingGrant(
+  startingCoins: number,
+  referralBonus: number,
+  alreadyGranted: boolean,
+): StartingGrant {
+  if (alreadyGranted) return { bonusDelta: -startingCoins, total: 0 };
+  return { bonusDelta: referralBonus, total: startingCoins + referralBonus };
+}
+
 async function createPlayer(input: EnsurePlayerInput): Promise<PlayerContext> {
   const balance = getBalance();
   const config = getConfig();
 
   return withTransaction(async (tx) => {
+    const now = new Date();
+    // Antécédent sur la MÊME identité Discord. `anonymizeUser` ne fait que
+    // poser `deleted_at` : la ligne morte garde `discord_id`, `referral_code`
+    // et l'éventuel bannissement économique, et c'est elle qui dit si le bonus
+    // de départ a déjà été versé une fois.
+    const schema = await import('../db/schema');
+    const { and, desc, eq, isNotNull } = await import('drizzle-orm');
+    const [previous] = await tx
+      .select({
+        id: schema.users.id,
+        ecoBannedUntil: schema.users.ecoBannedUntil,
+        ecoBanReason: schema.users.ecoBanReason,
+      })
+      .from(schema.users)
+      .where(and(eq(schema.users.discordId, input.discordId), isNotNull(schema.users.deletedAt)))
+      .orderBy(desc(schema.users.deletedAt))
+      .limit(1);
+
     let referrerId: string | undefined;
-    let startingBonus = 0;
+    let referralBonus = 0;
     if (input.referralCode) {
-      const referrer = await playerRepo.findUserByReferralCode(input.referralCode, tx);
-      if (referrer) {
+      const match = await playerRepo.findUserByReferralCode(input.referralCode, tx);
+      // `findUserByReferralCode` ne filtre pas les comptes supprimés et la
+      // suppression n'efface pas `referral_code` : sans ce contrôle, un joueur
+      // se parrainait LUI-MÊME avec le code de son ancien compte, et le
+      // déclencheur anti-boucle (`parent = NEW.id`) ne voyait rien puisque
+      // l'uuid est neuf.
+      const referrer = match ? await playerRepo.findUserById(match.id, tx) : undefined;
+      if (referrer && !referrer.deletedAt && referrer.discordId !== input.discordId) {
         referrerId = referrer.id;
-        startingBonus = balance.social.referredStartBonusCoins;
+        referralBonus = balance.social.referredStartBonusCoins;
       }
     }
+
+    const grant = startingGrant(balance.economy.startingCoins, referralBonus, Boolean(previous));
 
     const { user, farm, settings } = await playerRepo.createPlayer(
       {
@@ -102,7 +160,7 @@ async function createPlayer(input: EnsurePlayerInput): Promise<PlayerContext> {
         locale: input.discordLocale?.startsWith('en') ? 'en' : 'fr',
         balance,
         referrerId,
-        startingCoinsBonus: startingBonus,
+        startingCoinsBonus: grant.bonusDelta,
       },
       tx,
     );
@@ -146,24 +204,39 @@ async function createPlayer(input: EnsurePlayerInput): Promise<PlayerContext> {
 
     // Le solde de départ est déjà posé par l'INSERT de `createPlayer` ; on écrit
     // seulement la ligne comptable correspondante pour que l'égalité
-    // « solde = somme du journal » soit vraie dès la création.
-    const startingCoins = balance.economy.startingCoins + startingBonus;
-    await economyRepo.recordDirectBalanceLedger(
-      {
-        userId: user.id,
-        type: 'starting_bonus',
-        amount: startingCoins,
-        balanceAfter: startingCoins,
-        metadata: { referred: Boolean(referrerId) },
-      },
-      tx,
-    );
+    // « solde = somme du journal » soit vraie dès la création. Un compte recréé
+    // ouvre à zéro : pas de ligne du tout, la table interdit un montant nul
+    // (`transactions_amount_non_zero`) et 0 = 0 vérifie déjà l'égalité.
+    if (grant.total > 0) {
+      await economyRepo.recordDirectBalanceLedger(
+        {
+          userId: user.id,
+          type: 'starting_bonus',
+          amount: grant.total,
+          balanceAfter: grant.total,
+          metadata: { referred: Boolean(referrerId) },
+        },
+        tx,
+      );
+    }
+
+    // Un bannissement économique en cours suit l'identité Discord, pas la ligne
+    // `users` : sinon `/account delete` + `/start` le purgerait, ce qui ferait
+    // de la suppression de compte un contournement de modération.
+    let ecoBannedUntil = user.ecoBannedUntil;
+    if (previous?.ecoBannedUntil && previous.ecoBannedUntil.getTime() > now.getTime()) {
+      await playerRepo.setEcoBan(user.id, previous.ecoBannedUntil, previous.ecoBanReason, tx);
+      ecoBannedUntil = previous.ecoBannedUntil;
+    }
 
     // Compagnon de niveau 1 : débloqué dès la création, comme le reste du kit
     // de départ (voir `game/pets.ts`).
     await unlockPetsForLevel(user.id, user.level, tx);
 
-    log.info({ userId: user.id, discordId: input.discordId }, 'new farm created');
+    log.info(
+      { userId: user.id, discordId: input.discordId, recreated: Boolean(previous), coins: grant.total },
+      'new farm created',
+    );
 
     return {
       id: user.id,
@@ -171,7 +244,7 @@ async function createPlayer(input: EnsurePlayerInput): Promise<PlayerContext> {
       username: user.username,
       level: user.level,
       xp: user.xp,
-      coins: balance.economy.startingCoins + startingBonus,
+      coins: grant.total,
       gems: user.gems,
       prestige: user.prestige,
       energy: user.energy,
@@ -180,7 +253,7 @@ async function createPlayer(input: EnsurePlayerInput): Promise<PlayerContext> {
       isAdmin: env.BOT_OWNER_IDS.includes(user.discordId),
       compactMode: settings.compactMode,
       equippedPetKey: user.equippedPetKey,
-      ecoBannedUntil: user.ecoBannedUntil,
+      ecoBannedUntil,
       farmId: farm.id,
       coopId: null,
       coopRole: null,

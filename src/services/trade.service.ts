@@ -7,6 +7,7 @@ import { formatNumber } from '../utils/format';
 import { moduleLogger } from '../utils/logger';
 import * as tradeRepo from '../repositories/trade.repo';
 import * as economyRepo from '../repositories/economy.repo';
+import * as playerRepo from '../repositories/player.repo';
 import * as systemRepo from '../repositories/system.repo';
 import * as economyService from './economy.service';
 import * as inventoryService from './inventory.service';
@@ -27,6 +28,26 @@ const log = moduleLogger('trade');
  *  2. Toute annulation ou expiration REND les objets. Le chemin de retour est
  *     donc aussi important que le chemin d'aller, et il est journalisé.
  */
+
+/**
+ * Barrière anti-multicompte, commune à TOUS les transferts entre joueurs.
+ *
+ * `/trade` et `/gift` l'imposaient déjà (`trade.minLevel`), pas l'hôtel des
+ * ventes : un compte neuf pouvait donc encaisser son bonus de départ puis le
+ * reverser à un compte principal par un simple achat immédiat, sans jamais
+ * jouer. L'HDV contournait ainsi exactement la barrière que `/trade` pose. Le
+ * niveau est demandé du côté ACHETEUR (achat immédiat, enchère, ordre
+ * permanent) : c'est lui qui déplace les pièces vers un autre joueur.
+ */
+export function assertTradeLevel(level: number): void {
+  const balance = getBalance();
+  if (level >= balance.trade.minLevel) return;
+  throw gameError(
+    'level_too_low',
+    `Trading is available from level ${balance.trade.minLevel}.`,
+    { i18nKey: 'errors.trade.min_level', params: { level: balance.trade.minLevel } },
+  );
+}
 
 // ---------------------------------------------------------------------------
 // HÔTEL DES VENTES
@@ -243,6 +264,12 @@ export async function executeBuyout(
     });
   }
 
+  // Le niveau est relu en base plutôt que reçu en paramètre : le rapprochement
+  // des ordres permanents appelle ce chemin sans `PlayerContext`, et c'est
+  // précisément le chemin qu'un compte jetable emprunterait.
+  const buyer = await playerRepo.findUserById(buyerId, tx);
+  assertTradeLevel(buyer?.level ?? 0);
+
   await lockUserRows(tx, [buyerId, listing.sellerId]);
 
   const price = listing.buyoutPrice;
@@ -376,6 +403,9 @@ export async function createStandingOrder(
   input: { itemKey: string; quantity: number; maxUnitPrice: number; quality?: Quality; mutation?: Mutation },
 ): Promise<StandingOrderView> {
   const balance = getBalance();
+  // Même barrière qu'à l'achat : sans elle, l'ordre serait accepté puis refusé
+  // en silence par `executeBuyout` à chaque passage du job.
+  assertTradeLevel(player.level);
   const item = inventoryService.requireItem(input.itemKey, player.locale);
   if (!item.tradable) {
     throw gameError('item_not_tradable', `${item.emoji} ${item.name} cannot be traded.`, {
@@ -546,6 +576,7 @@ export async function bid(
   amount: number,
 ): Promise<{ amount: number; previousBidderId: string | null; expiresAt: Date }> {
   const balance = getBalance();
+  assertTradeLevel(player.level);
 
   return withTransaction(async (tx) => {
     const listing = await tradeRepo.lockListing(tx, listingId);

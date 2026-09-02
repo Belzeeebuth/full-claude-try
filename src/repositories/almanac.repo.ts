@@ -11,7 +11,17 @@ import { transactions } from '../db/schema';
  * qu'à retrouver cette ligne quand le cache Redis l'a oubliée.
  */
 
-/** Identifiant d'objet porté par la ligne d'achat d'une prévision. */
+/**
+ * Identifiant d'objet porté par la ligne d'achat d'une prévision.
+ *
+ * Attention : ce n'est PAS une clé de catalogue. La prévision n'est ni un
+ * objet d'`items.json`, ni un animal, ni un bâtiment — elle n'entre jamais en
+ * inventaire, seule la ligne du grand livre atteste l'achat. Toute lecture qui
+ * traduit un `item_key` en libellé (aujourd'hui `resolveItemLabel`, côté
+ * `/history`) doit donc traiter cette clé explicitement : sans cela elle
+ * retombe sur son repli « clé inconnue » et affiche l'identifiant interne,
+ * identique en fr et en, au lieu d'un nom lisible.
+ */
 export const ALMANAC_ITEM_KEY = 'almanac';
 
 /**

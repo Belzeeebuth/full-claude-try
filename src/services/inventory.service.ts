@@ -98,12 +98,20 @@ export async function getCapacity(
  *     d'échange, kit de départ, dons d'administration.
  *
  * Tout nouvel appel doit se ranger explicitement dans l'une des deux colonnes.
+ *
+ * ⚠ `discover` suit exactement la même discipline, pour la collection : il ne
+ * se pose QUE sur ce que le joueur produit lui-même (récolte, collecte
+ * d'élevage, pêche, mine, artisanat). Un objet qui ne fait que changer de
+ * mains — achat à l'hôtel des ventes, échange, retour d'annonce, remboursement,
+ * récompense, don d'administration — n'est pas une découverte : le compter
+ * ouvrirait les succès de collection (jusqu'à 40 000 🪙 + 10 💎) à un compte
+ * qui n'a jamais planté, sans aucun puits en face.
  */
 export async function addItems(
   userId: string,
   entries: Array<{ itemKey: string; quantity: number; quality?: Quality; mutation?: Mutation }>,
   tx: Executor,
-  options: { allowOverflow?: boolean } = {},
+  options: { allowOverflow?: boolean; discover?: boolean } = {},
 ): Promise<void> {
   const positive = entries.filter((entry) => entry.quantity > 0);
   if (positive.length === 0) return;
@@ -136,13 +144,19 @@ export async function addItems(
     tx,
   );
 
-  // Collection du fermier : tout objet qui entre est une découverte (première
-  // fois) ou un cumul. Ici et non dans chaque appelant, parce que c'est
-  // l'unique porte d'entrée de l'inventaire — récolte, pêche, mine, artisanat,
-  // collecte d'élevage passent toutes par là. Le service ne retient que les
-  // familles qui se découvrent (récoltes, produits, poissons, minerais) et
-  // ignore le reste (graines, outils…).
-  await collectionService.recordItemDiscoveries({ userId }, positive, tx);
+  // Collection du fermier : seule la PRODUCTION est une découverte, et
+  // l'appelant doit le dire (`discover: true`). L'enregistrement était
+  // inconditionnel ici : l'acheteur d'une annonce, le destinataire d'un
+  // échange, le vendeur qui récupère une annonce annulée ou le joueur qui
+  // reçoit un don d'administration « découvraient » donc les 41 récoltes sans
+  // rien produire — de quoi réclamer `herbarium_complete` (40 000 🪙 + 10 💎)
+  // et les succès `collection_*` sur un compte qui n'a jamais planté, et de
+  // quoi gonfler le « ×n » de `/collection` en listant puis annulant la même
+  // pile en boucle. Le libellé du succès dit « Récoltez », `game/collection.ts`
+  // dit « seul ce que le joueur PRODUIT » : c'est ce contrat qu'on tient ici.
+  if (options.discover) {
+    await collectionService.recordItemDiscoveries({ userId }, positive, tx);
+  }
 }
 
 /** Retire une quantité précise d'une pile donnée. Lève si le stock manque. */

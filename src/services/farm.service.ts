@@ -779,7 +779,9 @@ export async function harvest(
     // récolte reste mûre en terre, rien n'est perdu, et le message renvoie vers
     // `/buildings`, ce que le module d'inventaire documentait déjà.
     if (pending.length > 0) {
-      await inventoryService.addItems(player.id, pending, tx);
+      // `discover` : la récolte est de la PRODUCTION, donc une vraie découverte
+      // de collection — contrairement à un achat ou à un échange.
+      await inventoryService.addItems(player.id, pending, tx, { discover: true });
     }
 
     await playerRepo.incrementStats(player.id, { totalHarvests: totalQuantity }, tx);

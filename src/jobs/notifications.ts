@@ -125,11 +125,23 @@ export async function dispatchBatch(client: Client, limit: number): Promise<numb
         (notification.type.startsWith('animal') && settings.notifyAnimals) ||
         (notification.type === 'energy_full' && settings.notifyEnergy) ||
         (notification.type === 'daily_reminder' && settings.dailyReminder) ||
-        // `price_alert` est comparé comme chaîne : le type SQL est créé par une
-        // autre migration, et ce code doit compiler même si l'enum TypeScript
-        // ne porte pas encore la valeur.
-        (notification.type === 'price_alert' && settings.notifyMarket) ||
         [
+          // `price_alert` est comparé comme chaîne : le type SQL est créé par une
+          // autre migration, et ce code doit compiler même si l'enum TypeScript
+          // ne porte pas encore la valeur.
+          //
+          // Volontairement SANS garde `settings.notifyMarket` : une alerte de prix
+          // est déjà un opt-in explicite et unitaire — le joueur l'a créée lui-même
+          // avec `/alert create`, et le message de confirmation lui promet un MP.
+          // C'est le même raisonnement que pour `craft_done` : la demande vaut
+          // consentement. Filtrer sur `notify_market`, qui vaut `false` par défaut
+          // et qu'aucune commande ni aucun bouton n'expose, marquait au contraire
+          // chaque alerte « livrée » sans rien envoyer, alors que l'alerte passée au
+          // statut terminal `triggered` disparaissait de `/alert list` : le joueur
+          // n'avait ni message ni alerte. Le refus GLOBAL des MP
+          // (`settings.dmNotifications`, vérifié plus haut) reste évidemment
+          // respecté, lui.
+          'price_alert',
           'craft_done',
           'auction_sold',
           'auction_won',
@@ -319,11 +331,11 @@ async function postReminderGroup(client: Client, group: ReminderGroup, now: Date
       // Salon supprimé ou permissions retirées : on désactive le salon. Les
       // rappels libérés cessent de remplir la condition « routé vers un
       // salon » et repartent en MP au tick suivant, sans autre intervention.
-      await systemRepo.updateGuildSettings(group.guildId, { reminderChannelId: null });
+      await disableReminderChannelIfUnchanged(group.guildId, group.channelId, code);
       await systemRepo.releaseNotificationClaims(ids);
       log.warn(
         { guildId: group.guildId, channelId: group.channelId, code },
-        'salon de rappels inaccessible, désactivé',
+        'salon de rappels inaccessible',
       );
       return 0;
     }
@@ -335,6 +347,56 @@ async function postReminderGroup(client: Client, group: ReminderGroup, now: Date
     await systemRepo.postponeNotifications(ids, new Date(now.getTime() + 60_000));
     log.warn({ err: normalized, channelId: group.channelId }, 'rappels en salon non délivrés');
     return 0;
+  }
+}
+
+/**
+ * Retire le salon de rappels du serveur — mais UNIQUEMENT s'il porte encore le
+ * salon contre lequel ce lot a été réservé.
+ *
+ * `group.channelId` est un instantané pris à la réservation : un lot couvre
+ * jusqu'à `CHANNEL_CLAIM_LIMIT` rappels, postés serveur par serveur, donc
+ * plusieurs secondes peuvent séparer la réservation de l'échec d'envoi. Or le
+ * déclencheur — le salon vient de devenir inaccessible — est précisément le
+ * moment où un administrateur exécute `/server reminders channel:#nouveau` :
+ * effacer sans condition perdait alors sa reconfiguration en silence, juste
+ * après un « rappels activés » confirmé, et `/server status` affichait
+ * « désactivé » sans que rien ne l'explique. On relit donc la valeur courante
+ * avant d'écrire. (Une écriture conditionnelle en SQL — `WHERE
+ * reminder_channel_id = $2` — fermerait la fenêtre complètement ; cette
+ * relecture la ramène de plusieurs secondes à un aller-retour base.)
+ *
+ * La désactivation automatique est en outre auditée : sans trace, `/audit`
+ * montrait des rappels actifs alors qu'ils étaient devenus muets.
+ */
+async function disableReminderChannelIfUnchanged(
+  guildId: string,
+  channelId: string,
+  code: number,
+): Promise<void> {
+  const current = await systemRepo.getGuildSettings(guildId);
+  if (current?.reminderChannelId !== channelId) {
+    log.info(
+      { guildId, channelId, currentChannelId: current?.reminderChannelId ?? null },
+      'salon de rappels reconfiguré entre-temps, désactivation abandonnée',
+    );
+    return;
+  }
+
+  await systemRepo.updateGuildSettings(guildId, { reminderChannelId: null });
+  try {
+    await systemRepo.audit({
+      action: 'server.reminders.auto_disable',
+      targetType: 'guild',
+      targetId: guildId,
+      discordGuildId: guildId,
+      payload: { channelId, code },
+      severity: 'warn',
+    });
+  } catch (error) {
+    // La trace est utile, pas indispensable : elle ne doit pas empêcher la
+    // libération des réservations qui suit dans l'appelant.
+    log.debug({ err: error, guildId }, 'audit de désactivation automatique non écrit');
   }
 }
 

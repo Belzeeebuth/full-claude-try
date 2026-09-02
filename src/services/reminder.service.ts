@@ -44,6 +44,22 @@ export function isReminderType(type: string): type is ReminderType {
 /** Au-delà, un message de rappel devient un mur de mentions : on scinde en lots. */
 export const MAX_MENTIONS_PER_MESSAGE = 20;
 
+/** Limite dure de Discord : un contenu plus long est rejeté (erreur 50035). */
+export const MAX_MESSAGE_LENGTH = 2_000;
+
+/**
+ * Budget que le plan s'autorise, marge comprise.
+ *
+ * Le plafond de mentions compte des PERSONNES, pas des caractères : un joueur
+ * retenu emporte tous ses rappels, donc jusqu'à huit mentions de dix-neuf
+ * chiffres. Vingt joueurs × cinq types dépassaient déjà 2 400 caractères, et le
+ * message était refusé par Discord — puis réessayé à l'identique trois fois,
+ * après quoi les rappels du lot n'étaient plus réservables NI en salon NI en
+ * message privé : perte définitive et silencieuse. On borne donc la longueur,
+ * et le trop-plein part avec le lot suivant.
+ */
+export const MAX_CONTENT_LENGTH = 1_900;
+
 const TYPE_EMOJI: Record<ReminderType, string> = {
   crop_ready: '🌾',
   crop_withering: '🥀',
@@ -148,7 +164,7 @@ export interface ReminderMessage {
 export interface ReminderPlan {
   /** `null` si aucune entrée n'a pu être retenue. */
   message: ReminderMessage | null;
-  /** Rappels reportés au lot suivant (plafond de mentions atteint). */
+  /** Rappels reportés au lot suivant (plafond de mentions OU de longueur atteint). */
   deferred: ReminderEntry[];
 }
 
@@ -162,27 +178,59 @@ export interface ReminderPlan {
  * dix minutes d'écart serait exactement le harcèlement qu'on cherche à éviter.
  * Un joueur apparaît au plus une fois par type, même avec trois parcelles
  * prêtes.
+ *
+ * DEUX bornes, donc, et il en fallait deux : le nombre de personnes ET la
+ * longueur du contenu (`maxLength`). Vingt joueurs qui cumulent chacun cinq
+ * types font ~2 400 caractères, refusés par Discord — et un lot refusé se perd
+ * définitivement après quatre tentatives identiques.
  */
 export function planReminderMessage(
   entries: readonly ReminderEntry[],
   t: Translator,
   maxMentions = MAX_MENTIONS_PER_MESSAGE,
+  maxLength = MAX_CONTENT_LENGTH,
 ): ReminderPlan {
-  const included = new Set<string>();
-  const kept: ReminderEntry[] = [];
-  const deferred: ReminderEntry[] = [];
-
+  // Ordre d'inclusion : les `maxMentions` premiers joueurs vus, chacun avec
+  // TOUS ses rappels, même ceux arrivés après le plafond.
+  const order: string[] = [];
   for (const entry of entries) {
-    if (included.has(entry.discordId) || included.size < maxMentions) {
-      included.add(entry.discordId);
-      kept.push(entry);
-    } else {
-      deferred.push(entry);
-    }
+    if (!order.includes(entry.discordId) && order.length < maxMentions) order.push(entry.discordId);
   }
 
-  if (kept.length === 0) return { message: null, deferred };
+  // Puis on retire des joueurs par la fin tant que le message dépasse le
+  // budget. On retire une PERSONNE entière, jamais une de ses lignes : un
+  // joueur mentionné pour ses récoltes mais pas pour ses vaches recevrait deux
+  // messages à dix minutes d'écart, exactement le harcèlement qu'on évite. Le
+  // dernier joueur est gardé même s'il dépasse à lui seul — impossible en
+  // pratique (huit segments d'une mention), et le retenir ne bloque plus la
+  // file puisqu'il n'a personne derrière qui l'attende.
+  let count = order.length;
+  let content = '';
+  let included = new Set<string>();
+  while (count > 0) {
+    included = new Set(order.slice(0, count));
+    content = composeReminderContent(entries.filter((entry) => included.has(entry.discordId)), t);
+    if (content.length <= maxLength || count === 1) break;
+    count -= 1;
+  }
 
+  if (count === 0) return { message: null, deferred: [...entries] };
+
+  const kept = entries.filter((entry) => included.has(entry.discordId));
+  const deferred = entries.filter((entry) => !included.has(entry.discordId));
+
+  return {
+    message: {
+      content,
+      mentionIds: order.slice(0, count),
+      notificationIds: kept.map((entry) => entry.id),
+    },
+    deferred,
+  };
+}
+
+/** Corps du message : un segment par type, dans l'ordre de `REMINDER_TYPES`. */
+function composeReminderContent(kept: readonly ReminderEntry[], t: Translator): string {
   const byType = new Map<ReminderType, string[]>();
   for (const entry of kept) {
     const ids = byType.get(entry.type) ?? [];
@@ -204,17 +252,9 @@ export function planReminderMessage(
     ];
   });
 
-  const content = [t('reminders.header'), segments.join(t('reminders.separator')), t('reminders.footer')]
-    .join('\n');
-
-  return {
-    message: {
-      content,
-      mentionIds: [...included],
-      notificationIds: kept.map((entry) => entry.id),
-    },
-    deferred,
-  };
+  return [t('reminders.header'), segments.join(t('reminders.separator')), t('reminders.footer')].join(
+    '\n',
+  );
 }
 
 // ---------------------------------------------------------------------------

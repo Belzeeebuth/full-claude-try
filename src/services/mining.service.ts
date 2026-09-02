@@ -61,7 +61,9 @@ export async function dig(player: PlayerContext, now: Date = new Date()): Promis
     let ore: DigResult['ore'];
     if (picked) {
       const item = config.items.get(picked.key)!;
-      await inventoryService.addItems(player.id, [{ itemKey: picked.key, quantity: 1 }], tx);
+      await inventoryService.addItems(player.id, [{ itemKey: picked.key, quantity: 1 }], tx, {
+        discover: true,
+      });
       await miningRepo.incrementOresMined(player.id, 1, tx);
       await trackAction(
         { userId: player.id, coopId: player.coopId, level: player.level },

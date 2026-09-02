@@ -393,6 +393,36 @@ export function disableAll(
   return rows;
 }
 
+/**
+ * Raccourcis proposés automatiquement sur les erreurs (`suggestedCommand`).
+ *
+ * ⚠ Deux règles, chacune apprise d'un bug :
+ *  1. Les clés doivent correspondre EXACTEMENT aux valeurs `suggestedCommand`
+ *     des erreurs (src/utils/errors.ts). Elles étaient restées en français après
+ *     le renommage des commandes : la table ne matchait plus rien et le bouton
+ *     de suggestion disparaissait silencieusement.
+ *  2. Le couple (`namespace`, `action`) doit correspondre à un gestionnaire
+ *     réellement enregistré dans src/components, sinon le bouton s'affiche mais
+ *     le clic répond « ce composant a expiré ». C'était le cas de l'ancienne
+ *     entrée `event` (`world:event`) : aucun namespace `world` n'existe. Elle
+ *     est retirée — mieux vaut pas de bouton qu'un bouton mort — et la table est
+ *     exportée pour que les tests croisent chaque entrée avec le registre.
+ */
+export const SUGGESTIONS: Record<
+  string,
+  { labelKey: string; emoji: string; namespace: string; action: string }
+> = {
+  shop: { labelKey: 'suggestion.shop', emoji: '🏪', namespace: 'shop', action: 'open' },
+  farm: { labelKey: 'suggestion.farm', emoji: '🌾', namespace: 'farm', action: 'refresh' },
+  inventory: { labelKey: 'suggestion.inventory', emoji: '🎒', namespace: 'inv', action: 'open' },
+  buildings: { labelKey: 'suggestion.buildings', emoji: '🏗️', namespace: 'build', action: 'open' },
+  quests: { labelKey: 'suggestion.quests', emoji: '📋', namespace: 'quest', action: 'open' },
+  production: { labelKey: 'suggestion.production', emoji: '🛠️', namespace: 'craft', action: 'queue' },
+  animals: { labelKey: 'suggestion.animals', emoji: '🐄', namespace: 'animal', action: 'open' },
+  'buy-plot': { labelKey: 'suggestion.buy_plot', emoji: '🗺️', namespace: 'farm', action: 'buy_plot' },
+  coop: { labelKey: 'suggestion.coop', emoji: '🤝', namespace: 'coop', action: 'open' },
+};
+
 /** Bouton « boutique » proposé automatiquement sur les erreurs de fonds. */
 export function suggestionRow(
   command: string,
@@ -400,30 +430,14 @@ export function suggestionRow(
   locale?: string,
   t: Translator = translatorFor(locale ?? DEFAULT_LOCALE),
 ): ActionRowBuilder<ButtonBuilder> | undefined {
-  const suggestions: Record<string, { label: string; emoji: string; namespace: string; action: string }> = {
-    // ⚠ Les clés doivent correspondre EXACTEMENT aux valeurs `suggestedCommand`
-    // des erreurs (src/utils/errors.ts). Elles étaient restées en français après
-    // le renommage des commandes : la table ne matchait plus rien et le bouton
-    // de suggestion disparaissait silencieusement.
-    shop: { label: t('suggestion.shop'), emoji: '🏪', namespace: 'shop', action: 'open' },
-    farm: { label: t('suggestion.farm'), emoji: '🌾', namespace: 'farm', action: 'refresh' },
-    inventory: { label: t('suggestion.inventory'), emoji: '🎒', namespace: 'inv', action: 'open' },
-    buildings: { label: t('suggestion.buildings'), emoji: '🏗️', namespace: 'build', action: 'open' },
-    quests: { label: t('suggestion.quests'), emoji: '📋', namespace: 'quest', action: 'open' },
-    production: { label: t('suggestion.production'), emoji: '🛠️', namespace: 'craft', action: 'queue' },
-    animals: { label: t('suggestion.animals'), emoji: '🐄', namespace: 'animal', action: 'open' },
-    'buy-plot': { label: t('suggestion.buy_plot'), emoji: '🗺️', namespace: 'farm', action: 'buy_plot' },
-    coop: { label: t('suggestion.coop'), emoji: '🤝', namespace: 'coop', action: 'open' },
-    event: { label: t('suggestion.event'), emoji: '🎉', namespace: 'world', action: 'event' },
-  };
-  const suggestion = suggestions[command];
+  const suggestion = SUGGESTIONS[command];
   if (!suggestion) return undefined;
   return row(
     button({
       namespace: suggestion.namespace,
       action: suggestion.action,
       ownerId,
-      label: suggestion.label,
+      label: t(suggestion.labelKey),
       emoji: suggestion.emoji,
       style: ButtonStyle.Primary,
     }),
