@@ -1,0 +1,9 @@
+{
+  "$comment": "Libellés dessinés DANS le graphique de marché (src/render/chart.ts) : étiquettes des repères min / max sur la courbe.",
+  "render": {
+    "chart": {
+      "marker_min": "min {value}",
+      "marker_max": "max {value}"
+    }
+  }
+}

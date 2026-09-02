@@ -1,0 +1,9 @@
+{
+  "$comment": "Labels drawn INSIDE the market chart (src/render/chart.ts): min / max markers on the curve.",
+  "render": {
+    "chart": {
+      "marker_min": "min {value}",
+      "marker_max": "max {value}"
+    }
+  }
+}

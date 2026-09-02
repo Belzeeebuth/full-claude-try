@@ -10,10 +10,12 @@ import {
   fillRoundRect,
   font,
   newCanvas,
+  roundRect,
   verticalGradient,
   withDropShadow,
   withEmoji,
 } from './canvas';
+import type { SKRSContext2D } from '@napi-rs/canvas';
 
 /** Carte de classement : podium illustré + liste des suivants. */
 
@@ -96,18 +98,20 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
     withDropShadow(ctx, () =>
       fillRoundRect(ctx, x, barY, columnWidth, barHeight, 12, PODIUM_COLORS[entryIndex] ?? '#555'),
     );
-    ctx.fillStyle = 'rgba(0,0,0,0.65)';
-    ctx.font = font(34, 'bold');
-    ctx.textAlign = 'center';
-    ctx.fillText(`#${entry.rank}`, x + columnWidth / 2, barY + 12);
+    // Une vraie médaille, ruban compris, plutôt qu'un « #1 » en gros : c'est
+    // l'objet qu'on associe à un podium, et il se lit sans chiffre. Le rang
+    // reste gravé au centre pour les daltoniens, à qui or et bronze se
+    // ressemblent.
+    drawMedal(ctx, x + columnWidth / 2, barY + 36, 20, entryIndex, entry.rank);
 
+    ctx.textAlign = 'center';
     ctx.font = font(16, 'bold');
     ctx.fillStyle = PALETTE.text;
     ctx.fillText(clipText(ctx, entry.name, columnWidth - 16), x + columnWidth / 2, nameBaseline);
 
     ctx.font = font(15, 'bold');
     ctx.fillStyle = 'rgba(0,0,0,0.75)';
-    ctx.fillText(formatCompact(entry.score, locale), x + columnWidth / 2, barY + 54);
+    ctx.fillText(formatCompact(entry.score, locale), x + columnWidth / 2, barY + 60);
     ctx.textAlign = 'left';
   }
 
@@ -123,6 +127,14 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
       10,
       entry.isViewer ? 'rgba(126,200,80,0.22)' : PALETTE.cardAlt,
     );
+    // La ligne du spectateur se distingue aussi par sa bordure : un fond
+    // légèrement plus vert ne suffisait pas à la retrouver d'un coup d'œil.
+    if (entry.isViewer) {
+      roundRect(ctx, 32, rowY, dims.width - 64, 38, 10);
+      ctx.strokeStyle = PALETTE.grass;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
 
     ctx.font = font(16, 'bold');
     ctx.fillStyle = PALETTE.textMuted;
@@ -150,6 +162,10 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
   if (input.viewer) {
     const bandY = Math.max(rowY + 8, dims.height - 62);
     fillRoundRect(ctx, 32, bandY, dims.width - 64, 42, 10, 'rgba(126,200,80,0.18)');
+    roundRect(ctx, 32, bandY, dims.width - 64, 42, 10);
+    ctx.strokeStyle = PALETTE.grass;
+    ctx.lineWidth = 2;
+    ctx.stroke();
     ctx.font = font(16, 'bold');
     ctx.fillStyle = PALETTE.text;
     ctx.fillText(
@@ -164,6 +180,63 @@ export async function renderLeaderboard(input: LeaderboardRenderInput): Promise<
   }
 
   return encode(canvas);
+}
+
+/** Métal de chaque marche : teinte claire, teinte sombre, couleur du ruban. */
+const MEDAL_METALS: Array<{ light: string; dark: string; ribbon: string }> = [
+  { light: '#fff1a8', dark: '#d9a400', ribbon: '#d33f49' },
+  { light: '#f4f6f8', dark: '#8f9aa5', ribbon: '#3457d5' },
+  { light: '#f0b98a', dark: '#8c4f1f', ribbon: '#2e8b57' },
+];
+
+/**
+ * Médaille vectorielle : ruban en V derrière un disque métallique bombé, le
+ * rang gravé au centre. Tout est tracé, rien ne dépend d'une police.
+ */
+function drawMedal(ctx: SKRSContext2D, cx: number, cy: number, radius: number, tier: number, rank: number): void {
+  const metal = MEDAL_METALS[tier] ?? MEDAL_METALS[2]!;
+
+  // Ruban : deux pans partant du haut du disque, bord sombre pour le relief.
+  const ribbonTop = cy - radius - 14;
+  const pan = (direction: -1 | 1): void => {
+    ctx.beginPath();
+    ctx.moveTo(cx + direction * 2, cy - radius * 0.55);
+    ctx.lineTo(cx + direction * 10, ribbonTop);
+    ctx.lineTo(cx + direction * 22, ribbonTop);
+    ctx.lineTo(cx + direction * 13, cy - radius * 0.35);
+    ctx.closePath();
+    ctx.fillStyle = metal.ribbon;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  };
+  pan(-1);
+  pan(1);
+
+  // Disque : dégradé radial décentré, lumière en haut à gauche.
+  const shine = ctx.createRadialGradient(cx - radius * 0.35, cy - radius * 0.4, radius * 0.1, cx, cy, radius);
+  shine.addColorStop(0, metal.light);
+  shine.addColorStop(1, metal.dark);
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fillStyle = shine;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  // Cercle intérieur gravé.
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius * 0.74, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,0,0,0.22)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  ctx.font = font(Math.round(radius * 0.95), 'bold');
+  ctx.fillStyle = 'rgba(0,0,0,0.72)';
+  ctx.textAlign = 'center';
+  ctx.fillText(String(rank), cx, cy - radius * 0.55);
+  ctx.textAlign = 'left';
 }
 
 /**
