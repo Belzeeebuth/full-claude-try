@@ -109,11 +109,6 @@ export function setWorldSeed(seed: string): void {
   worldSeed = seed;
 }
 
-/** Graine effective, exposée pour les tests et le diagnostic. */
-export function getWorldSeed(): string {
-  return worldSeed;
-}
-
 /** FNV-1a 32 bits : transforme une graine textuelle en entier. */
 export function hashString(value: string): number {
   let hash = 0x811c9dc5;
