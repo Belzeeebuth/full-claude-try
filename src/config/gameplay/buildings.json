@@ -729,7 +729,8 @@
     "descriptionEn": "Flour and bread.",
     "unlocksRecipes": [
       "flour",
-      "bread"
+      "bread",
+      "garlic_bread"
     ],
     "sortOrder": 110,
     "tiers": [
@@ -801,7 +802,12 @@
       "fine_cloth",
       "ginseng_elixir",
       "dragon_potion",
-      "mithril_ingot"
+      "mithril_ingot",
+      "down_duvet",
+      "silk_cloth",
+      "yak_felt",
+      "antler_knife",
+      "unicorn_tapestry"
     ],
     "sortOrder": 120,
     "tiers": [
@@ -874,7 +880,11 @@
       "melon_nectar",
       "jam_strawberry",
       "grape_juice",
-      "jam_grape"
+      "jam_grape",
+      "pea_veloute",
+      "harvest_soup",
+      "jam_blueberry",
+      "mandarin_chutney"
     ],
     "sortOrder": 130,
     "tiers": [
@@ -944,7 +954,8 @@
       "goat_cheese",
       "cheese",
       "butter",
-      "strawberry_yogurt"
+      "strawberry_yogurt",
+      "kiwi_ice_cream"
     ],
     "sortOrder": 140,
     "tiers": [
@@ -1017,7 +1028,8 @@
     "unlocksRecipes": [
       "wine",
       "beer",
-      "mead"
+      "mead",
+      "bamboo_liquor"
     ],
     "sortOrder": 150,
     "tiers": [
@@ -1091,7 +1103,9 @@
       "sunflower_oil",
       "lavender_soap",
       "truffle_oil",
-      "saffron_essence"
+      "saffron_essence",
+      "rose_milk_soap",
+      "olive_oil"
     ],
     "sortOrder": 160,
     "tiers": [
@@ -1164,7 +1178,8 @@
     "unlocksRecipes": [
       "roasted_coffee",
       "smoked_cheese",
-      "smoked_truffle"
+      "smoked_truffle",
+      "phoenix_incense"
     ],
     "sortOrder": 170,
     "tiers": [
@@ -1238,7 +1253,8 @@
       "chocolate",
       "cake",
       "pumpkin_pie",
-      "vanilla_praline"
+      "vanilla_praline",
+      "sakura_mochi"
     ],
     "sortOrder": 180,
     "tiers": [

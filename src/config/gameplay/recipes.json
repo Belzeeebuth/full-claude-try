@@ -68,6 +68,30 @@
     "sortOrder": 30
   },
   {
+    "key": "garlic_bread",
+    "name": "Pain à l'ail",
+    "nameEn": "Garlic bread",
+    "emoji": "🥖",
+    "buildingKey": "mill",
+    "outputItemKey": "garlic_bread",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "bread",
+        "quantity": 1
+      },
+      {
+        "itemKey": "garlic",
+        "quantity": 2
+      }
+    ],
+    "durationSeconds": 900,
+    "requiredLevel": 8,
+    "xpReward": 20,
+    "category": "boulangerie",
+    "sortOrder": 35
+  },
+  {
     "key": "vegetable_soup",
     "name": "Soupe de légumes",
     "nameEn": "Vegetable soup",
@@ -116,6 +140,34 @@
     "sortOrder": 50
   },
   {
+    "key": "down_duvet",
+    "name": "Couette en duvet",
+    "nameEn": "Down duvet",
+    "emoji": "🛏️",
+    "buildingKey": "workshop",
+    "outputItemKey": "down_duvet",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "goose_down",
+        "quantity": 5
+      },
+      {
+        "itemKey": "guinea_pig_hair",
+        "quantity": 2
+      },
+      {
+        "itemKey": "turkey_feather",
+        "quantity": 1
+      }
+    ],
+    "durationSeconds": 1800,
+    "requiredLevel": 9,
+    "xpReward": 30,
+    "category": "atelier",
+    "sortOrder": 55
+  },
+  {
     "key": "hot_sauce",
     "name": "Sauce piquante",
     "nameEn": "Hot sauce",
@@ -136,6 +188,30 @@
     "sortOrder": 60
   },
   {
+    "key": "pea_veloute",
+    "name": "Velouté de petits pois",
+    "nameEn": "Creamy pea soup",
+    "emoji": "🍲",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "pea_veloute",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "peas",
+        "quantity": 5
+      },
+      {
+        "itemKey": "goat_milk",
+        "quantity": 1
+      }
+    ],
+    "durationSeconds": 1500,
+    "requiredLevel": 10,
+    "xpReward": 28,
+    "category": "conserverie",
+    "sortOrder": 65
+  },
+  {
     "key": "spun_wool",
     "name": "Laine filée",
     "nameEn": "Spun wool",
@@ -154,6 +230,34 @@
     "xpReward": 30,
     "category": "atelier",
     "sortOrder": 70
+  },
+  {
+    "key": "harvest_soup",
+    "name": "Soupe de la moisson",
+    "nameEn": "Harvest soup",
+    "emoji": "🥘",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "harvest_soup",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "onion",
+        "quantity": 3
+      },
+      {
+        "itemKey": "broccoli",
+        "quantity": 2
+      },
+      {
+        "itemKey": "sweet_potato",
+        "quantity": 1
+      }
+    ],
+    "durationSeconds": 1200,
+    "requiredLevel": 11,
+    "xpReward": 24,
+    "category": "conserverie",
+    "sortOrder": 75
   },
   {
     "key": "melon_nectar",
@@ -258,6 +362,30 @@
     "xpReward": 55,
     "category": "laiterie",
     "sortOrder": 120
+  },
+  {
+    "key": "jam_blueberry",
+    "name": "Confiture de myrtilles",
+    "nameEn": "Blueberry jam",
+    "emoji": "🫐",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "jam_blueberry",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "blueberry",
+        "quantity": 5
+      },
+      {
+        "itemKey": "honey",
+        "quantity": 1
+      }
+    ],
+    "durationSeconds": 2400,
+    "requiredLevel": 14,
+    "xpReward": 44,
+    "category": "conserverie",
+    "sortOrder": 125
   },
   {
     "key": "strawberry_yogurt",
@@ -372,6 +500,50 @@
     "sortOrder": 170
   },
   {
+    "key": "kiwi_ice_cream",
+    "name": "Glace au kiwi",
+    "nameEn": "Kiwi ice cream",
+    "emoji": "🍦",
+    "buildingKey": "creamery",
+    "outputItemKey": "kiwi_ice_cream",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "kiwi",
+        "quantity": 3
+      },
+      {
+        "itemKey": "milk",
+        "quantity": 2
+      }
+    ],
+    "durationSeconds": 3600,
+    "requiredLevel": 17,
+    "xpReward": 64,
+    "category": "laiterie",
+    "sortOrder": 172
+  },
+  {
+    "key": "silk_cloth",
+    "name": "Soie",
+    "nameEn": "Silk cloth",
+    "emoji": "🎀",
+    "buildingKey": "workshop",
+    "outputItemKey": "silk_cloth",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "silk_cocoon",
+        "quantity": 5
+      }
+    ],
+    "durationSeconds": 5400,
+    "requiredLevel": 17,
+    "xpReward": 90,
+    "category": "atelier",
+    "sortOrder": 175
+  },
+  {
     "key": "sunflower_oil",
     "name": "Huile de tournesol",
     "nameEn": "Sunflower oil",
@@ -414,6 +586,34 @@
     "xpReward": 66,
     "category": "brasserie",
     "sortOrder": 190
+  },
+  {
+    "key": "rose_milk_soap",
+    "name": "Savon rose au lait d'ânesse",
+    "nameEn": "Rose and donkey milk soap",
+    "emoji": "🫧",
+    "buildingKey": "oil_press",
+    "outputItemKey": "rose_milk_soap",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "rose",
+        "quantity": 3
+      },
+      {
+        "itemKey": "donkey_milk",
+        "quantity": 2
+      },
+      {
+        "itemKey": "sunflower_oil",
+        "quantity": 1
+      }
+    ],
+    "durationSeconds": 5400,
+    "requiredLevel": 19,
+    "xpReward": 96,
+    "category": "huilerie",
+    "sortOrder": 195
   },
   {
     "key": "roasted_coffee",
@@ -480,6 +680,26 @@
     "sortOrder": 220
   },
   {
+    "key": "olive_oil",
+    "name": "Huile d'olive",
+    "nameEn": "Olive oil",
+    "emoji": "🏺",
+    "buildingKey": "oil_press",
+    "outputItemKey": "olive_oil",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "olive",
+        "quantity": 4
+      }
+    ],
+    "durationSeconds": 5400,
+    "requiredLevel": 22,
+    "xpReward": 110,
+    "category": "huilerie",
+    "sortOrder": 225
+  },
+  {
     "key": "smoked_cheese",
     "name": "Fromage fumé",
     "nameEn": "Smoked cheese",
@@ -498,6 +718,30 @@
     "xpReward": 105,
     "category": "fumoir",
     "sortOrder": 230
+  },
+  {
+    "key": "yak_felt",
+    "name": "Feutre de yack",
+    "nameEn": "Yak felt",
+    "emoji": "🧥",
+    "buildingKey": "workshop",
+    "outputItemKey": "yak_felt",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "yak_wool",
+        "quantity": 2
+      },
+      {
+        "itemKey": "spun_wool",
+        "quantity": 2
+      }
+    ],
+    "durationSeconds": 7200,
+    "requiredLevel": 23,
+    "xpReward": 150,
+    "category": "atelier",
+    "sortOrder": 235
   },
   {
     "key": "chocolate",
@@ -546,6 +790,34 @@
     "xpReward": 112,
     "category": "fumoir",
     "sortOrder": 250
+  },
+  {
+    "key": "mandarin_chutney",
+    "name": "Chutney de mandarine",
+    "nameEn": "Mandarin chutney",
+    "emoji": "🥫",
+    "buildingKey": "jam_kitchen",
+    "outputItemKey": "mandarin_chutney",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "mandarin",
+        "quantity": 4
+      },
+      {
+        "itemKey": "chili",
+        "quantity": 3
+      },
+      {
+        "itemKey": "honey",
+        "quantity": 1
+      }
+    ],
+    "durationSeconds": 3600,
+    "requiredLevel": 25,
+    "xpReward": 120,
+    "category": "conserverie",
+    "sortOrder": 255
   },
   {
     "key": "cake",
@@ -628,6 +900,34 @@
     "sortOrder": 280
   },
   {
+    "key": "antler_knife",
+    "name": "Couteau en bois de cerf",
+    "nameEn": "Antler knife",
+    "emoji": "🔪",
+    "buildingKey": "workshop",
+    "outputItemKey": "antler_knife",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "antler",
+        "quantity": 1
+      },
+      {
+        "itemKey": "tortoise_scute",
+        "quantity": 1
+      },
+      {
+        "itemKey": "iron_bar",
+        "quantity": 2
+      }
+    ],
+    "durationSeconds": 10800,
+    "requiredLevel": 29,
+    "xpReward": 260,
+    "category": "atelier",
+    "sortOrder": 285
+  },
+  {
     "key": "ginseng_elixir",
     "name": "Élixir de ginseng",
     "nameEn": "Ginseng elixir",
@@ -650,6 +950,34 @@
     "xpReward": 150,
     "category": "atelier",
     "sortOrder": 290
+  },
+  {
+    "key": "sakura_mochi",
+    "name": "Mochi au sakura",
+    "nameEn": "Sakura mochi",
+    "emoji": "🍡",
+    "buildingKey": "confectionery",
+    "outputItemKey": "sakura_mochi",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "sakura",
+        "quantity": 2
+      },
+      {
+        "itemKey": "flour",
+        "quantity": 3
+      },
+      {
+        "itemKey": "honey",
+        "quantity": 1
+      }
+    ],
+    "durationSeconds": 7200,
+    "requiredLevel": 30,
+    "xpReward": 200,
+    "category": "confiserie",
+    "sortOrder": 295
   },
   {
     "key": "truffle_oil",
@@ -676,6 +1004,30 @@
     "sortOrder": 300
   },
   {
+    "key": "mithril_ingot",
+    "name": "Lingot de mithril",
+    "nameEn": "Mithril ingot",
+    "emoji": "⚙️",
+    "buildingKey": "workshop",
+    "outputItemKey": "mithril_ingot",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "ore_mithril",
+        "quantity": 4
+      },
+      {
+        "itemKey": "ore_gold",
+        "quantity": 2
+      }
+    ],
+    "durationSeconds": 14400,
+    "requiredLevel": 34,
+    "xpReward": 350,
+    "category": "atelier",
+    "sortOrder": 305
+  },
+  {
     "key": "saffron_essence",
     "name": "Essence de safran",
     "nameEn": "Saffron essence",
@@ -698,6 +1050,58 @@
     "xpReward": 420,
     "category": "huilerie",
     "sortOrder": 310
+  },
+  {
+    "key": "bamboo_liquor",
+    "name": "Liqueur de bambou",
+    "nameEn": "Bamboo liquor",
+    "emoji": "🍶",
+    "buildingKey": "brewery",
+    "outputItemKey": "bamboo_liquor",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "bamboo",
+        "quantity": 4
+      },
+      {
+        "itemKey": "honey",
+        "quantity": 2
+      }
+    ],
+    "durationSeconds": 28800,
+    "requiredLevel": 39,
+    "xpReward": 480,
+    "category": "brasserie",
+    "sortOrder": 315
+  },
+  {
+    "key": "unicorn_tapestry",
+    "name": "Tapisserie de licorne",
+    "nameEn": "Unicorn tapestry",
+    "emoji": "🖼️",
+    "buildingKey": "workshop",
+    "outputItemKey": "unicorn_tapestry",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "itemKey": "unicorn_hair",
+        "quantity": 2
+      },
+      {
+        "itemKey": "swan_feather",
+        "quantity": 2
+      },
+      {
+        "itemKey": "silk_cloth",
+        "quantity": 1
+      }
+    ],
+    "durationSeconds": 43200,
+    "requiredLevel": 41,
+    "xpReward": 1200,
+    "category": "atelier",
+    "sortOrder": 318
   },
   {
     "key": "dragon_potion",
@@ -724,27 +1128,31 @@
     "sortOrder": 320
   },
   {
-    "key": "mithril_ingot",
-    "name": "Lingot de mithril",
-    "nameEn": "Mithril ingot",
-    "emoji": "⚙️",
-    "buildingKey": "workshop",
-    "outputItemKey": "mithril_ingot",
+    "key": "phoenix_incense",
+    "name": "Encens de phénix",
+    "nameEn": "Phoenix incense",
+    "emoji": "🪔",
+    "buildingKey": "smokehouse",
+    "outputItemKey": "phoenix_incense",
     "outputQuantity": 1,
     "ingredients": [
       {
-        "itemKey": "ore_mithril",
-        "quantity": 4
+        "itemKey": "phoenix_ash",
+        "quantity": 1
       },
       {
-        "itemKey": "ore_gold",
+        "itemKey": "frost_rose",
+        "quantity": 2
+      },
+      {
+        "itemKey": "sakura",
         "quantity": 2
       }
     ],
-    "durationSeconds": 14400,
-    "requiredLevel": 34,
-    "xpReward": 350,
-    "category": "atelier",
-    "sortOrder": 305
+    "durationSeconds": 43200,
+    "requiredLevel": 46,
+    "xpReward": 1400,
+    "category": "fumoir",
+    "sortOrder": 330
   }
 ]
