@@ -7,6 +7,7 @@ import { renderFarm } from '../render/farm';
 import { renderMarketChart } from '../render/chart';
 import { renderProfile } from '../render/profile';
 import { renderLeaderboard } from '../render/leaderboard';
+import { growthStageIndex, pickStampSubject, renderPostcard, type PostcardPlot } from '../render/postcard';
 import { gridSizeFor, slotToCoords } from '../game/grid';
 import { translate } from '../i18n';
 import { moduleLogger } from '../utils/logger';
@@ -18,7 +19,7 @@ const log = moduleLogger('preview');
  *
  *   npm run render:preview
  *
- * Écrit cinq PNG dans `out/`. Indispensable pour itérer sur le visuel : on
+ * Écrit six PNG dans `out/`. Indispensable pour itérer sur le visuel : on
  * modifie `src/render/**`, on relance, on regarde — au lieu de démarrer le bot,
  * de peupler une ferme et de taper une commande.
  */
@@ -282,6 +283,57 @@ async function main(): Promise<void> {
   });
   writeFileSync(join(outDir, 'animaux.png'), animalsBuffer);
 
+  // Carte postale : la MÊME ferme que `ferme.png`, sans son tableau de bord.
+  // C'est ici qu'on juge si la carte donne envie d'être partagée — légende
+  // longue, prestige, bêtes de plusieurs formes, timbre à la culture préférée.
+  const postcardPlots: PostcardPlot[] = plots.map((plot) => ({
+    slot: plot.slot,
+    x: plot.x,
+    y: plot.y,
+    locked: plot.state === 'locked',
+    fertility: plot.fertility,
+    crop: plot.crop
+      ? {
+          key: plot.crop.key,
+          stage: growthStageIndex(plot.crop.growth.stage),
+          ready: plot.crop.growth.ready,
+          withered: plot.crop.growth.withered,
+        }
+      : null,
+  }));
+  const postcardAnimals = ['chicken', 'cow', 'sheep', 'bee', 'dragonet', 'pig'].map((key) => ({
+    animalKey: key,
+    emoji: config.animals.get(key)?.emoji ?? '🐾',
+    form: config.animals.get(key)?.form ?? null,
+    palette: config.animals.get(key)?.palette ?? null,
+  }));
+  const postcardBuffer = await renderPostcard({
+    locale,
+    farmId: 'preview',
+    farmName: 'Ferme des Trois Chênes',
+    farmer: { name: 'Marion', level: 24, prestige: 1, coins: 1_284_500 },
+    caption:
+      locale === 'en'
+        ? 'First melons of the summer, come and taste them!'
+        : "Premiers melons de l'été, venez goûter !",
+    date: new Date('2026-09-02T10:00:00Z'),
+    timezone: 'Europe/Paris',
+    season: 'summer',
+    weather: { weather: 'sunny', label: 'Ensoleillé', temperature: 26 },
+    grid,
+    plots: postcardPlots,
+    animals: postcardAnimals,
+    buildings: [
+      { key: 'house', tier: 2 },
+      { key: 'barn', tier: 3 },
+      { key: 'well', tier: 1 },
+      { key: 'greenhouse', tier: 1 },
+      { key: 'mill', tier: 2 },
+    ],
+    stamp: pickStampSubject(postcardPlots, postcardAnimals),
+  });
+  writeFileSync(join(outDir, 'carte-postale.png'), postcardBuffer);
+
   log.info(
     {
       ferme: farmBuffer.byteLength,
@@ -289,8 +341,9 @@ async function main(): Promise<void> {
       marche: chartBuffer.byteLength,
       classement: leaderboardBuffer.byteLength,
       animaux: animalsBuffer.byteLength,
+      cartePostale: postcardBuffer.byteLength,
     },
-    `✅ 5 images écrites dans ${outDir} (langue : ${locale})`,
+    `✅ 6 images écrites dans ${outDir} (langue : ${locale})`,
   );
 }
 

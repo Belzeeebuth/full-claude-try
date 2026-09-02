@@ -636,7 +636,8 @@
     "prestige": 86400,
     "coop_create": 3600,
     "market": 5,
-    "classement": 10
+    "classement": 10,
+    "postcard": 600
   },
   "rateLimit": {
     "commandsPerMinute": 30,
@@ -674,6 +675,10 @@
     "animals": {
       "width": 900,
       "height": 640
+    },
+    "postcard": {
+      "width": 1000,
+      "height": 700
     },
     "quality": 0.85
   },

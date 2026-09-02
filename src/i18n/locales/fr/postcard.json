@@ -1,0 +1,39 @@
+{
+  "$comment": "Carte postale de la ferme (/postcard, src/render/postcard.ts) : embed public, textes dessinés DANS l'image (render.postcard.*) et texte alternatif (render_alt.postcard.*). Fragment fusionné avec fr.json au chargement ; même arborescence que en/postcard.json.",
+  "postcard": {
+    "title": "📮 Carte postale de {name}",
+    "body": "{name} vous envoie une carte postale de la ferme « {farm} ».",
+    "footer": "Envoyez la vôtre avec /postcard"
+  },
+  "render": {
+    "postcard": {
+      "brand": "HARVESTER",
+      "greeting": "Bien le bonjour de la ferme !",
+      "signature": "— {name}",
+      "level": "Niveau {level}",
+      "prestige": "Prestige {rank}",
+      "coins": "{coins} pièces",
+      "weather": "{weather} · {temperature} °C · {season}",
+      "imprint": "Harvester · {farm} · {date}"
+    }
+  },
+  "render_alt": {
+    "postcard": {
+      "header": "Carte postale de la ferme « {farm} », envoyée par {name}, niveau {level}.",
+      "prestige": "Prestige {rank}.",
+      "caption": "Légende manuscrite : « {caption} ».",
+      "world": "{season}, {weather}, {temperature} °C.",
+      "scene": "Sur la photo : {planted} culture(s) en terre, {animals} animal(aux), {buildings} bâtiment(s).",
+      "scene_empty": "Sur la photo : un champ encore vide.",
+      "stamp_crop": "Timbre à l'effigie d'une culture : {subject}.",
+      "stamp_animal": "Timbre à l'effigie d'un animal : {subject}.",
+      "postmark": "Cachet postal Harvester du {date}.",
+      "coins": "{coins} pièces."
+    }
+  },
+  "errors": {
+    "postcard": {
+      "render_failed": "La carte postale n'a pas pu être imprimée : réessayez dans un instant, votre délai d'attente a été remis à zéro."
+    }
+  }
+}

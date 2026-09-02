@@ -1,0 +1,39 @@
+{
+  "$comment": "Farm postcard (/postcard, src/render/postcard.ts): public embed, labels drawn INSIDE the image (render.postcard.*) and alt text (render_alt.postcard.*). Fragment merged with en.json at load time; same tree as fr/postcard.json.",
+  "postcard": {
+    "title": "📮 A postcard from {name}",
+    "body": "{name} sends you a postcard from the farm “{farm}”.",
+    "footer": "Send yours with /postcard"
+  },
+  "render": {
+    "postcard": {
+      "brand": "HARVESTER",
+      "greeting": "Greetings from the farm!",
+      "signature": "— {name}",
+      "level": "Level {level}",
+      "prestige": "Prestige {rank}",
+      "coins": "{coins} coins",
+      "weather": "{weather} · {temperature} °C · {season}",
+      "imprint": "Harvester · {farm} · {date}"
+    }
+  },
+  "render_alt": {
+    "postcard": {
+      "header": "Postcard from the farm “{farm}”, sent by {name}, level {level}.",
+      "prestige": "Prestige {rank}.",
+      "caption": "Handwritten note: “{caption}”.",
+      "world": "{season}, {weather}, {temperature} °C.",
+      "scene": "In the picture: {planted} crop(s) growing, {animals} animal(s), {buildings} building(s).",
+      "scene_empty": "In the picture: a field still empty.",
+      "stamp_crop": "Stamp featuring a crop: {subject}.",
+      "stamp_animal": "Stamp featuring an animal: {subject}.",
+      "postmark": "Harvester postmark dated {date}.",
+      "coins": "{coins} coins."
+    }
+  },
+  "errors": {
+    "postcard": {
+      "render_failed": "The postcard could not be printed: try again in a moment, your cooldown has been reset."
+    }
+  }
+}
