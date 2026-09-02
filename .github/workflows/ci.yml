@@ -1,0 +1,138 @@
+# =============================================================================
+#  Harvester — intégration continue (constat A-01 de l'audit)
+#
+#  Deux jobs indépendants, lancés en parallèle pour un retour rapide :
+#
+#   - verify      : types, tests rapides, couverture (le seuil de 70 % vit dans
+#                   vitest.config.ts, pas ici), build et audit des dépendances —
+#                   tout ce qui tourne sans infrastructure.
+#   - integration : la suite `tests/integration/` contre un VRAI PostgreSQL et
+#                   un VRAI Redis. Elle n'avait jamais tourné en CI (réserve
+#                   ouverte dans docs/06-roadmap.md depuis la v2.1) : elle est
+#                   désormais bloquante au même titre que les tests rapides.
+#
+#  Aucun secret n'est nécessaire : les jetons Discord sont des valeurs de
+#  remplacement posées par tests/setup-env.ts et tests/integration/env.ts.
+# =============================================================================
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# Un seul run par branche : un nouveau push annule celui encore en cours sur la
+# même branche. Le groupe est le NOM de la branche des deux côtés — `head_ref`
+# pour un événement pull_request, `ref_name` pour un push — et non `ref`, qui
+# vaudrait `refs/pull/N/merge` d'un côté et `refs/heads/<branche>` de l'autre :
+# un push et la PR qu'il alimente tombent ainsi dans le même groupe au lieu de
+# tourner deux fois en parallèle.
+concurrency:
+  group: ci-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+# Le workflow ne fait que lire le dépôt : aucun droit d'écriture par défaut.
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # L'audit a son étape dédiée plus bas, bloquante : celui de `npm ci` ne
+      # ferait que du bruit non bloquant.
+      - name: Dépendances
+        run: npm ci --no-audit --no-fund
+
+      - name: Types
+        run: npm run typecheck
+
+      - name: Tests rapides
+        run: npm test
+
+      # Rejoue la suite avec l'instrumentation V8 : c'est cette exécution qui
+      # applique le seuil de couverture. `npm test` reste avant pour qu'un test
+      # cassé se lise sans le bruit du rapport de couverture.
+      - name: Couverture
+        run: npm run test:coverage
+
+      - name: Build
+        run: npm run build
+
+      # Bloquant sur `high` et `critical` uniquement : une vulnérabilité modérée
+      # dans un outil de développement ne doit pas geler les fusions —
+      # Dependabot (.github/dependabot.yml) la remonte de son côté.
+      - name: Audit des dépendances
+        run: npm audit --audit-level=high
+
+  integration:
+    name: integration
+    runs-on: ubuntu-latest
+    # Démarrage de conteneurs, migrations et seed : bien plus lent qu'un test
+    # unitaire, et Testcontainers télécharge ses images à la première exécution.
+    timeout-minutes: 25
+    services:
+      # Base et Redis partagés par la majorité des fichiers de la suite :
+      # tests/integration/global-setup.ts crée `harvester_test` à partir de ces
+      # identifiants (cf. tests/integration/env.ts) et y rejoue les migrations.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: harvester
+          POSTGRES_PASSWORD: harvester
+          POSTGRES_DB: harvester
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U harvester -d harvester"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      # Lus par tests/integration/env.ts pour reconstruire l'URL de la base de
+      # test (`<POSTGRES_DB>_test` sur 127.0.0.1) et celle de Redis — les mêmes
+      # noms que dans .env.example, donc la suite se lance ici exactement comme
+      # sur un poste de développement.
+      POSTGRES_USER: harvester
+      POSTGRES_PASSWORD: harvester
+      POSTGRES_DB: harvester
+      POSTGRES_PORT: "5432"
+      REDIS_PORT: "6379"
+      TEST_DATABASE_HOST: 127.0.0.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Dépendances
+        run: npm ci --no-audit --no-fund
+
+      # harvest-concurrency.test.ts démarre SES PROPRES conteneurs
+      # (postgres:16-alpine et redis:7-alpine via Testcontainers) : le démon
+      # Docker des runners hébergés suffit, sans configuration supplémentaire.
+      - name: Tests d'intégration
+        run: npm run test:integration

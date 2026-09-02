@@ -41,6 +41,13 @@ RUN apt-get update \
 ENV NODE_ENV=production \
     TZ=Europe/Paris
 
+# Point d'entrée choisi À L'EXÉCUTION : `index` (mono-process, défaut) ou
+# `shard` (ShardingManager, src/shard.ts — un process `index.js` par shard).
+# Une variable plutôt qu'une seconde image : le sharding est une décision
+# d'exploitation, pas de build, et docker-compose.yml bascule dessus avec
+# `profiles: [sharded]` sur la MÊME image. Le CMD plus bas la lit.
+ENV HARVESTER_ENTRYPOINT=index
+
 WORKDIR /app
 
 COPY --from=prod-deps /app/node_modules ./node_modules
@@ -58,9 +65,19 @@ EXPOSE 3001
 
 # Le healthcheck interroge /health, qui vérifie Discord ET PostgreSQL : un
 # process vivant mais déconnecté est considéré malsain et sera redémarré.
+# En mode `shard`, ce serveur est celui du shard 0 (chaque shard exécute
+# `index.js`, donc `startHealthServer`) : la sonde reste valable telle quelle.
+# Les autres shards visent le même port — limite documentée sur le service
+# `bot-sharded` de docker-compose.yml.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
     CMD curl -fsS http://127.0.0.1:3001/health || exit 1
 
-# `dumb-init` n'est pas nécessaire : Node 20 gère correctement SIGTERM, et
-# `src/index.ts` implémente un arrêt propre.
-CMD ["node", "dist/index.js"]
+# Forme shell et non exec : `["node", "dist/index.js"]` ne substitue aucune
+# variable, or le fichier lancé dépend de HARVESTER_ENTRYPOINT. `exec`
+# remplace le shell par Node, qui reste donc PID 1 : SIGTERM lui arrive
+# directement et l'arrêt propre de src/index.ts est intact — c'est ce qui rend
+# `dumb-init` toujours inutile (Node 20 gère SIGTERM correctement). Une valeur
+# inconnue est refusée avec un message explicite plutôt que de laisser Node
+# tourner en boucle de redémarrage sur un « Cannot find module ».
+# `docker compose run --rm bot npm run db:migrate` remplace ce CMD : inchangé.
+CMD ["sh", "-c", "case \"$HARVESTER_ENTRYPOINT\" in index|shard) exec node \"dist/$HARVESTER_ENTRYPOINT.js\" ;; *) echo \"HARVESTER_ENTRYPOINT doit valoir index ou shard, pas '$HARVESTER_ENTRYPOINT'\" >&2 ; exit 64 ;; esac"]

@@ -1,0 +1,48 @@
+# =============================================================================
+#  Contexte de build Docker (constat A-04 de l'audit)
+#
+#  Le Dockerfile fait `COPY . .` à l'étape de compilation puis y lance
+#  `npm run build && npm run test` : il a besoin de src/, de tests/ (la suite
+#  d'intégration y reste, mais vitest.config.ts l'exclut de `npm test`), de
+#  drizzle/, d'assets/ et des fichiers de configuration TypeScript/Vitest — et
+#  de rien d'autre. Tout ce qui est listé ici n'est ni envoyé au démon ni
+#  copiable dans une couche, quoi que fasse un futur `COPY`.
+# =============================================================================
+
+# Reconstruit par `npm ci` dans l'image : le copier serait lent et, pire,
+# glisserait des binaires natifs (@napi-rs/canvas) compilés pour l'hôte.
+node_modules
+
+# Sorties locales : l'image recompile depuis src/. Un dist/ de l'hôte pourrait
+# être périmé, et coverage/ ou out/ pèsent pour rien.
+dist
+out
+coverage
+.cache
+.render-cache
+tmp
+**/*.tsbuildinfo
+
+# Secrets et configuration locale — ne doivent JAMAIS finir dans une couche
+# d'image, même intermédiaire. `.env.example` tombe aussi sous `.env.*` :
+# l'image ne le lit pas, la configuration arrive par l'environnement.
+.env
+.env.*
+
+# Journaux
+**/*.log
+
+# Historique git, outillage des agents, CI, orchestration : inutiles au bot.
+.git
+.gitignore
+.github
+.claude
+.dockerignore
+docker-compose.yml
+
+# Documentation : lue sur GitHub, pas par le process.
+docs
+README.md
+
+# Poussière d'OS
+**/.DS_Store

@@ -1,0 +1,47 @@
+# =============================================================================
+#  Harvester — mises à jour de dépendances (constat A-05 de l'audit)
+#
+#  Une passe hebdomadaire, le lundi matin (heure de Paris) : les PR arrivent
+#  en début de semaine et ont passé la CI (.github/workflows/ci.yml) avant
+#  qu'on les relise.
+# =============================================================================
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Europe/Paris
+    # Mineures et correctifs regroupés en UNE PR : ce sont des changements
+    # censés rester rétro-compatibles, une exécution de la CI suffit à les
+    # valider ensemble. Les majeures restent une PR chacune (comportement par
+    # défaut hors groupe) : elles demandent une lecture du changelog, et un
+    # discord.js ou un drizzle-orm majeur ne se relit pas mélangé à dix autres.
+    groups:
+      mineures-et-correctifs:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Europe/Paris
+    # Les actions changent rarement et toujours par version majeure (v4 → v5) :
+    # une seule PR pour toutes, la CI qui tourne dessus est le test.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "chore(ci)"

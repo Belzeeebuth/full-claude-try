@@ -4,7 +4,10 @@
 #    docker compose up -d db redis      # infrastructure seule (développement)
 #    docker compose run --rm bot npm run db:migrate
 #    docker compose run --rm bot npm run db:seed
-#    docker compose up -d               # tout
+#    docker compose up -d               # tout (bot mono-process)
+#    docker compose --profile sharded up -d db redis bot-sharded
+#                                       # sharding, à la place de `bot` (voir
+#                                       # le service bot-sharded)
 #
 #  Les secrets viennent de `.env` (jamais commité). Voir `.env.example`.
 # =============================================================================
@@ -111,6 +114,64 @@ services:
       resources:
         limits:
           memory: 1g
+
+  # ---------------------------------------------------------------------------
+  # Variante shardée (constat D-01) : MÊME image, MÊMES variables (héritées de
+  # `bot` par `extends`), seul le point d'entrée change — `node dist/shard.js`
+  # (ShardingManager, src/shard.ts), qui lance un process `index.js` par shard.
+  # Discord l'impose au-delà de 2 500 serveurs ; en dessous, `bot` suffit et
+  # coûte moins de mémoire.
+  #
+  # Sous un profil pour ne JAMAIS démarrer par accident à côté de `bot` : deux
+  # process avec le même jeton se disputeraient la passerelle Discord, et le
+  # même port 3001 sur l'hôte. Un service sans profil démarre toujours, donc
+  # le lancer doit EXCLURE `bot` en nommant les services :
+  #     docker compose --profile sharded up -d db redis bot-sharded
+  #
+  # Le choix passe par HARVESTER_ENTRYPOINT, lu par le CMD du Dockerfile, et
+  # non par un `command:` local : une seule définition du point d'entrée,
+  # valable aussi pour un `docker run` hors compose.
+  #
+  # SCHEDULER_ENABLED : src/shard.ts prévoit que seul le shard 0 porte
+  # l'ordonnanceur, mais ShardingManager copie l'environnement du gestionnaire
+  # dans CHAQUE enfant (discord.js, sharding/Shard.js) : la valeur héritée de
+  # `.env` vaut donc pour tous les shards, et compose ne peut pas la poser par
+  # shard. Ce n'est pas bloquant — BullMQ n'enregistre un job répétable qu'une
+  # fois dans Redis, quel que soit le nombre de process qui le déclarent —, mais
+  # ne PAS la forcer à false ici : plus aucun shard ne planifierait rien.
+  #
+  # LIMITE CONNUE (à lever dans src/index.ts, hors de ce fichier) : chaque
+  # shard exécute `startHealthServer` sur le même HTTP_PORT. Le shard 0 sert
+  # /health — le HEALTHCHECK de l'image reste donc valable — mais à partir du
+  # deuxième shard `listen` échoue (EADDRINUSE), l'exception fait sortir le
+  # process et le ShardingManager le relance en boucle. Tant que le serveur
+  # HTTP n'est pas réservé au shard 0 (`SHARDS=0`, posé par discord.js), ce
+  # profil n'est sûr qu'avec SHARDING_TOTAL=1 : il câble le mécanisme, il ne
+  # remplace pas cette correction.
+  # ---------------------------------------------------------------------------
+  bot-sharded:
+    extends:
+      service: bot
+    container_name: harvester-bot-sharded
+    profiles: [sharded]
+    environment:
+      HARVESTER_ENTRYPOINT: shard
+    # `depends_on` n'est jamais hérité par `extends` (spécification Compose) :
+    # redéclaré, sinon le gestionnaire démarrerait avant la base et le premier
+    # shard échouerait au `pingDatabase()` du démarrage.
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          # Un process Node complet par shard (pool PostgreSQL et connexions
+          # Redis compris) : 1 Go ne tient plus dès trois ou quatre shards.
+          # Garder aussi DATABASE_POOL_MAX × shards < max_connections de `db`
+          # (200), le pool est dimensionné PAR shard.
+          memory: 2g
 
 volumes:
   db-data:
