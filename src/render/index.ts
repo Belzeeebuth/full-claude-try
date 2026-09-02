@@ -22,6 +22,12 @@ import {
   renderPoolStats,
   submitRender,
 } from './pool';
+import {
+  describePostcard,
+  postmarkDate,
+  renderPostcard,
+  type PostcardRenderInput,
+} from './postcard';
 import { describeProfile, renderProfile, type ProfileRenderInput } from './profile';
 
 const log = moduleLogger('render');
@@ -338,6 +344,44 @@ export async function renderAnimalsImage(input: AnimalsRenderInput): Promise<Ren
   return render('animals', stateKey, 'animaux.png', describeAnimals(input), input);
 }
 
+export async function renderPostcardImage(input: PostcardRenderInput): Promise<RenderOutcome> {
+  // L'état capture ce qui change la CARTE : la légende, le jour du cachet
+  // (dans le fuseau du fermier — la clé doit changer à SA minuit), le
+  // fermier, le monde, et la scène telle qu'elle est dessinée. Les échéances
+  // n'y sont pas : la photo ne montre ni compte à rebours ni pastille, seul le
+  // stade compte. Le sujet du timbre en fait partie parce qu'il est choisi en
+  // amont et non dérivé ici.
+  const stateKey = {
+    locale: input.locale,
+    farmId: input.farmId,
+    farmName: input.farmName,
+    farmer: [
+      input.farmer.name,
+      input.farmer.level,
+      input.farmer.prestige,
+      input.farmer.coins === null ? -1 : Math.floor(input.farmer.coins / 100),
+    ],
+    caption: input.caption,
+    date: postmarkDate(input.date, input.locale, input.timezone),
+    season: input.season,
+    weather: [input.weather.weather, input.weather.temperature],
+    grid: input.grid,
+    plots: input.plots.map((plot) => [
+      plot.slot,
+      plot.locked ? 1 : 0,
+      Math.round(plot.fertility / 5),
+      plot.crop?.key ?? '',
+      plot.crop?.stage ?? 0,
+      plot.crop?.ready ? 1 : 0,
+      plot.crop?.withered ? 1 : 0,
+    ]),
+    animals: input.animals.map((animal) => animal.animalKey),
+    buildings: input.buildings.map((building) => [building.key, building.tier]),
+    stamp: input.stamp ? [input.stamp.kind, input.stamp.key] : '',
+  };
+  return render('postcard', stateKey, 'carte-postale.png', describePostcard(input), input);
+}
+
 export {
   closeRenderPool,
   renderPoolAvailable,
@@ -354,6 +398,7 @@ export type {
   FishingRenderInput,
   LeaderboardRenderInput,
   MiningRenderInput,
+  PostcardRenderInput,
   ProfileRenderInput,
 };
 export {
@@ -364,6 +409,7 @@ export {
   renderLeaderboard,
   renderFishing,
   renderMining,
+  renderPostcard,
 };
 export {
   describeAnimals,
@@ -372,6 +418,7 @@ export {
   describeFishing,
   describeLeaderboard,
   describeMining,
+  describePostcard,
   describeProfile,
 };
 export { ALT_TEXT_MAX_LENGTH, clampAltText } from './alt-text';

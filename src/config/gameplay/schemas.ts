@@ -907,6 +907,12 @@ export const balanceSchema = z.object({
     mining: z.object({ width: positiveInt, height: positiveInt }),
     /** Basse-cour de `/animals` : la hauteur est fixe, les enclos se partagent l'espace. */
     animals: z.object({ width: positiveInt, height: positiveInt }),
+    /**
+     * Carte postale de `/postcard` : format fixe, paysage. La scène de la
+     * ferme s'y adapte (grille 3×3 ou 8×8), pas l'inverse — une image faite
+     * pour être partagée doit avoir toujours les mêmes proportions.
+     */
+    postcard: z.object({ width: positiveInt, height: positiveInt }),
     quality: z.number().min(0.1).max(1),
   }),
   notifications: z.object({
