@@ -166,6 +166,103 @@ export async function listTransactions(
     .limit(limit);
 }
 
+export type TransactionRow = typeof transactions.$inferSelect;
+
+/** Fenêtre du journal consultée par `/history` : joueur, types et ancienneté. */
+export interface LedgerWindow {
+  userId: string;
+  /** Sous-ensemble de types ; `undefined` = tous. Une liste vide ne renvoie rien. */
+  types?: readonly TransactionType[];
+  since: Date;
+}
+
+export interface LedgerWindowTotals {
+  /** Nombre de lignes de la fenêtre, toutes monnaies — c'est ce que pagine `listLedgerPage`. */
+  count: number;
+  coinsIn: number;
+  coinsOut: number;
+  gemsIn: number;
+  gemsOut: number;
+}
+
+/**
+ * `WHERE` commun de la page et de ses totaux : les deux requêtes DOIVENT
+ * décrire la même fenêtre, sinon le compteur de pages et les sommes de
+ * l'en-tête ne parlent plus des mêmes lignes.
+ */
+function ledgerWindowConditions(window: LedgerWindow) {
+  const conditions = [
+    eq(transactions.userId, window.userId),
+    gte(transactions.createdAt, window.since),
+  ];
+  if (window.types) conditions.push(inArray(transactions.type, [...window.types]));
+  return and(...conditions);
+}
+
+/**
+ * Page du journal d'un joueur, filtrée par types et ancienneté.
+ *
+ * `user_id = ? AND created_at >= ?` est servi par `transactions_user_created_idx`
+ * (user_id, created_at DESC) ; le filtre de type et le tri sur `id` — même
+ * ordre que `created_at`, mais sans égalité possible entre deux lignes — ne
+ * portent que sur la fenêtre déjà réduite. La contrepartie est résolue ici
+ * par jointure : c'est un identifiant `users`, pour les dons, échanges et
+ * enchères, et le nom est ce que le joueur lira. Jointure EXTERNE : un joueur
+ * supprimé ou une contrepartie non joueur laisse le nom à `null`.
+ */
+export async function listLedgerPage(
+  window: LedgerWindow,
+  page: { limit: number; offset: number },
+  executor: Executor = getDb(),
+): Promise<Array<{ entry: TransactionRow; counterpartyName: string | null }>> {
+  if (window.types && window.types.length === 0) return [];
+  return executor
+    .select({
+      entry: transactions,
+      counterpartyName: sql<string | null>`COALESCE(${users.displayName}, ${users.username})`,
+    })
+    .from(transactions)
+    .leftJoin(users, eq(users.id, transactions.counterpartyId))
+    .where(ledgerWindowConditions(window))
+    .orderBy(desc(transactions.id))
+    .limit(page.limit)
+    .offset(page.offset);
+}
+
+/**
+ * Totaux entrants/sortants de la même fenêtre, agrégés en SQL : sommer la page
+ * courante en JS ne dirait rien de la période. Les pièces et les gemmes sont
+ * séparées — additionner les deux monnaies n'aurait aucun sens — mais le
+ * compteur, lui, couvre tout : il sert à borner la pagination de la liste,
+ * qui affiche les deux.
+ */
+export async function summarizeLedgerWindow(
+  window: LedgerWindow,
+  executor: Executor = getDb(),
+): Promise<LedgerWindowTotals> {
+  const empty: LedgerWindowTotals = { count: 0, coinsIn: 0, coinsOut: 0, gemsIn: 0, gemsOut: 0 };
+  if (window.types && window.types.length === 0) return empty;
+  const [row] = await executor
+    .select({
+      count: sql<number>`COUNT(*)::int`,
+      coinsIn: sql<number>`COALESCE(SUM(${transactions.amount}) FILTER (WHERE ${transactions.amount} > 0 AND ${transactions.currency} = 'coins'), 0)::bigint`,
+      coinsOut: sql<number>`COALESCE(SUM(ABS(${transactions.amount})) FILTER (WHERE ${transactions.amount} < 0 AND ${transactions.currency} = 'coins'), 0)::bigint`,
+      gemsIn: sql<number>`COALESCE(SUM(${transactions.amount}) FILTER (WHERE ${transactions.amount} > 0 AND ${transactions.currency} = 'gems'), 0)::bigint`,
+      gemsOut: sql<number>`COALESCE(SUM(ABS(${transactions.amount})) FILTER (WHERE ${transactions.amount} < 0 AND ${transactions.currency} = 'gems'), 0)::bigint`,
+    })
+    .from(transactions)
+    .where(ledgerWindowConditions(window));
+  if (!row) return empty;
+  // `bigint` arrive en chaîne depuis pg : `Number()` avant tout calcul.
+  return {
+    count: Number(row.count),
+    coinsIn: Number(row.coinsIn),
+    coinsOut: Number(row.coinsOut),
+    gemsIn: Number(row.gemsIn),
+    gemsOut: Number(row.gemsOut),
+  };
+}
+
 /** Total versé/reçu par type sur une fenêtre — base du suivi anti-inflation. */
 export async function sumByType(
   since: Date,
