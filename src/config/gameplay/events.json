@@ -7,6 +7,7 @@
     "descriptionEn": "The village celebrates the harvest: pumpkins double in value and every harvest yields pumpkin tokens.",
     "type": "seasonal",
     "recurringCron": "0 0 1 10 *",
+    "durationHours": 336,
     "banner": "event_autumn",
     "currencyItemKey": "pumpkin_token",
     "modifiers": {
@@ -90,6 +91,7 @@
     "descriptionEn": "Chalets, mulled wine and frosted snowflakes: processed goods sell for 40% more.",
     "type": "seasonal",
     "recurringCron": "0 0 10 12 *",
+    "durationHours": 384,
     "banner": "event_winter",
     "currencyItemKey": "snowflake_token",
     "modifiers": {
@@ -165,6 +167,7 @@
     "descriptionEn": "Everything grows 25% faster and mutations are twice as frequent.",
     "type": "seasonal",
     "recurringCron": "0 0 20 3 *",
+    "durationHours": 240,
     "banner": "event_spring",
     "currencyItemKey": "spring_petal",
     "modifiers": {
@@ -232,6 +235,7 @@
     "descriptionEn": "Three days without rain: crops need twice as much water, but the market panics and prices climb.",
     "type": "disaster",
     "recurringCron": "0 0 5 7 *",
+    "durationHours": 120,
     "banner": "event_drought",
     "modifiers": {
       "waterMultiplier": 2,
@@ -278,6 +282,7 @@
     "descriptionEn": "All XP is doubled from Friday evening to Sunday midnight.",
     "type": "weekend",
     "recurringCron": "0 18 * * 5",
+    "durationHours": 54,
     "banner": "event_weekend",
     "modifiers": {
       "xpMultiplier": 2.0

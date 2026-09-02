@@ -157,6 +157,7 @@ harvester/
 │   │   ├── alerts.ts            Condition de déclenchement et bornes de seuil des alertes de prix
 │   │   ├── almanac.ts           Prix et prévision exacte de la météo de demain
 │   │   ├── collection.ts        Univers d'une famille confronté aux découvertes
+│   │   ├── events.ts            Fenêtre courante d'un évènement récurrent (cron + durée, en UTC)
 │   │   └── rng.ts               mulberry32 seedé : dailyRng (date + WORLD_SEED), liveRng
 │   │
 │   ├── repositories/            Accès aux données. SQL uniquement, aucune règle de jeu.
@@ -179,7 +180,7 @@ harvester/
 │   │   ├── misc.service.ts      Classements et instantanés, prestige, visites/entraide, parrainage, votes, /admin, maintenance
 │   │   ├── consumable.service.ts Boosts temporaires (Redis), objets consommables, répulsif, cosmétiques
 │   │   ├── modifier-cache.ts    Cache Redis des modificateurs de ferme, invalidé par bâtiments/boosts/élevage
-│   │   ├── world.service.ts     État du monde : saison, météo du jour, événements actifs, multiplicateurs
+│   │   ├── world.service.ts     État du monde : saison, météo du jour, évènements actifs (fenêtre calculée), multiplicateurs
 │   │   ├── fishing.service.ts   cast/resolveHook (état de ferrage en Redis)
 │   │   ├── mining.service.ts    dig/getStatus (table mine_progress)
 │   │   ├── pet.service.ts       Déblocage automatique par niveau, équipement

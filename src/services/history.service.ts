@@ -1,4 +1,5 @@
 import { getConfig, type GameConfig } from '../config';
+import { DEFAULT_LOCALE, translatorFor } from '../i18n';
 import * as economyRepo from '../repositories/economy.repo';
 import { COIN, GEM, discordTimestamp, escapeMarkdown, formatNumber } from '../utils/format';
 import type { LedgerWindowTotals, TransactionType } from '../repositories/economy.repo';
@@ -154,19 +155,41 @@ export interface HistoryPage {
 }
 
 /**
+ * Clés de journal qui ne désignent AUCUNE entrée de catalogue.
+ *
+ * Une ligne du grand livre peut attester l'achat d'un service qui n'entre
+ * jamais en inventaire — la prévision de l'almanach, par exemple, dont
+ * `item_key` sert uniquement à retrouver l'achat du jour. Sans cette table,
+ * `resolveItemLabel` retombait sur la clé brute et `/history` affichait
+ * « 📦 almanac ×1 » dans les deux langues.
+ */
+const PSEUDO_ITEMS: Record<string, { emoji: string; i18nKey: string }> = {
+  almanac: { emoji: '📖', i18nKey: 'history.pseudo_item.almanac' },
+};
+
+/**
  * Libellé d'une clé de transaction. `item_key` porte indifféremment un objet,
- * un animal (`animal_purchase`) ou un bâtiment (`building_purchase`) : on
- * cherche dans les trois catalogues, et une clé retirée de la configuration
+ * un animal (`animal_purchase`), un bâtiment (`building_purchase`) ou un
+ * service sans objet (voir `PSEUDO_ITEMS`) : on cherche dans les trois
+ * catalogues puis dans les services, et une clé retirée de la configuration
  * s'affiche telle quelle plutôt que de faire disparaître la ligne.
  */
-export function resolveItemLabel(config: GameConfig, key: string): { emoji: string; name: string } {
+export function resolveItemLabel(
+  config: GameConfig,
+  key: string,
+  t?: Translator,
+): { emoji: string; name: string } {
   const entry = config.items.get(key) ?? config.animals.get(key) ?? config.buildings.get(key);
-  return entry ? { emoji: entry.emoji, name: entry.name } : { emoji: '📦', name: key };
+  if (entry) return { emoji: entry.emoji, name: entry.name };
+  const pseudo = PSEUDO_ITEMS[key];
+  if (pseudo) return { emoji: pseudo.emoji, name: t ? t(pseudo.i18nKey) : key };
+  return { emoji: '📦', name: key };
 }
 
 function toLine(
   row: { entry: economyRepo.TransactionRow; counterpartyName: string | null },
   config: GameConfig,
+  t: Translator,
 ): HistoryLine {
   const { entry, counterpartyName } = row;
   return {
@@ -176,7 +199,7 @@ function toLine(
     amount: entry.amount,
     balanceAfter: entry.balanceAfter,
     createdAt: entry.createdAt,
-    item: entry.itemKey ? resolveItemLabel(config, entry.itemKey) : null,
+    item: entry.itemKey ? resolveItemLabel(config, entry.itemKey, t) : null,
     quantity: entry.quantity,
     unitPrice: entry.unitPrice,
     counterpartyName,
@@ -217,7 +240,7 @@ export async function getHistory(
     page,
     totalPages,
     totals,
-    lines: rows.map((row) => toLine(row, config)),
+    lines: rows.map((row) => toLine(row, config, translatorFor(locale ?? DEFAULT_LOCALE))),
   };
 }
 

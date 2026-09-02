@@ -72,6 +72,9 @@
       "reroll_cost": "Relance de quête",
       "admin_grant": "Ajout par l'administration",
       "admin_remove": "Retrait par l'administration"
+    },
+    "pseudo_item": {
+      "almanac": "Prévision de l’almanach"
     }
   }
 }

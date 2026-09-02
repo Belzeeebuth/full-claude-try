@@ -457,6 +457,12 @@ export const eventSchema = z.object({
   startsAt: z.string().optional(),
   endsAt: z.string().optional(),
   recurringCron: z.string().max(64).optional(),
+  /**
+   * Durée d'une occurrence, en heures. Obligatoire avec `recurringCron` :
+   * le cron dit QUAND l'évènement commence, jamais combien de temps il dure,
+   * et sans durée la fenêtre ne peut pas être calculée (voir game/events.ts).
+   */
+  durationHours: z.number().positive().max(24 * 90).optional(),
   banner: z.string().max(96).optional(),
   currencyItemKey: key.optional(),
   modifiers: z
@@ -490,7 +496,13 @@ export const eventSchema = z.object({
     )
     .default([]),
   enabled: z.boolean().default(true),
-});
+})
+  .refine((event) => !event.recurringCron || event.durationHours !== undefined, {
+    // Sans durée, `getActiveEvents` ne saurait pas quand refermer la fenêtre :
+    // l'évènement resterait invisible, comme avant ce garde-fou.
+    message: 'durationHours est obligatoire quand recurringCron est défini',
+    path: ['durationHours'],
+  });
 export type EventConfig = z.infer<typeof eventSchema>;
 
 export const seasonPassSchema = z.object({

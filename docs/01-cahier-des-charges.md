@@ -26,7 +26,7 @@ la valeur vient de la régularité et de la communauté, pas de la dextérité.
 | **Sessions courtes et fréquentes** | Toute action utile doit tenir en **une commande**. Les cultures de départ poussent en 5 à 15 minutes ; les cycles longs (vanille 6 h, arbre-monde 36 h) sont réservés au joueur qui revient deux fois par jour. |
 | **Économie fermée** | Chaque source de pièces (*faucet*) a un puits (*sink*) correspondant. Le grand livre est vérifié toutes les heures, et son invariant est `users.coins = solde d'ouverture du dernier checkpoint + SUM(transactions.amount) postérieures` par joueur (§ 7 et [03 § 1.5](./03-base-de-donnees.md#15-rétention-du-journal-comptable--soldes-douverture)). |
 | **Coopération encouragée** | Aider un autre fermier rapporte **aux deux**. Les coopératives donnent des bonus passifs à tous leurs membres. Aucun mécanisme n'oppose les joueurs entre eux, hors classements cosmétiques. |
-| **Le monde change sans le joueur** | Météo quotidienne, saisons, boutique et marché noir tournants, marché horaire, passe saisonnier, prévision payante de l'almanach. Les événements calendaires sont configurés mais **non activés** (§ 3.8). |
+| **Le monde change sans le joueur** | Météo quotidienne, saisons, boutique et marché noir tournants, marché horaire, passe saisonnier, prévision payante de l'almanach, événements calendaires récurrents (§ 3.8). |
 
 ### 1.2 Boucle de jeu
 
@@ -447,15 +447,36 @@ recharge d'énergie en gemmes.
   normal ; piste gratuite plus une piste « premium » débloquée par un **vote**
   top.gg (jamais par un paiement). Un seul passe configuré (`season-pass.json`),
   daté.
-- **Événements temporaires — non livré, voir [06](./06-roadmap.md).** Six
-  événements sont configurés (`events.json` : moisson d'automne, marché de Noël,
-  fête du printemps, sécheresse, week-end doublé, réveil du dragon) avec
-  bannière, modificateurs et paliers de récompense, et le suivi de points
-  (`user_events`) existe. Mais `getActiveEvents` (`src/services/world.service.ts`)
-  n'active un événement à `recurringCron` que si une fenêtre `startsAt`/`endsAt`
-  a été écrite dans sa configuration, et **aucune tâche planifiée ne le fait** ;
-  ni `/admin` ni `/event` ne permettent de le déclencher à la main. Le sixième
-  (`dragon_awakening`), sans cron ni dates, est traité comme **permanent**.
+- **Événements temporaires.** Six événements sont configurés (`events.json` :
+  moisson d'automne, marché de Noël, fête du printemps, sécheresse, week-end
+  doublé, réveil du dragon) avec bannière, modificateurs et paliers de
+  récompense ; le suivi de points (`user_events`) existe. Les cinq premiers
+  reviennent par `recurringCron` + `durationHours` ; le sixième
+  (`dragon_awakening`), sans cron ni dates, est **permanent**.
+
+  La fenêtre d'un événement récurrent est **calculée à la lecture**
+  (`currentEventWindow`, `src/game/events.ts`) : dernière occurrence du cron à
+  ou avant l'instant demandé, plus la durée. Aucun état, aucune écriture, donc
+  le même résultat sur tous les shards. Le calcul se fait en UTC, comme toutes
+  les cadences du projet.
+
+  Jusqu'à la revue finale, `getActiveEvents` attendait qu'une fenêtre
+  `startsAt`/`endsAt` soit écrite **dans la configuration** — un fichier JSON en
+  lecture seule que personne n'écrivait : cinq événements sur six ne se sont
+  jamais déclenchés, sans erreur nulle part. Le schéma exige désormais
+  `durationHours` dès qu'un `recurringCron` est posé, et un test vérifie que
+  chaque événement récurrent est actif au moins un jour dans l'année.
+
+  | Événement | Départ (UTC) | Durée | Jours actifs par an |
+  |---|---|---|---|
+  | Fête du printemps | 20 mars | 240 h | 10 |
+  | Sécheresse | 5 juillet | 120 h | 5 |
+  | Moisson d'automne | 1er octobre | 336 h | 14 |
+  | Marché de Noël | 10 décembre | 384 h | 16 |
+  | Week-end doublé | vendredi 18 h | 54 h | 104 |
+
+  Reste non livré : le déclenchement manuel d'un événement (`/admin`), utile
+  pour une opération exceptionnelle — voir [06](./06-roadmap.md).
 - **Saisons** : printemps, été, automne, hiver, sur un cycle réel configurable
   (`SEASON_LENGTH_DAYS`, 14 jours par défaut). En saison : +20 % de rendement ;
   hors saison : −35 % de rendement et −25 % de vitesse (−10 % de plus en
@@ -736,7 +757,7 @@ Explicitement non livré, pour éviter l'ambiguïté : minijeux temps réel exig
 de la dextérité, mariage/PNJ romançables, décoration libre de la ferme, PNJ du
 village avec affection, tableau de bord web, saisons compétitives,
 multi-fermes, monétisation, ainsi que — parmi les exigences de ce document —
-l'activation calendaire des événements et la personnalisation du profil
+le déclenchement manuel d'un événement et la personnalisation du profil
 (§ 3.1, § 3.8). La pêche, la mine, l'API publique et les webhooks, prévus hors
 v1, **sont livrés** (§ 3.13, § 3.14). Ces éléments sont positionnés dans la
 [roadmap](./06-roadmap.md).

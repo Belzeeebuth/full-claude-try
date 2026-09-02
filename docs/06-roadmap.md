@@ -472,9 +472,10 @@ Indépendamment des fonctionnalités, à faire avant toute v2 significative :
      dans `interaction-create.ts` dès qu'une seconde commande en a besoin ;
    - `touchUser` ne filtre pas `deleted_at` (contourné par
      `reassertAnonymization`) ;
-   - `docs/02-architecture.md` décrit encore 15 tâches sous leurs anciens
-     noms et une arborescence `render/` sans `animals`, `scenery`, `postcard`,
-     `alt-text` : à réaligner sur `src/jobs/definitions.ts` (17 tâches) ;
+   - aucun déclenchement manuel d'événement : les cinq événements récurrents
+     partent à leur date (`recurringCron` + `durationHours`, calcul dans
+     `src/game/events.ts`), mais une opération exceptionnelle demanderait une
+     sous-commande `/admin event` qui n'existe pas ;
    - le motif `node_modules/` de `.gitignore` n'ignore pas un **lien
      symbolique** `node_modules` (cas des copies de travail des agents) —
      `node_modules` sans barre oblique serait plus sûr.

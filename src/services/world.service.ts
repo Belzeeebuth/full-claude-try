@@ -1,6 +1,7 @@
 import { balance as getBalance, getConfig, type EventConfig } from '../config';
 import { env } from '../config/env';
 import { cacheGet, cacheSet, key as redisKey } from '../db/redis';
+import { currentEventWindow } from '../game/events';
 import { seasonAt, nextSeason, rollWeather, type SeasonState, type WeatherState } from '../game/world';
 import * as systemRepo from '../repositories/system.repo';
 import { toSqlDate } from '../utils/time';
@@ -128,19 +129,44 @@ async function resolveWeather(day: string, season: SeasonState, now: Date): Prom
   return finalWeather;
 }
 
-/** Événements dont la fenêtre couvre l'instant donné. */
+/**
+ * Événements dont la fenêtre couvre l'instant donné.
+ *
+ * Trois formes coexistent dans `events.json` :
+ *  - dates explicites (`startsAt`/`endsAt`) : une opération ponctuelle ;
+ *  - `recurringCron` + `durationHours` : la fenêtre courante est CALCULÉE à la
+ *    lecture (game/events.ts). Auparavant on attendait qu'un ordonnanceur
+ *    écrive les dates dans la configuration — un fichier JSON en lecture seule,
+ *    que personne n'a jamais écrit : cinq évènements sur six ne se sont jamais
+ *    déclenchés ;
+ *  - ni l'un ni l'autre : évènement permanent, actif tant qu'il est activé.
+ *
+ * Les évènements récurrents renvoyés portent les dates de LEUR occurrence en
+ * cours, pour que `/world` affiche une fin réelle.
+ */
 export function getActiveEvents(now: Date = new Date(), locale?: string): EventConfig[] {
-  return getConfig(locale).eventList.filter((event) => {
-    if (!event.enabled) return false;
+  const active: EventConfig[] = [];
+  for (const event of getConfig(locale).eventList) {
+    if (!event.enabled) continue;
     const starts = event.startsAt ? new Date(event.startsAt).getTime() : undefined;
     const ends = event.endsAt ? new Date(event.endsAt).getTime() : undefined;
-    if (starts !== undefined && now.getTime() < starts) return false;
-    if (ends !== undefined && now.getTime() > ends) return false;
-    // Sans fenêtre explicite, un événement récurrent est piloté par le scheduler
-    // qui écrit `startsAt`/`endsAt` ; sans cron ni dates il est considéré permanent.
-    if (!starts && !ends && event.recurringCron) return false;
-    return true;
-  });
+    if (starts !== undefined && now.getTime() < starts) continue;
+    if (ends !== undefined && now.getTime() > ends) continue;
+
+    if (starts === undefined && ends === undefined && event.recurringCron) {
+      // `durationHours` est garanti par le schéma dès qu'un cron est posé.
+      const window = currentEventWindow(event.recurringCron, event.durationHours ?? 0, now);
+      if (!window) continue;
+      active.push({
+        ...event,
+        startsAt: window.startsAt.toISOString(),
+        endsAt: window.endsAt.toISOString(),
+      });
+      continue;
+    }
+    active.push(event);
+  }
+  return active;
 }
 
 function aggregateEventModifiers(events: EventConfig[]): WorldState['eventModifiers'] {

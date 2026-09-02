@@ -72,6 +72,9 @@
       "reroll_cost": "Quest reroll",
       "admin_grant": "Admin grant",
       "admin_remove": "Admin removal"
+    },
+    "pseudo_item": {
+      "almanac": "Almanac forecast"
     }
   }
 }
