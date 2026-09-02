@@ -20,12 +20,7 @@
     "best_variant": " · {icon} {variant}",
     "empty": "Nothing to show on this page.",
     "footer": "{discovered}/{total} entries overall • page {page}/{pages}",
-    "hint": "Harvest, collect, fish, mine, craft: every first time fills a slot.",
-    "variant": {
-      "normal": "ordinary",
-      "shiny": "shiny",
-      "golden": "golden"
-    }
+    "hint": "Harvest, collect, fish, mine, craft: every first time fills a slot."
   },
   "animals": {
     "variant": {

@@ -81,7 +81,7 @@ export function formatCollectionLine(line: CollectionLine, t: Translator, locale
 
   if (entry.variant) {
     const icon = variantIcon(entry.variant);
-    const variant = t(`collection.variant.${entry.variant}`);
+    const variant = t(`animals.variant.${entry.variant}`);
     return discovered
       ? t('collection.entry_variant_found', {
           emoji: entry.emoji,
@@ -107,7 +107,7 @@ export function formatCollectionLine(line: CollectionLine, t: Translator, locale
   if (discovered.bestVariant && discovered.bestVariant !== 'normal') {
     best += t('collection.best_variant', {
       icon: variantIcon(discovered.bestVariant),
-      variant: t(`collection.variant.${discovered.bestVariant}`),
+      variant: t(`animals.variant.${discovered.bestVariant}`),
     });
   }
   return t('collection.entry_found', {

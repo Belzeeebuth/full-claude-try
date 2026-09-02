@@ -20,12 +20,7 @@
     "best_variant": " · {icon} {variant}",
     "empty": "Rien à afficher sur cette page.",
     "footer": "{discovered}/{total} entrées au total • page {page}/{pages}",
-    "hint": "Récoltez, collectez, pêchez, minez, fabriquez : chaque première fois remplit une case.",
-    "variant": {
-      "normal": "ordinaire",
-      "shiny": "shiny",
-      "golden": "dorée"
-    }
+    "hint": "Récoltez, collectez, pêchez, minez, fabriquez : chaque première fois remplit une case."
   },
   "animals": {
     "variant": {

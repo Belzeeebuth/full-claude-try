@@ -224,7 +224,7 @@ describe('formatage des lignes', () => {
     const golden = variants.find((entry) => entry.variant === 'golden')!;
     const found = formatCollectionLine({ entry: golden, discovered: record(golden.key) }, t, 'fr');
     expect(found).toContain('🌟');
-    expect(found).toContain(t('collection.variant.golden'));
+    expect(found).toContain(t('animals.variant.golden'));
     expect(found).toContain(golden.name);
     const hidden = formatCollectionLine({ entry: golden, discovered: null }, t, 'fr');
     expect(hidden).toContain(HIDDEN_NAME);
