@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, lte, sql, type SQL } from 'drizzle-orm';
 import { getDb, type Executor } from '../db/client';
 import {
   auditLogs,
@@ -122,9 +122,18 @@ export async function claimPendingNotifications(
   now: Date,
   limit: number,
   claimedBy: string,
+  channelRoutedTypes: readonly string[] = [],
   executor: Executor = getDb(),
 ): Promise<ClaimedNotification[]> {
   const staleBefore = new Date(now.getTime() - CLAIM_STALE_MS);
+
+  // Les rappels destinés à un salon sont laissés à `claimPendingChannelReminders` :
+  // les deux réservations sont complémentaires, jamais concurrentes, sinon un
+  // même rappel partirait en MP ET en salon selon le tick qui gagne.
+  const excludeChannelRouted =
+    channelRoutedTypes.length > 0
+      ? sql`AND NOT ${routedToChannel(sql`notifications.user_id`, sql`notifications.type`, channelRoutedTypes)}`
+      : sql``;
 
   const result = await executor.execute<{
     id: string;
@@ -145,6 +154,7 @@ export async function claimPendingNotifications(
                 AND deliver_at <= ${now}
                 AND attempts <= 3
                 AND (claimed_at IS NULL OR claimed_at < ${staleBefore})
+                ${excludeChannelRouted}
               ORDER BY deliver_at
               LIMIT ${limit}
                 FOR UPDATE SKIP LOCKED
@@ -167,6 +177,174 @@ export async function claimPendingNotifications(
     discordId: row.discord_id,
     locale: row.locale,
   }));
+}
+
+/**
+ * Condition SQL « ce rappel part dans un salon de serveur plutôt qu'en MP ».
+ *
+ * Les trois conditions sont le double opt-in : le joueur l'a demandé
+ * (`settings.channel_reminders`), le dernier serveur où il a joué a désigné un
+ * salon (`guild_settings.reminder_channel_id`) et le bot y est encore. La liste
+ * des types est passée par l'appelant : quels types sont des « rappels » est
+ * une règle de jeu, elle n'a pas sa place dans un repository.
+ */
+function routedToChannel(userIdColumn: SQL, typeColumn: SQL, types: readonly string[]): SQL {
+  const typeList = sql.join(
+    types.map((type) => sql`${type}`),
+    sql`, `,
+  );
+  return sql`(${typeColumn}::text IN (${typeList}) AND EXISTS (
+    SELECT 1
+      FROM users AS ru
+      JOIN settings AS rs ON rs.user_id = ru.id
+      JOIN guild_settings AS rg ON rg.discord_guild_id = ru.last_guild_id
+     WHERE ru.id = ${userIdColumn}
+       AND rs.channel_reminders = true
+       AND rg.reminder_channel_id IS NOT NULL
+       AND rg.left_at IS NULL
+  ))`;
+}
+
+export interface ClaimedChannelReminder {
+  notification: { id: number; userId: string; type: string };
+  discordId: string;
+  guildId: string;
+  channelId: string;
+  batchMinutes: number;
+  /** Langue du serveur : le message est partagé par plusieurs joueurs. */
+  guildLocale: string;
+  preferences: {
+    notifyCrops: boolean;
+    notifyAnimals: boolean;
+    notifyEnergy: boolean;
+    dailyReminder: boolean;
+  };
+}
+
+/**
+ * Réserve les rappels à livrer dans un salon — le complément exact de
+ * l'exclusion de `claimPendingNotifications`.
+ *
+ * Réservation SÉPARÉE, avec une limite bien plus large que le débit des MP :
+ * un salon reçoit UN message par lot, et ce message doit contenir tout ce qui
+ * attend. Réserver quatre rappels par seconde comme pour les MP fragmenterait
+ * un lot de trente joueurs en huit messages espacés de dix minutes — l'inverse
+ * du but. `FOR UPDATE OF n2` ne verrouille que les notifications : les lignes
+ * `users`, `settings` et `guild_settings` consultées restent libres.
+ */
+export async function claimPendingChannelReminders(
+  now: Date,
+  limit: number,
+  claimedBy: string,
+  types: readonly string[],
+  executor: Executor = getDb(),
+): Promise<ClaimedChannelReminder[]> {
+  if (types.length === 0) return [];
+  const staleBefore = new Date(now.getTime() - CLAIM_STALE_MS);
+
+  const result = await executor.execute<{
+    id: string;
+    user_id: string;
+    type: string;
+    discord_id: string;
+    last_guild_id: string;
+    reminder_channel_id: string;
+    reminder_batch_minutes: number;
+    guild_locale: string;
+    notify_crops: boolean;
+    notify_animals: boolean;
+    notify_energy: boolean;
+    daily_reminder: boolean;
+  }>(sql`
+    UPDATE notifications AS n
+       SET claimed_at = ${now}, claimed_by = ${claimedBy}
+      FROM (
+             SELECT n2.id, n2.user_id
+               FROM notifications AS n2
+              WHERE n2.delivered = false
+                AND n2.deliver_at <= ${now}
+                AND n2.attempts <= 3
+                AND (n2.claimed_at IS NULL OR n2.claimed_at < ${staleBefore})
+                AND ${routedToChannel(sql`n2.user_id`, sql`n2.type`, types)}
+              ORDER BY n2.deliver_at
+              LIMIT ${limit}
+                FOR UPDATE OF n2 SKIP LOCKED
+           ) AS picked
+      JOIN users AS u ON u.id = picked.user_id
+      JOIN settings AS s ON s.user_id = u.id
+      JOIN guild_settings AS g ON g.discord_guild_id = u.last_guild_id
+     WHERE n.id = picked.id
+ RETURNING n.id, n.user_id, n.type, u.discord_id, u.last_guild_id,
+           g.reminder_channel_id, g.reminder_batch_minutes, g.locale AS guild_locale,
+           s.notify_crops, s.notify_animals, s.notify_energy, s.daily_reminder
+  `);
+
+  return result.rows.map((row) => ({
+    notification: { id: Number(row.id), userId: row.user_id, type: row.type },
+    discordId: row.discord_id,
+    guildId: row.last_guild_id,
+    channelId: row.reminder_channel_id,
+    batchMinutes: Number(row.reminder_batch_minutes),
+    guildLocale: row.guild_locale,
+    preferences: {
+      notifyCrops: row.notify_crops,
+      notifyAnimals: row.notify_animals,
+      notifyEnergy: row.notify_energy,
+      dailyReminder: row.daily_reminder,
+    },
+  }));
+}
+
+/**
+ * Reporte des notifications à une date ultérieure et libère leur réservation.
+ * C'est ainsi qu'un rappel « attend le lot suivant » : il redevient réservable
+ * à la réouverture de la fenêtre du salon, et repart groupé avec ce qui sera
+ * arrivé entre-temps.
+ */
+export async function postponeNotifications(
+  ids: number[],
+  deliverAt: Date,
+  executor: Executor = getDb(),
+): Promise<void> {
+  if (ids.length === 0) return;
+  await executor
+    .update(notifications)
+    .set({ deliverAt, claimedAt: null, claimedBy: null })
+    .where(inArray(notifications.id, ids));
+}
+
+export async function markNotificationsDelivered(
+  ids: number[],
+  executor: Executor = getDb(),
+): Promise<void> {
+  if (ids.length === 0) return;
+  await executor
+    .update(notifications)
+    .set({ delivered: true, deliveredAt: new Date() })
+    .where(inArray(notifications.id, ids));
+}
+
+export async function markNotificationsFailed(
+  ids: number[],
+  error: string,
+  executor: Executor = getDb(),
+): Promise<void> {
+  if (ids.length === 0) return;
+  await executor
+    .update(notifications)
+    .set({ attempts: sql`${notifications.attempts} + 1`, lastError: error.slice(0, 500) })
+    .where(inArray(notifications.id, ids));
+}
+
+export async function releaseNotificationClaims(
+  ids: number[],
+  executor: Executor = getDb(),
+): Promise<void> {
+  if (ids.length === 0) return;
+  await executor
+    .update(notifications)
+    .set({ claimedAt: null, claimedBy: null })
+    .where(inArray(notifications.id, ids));
 }
 
 /** Libère une réservation sans marquer la notification délivrée (erreur transitoire). */

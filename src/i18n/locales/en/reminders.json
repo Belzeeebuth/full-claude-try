@@ -1,0 +1,45 @@
+{
+  "$comment": "Grouped reminders in a server channel: /server command, /settings channel-reminders option, message posted by the notifications job.",
+  "reminders": {
+    "header": "🔔 **Farm reminders**",
+    "segment": "{emoji} {label}: {mentions}",
+    "separator": " · ",
+    "footer": "-# To stop being mentioned: `/settings channel-reminders:false`",
+    "types": {
+      "crop_ready": "Crops ready",
+      "crop_withering": "Crops at risk",
+      "animal_hungry": "Animals to feed",
+      "animal_sick": "Sick animals",
+      "animal_product": "Products to collect",
+      "energy_full": "Energy full",
+      "daily_reminder": "Daily reward",
+      "craft_done": "Crafting done"
+    }
+  },
+  "settings": {
+    "channel_reminders_line": "Reminders in the server channel: {check}",
+    "channel_reminders_no_channel": "\n\n⚠️ This server has no reminder channel yet: an administrator needs to run `/server reminders channel:#channel`. Until then, your reminders stay in direct messages."
+  },
+  "server": {
+    "forbidden": "This command is reserved for members with the **Manage Server** permission.",
+    "channel_invalid": "Pick a text channel of this server.",
+    "bot_cannot_write": "I cannot write in {channel}: I need the **View Channel**, **Send Messages** and **Embed Links** permissions.",
+    "nothing_to_do": "Provide a channel (`channel`), an interval (`every`) or `off:true`.",
+    "no_channel_for_interval": "Configure a channel with `channel` before tuning the interval.",
+    "reminders_set_title": "🔔 Reminders enabled",
+    "reminders_set_body": "Reminders of players who opted in (`/settings channel-reminders:true`) will be grouped in {channel}: at most one message every {minutes} min, {max} players mentioned per message at most.",
+    "reminders_off_title": "🔕 Reminders disabled",
+    "reminders_off_body": "No reminder will be posted in this server anymore. Affected players fall back to direct messages.",
+    "status_title": "⚙️ Configuration of {name}",
+    "status_reminders_field": "🔔 Reminders",
+    "status_reminders_on": "Channel: {channel}\nInterval: one message every {minutes} min",
+    "status_reminders_off": "Disabled — `/server reminders channel:#channel` to enable them.",
+    "status_channels_field": "📣 Other channels",
+    "status_channel_line": "{label}: {channel}",
+    "status_channel_announcements": "Announcements",
+    "status_channel_market": "Market",
+    "status_channel_events": "Events",
+    "status_locale_field": "🌍 Default language",
+    "status_footer": "Reserved for members with the “Manage Server” permission."
+  }
+}

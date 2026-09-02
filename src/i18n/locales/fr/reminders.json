@@ -1,0 +1,45 @@
+{
+  "$comment": "Rappels groupés dans un salon de serveur : commande /server, option /settings channel-reminders, message posté par le job notifications.",
+  "reminders": {
+    "header": "🔔 **Rappels de la ferme**",
+    "segment": "{emoji} {label} : {mentions}",
+    "separator": " · ",
+    "footer": "-# Pour ne plus être mentionné : `/settings channel-reminders:false`",
+    "types": {
+      "crop_ready": "Récoltes prêtes",
+      "crop_withering": "Cultures en danger",
+      "animal_hungry": "À nourrir",
+      "animal_sick": "Animaux malades",
+      "animal_product": "Produits à ramasser",
+      "energy_full": "Énergie pleine",
+      "daily_reminder": "Récompense quotidienne",
+      "craft_done": "Fabrication terminée"
+    }
+  },
+  "settings": {
+    "channel_reminders_line": "Rappels dans le salon du serveur : {check}",
+    "channel_reminders_no_channel": "\n\n⚠️ Ce serveur n'a pas encore de salon de rappels : un administrateur doit lancer `/server reminders channel:#salon`. En attendant, vos rappels restent en message privé."
+  },
+  "server": {
+    "forbidden": "Cette commande est réservée aux membres ayant la permission **Gérer le serveur**.",
+    "channel_invalid": "Choisissez un salon textuel de ce serveur.",
+    "bot_cannot_write": "Je ne peux pas écrire dans {channel} : il me faut les permissions **Voir le salon**, **Envoyer des messages** et **Intégrer des liens**.",
+    "nothing_to_do": "Indiquez un salon (`channel`), un espacement (`every`) ou `off:true`.",
+    "no_channel_for_interval": "Configurez d'abord un salon avec `channel` avant de régler l'espacement.",
+    "reminders_set_title": "🔔 Rappels activés",
+    "reminders_set_body": "Les rappels des joueurs qui l'ont accepté (`/settings channel-reminders:true`) seront regroupés dans {channel} : au plus un message toutes les {minutes} min, {max} joueurs mentionnés maximum par message.",
+    "reminders_off_title": "🔕 Rappels désactivés",
+    "reminders_off_body": "Plus aucun rappel ne sera posté sur ce serveur. Les joueurs concernés retombent sur les messages privés.",
+    "status_title": "⚙️ Configuration de {name}",
+    "status_reminders_field": "🔔 Rappels",
+    "status_reminders_on": "Salon : {channel}\nEspacement : un message toutes les {minutes} min",
+    "status_reminders_off": "Désactivés — `/server reminders channel:#salon` pour les activer.",
+    "status_channels_field": "📣 Autres salons",
+    "status_channel_line": "{label} : {channel}",
+    "status_channel_announcements": "Annonces",
+    "status_channel_market": "Marché",
+    "status_channel_events": "Évènements",
+    "status_locale_field": "🌍 Langue par défaut",
+    "status_footer": "Réservé aux membres ayant la permission « Gérer le serveur »."
+  }
+}
