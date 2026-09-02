@@ -1,0 +1,42 @@
+{
+  "$comment": "Almanach du fermier (/almanac) : état du monde gratuit, prévision de demain payante. Fragment fusionné avec fr.json au chargement ; même arborescence que en/almanac.json.",
+  "almanac": {
+    "title": "📖 Almanach du fermier — {day}",
+    "today_field": "🌤️ Aujourd'hui",
+    "today_value": "{emoji} **{label}** — {temperature} °C\n{description}",
+    "season_field": "🗓️ Saison",
+    "season_value": "{emoji} **{name}** (année {year}) — {bar} {percent} %\nIl reste **{count} jour(s)** avant {nextEmoji} **{nextName}** ({relative}).",
+    "events_field": "🎪 Évènements en cours",
+    "events_none": "Aucun évènement en cours.",
+    "events_line": "• **{name}** — {description}",
+    "forecast_field": "🔮 Demain ({day})",
+    "forecast_locked": "Prévision scellée. L'almanach vous la révèle pour **{price}** — exacte, sans marge d'erreur, lisible jusqu'à minuit sans repayer.",
+    "forecast_unaffordable": "Il vous manque **{missing}** pour l'acheter.",
+    "forecast_value": "{emoji} **{label}** — {temperature} °C\n{description}\nLisible jusqu'à {relative}.",
+    "tips_field": "💡 Astuce d'almanach",
+    "tip": {
+      "free_watering": "🌧️ Arrosage gratuit demain : plantez ce soir et gardez votre eau.",
+      "water_double": "🔥 Vos cultures demanderont {multiplier}× plus d'eau : arrosez tôt, ou attendez pour planter.",
+      "yield_up": "📈 Rendement +{percent} % : récoltez demain plutôt que ce soir.",
+      "yield_down": "📉 Rendement −{percent} % : récoltez ce soir ce qui est prêt.",
+      "growth_up": "⏩ Pousse +{percent} % : bon moment pour lancer une culture longue.",
+      "growth_down": "🐌 Pousse −{percent} % : privilégiez les cultures courtes, ou patientez.",
+      "damage": "⚠️ {percent} % de risque de dégâts par parcelle : rentrez ce qui est mûr avant minuit.",
+      "pests_high": "🐛 Nuisibles fréquents ({percent} %) : passez voir vos parcelles dans la journée.",
+      "pests_none": "🛡️ Aucun nuisible demain : une journée tranquille pour vos cultures.",
+      "neutral": "☁️ Rien de notable : une journée ordinaire à la ferme."
+    },
+    "buy_button": "Acheter la prévision ({price})",
+    "bought_title": "📖 Prévision achetée",
+    "bought_body": "{price} débités — solde : {balance}.\n{emoji} **{label}** — {temperature} °C\n{description}\n\nRelisez-la dans `/almanac` jusqu'à {relative}.",
+    "already_owned_title": "📖 Prévision déjà achetée",
+    "already_owned_body": "Vous possédez déjà la prévision de demain : rien n'a été débité.",
+    "footer": "L'almanach est personnel : lui seul connaît demain."
+  },
+  "errors": {
+    "almanac": {
+      "outdated": "Cette prévision n'est plus celle de demain : relancez `/almanac`.",
+      "price_changed": "Le prix a changé depuis l'affichage ({price} 🪙 désormais) : relancez `/almanac`."
+    }
+  }
+}

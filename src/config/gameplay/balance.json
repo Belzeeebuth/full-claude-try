@@ -678,5 +678,10 @@
   "alerts": {
     "maxPerUser": 5,
     "durationDays": 14
+  },
+  "almanac": {
+    "$comment": "Prévision météo payante (/almanac) : prix = priceCoins + pricePerLevel × niveau, puits monétaire pur. Au niveau 20 : 150 + 12 × 20 = 390 🪙, soit moins d'une parcelle-heure de cacao (508 🪙/h, docs/04 § 2) alors qu'une ferme de ce niveau en cultive des dizaines : la prévision reste un achat de confort, jamais un investissement qui se rembourse mécaniquement. Au niveau 1 : 162 🪙, soit vingt blés — cher pour un débutant, ce qui est voulu (l'information n'a de valeur qu'avec des parcelles à protéger).",
+    "priceCoins": 150,
+    "pricePerLevel": 12
   }
 }

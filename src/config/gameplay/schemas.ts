@@ -871,5 +871,15 @@ export const balanceSchema = z.object({
     maxPerUser: positiveInt,
     durationDays: positiveInt,
   }),
+  /**
+   * Almanach (`/almanac`) : prix de la prévision météo du lendemain,
+   * `priceCoins + pricePerLevel × niveau`. Deux entiers et non un barème par
+   * palier : le prix doit suivre le revenu du joueur sans jamais créer de
+   * marche où la prévision deviendrait soudain rentable.
+   */
+  almanac: z.object({
+    priceCoins: nonNegativeInt,
+    pricePerLevel: nonNegativeInt,
+  }),
 });
 export type Balance = z.infer<typeof balanceSchema>;

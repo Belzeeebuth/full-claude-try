@@ -1,0 +1,42 @@
+{
+  "$comment": "Farmer's almanac (/almanac): free world state, paid forecast for tomorrow. Fragment merged with en.json at load time; same key tree as fr/almanac.json.",
+  "almanac": {
+    "title": "📖 Farmer's almanac — {day}",
+    "today_field": "🌤️ Today",
+    "today_value": "{emoji} **{label}** — {temperature} °C\n{description}",
+    "season_field": "🗓️ Season",
+    "season_value": "{emoji} **{name}** (year {year}) — {bar} {percent}%\n**{count} day(s)** left before {nextEmoji} **{nextName}** ({relative}).",
+    "events_field": "🎪 Active events",
+    "events_none": "No event running right now.",
+    "events_line": "• **{name}** — {description}",
+    "forecast_field": "🔮 Tomorrow ({day})",
+    "forecast_locked": "Sealed forecast. The almanac reveals it for **{price}** — exact, no margin of error, readable until midnight without paying again.",
+    "forecast_unaffordable": "You are **{missing}** short of buying it.",
+    "forecast_value": "{emoji} **{label}** — {temperature} °C\n{description}\nReadable until {relative}.",
+    "tips_field": "💡 Almanac tip",
+    "tip": {
+      "free_watering": "🌧️ Free watering tomorrow: plant tonight and save your water.",
+      "water_double": "🔥 Your crops will need {multiplier}× more water: water early, or wait before planting.",
+      "yield_up": "📈 Yield +{percent}%: harvest tomorrow rather than tonight.",
+      "yield_down": "📉 Yield −{percent}%: harvest tonight whatever is ready.",
+      "growth_up": "⏩ Growth +{percent}%: a good time to start a long crop.",
+      "growth_down": "🐌 Growth −{percent}%: favour short crops, or wait.",
+      "damage": "⚠️ {percent}% chance of damage per plot: bring in what is ripe before midnight.",
+      "pests_high": "🐛 Frequent pests ({percent}%): check on your plots during the day.",
+      "pests_none": "🛡️ No pests tomorrow: a quiet day for your crops.",
+      "neutral": "☁️ Nothing notable: an ordinary day on the farm."
+    },
+    "buy_button": "Buy the forecast ({price})",
+    "bought_title": "📖 Forecast purchased",
+    "bought_body": "{price} charged — balance: {balance}.\n{emoji} **{label}** — {temperature} °C\n{description}\n\nRead it again in `/almanac` until {relative}.",
+    "already_owned_title": "📖 Forecast already purchased",
+    "already_owned_body": "You already own tomorrow's forecast: nothing was charged.",
+    "footer": "The almanac is personal: it alone knows tomorrow."
+  },
+  "errors": {
+    "almanac": {
+      "outdated": "That forecast is no longer about tomorrow: run `/almanac` again.",
+      "price_changed": "The price changed since it was displayed (now {price} 🪙): run `/almanac` again."
+    }
+  }
+}
