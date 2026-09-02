@@ -351,7 +351,10 @@ export async function renderPostcard(input: PostcardRenderInput): Promise<Buffer
 
   // Légende manuscrite : au plus trois lignes, la taille se réduit avant de
   // couper — une légende de 60 caractères doit toujours tenir entière.
-  const caption = drawableText(input.caption.length > 0 ? input.caption : t('render.postcard.greeting'));
+  // Sans police d'emoji, une légende faite uniquement d'emoji se vide au
+  // dessin : on retombe alors sur la salutation plutôt que sur un blanc.
+  const drawnCaption = drawableText(input.caption);
+  const caption = drawnCaption.length > 0 ? drawnCaption : drawableText(t('render.postcard.greeting'));
   const captionTop = stampY + stampHeight + 68;
   ctx.fillStyle = INK;
   ctx.textAlign = 'left';
