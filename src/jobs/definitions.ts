@@ -15,6 +15,7 @@ import * as progressionRepo from '../repositories/progression.repo';
 import * as systemRepo from '../repositories/system.repo';
 import * as coopService from '../services/coop.service';
 import * as economyService from '../services/economy.service';
+import * as ledgerService from '../services/ledger.service';
 import * as marketService from '../services/market.service';
 import * as miscService from '../services/misc.service';
 import * as progressionService from '../services/progression.service';
@@ -459,6 +460,22 @@ export const jobs: JobDefinition[] = [
   },
 
   {
+    key: 'ledger:checkpoint',
+    cron: '0 5 1 * *',
+    description: 'Freezes the monthly opening balances of the ledger',
+    async run() {
+      // Une heure après la purge nocturne, jamais en même temps : les deux
+      // touchent `transactions` à des identifiants disjoints, mais autant ne
+      // pas les faire se disputer le pool à 04:00.
+      const result = await ledgerService.checkpointLedger(new Date());
+      return (
+        `${result.written} checkpoints for ${result.periodStart}, ` +
+        `${result.drifts} drift(s), ${result.failedBatches} failed batch(es)`
+      );
+    },
+  },
+
+  {
     key: 'leaderboard:weekly',
     cron: '0 0 * * 1',
     description: 'Freezes leaderboards and resets weekly counters',
@@ -484,7 +501,14 @@ export const jobs: JobDefinition[] = [
       );
       const stacks = await inventoryRepo.pruneEmptyStacks();
       const locks = pruneMemoryLocks() + pruneMemory();
-      return `${history} history points, ${shop} shop rows, ${stacks} empty stacks, ${locks} locks`;
+      // En dernier : c'est la seule étape qui touche au journal comptable, et
+      // un refus (dérive, absence de checkpoint) ne doit priver de rien les
+      // purges qui précèdent. Jamais de suppression sans solde d'ouverture.
+      const ledger = await ledgerService.purgeLedger(new Date());
+      return (
+        `${history} history points, ${shop} shop rows, ${stacks} empty stacks, ${locks} locks, ` +
+        `${ledger.deleted} ledger rows (${ledger.pairs} purged, ${ledger.skipped} skipped, cutoff ${ledger.cutoffPeriod})`
+      );
     },
   },
 ];

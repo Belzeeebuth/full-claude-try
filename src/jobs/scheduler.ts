@@ -148,6 +148,9 @@ const CRON_INTERVALS: Record<string, number> = {
   '0 */2 * * *': 2 * 60 * 60_000,
   '30 */2 * * *': 2 * 60 * 60_000,
   '0 */3 * * *': 3 * 60 * 60_000,
+  // Mensuel (`ledger:checkpoint`, le 1er à 05:00 UTC) : approximé à 30 jours
+  // pour le repli minuteur et l'estimation de la prochaine exécution.
+  '0 5 1 * *': 30 * 24 * 60 * 60_000,
 };
 
 function startWithTimers(): void {

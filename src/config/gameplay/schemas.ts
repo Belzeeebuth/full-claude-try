@@ -837,6 +837,16 @@ export const balanceSchema = z.object({
       review: positiveInt,
       autoBan: positiveInt,
     }),
+    /**
+     * Rétention du journal comptable par soldes d'ouverture
+     * (`services/ledger.service.ts`). Le jour est borné à 28 pour exister
+     * dans tous les mois ; la rétention est un nombre de mois calendaires,
+     * à garder au-dessus de la fenêtre de `/history` (90 jours).
+     */
+    ledger: z.object({
+      checkpointDay: z.number().int().min(1).max(28),
+      retentionMonths: z.number().int().min(4).max(120),
+    }),
   }),
   cooldowns: z.record(z.string(), nonNegativeInt),
   rateLimit: z.object({

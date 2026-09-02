@@ -786,12 +786,16 @@ export async function recordSnapshotHealth(
 /**
  * Détecte un écart entre le solde d'un joueur et son journal (anti-triche).
  *
- * Borné aux joueurs ACTIFS récemment. La version précédente agrégeait toute la
- * table `transactions` — sans borne temporelle, chaque heure : le journal ne
- * faisant que croître, la requête finissait par dépasser `statement_timeout` et
- * l'audit s'arrêtait sans bruit, puisque le job attrape l'erreur. Un écart ne
- * peut de toute façon apparaître que sur un compte qui bouge, et l'index
- * `transactions_user_currency_idx` rend l'agrégation indexable par joueur.
+ * Borné deux fois. Aux joueurs ACTIFS récemment : la version d'origine
+ * agrégeait toute la table `transactions` chaque heure et finissait par
+ * dépasser `statement_timeout` — l'audit s'arrêtait sans bruit, puisque le job
+ * attrape l'erreur. Et, par joueur, aux écritures POSTÉRIEURES à son dernier
+ * solde d'ouverture (`ledger_checkpoints`) : le solde attendu est
+ * `opening_balance + SUM(amount) WHERE id > transactions_through`, ce qui rend
+ * l'agrégation indépendante de l'âge du compte et permet à la purge de
+ * rétention de supprimer les écritures couvertes par un checkpoint sans que
+ * l'audit ne les cherche. Un joueur sans checkpoint retombe sur la somme depuis
+ * l'origine (`COALESCE(…, 0)`) : comportement inchangé pour lui.
  */
 export async function findLedgerMismatches(
   limit: number,
@@ -803,12 +807,24 @@ export async function findLedgerMismatches(
     coins: string;
     ledger: string;
   }>(sql`
-    SELECT u.id AS user_id, u.coins::text AS coins, COALESCE(SUM(t.amount), 0)::text AS ledger
+    SELECT u.id AS user_id,
+           u.coins::text AS coins,
+           (COALESCE(c.opening_balance, 0) + COALESCE(SUM(t.amount), 0))::text AS ledger
     FROM users u
-    LEFT JOIN transactions t ON t.user_id = u.id AND t.currency = 'coins'
+    LEFT JOIN LATERAL (
+      SELECT lc.opening_balance, lc.transactions_through
+      FROM ledger_checkpoints lc
+      WHERE lc.user_id = u.id AND lc.currency = 'coins'
+      ORDER BY lc.period_start DESC
+      LIMIT 1
+    ) c ON true
+    LEFT JOIN transactions t
+      ON t.user_id = u.id
+     AND t.currency = 'coins'
+     AND t.id > COALESCE(c.transactions_through, 0)
     WHERE u.deleted_at IS NULL AND u.last_seen_at >= ${since}
-    GROUP BY u.id, u.coins
-    HAVING u.coins <> COALESCE(SUM(t.amount), 0)
+    GROUP BY u.id, u.coins, c.opening_balance
+    HAVING u.coins <> COALESCE(c.opening_balance, 0) + COALESCE(SUM(t.amount), 0)
     LIMIT ${limit}
   `);
   return rows.rows.map((row) => ({

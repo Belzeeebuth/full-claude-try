@@ -618,6 +618,11 @@
       "warn": 50,
       "review": 120,
       "autoBan": 250
+    },
+    "ledger": {
+      "$comment": "Rétention du journal comptable. checkpointDay : jour UTC qui ouvre une période (le cron ledger:checkpoint tourne le 1er à 05:00 UTC, c'est du code — changer ce jour sans changer le cron ne fait que déplacer l'étiquette des périodes). retentionMonths : âge minimal des écritures purgées par maintenance:cleanup ; doit rester au-dessus de la fenêtre de /history (90 jours).",
+      "checkpointDay": 1,
+      "retentionMonths": 12
     }
   },
   "cooldowns": {
