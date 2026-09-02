@@ -63,13 +63,16 @@ describe('apparence des cultures', () => {
 
 /**
  * Ces deux cas mesurent du texte : sans police installée, toute largeur vaut 0
- * et il n'y a rien à ajuster. C'est le cas de l'étape de build Docker, qui
- * compile et teste dans une image nue — `fonts-dejavu-core` n'est installée que
- * dans l'image finale. On saute plutôt que d'affirmer une propriété vide.
+ * et il n'y a rien à ajuster. L'étape de build Docker installe désormais les
+ * mêmes polices que l'image finale, mais une machine de développement nue peut
+ * toujours n'en avoir aucune : on saute plutôt que d'affirmer une propriété
+ * vide. La mesure emploie `font()`, la pile RÉELLE du rendu, et non
+ * `sans-serif` : selon les polices présentes ces deux-là ne désignent pas la
+ * même fonte, et le budget calculé sur l'une ne dit alors rien de l'autre.
  */
 function fontsAvailable(): boolean {
   const { ctx } = newCanvas(10, 10);
-  ctx.font = 'bold 30px sans-serif';
+  ctx.font = font(30, 'bold');
   return ctx.measureText('Ferme').width > 0;
 }
 
@@ -77,7 +80,9 @@ describe('ajustement du texte', () => {
   it.skipIf(!fontsAvailable())('réduit la taille plutôt que de tronquer un nom long', () => {
     const { ctx } = newCanvas(400, 100);
     const name = 'Ferme des Trois Chênes';
-    ctx.font = 'bold 30px sans-serif';
+    // La même pile que celle dont `fitFont` se sert pour mesurer : sinon le
+    // budget est dérivé d'une fonte et vérifié sur une autre.
+    ctx.font = font(30, 'bold');
     const atFullSize = ctx.measureText(name).width;
     // On choisit une largeur que la grande taille dépasse, mais qu'une taille
     // plus petite atteint : c'est exactement le cas que la fonction doit gérer.

@@ -12,6 +12,21 @@ RUN npm ci --no-audit --no-fund
 
 # ---------- Étape 2 : compilation -------------------------------------------
 FROM node:20-bookworm-slim AS build
+
+# Les MÊMES polices que l'image finale (étape 4). `npm run test` dessine ici
+# pour de vrai : sans police, `measureText` renvoie 0 et `fillText` ne pose
+# aucun pixel, si bien que deux rendus qui ne diffèrent QUE par leur texte
+# sortent identiques. Les tests qui en dépendent échouaient alors sur un
+# environnement incomplet, pas sur une régression (render-postcard, « change
+# avec la légende »), et ceux qui se gardent eux-mêmes — le repli emoji de
+# render-crops, `fitFont` — ne s'exécutaient jamais là où ils comptent le plus.
+# La couche est jetée avec l'étape : l'image finale ne grossit pas.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        fonts-dejavu-core \
+        fonts-noto-color-emoji \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
