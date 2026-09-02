@@ -1,6 +1,4 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { getConfig } from '../config';
-import { clear as clearCooldown } from '../framework/cooldown';
 import { COLORS, baseEmbed } from '../framework/ui';
 import { coopLevelOf } from '../framework/views';
 import { renderPostcardImage } from '../render';
@@ -53,8 +51,7 @@ const cartePostale: Command = {
   async execute(interaction, context): Promise<void> {
     await interaction.deferReply();
     const player = context.player;
-    const { t, locale, now } = context;
-    const catalog = getConfig(locale);
+    const { t, locale, now, config: catalog } = context;
 
     const caption = sanitizeCaption(interaction.options.getString('caption'));
     const coopLevel = await coopLevelOf(player.coopId);
@@ -117,9 +114,9 @@ const cartePostale: Command = {
 
     const image = await renderPostcardImage(input);
     if (!image.attachment) {
-      // Sans image, il n'y a pas de carte : on rend son délai au joueur
-      // plutôt que de lui faire payer dix minutes pour un repli texte.
-      await clearCooldown(player.id, COOLDOWN_BUCKET);
+      // Sans image, il n'y a pas de carte : contrairement à `/farm`, aucun
+      // repli texte n'a de sens. On lève une `GameError` — le pipeline rend
+      // alors son délai au joueur, qui ne paie pas dix minutes pour rien.
       throw gameError('busy', 'postcard could not be rendered', {
         i18nKey: 'errors.postcard.render_failed',
       });

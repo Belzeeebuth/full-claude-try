@@ -291,11 +291,14 @@ export async function renderPostcard(input: PostcardRenderInput): Promise<Buffer
   drawPaper(ctx, width, height, random);
 
   // --- Le tirage photo, à gauche ------------------------------------------
-  // Deux tiers de la largeur pour la photo : c'est elle qu'on partage.
-  const sceneWidth = Math.round(width * 0.54);
-  const sceneHeight = Math.round(sceneWidth * 0.78);
+  // La moitié gauche de la carte pour la photo : c'est elle qu'on partage.
+  // Le tirage est presque carré (10 × 9) : la grille de parcelles l'est, et
+  // un format 3:2 laissait un champ minuscule entre deux bandes d'herbe vide
+  // dès qu'on dépassait 5 × 5 — la hauteur est la ressource rare, on la prend.
+  const sceneWidth = Math.round(width * 0.52);
+  const sceneHeight = Math.round(sceneWidth * 0.9);
   const scene = drawScene(input, catalog, sceneWidth, sceneHeight);
-  const printCenterX = Math.round(width * 0.318);
+  const printCenterX = Math.round(width * 0.33);
   const printCenterY = Math.round(height * 0.485);
   // Inclinaison légère et semée : entre −2,6° et −1,4°, comme une photo
   // glissée sous un coin de ruban.
@@ -341,7 +344,9 @@ export async function renderPostcard(input: PostcardRenderInput): Promise<Buffer
     brand: t('render.postcard.brand'),
     farmName: input.farmName,
     date: postmarkDate(input.date, locale, input.timezone),
-    cancelLength: stampWidth + 60,
+    // Les ondulations barrent le timbre et s'arrêtent AVANT le filet du
+    // bord : une oblitération qui sort de la carte trahit le dessin.
+    cancelEndX: width - 34,
   });
 
   // Légende manuscrite : au plus trois lignes, la taille se réduit avant de
@@ -363,11 +368,15 @@ export async function renderPostcard(input: PostcardRenderInput): Promise<Buffer
     cursorY += captionLineHeight;
   }
 
-  // Signature, alignée à droite comme au bas d'une lettre.
-  ctx.font = scriptFont(24, 'bold');
+  // Signature, alignée à droite comme au bas d'une lettre. Un pseudo Discord
+  // peut faire 32 caractères : on réduit la plume avant de couper le nom.
+  const signature = drawableText(t('render.postcard.signature', { name: input.farmer.name }));
+  for (const size of [24, 22, 20, 18]) {
+    ctx.font = scriptFont(size, 'bold');
+    if (ctx.measureText(signature).width <= columnWidth) break;
+  }
   ctx.fillStyle = INK;
   ctx.textAlign = 'right';
-  const signature = drawableText(t('render.postcard.signature', { name: input.farmer.name }));
   ctx.fillText(clipText(ctx, signature, columnWidth), columnRight, cursorY + 10);
   ctx.textAlign = 'left';
 
@@ -554,7 +563,9 @@ function drawScene(
   const boardWidth = tile * gridWidth;
   const boardHeight = tile * gridHeight;
   const boardX = Math.round((width - boardWidth) / 2);
-  const boardY = boardTop + Math.min(8, Math.floor((boardBottom - boardTop - boardHeight) / 2));
+  // Centré dans l'espace libre : une petite grille collée à l'horizon
+  // laissait toute la moitié basse de la photo en herbe nue.
+  const boardY = boardTop + Math.floor((boardBottom - boardTop - boardHeight) / 2);
 
   // --- Bâtiments à cheval sur l'horizon, derrière la clôture ----------------
   if (buildings.length > 0) {
@@ -567,6 +578,23 @@ function drawScene(
       drawBuilding(ctx, building.key, x, y, buildingSize);
     }
   }
+
+  // --- Marges : arbres et fleurs, pour qu'une petite ferme ne flotte pas -----
+  // Une 3×3 laisse 150 px d'herbe nue de chaque côté du champ ; sur une
+  // photo à partager, c'est un vide qui saute aux yeux. Les arbres sont
+  // semés (position, taille, forme) et suivent la saison : nus en hiver,
+  // roux en automne.
+  drawSceneMargins(ctx, {
+    width,
+    horizon,
+    groundBottom: height - bottomBand,
+    boardX,
+    boardWidth,
+    fence: FENCE,
+    season: input.season,
+    palette,
+    random,
+  });
 
   drawSceneFence(ctx, boardX, boardY, boardWidth, boardHeight, FENCE);
 
@@ -686,6 +714,153 @@ function drawSceneFence(
     ctx.fillRect(left - 6, py, 6, 16);
     ctx.fillRect(right, py, 6, 16);
   }
+}
+
+interface MarginOptions {
+  width: number;
+  horizon: number;
+  /** Bas de la zone plantable : au-dessus de la bande des bêtes. */
+  groundBottom: number;
+  boardX: number;
+  boardWidth: number;
+  fence: number;
+  season: string;
+  palette: { grass: string; grassDark: string };
+  random: () => number;
+}
+
+/**
+ * Garnit l'herbe de part et d'autre du champ : un ou deux arbres par côté
+ * quand la marge est assez large, et quelques fleurs. Tout est semé : la
+ * même ferme a toujours les mêmes arbres au même endroit.
+ */
+function drawSceneMargins(ctx: SKRSContext2D, options: MarginOptions): void {
+  const { random } = options;
+  const leftMargin = options.boardX - options.fence - 8;
+  const rightStart = options.boardX + options.boardWidth + options.fence + 8;
+  const rightMargin = options.width - rightStart;
+  const top = options.horizon + 16;
+  const bottom = options.groundBottom - 6;
+
+  for (const side of [
+    { start: 6, span: leftMargin - 6 },
+    { start: rightStart, span: rightMargin - 6 },
+  ]) {
+    if (side.span < 44) continue;
+    // Fleurs d'abord, derrière les arbres.
+    const flowers = Math.round((side.span / 18) * (options.season === 'winter' ? 0.3 : 1));
+    for (let index = 0; index < flowers; index += 1) {
+      const fx = side.start + random() * side.span;
+      const fy = top + random() * (bottom - top);
+      drawFlower(ctx, fx, fy, options.season, random);
+    }
+    const trees = side.span >= 110 ? 2 : 1;
+    const slot = side.span / trees;
+    for (let index = 0; index < trees; index += 1) {
+      const size = Math.min(slot - 6, 46 + random() * 26);
+      const tx = side.start + slot * index + (slot - size) / 2 + (random() - 0.5) * Math.max(0, slot - size - 6);
+      const ty = top + 10 + random() * Math.max(0, bottom - top - size * 1.5 - 10);
+      drawTree(ctx, tx, ty, size, options.season, options.palette, random);
+    }
+  }
+}
+
+/** Arbre stylisé : tronc, puis trois masses de feuillage ; nu en hiver, roux en automne. */
+function drawTree(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  size: number,
+  season: string,
+  palette: { grass: string; grassDark: string },
+  random: () => number,
+): void {
+  const trunkWidth = size * 0.16;
+  const trunkHeight = size * 0.55;
+  const canopyRadius = size * 0.34;
+  const cx = x + size / 2;
+  const canopyY = y + canopyRadius;
+
+  // Ombre portée au sol, légère.
+  ctx.fillStyle = 'rgba(30,40,20,0.16)';
+  ctx.beginPath();
+  ctx.ellipse(cx + size * 0.08, y + canopyRadius * 2 + trunkHeight * 0.85, size * 0.42, size * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#6b4a2e';
+  ctx.fillRect(cx - trunkWidth / 2, canopyY + canopyRadius * 0.6, trunkWidth, trunkHeight);
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillRect(cx + trunkWidth * 0.15, canopyY + canopyRadius * 0.6, trunkWidth * 0.35, trunkHeight);
+
+  if (season === 'winter') {
+    // Branches nues : trois traits qui s'ouvrent depuis le tronc.
+    ctx.strokeStyle = '#6b4a2e';
+    ctx.lineWidth = Math.max(1.5, trunkWidth * 0.4);
+    ctx.lineCap = 'round';
+    for (const angle of [-0.9, -0.2, 0.55]) {
+      ctx.beginPath();
+      ctx.moveTo(cx, canopyY + canopyRadius * 0.9);
+      ctx.lineTo(cx + Math.sin(angle) * canopyRadius * 1.4, canopyY - Math.cos(angle) * canopyRadius * 1.2);
+      ctx.stroke();
+    }
+    ctx.lineCap = 'butt';
+    return;
+  }
+
+  const [leaf, leafDark] =
+    season === 'autumn'
+      ? (['#d98a3a', '#a85f22'] as const)
+      : ([palette.grassDark, mixShade(palette.grassDark)] as const);
+  const blobs = [
+    { dx: -canopyRadius * 0.55, dy: canopyRadius * 0.25, r: canopyRadius * 0.85 },
+    { dx: canopyRadius * 0.55, dy: canopyRadius * 0.25, r: canopyRadius * 0.85 },
+    { dx: 0, dy: -canopyRadius * 0.2, r: canopyRadius },
+  ];
+  for (const blob of blobs) {
+    const jitter = (random() - 0.5) * canopyRadius * 0.15;
+    ctx.fillStyle = leafDark;
+    ctx.beginPath();
+    ctx.arc(cx + blob.dx + jitter, canopyY + blob.dy + 3, blob.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = leaf;
+    ctx.beginPath();
+    ctx.arc(cx + blob.dx + jitter, canopyY + blob.dy, blob.r * 0.92, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Reflet en haut à gauche : donne le volume.
+  ctx.fillStyle = 'rgba(255,255,255,0.16)';
+  ctx.beginPath();
+  ctx.arc(cx - canopyRadius * 0.3, canopyY - canopyRadius * 0.45, canopyRadius * 0.45, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/** Assombrit une couleur `#rrggbb` d'un quart, pour l'ombre du feuillage. */
+function mixShade(hex: string): string {
+  const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  if (!match) return hex;
+  const channel = (part: string): string =>
+    Math.round(Number.parseInt(part, 16) * 0.72)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${channel(match[1]!)}${channel(match[2]!)}${channel(match[3]!)}`;
+}
+
+/** Fleur ou touffe : un point de couleur et deux pétales, selon la saison. */
+function drawFlower(ctx: SKRSContext2D, x: number, y: number, season: string, random: () => number): void {
+  const colors =
+    season === 'winter'
+      ? ['#e6eef2', '#d0dde4']
+      : season === 'autumn'
+        ? ['#e0b04a', '#c96f3c', '#f2e3b4']
+        : ['#f6e05e', '#f28cb1', '#ffffff', '#f4a261'];
+  const color = colors[Math.floor(random() * colors.length)]!;
+  const radius = 1.6 + random() * 1.4;
+  ctx.fillStyle = 'rgba(40,80,30,0.35)';
+  ctx.fillRect(x - 0.6, y, 1.2, radius * 2.2);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 // ---------------------------------------------------------------------------
@@ -848,20 +1023,29 @@ function drawStamp(ctx: SKRSContext2D, options: StampOptions): void {
   sctx.lineWidth = 1.2;
   sctx.strokeRect(innerX + 0.5, innerY + 0.5, innerWidth - 1, innerHeight - 1);
 
-  sctx.textAlign = 'center';
+  // Marque en haut à gauche et valeur faciale (le niveau) en haut à droite,
+  // comme sur un vrai timbre ; la saison seule en bas, centrée. Les trois
+  // sur la même ligne se chevauchaient dès que la saison s'appelait
+  // « PRINTEMPS ».
+  sctx.textAlign = 'left';
   sctx.fillStyle = 'rgba(30,30,50,0.85)';
-  sctx.font = font(9, 'bold');
-  sctx.fillText(options.brand, innerX + innerWidth / 2, innerY + 4);
-  sctx.font = font(9, 'bold');
-  sctx.fillStyle = '#fbfaf4';
-  sctx.fillText(clipText(sctx, options.seasonLabel.toUpperCase(), innerWidth - 30), innerX + innerWidth / 2, innerY + innerHeight - 14);
+  sctx.font = font(8, 'bold');
+  sctx.fillText(clipText(sctx, options.brand, innerWidth - 28), innerX + 5, innerY + 4);
   sctx.textAlign = 'right';
   sctx.font = font(13, 'bold');
   sctx.fillStyle = '#fbfaf4';
   sctx.strokeStyle = 'rgba(30,30,50,0.6)';
   sctx.lineWidth = 2;
-  sctx.strokeText(String(options.level), innerX + innerWidth - 5, innerY + innerHeight - 20);
-  sctx.fillText(String(options.level), innerX + innerWidth - 5, innerY + innerHeight - 20);
+  sctx.strokeText(String(options.level), innerX + innerWidth - 5, innerY + 3);
+  sctx.fillText(String(options.level), innerX + innerWidth - 5, innerY + 3);
+  sctx.textAlign = 'center';
+  sctx.font = font(9, 'bold');
+  sctx.fillStyle = '#fbfaf4';
+  sctx.fillText(
+    clipText(sctx, options.seasonLabel.toUpperCase(), innerWidth - 10),
+    innerX + innerWidth / 2,
+    innerY + innerHeight - 14,
+  );
   sctx.textAlign = 'left';
 
   // Dentelure : des trous ronds à cheval sur le bord.
@@ -908,8 +1092,8 @@ interface PostmarkOptions {
   brand: string;
   farmName: string;
   date: string;
-  /** Longueur des lignes d'oblitération, vers la droite, par-dessus le timbre. */
-  cancelLength: number;
+  /** Abscisse où s'arrêtent les lignes d'oblitération, qui partent du cachet vers la droite. */
+  cancelEndX: number;
 }
 
 /**
@@ -938,7 +1122,8 @@ function drawPostmark(ctx: SKRSContext2D, options: PostmarkOptions): void {
   for (const offset of [-14, 0, 14]) {
     ctx.beginPath();
     const startX = cx + Math.sqrt(Math.max(0, radius * radius - offset * offset));
-    for (let dx = 0; dx <= options.cancelLength; dx += 2) {
+    const length = Math.max(0, options.cancelEndX - startX);
+    for (let dx = 0; dx <= length; dx += 2) {
       const px = startX + dx;
       const py = cy + offset + Math.sin(dx / 9) * 3.2;
       if (dx === 0) ctx.moveTo(px, py);
