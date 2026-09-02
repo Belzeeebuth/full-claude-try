@@ -2,7 +2,13 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { loadImage, type Image, type SKRSContext2D } from '@napi-rs/canvas';
-import type { AnimalForm, AnimalPalette, CropForm, CropPalette } from '../config/gameplay/schemas';
+import type {
+  AnimalForm,
+  AnimalPalette,
+  AnimalVariant,
+  CropForm,
+  CropPalette,
+} from '../config/gameplay/schemas';
 import { env } from '../config/env';
 import { moduleLogger } from '../utils/logger';
 import { PALETTE, fillRoundRect, font, lighten } from './canvas';
@@ -954,6 +960,11 @@ export interface AnimalDrawOptions {
   sleeping?: boolean;
   /** Pansement sur le flanc : l'animal est malade. */
   sick?: boolean;
+  /**
+   * Variante : `shiny` ajoute un halo d'étincelles semé, `golden` tire la
+   * palette de l'espèce vers l'or et pose un reflet. Absente → `normal`.
+   */
+  variant?: AnimalVariant;
 }
 
 /** Position de l'œil rendue par chaque forme, pour que l'œil soit dessiné en dernier. */
@@ -986,7 +997,11 @@ type FormPainter = (
  * retourné se lirait à l'envers.
  */
 export function drawAnimalForm(ctx: SKRSContext2D, options: AnimalDrawOptions): void {
-  const { x, y, size, form, palette } = options;
+  const { x, y, size, form } = options;
+  const variant = options.variant ?? 'normal';
+  // Une dorée garde sa silhouette et ses proportions : seule la palette
+  // change, tirée vers l'or — on reconnaît toujours l'espèce.
+  const palette = variant === 'golden' ? goldenPalette(options.palette) : options.palette;
   const facing = options.facing ?? 1;
   const seed = Math.abs(Math.floor(options.seed ?? 0));
   const cx = x + size / 2;
@@ -1009,8 +1024,117 @@ export function drawAnimalForm(ctx: SKRSContext2D, options: AnimalDrawOptions): 
   drawEye(ctx, eye, options.sleeping === true);
   ctx.restore();
 
+  // La marque de variante passe AVANT pansement et « zz » : ce sont des
+  // indicateurs d'action, ils doivent rester lisibles par-dessus le décor.
+  drawVariantMark(ctx, { x, y, size, variant, seed });
   if (options.sick) drawBandage(ctx, cx - size * 0.08, groundY - size * 0.42, size);
   if (options.sleeping) drawSleep(ctx, x + size * 0.72, y + size * 0.02, size);
+}
+
+// ---------------------------------------------------------------------------
+// VARIANTES : SHINY ET DORÉE
+// ---------------------------------------------------------------------------
+
+/** Teintes de l'or vers lesquelles on TIRE la palette de l'espèce, sans la remplacer. */
+const GOLD_PALETTE: AnimalPalette = {
+  body: '#f4c94e',
+  bodyDark: '#b98a2a',
+  accent: '#fff1b3',
+  accentDark: '#d9a63c',
+};
+
+/**
+ * Palette d'une bête dorée : 70 % d'or sur le corps, un peu moins sur
+ * l'accent pour que bec, cornes ou crête gardent une trace de leur teinte —
+ * une poule dorée reste une poule, pas une statue. `mixHex` (plus bas) rend
+ * une couleur `rgb()`, que le canvas accepte comme un hexadécimal.
+ */
+export function goldenPalette(palette: AnimalPalette): AnimalPalette {
+  return {
+    body: mixHex(palette.body, GOLD_PALETTE.body, 0.7),
+    bodyDark: mixHex(palette.bodyDark, GOLD_PALETTE.bodyDark, 0.7),
+    accent: mixHex(palette.accent, GOLD_PALETTE.accent, 0.55),
+    accentDark: mixHex(palette.accentDark, GOLD_PALETTE.accentDark, 0.55),
+  };
+}
+
+/** Étoile à quatre branches : une étincelle lisible à 4 px comme à 12 px. */
+function drawStar(ctx: SKRSContext2D, x: number, y: number, radius: number, fill: string): void {
+  const inner = radius * 0.32;
+  ctx.beginPath();
+  ctx.moveTo(x, y - radius);
+  ctx.lineTo(x + inner, y - inner);
+  ctx.lineTo(x + radius, y);
+  ctx.lineTo(x + inner, y + inner);
+  ctx.lineTo(x, y + radius);
+  ctx.lineTo(x - inner, y + inner);
+  ctx.lineTo(x - radius, y);
+  ctx.lineTo(x - inner, y - inner);
+  ctx.closePath();
+  // Liseré sombre : sur la paille claire du poulailler, une étoile blanche
+  // nue disparaîtrait.
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+  ctx.lineWidth = Math.max(1, radius * 0.25);
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.lineJoin = 'miter';
+}
+
+/**
+ * Marque de variante autour d'une bête déjà dessinée (silhouette OU sprite
+ * PNG : la marque ne dépend pas de la façon dont le corps a été peint).
+ *
+ *  - shiny : cinq étincelles blanches et bleutées sur un anneau autour du
+ *    corps, à des angles SEMÉS sur la graine de la bête — deux shiny voisines
+ *    ne scintillent pas au même endroit, mais la même bête scintille toujours
+ *    pareil (cache d'images) ;
+ *  - dorée : un reflet clair sur l'épaule et une étoile d'or au-dessus de la
+ *    tête, en couronne — la teinte seule ne suffit pas à 34 px, l'étoile la
+ *    confirme. Au centre et non dans un coin : les quatre coins sont ceux
+ *    des pastilles d'action (`drawResident`), qui la recouvriraient.
+ *
+ * Volontairement petit : la variante est un bonus, pas l'espèce.
+ */
+export function drawVariantMark(
+  ctx: SKRSContext2D,
+  options: { x: number; y: number; size: number; variant: AnimalVariant; seed?: number },
+): void {
+  const { x, y, size, variant } = options;
+  if (variant === 'normal') return;
+  const seed = Math.abs(Math.floor(options.seed ?? 0));
+  const cx = x + size / 2;
+  const cy = y + size * 0.5;
+
+  if (variant === 'shiny') {
+    const colors = ['#ffffff', '#cfefff', '#ffffff', '#e9f7ff', '#ffffff'];
+    for (let index = 0; index < 5; index += 1) {
+      // Angle semé sur un cinquième de tour, rayon légèrement varié :
+      // l'anneau reste régulier de loin, vivant de près.
+      const angle = (index / 5) * Math.PI * 2 + ((seed * 7 + index * 13) % 40) / 40 * 1.1 - 0.4;
+      const wobble = ((seed * 3 + index * 5) % 10) / 10;
+      const rx = size * (0.36 + wobble * 0.06);
+      const ry = size * (0.33 + wobble * 0.05);
+      // Plancher en pixels : à 34 px, une étincelle proportionnelle ferait
+      // deux pixels et ne se verrait plus.
+      const radius = Math.max(index % 2 === 0 ? 3.2 : 2.4, size * (index % 2 === 0 ? 0.075 : 0.05));
+      drawStar(ctx, cx + Math.cos(angle) * rx, cy + Math.sin(angle) * ry, radius, colors[index]!);
+    }
+    return;
+  }
+
+  // Dorée : reflet sur l'épaule (trait clair, arrondi, semi-transparent) puis
+  // l'étoile d'or.
+  ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+  ctx.lineWidth = Math.max(1.5, size * 0.045);
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(cx - size * 0.2, y + size * 0.5);
+  ctx.lineTo(cx - size * 0.08, y + size * 0.4);
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+  drawStar(ctx, cx, y + size * 0.08, Math.max(4, size * 0.1), '#ffd84a');
 }
 
 /** Œil : sclère claire et pupille sombre — lisible sur un corps clair comme sombre. */

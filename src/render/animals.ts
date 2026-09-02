@@ -1,5 +1,5 @@
 import { balance as getBalance } from '../config';
-import type { AnimalForm, AnimalPalette } from '../config/gameplay/schemas';
+import type { AnimalForm, AnimalPalette, AnimalVariant } from '../config/gameplay/schemas';
 import { translate } from '../i18n';
 import { clampAltText, joinSentences, listSome } from './alt-text';
 import {
@@ -24,7 +24,14 @@ import {
   seedFrom,
   seededRandom,
 } from './scenery';
-import { drawAnimal, drawAnimalForm, drawBadge, drawWeatherIcon, sprite } from './sprites';
+import {
+  drawAnimal,
+  drawAnimalForm,
+  drawBadge,
+  drawVariantMark,
+  drawWeatherIcon,
+  sprite,
+} from './sprites';
 import type { SKRSContext2D } from '@napi-rs/canvas';
 
 /**
@@ -63,6 +70,12 @@ export interface AnimalsRenderAnimal {
   /** Silhouette et palette de `animals.json` ; `null` → silhouette générique. */
   form: AnimalForm | null;
   palette: AnimalPalette | null;
+  /**
+   * Variante (`shiny`, `golden`) ; absente → `normal`. Immuable pour une bête
+   * donnée : l'identifiant, déjà dans la clé de cache, suffit à distinguer
+   * l'image d'une shiny de celle d'une ordinaire.
+   */
+  variant?: AnimalVariant;
   buildingKey: string;
   hunger: number;
   happiness: number;
@@ -431,9 +444,13 @@ async function drawResident(
 ): Promise<void> {
   const { x, y, size } = box;
   const flags = animalIndicators(animal);
+  const variant = animal.variant ?? 'normal';
   const image = await sprite('animals', animal.animalKey);
   if (image) {
     ctx.drawImage(image, x, y, size, size);
+    // Un sprite PNG ne se reteinte pas : la marque (étincelles, étoile)
+    // reste le signe de la variante.
+    drawVariantMark(ctx, { x, y, size, variant, seed: box.seed });
   } else if (animal.form && animal.palette) {
     drawAnimalForm(ctx, {
       x,
@@ -445,9 +462,11 @@ async function drawResident(
       seed: box.seed,
       sleeping: flags.sleeping,
       sick: flags.sick,
+      variant,
     });
   } else {
     drawAnimal(ctx, { x, y, size, color: '#e8d8b7', emoji: animal.emoji });
+    drawVariantMark(ctx, { x, y, size, variant, seed: box.seed });
   }
 
   // Pastilles aux quatre coins, chacune à sa place fixe pour être reconnue
@@ -561,6 +580,17 @@ export function describeAnimals(input: AnimalsRenderInput): string {
   const flagged = input.animals.map((animal) => ({ animal, flags: animalIndicators(animal) }));
   const hidden = Math.max(0, input.animals.length - MAX_VISIBLE_ANIMALS);
 
+  // Les variantes rares : l'image les montre par un halo ou une teinte d'or,
+  // que seul le texte peut restituer à qui ne la voit pas.
+  const rare = input.animals
+    .filter((animal) => animal.variant && animal.variant !== 'normal')
+    .map((animal) =>
+      t('render_alt.animals.variant_entry', {
+        label: label(animal),
+        variant: t(`animals.variant.${animal.variant ?? 'normal'}`),
+      }),
+    );
+
   return clampAltText(
     joinSentences([
       t('render_alt.animals.header', {
@@ -580,6 +610,9 @@ export function describeAnimals(input: AnimalsRenderInput): string {
       listed(flagged.filter((entry) => entry.flags.feed).map((entry) => entry.animal), 'render_alt.animals.feed_list'),
       listed(flagged.filter((entry) => entry.flags.sick).map((entry) => entry.animal), 'render_alt.animals.sick_list'),
       listed(flagged.filter((entry) => entry.flags.pet).map((entry) => entry.animal), 'render_alt.animals.pet_list'),
+      rare.length > 0
+        ? t('render_alt.animals.variant_list', { animals: listSome(rare, MAX_LISTED_ANIMALS, more) })
+        : null,
       hidden > 0 ? t('render_alt.animals.hidden', { count: hidden, max: MAX_VISIBLE_ANIMALS }) : null,
     ]),
   );

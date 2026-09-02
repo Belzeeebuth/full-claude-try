@@ -7,16 +7,21 @@ import {
   feedCost,
   nextProductionAt,
   projectAnimal,
+  rollVariant,
   sellValue,
+  variantEffects,
+  variantProductQuality,
   vetCost,
   type AnimalState,
   type AnimalStatus,
+  type AnimalVariant,
 } from '../game/animals';
 import { liveRng } from '../game/rng';
 import { gameError } from '../utils/errors';
 import { moduleLogger } from '../utils/logger';
 import * as animalRepo from '../repositories/animal.repo';
 import * as playerRepo from '../repositories/player.repo';
+import * as collectionService from './collection.service';
 import * as economyService from './economy.service';
 import * as inventoryService from './inventory.service';
 import { invalidateFarmModifiers } from './modifier-cache';
@@ -47,6 +52,8 @@ export interface AnimalView {
   productEmoji: string;
   qualityMultiplier: number;
   generation: number;
+  /** Variante (`normal`, `shiny`, `golden`) : icône dans la vue, halo dans l'image. */
+  variant: AnimalVariant;
   buildingKey: string;
   canCollect: boolean;
   canFeed: boolean;
@@ -130,6 +137,7 @@ export async function getHerd(
       productEmoji: product?.emoji ?? '📦',
       qualityMultiplier: Number(row.animal.qualityMultiplier),
       generation: row.animal.generation,
+      variant: row.animal.variant,
       buildingKey: animalConfig.buildingKey,
       canCollect: status.readyProduction > 0 && status.productionFactor > 0,
       canFeed: status.hunger < 95,
@@ -169,11 +177,29 @@ export async function getHerd(
 // ACHAT
 // ---------------------------------------------------------------------------
 
+export interface BuyAnimalResult {
+  animalKey: string;
+  name: string;
+  emoji: string;
+  quantity: number;
+  total: number;
+  currency: 'coins' | 'gems';
+  /**
+   * Variante de chaque bête achetée, dans l'ordre d'insertion. La commande
+   * n'annonce que les rares (« ✨ Une poule SHINY ! ») ; le tableau complet
+   * reste utile aux tests et au journal.
+   */
+  variants: AnimalVariant[];
+  /** Découvertes (espèce, variante) : succès de collection éventuels. */
+  tracking: TrackResult;
+}
+
 export async function buyAnimal(
   player: PlayerContext,
   input: { animalKey: string; quantity?: number; discordGuildId?: string },
-): Promise<{ animalKey: string; name: string; emoji: string; quantity: number; total: number; currency: 'coins' | 'gems' }> {
+): Promise<BuyAnimalResult> {
   const config = getConfig(player.locale);
+  const balance = getBalance();
   const animalConfig = config.animals.get(input.animalKey);
   if (!animalConfig || !animalConfig.enabled) {
     throw gameError('animal_not_found', `Unknown species: \`${input.animalKey}\`.`, {
@@ -261,7 +287,15 @@ export async function buyAnimal(
     );
 
     const now = new Date();
+    // La variante se tire APRÈS le paiement, sous verrou : l'aléa est « live »
+    // (jamais rejouable par le joueur) et une bête dorée ne peut pas être
+    // obtenue en annulant un achat — la transaction est atomique.
+    const rng = liveRng(`buy:${player.id}:${input.animalKey}`);
+    const variants: AnimalVariant[] = [];
+    const trackings: TrackResult[] = [];
     for (let index = 0; index < quantity; index += 1) {
+      const variant = rollVariant(rng, balance, { rarity: animalConfig.rarity });
+      variants.push(variant);
       await animalRepo.insertAnimal(
         {
           farmId: player.farmId,
@@ -279,8 +313,17 @@ export async function buyAnimal(
             Number(building.speedMultiplier),
           ),
           purchasePrice: unitPrice,
+          variant,
         },
         tx,
+      );
+      trackings.push(
+        await collectionService.recordAnimalDiscovery(
+          { userId: player.id, coopId: player.coopId, level: player.level },
+          input.animalKey,
+          variant,
+          tx,
+        ),
       );
     }
 
@@ -303,6 +346,8 @@ export async function buyAnimal(
       quantity,
       total,
       currency,
+      variants,
+      tracking: mergeResults(trackings),
     };
   });
 }
@@ -454,13 +499,24 @@ export async function collect(
       const state = toAnimalState(row.animal);
       const status = projectAnimal(state, animalConfig, now, balance);
       const cycles = computeReadyProduction(state, animalConfig, now, balance);
-      const quantity = collectQuantity(animalConfig, status, state, cycles);
+      // Variante : une dorée double la quantité PAR CYCLE (les cycles restent
+      // plafonnés), une shiny sort ses produits en argent une fois sur deux.
+      const effects = variantEffects(row.animal.variant, balance);
+      const quantity = collectQuantity(animalConfig, status, state, cycles, effects.productMultiplier);
       if (quantity <= 0) continue;
+      const quality = variantProductQuality(
+        row.animal.variant,
+        balance,
+        liveRng(`collect:${row.animal.id}`),
+      );
 
       const product = config.items.get(animalConfig.productItemKey);
+      // Pas d'`allowOverflow` : la production reste sur la bête si l'entrepôt
+      // est plein (voir `inventory.service`). `addItems` enregistre aussi la
+      // découverte du produit dans la collection.
       await inventoryService.addItems(
         player.id,
-        [{ itemKey: animalConfig.productItemKey, quantity }],
+        [{ itemKey: animalConfig.productItemKey, quantity, quality }],
         tx,
       );
 
@@ -678,7 +734,9 @@ export async function sellAnimal(
     }
 
     const status = projectAnimal(toAnimalState(row), animalConfig, now, balance);
-    const price = sellValue(animalConfig, status, balance);
+    // Une dorée se revend ×3 : le seul effet de variante qui touche aux pièces,
+    // et il reste déficitaire par rapport à l'achat (voir `game/animals.ts`).
+    const price = sellValue(animalConfig, status, balance, row.variant);
 
     await animalRepo.deleteAnimal(animalId, tx);
     await economyService.pay(
@@ -701,6 +759,10 @@ export async function breed(
   childId?: string;
   qualityMultiplier?: number;
   generation?: number;
+  /** Variante du petit (héritée ou tirée) ; absente sur un échec. */
+  variant?: AnimalVariant;
+  /** Découvertes (espèce, variante) : succès de collection éventuels. */
+  tracking?: TrackResult;
   cost: number;
 }> {
   const config = getConfig(player.locale);
@@ -771,8 +833,18 @@ export async function breed(
     const statusB = projectAnimal(toAnimalState(second), animalConfig, now, balance);
 
     const outcome = breedGenetics(
-      { qualityMultiplier: Number(first.qualityMultiplier), generation: first.generation, status: statusA },
-      { qualityMultiplier: Number(second.qualityMultiplier), generation: second.generation, status: statusB },
+      {
+        qualityMultiplier: Number(first.qualityMultiplier),
+        generation: first.generation,
+        status: statusA,
+        variant: first.variant,
+      },
+      {
+        qualityMultiplier: Number(second.qualityMultiplier),
+        generation: second.generation,
+        status: statusB,
+        variant: second.variant,
+      },
       animalConfig,
       balance,
       liveRng(`${first.id}:${second.id}`),
@@ -800,6 +872,7 @@ export async function breed(
         productionReadyAt: nextProductionAt(animalConfig, now, Number(building.speedMultiplier)),
         qualityMultiplier: outcome.qualityMultiplier.toFixed(3),
         generation: outcome.generation,
+        variant: outcome.variant,
         parentAId: first.id,
         parentBId: second.id,
         purchasePrice: 0,
@@ -808,14 +881,25 @@ export async function breed(
     );
 
     await playerRepo.incrementStats(player.id, { totalAnimalsRaised: 1 }, tx);
+    const tracking = await collectionService.recordAnimalDiscovery(
+      { userId: player.id, coopId: player.coopId, level: player.level },
+      first.animalKey,
+      outcome.variant,
+      tx,
+    );
     await invalidateFarmModifiers(player.id);
-    log.debug({ userId: player.id, animalKey: first.animalKey, generation: outcome.generation }, 'naissance');
+    log.debug(
+      { userId: player.id, animalKey: first.animalKey, generation: outcome.generation, variant: outcome.variant },
+      'naissance',
+    );
 
     return {
       success: true,
       childId,
       qualityMultiplier: outcome.qualityMultiplier,
       generation: outcome.generation,
+      variant: outcome.variant,
+      tracking,
       cost,
     };
   });

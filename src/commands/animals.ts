@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { COLORS, baseEmbed, successEmbed } from '../framework/ui';
 import { animalsView } from '../framework/views';
+import { variantIcon } from '../game/animals';
 import * as animalService from '../services/animal.service';
 import * as animalRepo from '../repositories/animal.repo';
 import { gameError } from '../utils/errors';
@@ -86,19 +87,25 @@ const acheterAnimal: Command = {
       discordGuildId: context.discordGuildId,
     });
 
-    await interaction.editReply({
-      embeds: [
-        successEmbed(
-          `${result.emoji} ${result.quantity}× ${result.name}`,
-          context.t('animals.buy_body', {
-            amount:
-              result.currency === 'gems'
-                ? `${formatNumber(result.total, context.locale)} 💎`
-                : formatCoins(result.total, false, context.locale),
-          }),
-        ),
-      ],
-    });
+    // Une variante rare s'annonce en tête : c'est l'événement de l'achat, et
+    // le joueur ne la verrait sinon qu'à l'icône de `/animals`.
+    const lucky = result.variants
+      .filter((variant) => variant !== 'normal')
+      .map((variant) => context.t(`animals.lucky_${variant}`, { name: result.name }));
+    const embed = successEmbed(
+      `${result.emoji} ${result.quantity}× ${result.name}`,
+      [
+        ...lucky,
+        context.t('animals.buy_body', {
+          amount:
+            result.currency === 'gems'
+              ? `${formatNumber(result.total, context.locale)} 💎`
+              : formatCoins(result.total, false, context.locale),
+        }),
+      ].join('\n'),
+    );
+    appendTracking(embed, result.tracking, context.t);
+    await interaction.editReply({ embeds: [embed] });
   },
 
   async autocomplete(interaction, context): Promise<void> {
@@ -305,21 +312,29 @@ const reproduire: Command = {
       return;
     }
 
-    await interaction.editReply({
-      embeds: [
-        successEmbed(
-          context.t('animals.breed_success_title'),
-          [
-            context.t('animals.breed_success_line1', { generation: result.generation ?? 1 }),
-            context.t('animals.breed_success_line2', {
-              multiplier: result.qualityMultiplier?.toFixed(3) ?? '1.000',
-            }),
-            '',
-            context.t('animals.breed_success_footer'),
-          ].join('\n'),
-        ),
-      ],
-    });
+    const variant = result.variant ?? 'normal';
+    const embed = successEmbed(
+      context.t('animals.breed_success_title'),
+      [
+        context.t('animals.breed_success_line1', { generation: result.generation ?? 1 }),
+        context.t('animals.breed_success_line2', {
+          multiplier: result.qualityMultiplier?.toFixed(3) ?? '1.000',
+        }),
+        // Un petit shiny est l'aboutissement de l'élevage sélectif : on le dit.
+        ...(variant !== 'normal'
+          ? [
+              context.t('animals.breed_variant_line', {
+                icon: variantIcon(variant),
+                variant: context.t(`animals.variant.${variant}`),
+              }),
+            ]
+          : []),
+        '',
+        context.t('animals.breed_success_footer'),
+      ].join('\n'),
+    );
+    if (result.tracking) appendTracking(embed, result.tracking, context.t);
+    await interaction.editReply({ embeds: [embed] });
   },
 
   autocomplete: autocompleteOwnedAnimals,

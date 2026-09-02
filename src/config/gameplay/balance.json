@@ -602,7 +602,25 @@
     "maxPendingProduction": 5,
     "hungerYieldPenalty": 0.5,
     "happinessQualityBonus": 0.15,
-    "sellPriceRatio": 0.6
+    "sellPriceRatio": 0.6,
+    "variants": {
+      "$comment": "Variantes d'animaux, uniquement issues du jeu. shinyChance/goldenChance : probabilité par bête achetée ou née, multipliée par rarityWeights[rareté] (une espèce mythique est achetée dix fois moins souvent qu'une poule : un poids ×3 garde un nombre d'apparitions comparable sur une carrière). inheritanceChance : un parent shiny transmet dans 35 % des cas, deux parents dans 60 % ; la dorée ne se transmet JAMAIS et ne naît jamais d'une portée — c'est le graal, on la trouve, on ne l'élève pas. Effets volontairement modestes pour une économie fermée : shiny → produits en qualité argent (×1,35) une collecte sur deux, soit ≈ +17 % de valeur ; dorée → production ×2 (les cycles restent plafonnés par maxPendingProduction) et revente ×3 — 3 × 0,6 = 1,8 fois le prix d'achat, donc racheter-revendre en boucle reste une perte nette (espérance ≈ −40 % par bête) : aucun puits de pièces n'est contourné.",
+      "shinyChance": 0.02,
+      "goldenChance": 0.002,
+      "rarityWeights": {
+        "common": 1,
+        "uncommon": 1.25,
+        "rare": 1.5,
+        "epic": 2,
+        "legendary": 2.5,
+        "mythic": 3
+      },
+      "inheritanceChance": 0.35,
+      "doubleInheritanceChance": 0.6,
+      "shinyQualityBoost": 0.5,
+      "goldenProductMultiplier": 2,
+      "goldenSellMultiplier": 3
+    }
   },
   "economy": {
     "startingCoins": 500,

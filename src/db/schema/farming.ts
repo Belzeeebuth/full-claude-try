@@ -16,7 +16,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { animalsConfig, buildingsConfig, cropsConfig, itemsConfig, recipesConfig } from './config';
 import { farms, plots, users } from './core';
-import { mutationEnum, qualityEnum, seasonEnum, weatherEnum } from './enums';
+import { animalVariantEnum, mutationEnum, qualityEnum, seasonEnum, weatherEnum } from './enums';
 
 /**
  * Culture en cours sur une parcelle.
@@ -179,6 +179,12 @@ export const ownedAnimals = pgTable(
       .notNull()
       .default('1.000'),
     generation: smallint('generation').notNull().default(1),
+    /**
+     * Variante tirée à l'achat ou héritée à la naissance, immuable ensuite.
+     * NOT NULL avec 'normal' plutôt que NULL : l'index partiel ci-dessous et
+     * les comparaisons de la collection n'ont pas à traiter un troisième état.
+     */
+    variant: animalVariantEnum('variant').notNull().default('normal'),
     parentAId: uuid('parent_a_id'),
     parentBId: uuid('parent_b_id'),
     isSick: boolean('is_sick').notNull().default(false),
@@ -195,6 +201,11 @@ export const ownedAnimals = pgTable(
     index('owned_animals_production_idx').on(t.productionReadyAt),
     index('owned_animals_building_idx').on(t.buildingId),
     index('owned_animals_stats_updated_idx').on(t.statsUpdatedAt),
+    // Partiel : les variantes rares sont ~2 % du cheptel ; un classement
+    // « qui possède le plus de shiny » ne doit pas balayer les 98 % restants.
+    index('owned_animals_variant_idx')
+      .on(t.variant, t.userId)
+      .where(sql`variant <> 'normal'`),
     check('owned_animals_hunger_range', sql`${t.hunger} BETWEEN 0 AND 100`),
     check('owned_animals_happiness_range', sql`${t.happiness} BETWEEN 0 AND 100`),
     check('owned_animals_health_range', sql`${t.health} BETWEEN 0 AND 100`),
