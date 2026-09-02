@@ -217,6 +217,20 @@ export const guildSettings = pgTable(
     announcementChannelId: varchar('announcement_channel_id', { length: 20 }),
     marketChannelId: varchar('market_channel_id', { length: 20 }),
     eventChannelId: varchar('event_channel_id', { length: 20 }),
+    /**
+     * Salon des rappels groupés (récoltes prêtes, animaux à nourrir…), choisi par
+     * un administrateur du serveur via `/server reminders`. NULL = pas de salon :
+     * les rappels de ce serveur restent en message privé. C'est le premier des
+     * deux opt-in (l'autre est `settings.channel_reminders`, côté joueur) : sans
+     * l'accord explicite du serveur, le bot ne mentionne personne publiquement.
+     */
+    reminderChannelId: varchar('reminder_channel_id', { length: 20 }),
+    /**
+     * Espacement minimal entre deux messages de rappel dans le salon. Un bot qui
+     * poste toutes les dix secondes se fait expulser : les rappels accumulés
+     * entre deux lots partent en UN message, jamais un par joueur.
+     */
+    reminderBatchMinutes: smallint('reminder_batch_minutes').notNull().default(10),
     /** Si non vide, les commandes de jeu ne répondent que dans ces salons. */
     allowedChannelIds: text('allowed_channel_ids').array().notNull().default(sql`ARRAY[]::text[]`),
     disabledCommands: text('disabled_commands').array().notNull().default(sql`ARRAY[]::text[]`),
@@ -235,6 +249,7 @@ export const guildSettings = pgTable(
     uniqueIndex('guild_settings_discord_id_uq').on(t.discordGuildId),
     index('guild_settings_left_idx').on(t.leftAt),
     check('guild_settings_xp_multiplier_range', sql`${t.xpMultiplier} BETWEEN 0.1 AND 2.0`),
+    check('guild_settings_reminder_batch_range', sql`${t.reminderBatchMinutes} BETWEEN 1 AND 1440`),
   ],
 );
 

@@ -4,6 +4,7 @@ import { NO_IMAGE, renderProfileImage } from '../render';
 import { getProfile } from '../services/player.service';
 import * as miscService from '../services/misc.service';
 import * as playerRepo from '../repositories/player.repo';
+import * as reminderService from '../services/reminder.service';
 import { prestigeBadge } from '../game/prestige';
 import { gameError } from '../utils/errors';
 import { isValidTimezone } from '../utils/time';
@@ -385,6 +386,11 @@ const parametres: Command = {
     .addBooleanOption((option) =>
       option.setName('compact-mode').setDescription('Disable generated images'),
     )
+    .addBooleanOption((option) =>
+      option
+        .setName('channel-reminders')
+        .setDescription('Get farm reminders as mentions in the server reminder channel instead of DMs'),
+    )
     .toJSON(),
 
   async execute(interaction, context): Promise<void> {
@@ -394,11 +400,13 @@ const parametres: Command = {
     const privacy = interaction.options.getString('privacy');
     const timezone = interaction.options.getString('timezone');
     const compact = interaction.options.getBoolean('compact-mode');
+    const channelReminders = interaction.options.getBoolean('channel-reminders');
 
     if (dm !== null) patch.dmNotifications = dm;
     if (locale) patch.locale = locale;
     if (privacy) patch.privacy = privacy;
     if (compact !== null) patch.compactMode = compact;
+    if (channelReminders !== null) patch.channelReminders = channelReminders;
     if (timezone) {
       if (!isValidTimezone(timezone)) {
         throw gameError('target_invalid', context.t('profile.unknown_timezone', { timezone }), {
@@ -413,14 +421,25 @@ const parametres: Command = {
     }
 
     const settings = await playerRepo.getSettings(context.player.id);
+
+    // Second opt-in sans le premier : le joueur vient d'accepter les mentions
+    // mais ce serveur n'a désigné aucun salon. Sans avertissement, il croirait
+    // la fonctionnalité en panne alors qu'elle attend un administrateur.
+    const missingChannelWarning =
+      channelReminders === true &&
+      context.discordGuildId &&
+      !(await reminderService.hasReminderChannel(context.discordGuildId))
+        ? context.t('settings.channel_reminders_no_channel')
+        : '';
+
     await interaction.reply({
       embeds: [
         baseEmbed({
           title: context.t('settings.title'),
           description:
-            Object.keys(patch).length > 0
+            (Object.keys(patch).length > 0
               ? context.t('settings.updated_body')
-              : context.t('settings.current_body'),
+              : context.t('settings.current_body')) + missingChannelWarning,
           color: COLORS.info,
           fields: [
             {
@@ -432,6 +451,9 @@ const parametres: Command = {
                 context.t('settings.notify_crops_line', { check: settings?.notifyCrops ? '✅' : '❌' }),
                 context.t('settings.notify_animals_line', { check: settings?.notifyAnimals ? '✅' : '❌' }),
                 context.t('settings.notify_daily_line', { check: settings?.dailyReminder ? '✅' : '❌' }),
+                context.t('settings.channel_reminders_line', {
+                  check: settings?.channelReminders ? '✅' : '❌',
+                }),
               ].join('\n'),
               inline: true,
             },

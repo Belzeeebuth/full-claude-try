@@ -155,6 +155,13 @@ export const settings = pgTable(
     notifyMarket: boolean('notify_market').notNull().default(false),
     notifyCoop: boolean('notify_coop').notNull().default(true),
     dailyReminder: boolean('daily_reminder').notNull().default(false),
+    /**
+     * Recevoir les rappels (récoltes, animaux, énergie…) par mention dans le
+     * salon configuré du dernier serveur joué, au lieu d'un message privé.
+     * Beaucoup de joueurs ferment leurs MP (erreur 50007) : sans cette option,
+     * les rappels sont muets pour eux. Second opt-in, après celui du serveur.
+     */
+    channelReminders: boolean('channel_reminders').notNull().default(false),
     locale: varchar('locale', { length: 5 }).notNull().default('fr'),
     timezone: varchar('timezone', { length: 48 }).notNull().default('Europe/Paris'),
     theme: varchar('theme', { length: 32 }).notNull().default('classic'),
