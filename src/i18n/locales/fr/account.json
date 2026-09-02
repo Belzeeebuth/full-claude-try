@@ -1,0 +1,32 @@
+{
+  "$comment": "Fragment /account : export et suppression de compte (RGPD). Fusionné avec fr.json au chargement.",
+  "account": {
+    "export_title": "📦 Export de vos données",
+    "export_body": "Voici tout ce que Harvester conserve à votre sujet, au format JSON : profil, réglages, ferme et parcelles, inventaire, animaux, bâtiments, banque, progression, compagnons, coopérative, intégrations, hôtel des ventes et les {transactions} dernières opérations du journal.",
+    "export_truncated": "⚠️ Sections vidées pour respecter la taille maximale du fichier : {sections}.",
+    "export_privacy": "Ce message n'est visible que par vous. Les clés d'API et les secrets de webhook n'y figurent jamais — seuls leurs préfixes et adresses. Un nouvel export est possible dans une heure.",
+    "delete_title": "⚠️ Supprimer votre compte ?",
+    "delete_body": "Cette action est **irréversible**. Votre ferme, vos parcelles, vos animaux, votre inventaire, votre progression, vos pièces et vos gemmes seront définitivement perdus. Pensez à `/account export` d'abord si vous voulez en garder une copie.",
+    "delete_effects": "Ce qui sera fait immédiatement :\n• votre pseudo est remplacé par un identifiant anonyme, nom d'affichage et avatar effacés ;\n• vos réglages sont neutralisés — plus aucune notification, ferme privée ;\n• vos clés d'API sont révoquées et vos webhooks supprimés ;\n• vos ordres d'achat permanents sont annulés ;\n• vous quittez votre coopérative.",
+    "delete_keeps": "Le journal comptable (vos transactions) est conservé pour l'audit de l'économie du jeu, rattaché à un identifiant interne : il n'est ni public ni consultable en jeu.",
+    "delete_expires": "Ce bouton reste valable {minutes} minutes. Si vous revenez un jour, `/start` créera une ferme toute neuve.",
+    "delete_confirm_button": "Supprimer définitivement",
+    "delete_cancel_button": "Annuler",
+    "deleted_title": "🗑️ Compte supprimé",
+    "deleted_body": "Votre compte a été supprimé. Clés d'API révoquées : {apiKeys} · webhooks supprimés : {webhooks} · ordres annulés : {orders}.\nMerci d'avoir joué. Si l'envie revient, `/start` vous attend.",
+    "cancelled_title": "Suppression annulée",
+    "cancelled_body": "Rien n'a été modifié. Votre ferme vous attend.",
+    "expired_title": "Confirmation expirée",
+    "expired_body": "Ce bouton n'est plus valable. Relancez `/account delete` si vous souhaitez toujours supprimer votre compte."
+  },
+  "errors": {
+    "account": {
+      "blocked": "Impossible de supprimer votre compte pour l'instant. Réglez d'abord :\n• {reasons}",
+      "blocked_hint": "Relancez `/account delete` ensuite.",
+      "blocker_listings": "{count} annonce(s) active(s) à l'hôtel des ventes — `/auction cancel`, ou attendez leur clôture",
+      "blocker_trades": "{count} échange(s) en cours — annulez-les depuis le message d'échange",
+      "blocker_coop_owner": "vous dirigez la coopérative {name} — transmettez la direction avec `/coop promote`",
+      "already_deleted": "Ce compte est déjà supprimé."
+    }
+  }
+}
