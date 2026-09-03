@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harvester — le jeu de ferme qui vit dans Discord</title>
+<meta name="description" content="Harvester est un bot Discord de jeu de ferme : 41 cultures, 24 animaux, un marché vivant, des coopératives et des images générées à la volée.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="hero">
+  <h1>🌾 Harvester</h1>
+  <p>Un vrai jeu de ferme, entièrement dans Discord. On plante entre deux réunions, on récolte le soir, et la ferme continue de vivre pendant ce temps.</p>
+  <p>
+    <a class="btn" href="https://discord.com/oauth2/authorize?client_id=VOTRE_APPLICATION_ID&scope=bot%20applications.commands&permissions=278528">Ajouter à mon serveur</a>
+    <a class="btn ghost" href="https://github.com/belzeeebuth/full-claude-try">Code source</a>
+  </p>
+</div>
+
+<main>
+
+<section>
+  <h2>Ce que ça donne</h2>
+  <figure>
+    <img src="images/ferme.png" alt="Vue de la ferme : une grille de parcelles sous la pluie, avec des cultures à différents stades, des bâtiments autour et un bandeau qui résume les parcelles prêtes.">
+    <figcaption>La ferme, dessinée à chaque appel : la météo, la saison, les bâtiments construits et l'état réel de chaque parcelle.</figcaption>
+  </figure>
+  <div class="grid">
+    <figure>
+      <img src="images/animaux.png" alt="Vue des animaux : chaque bête avec ses jauges de faim, de bonheur et de production.">
+      <figcaption>Les animaux, leurs jauges et leurs variantes rares.</figcaption>
+    </figure>
+    <figure>
+      <img src="images/marche.png" alt="Graphique des prix du marché sur plusieurs relevés, avec la tendance de chaque produit.">
+      <figcaption>Le marché, qui bouge toutes les heures.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <h2>Le jeu</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>🌱 Cultiver</h3>
+      <p>41 cultures, des saisons qui comptent, de la météo qui abîme, des nuisibles, des mauvaises herbes et une fertilité qui s'épuise si on force.</p>
+    </div>
+    <div class="card">
+      <h3>🐄 Élever</h3>
+      <p>24 animaux à nourrir, câliner et faire reproduire. Certains naissent brillants ou dorés — c'est le seul graal du jeu, et il ne s'achète pas.</p>
+    </div>
+    <div class="card">
+      <h3>⚒️ Transformer</h3>
+      <p>49 recettes, 18 bâtiments à faire monter en niveau, et 150 objets dont des poissons et des minerais qui ne se trouvent qu'en pêchant ou en creusant.</p>
+    </div>
+    <div class="card">
+      <h3>💰 Vendre</h3>
+      <p>Un marché dont les prix suivent l'offre et la demande, un hôtel des ventes entre joueurs, des ordres permanents et des alertes de prix.</p>
+    </div>
+    <div class="card">
+      <h3>🤝 Coopérer</h3>
+      <p>Des coopératives jusqu'à 50 membres avec trésorerie et objectifs communs, des visites de ferme, de l'entraide et des classements.</p>
+    </div>
+    <div class="card">
+      <h3>📅 Voir le monde tourner</h3>
+      <p>Saisons, météo quotidienne, événements de calendrier, passe saisonnier, almanach, 52 quêtes et 34 succès.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Par où commencer</h2>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Commande</th><th>Ce qu'elle fait</th></tr>
+      <tr><td><code>/start</code></td><td>Crée votre ferme et lance le tutoriel.</td></tr>
+      <tr><td><code>/farm</code></td><td>Affiche la ferme, avec les boutons pour tout faire.</td></tr>
+      <tr><td><code>/plant</code> <code>/water</code> <code>/harvest</code></td><td>Le cycle de base.</td></tr>
+      <tr><td><code>/animals</code></td><td>Le cheptel, ses jauges et sa production.</td></tr>
+      <tr><td><code>/market</code> <code>/sell</code></td><td>Les prix du moment et la vente.</td></tr>
+      <tr><td><code>/collection</code></td><td>Ce que vous avez découvert, et ce qui manque.</td></tr>
+      <tr><td><code>/history</code></td><td>Où sont passées vos pièces, ligne par ligne.</td></tr>
+      <tr><td><code>/help</code></td><td>Toutes les commandes, par catégorie.</td></tr>
+    </table>
+  </div>
+  <p>Le jeu parle français et anglais, et suit la langue de votre client Discord. <code>/lang</code> permet d'en changer.</p>
+</section>
+
+<section>
+  <h2>Vos données</h2>
+  <p>Harvester conserve le strict nécessaire pour faire tourner une ferme, et vous rend la main à tout moment&nbsp;: <code>/account export</code> vous renvoie tout ce que le bot sait de vous dans un fichier, et <code>/account delete</code> efface votre compte pour de bon.</p>
+  <p><a href="confidentialite.html">Politique de confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a></p>
+</section>
+
+</main>
+
+<footer>
+  <nav>
+    <a href="confidentialite.html">Confidentialité</a>
+    <a href="conditions.html">Conditions</a>
+    <a href="https://github.com/belzeeebuth/full-claude-try">GitHub</a>
+  </nav>
+  <p>Harvester n'est ni affilié à Discord Inc. ni soutenu par lui.</p>
+</footer>
+
+</body>
+</html>

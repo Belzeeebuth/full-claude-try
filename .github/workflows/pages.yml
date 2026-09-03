@@ -1,0 +1,39 @@
+# Publication du site statique (dossier `site/`) sur GitHub Pages.
+#
+# Le site n'a ni build ni dépendance : le dossier est publié tel quel. Le
+# déploiement ne part que depuis la branche par défaut, pour qu'une branche de
+# travail ne remplace jamais les pages légales en ligne — Discord et top.gg
+# pointent dessus.
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['site/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Une seule publication à la fois ; une plus récente attend, sans annuler
+# celle qui est en cours de mise en ligne.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

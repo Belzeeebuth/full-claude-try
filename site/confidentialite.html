@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Politique de confidentialité — Harvester</title>
+<meta name="description" content="Quelles données Harvester conserve, pourquoi, combien de temps, et comment les récupérer ou les effacer.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="legal">
+  <p><a href="index.html">← Harvester</a></p>
+  <h1>Politique de confidentialité</h1>
+  <p class="updated">Dernière mise à jour : 3 septembre 2026</p>
+
+  <p>Harvester est un bot de jeu sur Discord. Pour qu'une ferme puisse exister d'une session à l'autre, il faut bien conserver quelque chose. Cette page dit exactement quoi, pourquoi, et comment vous reprenez la main.</p>
+
+  <h2>1. Qui traite vos données</h2>
+  <p>L'administrateur de l'instance de Harvester sur laquelle vous jouez. Le code du bot est public, mais chaque instance est hébergée par la personne qui l'a installée : c'est elle qui détient la base de données et qui répond de son contenu. Adressez-vous à elle pour toute question — le contact est indiqué au paragraphe 8.</p>
+
+  <h2>2. Ce qui est conservé</h2>
+  <p>Uniquement ce que le jeu exige pour fonctionner :</p>
+  <ul>
+    <li><strong>Votre identifiant Discord</strong>, qui rattache la ferme à vous et à personne d'autre.</li>
+    <li><strong>Votre nom d'utilisateur, votre nom affiché et l'empreinte de votre avatar</strong>, pour vous nommer et vous dessiner dans les images du jeu et les classements.</li>
+    <li><strong>Votre langue</strong> et vos réglages de notification.</li>
+    <li><strong>L'identifiant du dernier serveur</strong> où vous avez joué, pour y envoyer les rappels que vous avez demandés.</li>
+    <li><strong>Votre progression</strong> : ferme, parcelles, inventaire, animaux, bâtiments, quêtes, succès, collection, coopérative.</li>
+    <li><strong>Vos opérations économiques</strong> : achats, ventes, échanges, dons. Ce journal est ce qui permet de prouver qu'aucune pièce n'apparaît ni ne disparaît sans raison, et de répondre quand vous demandez où sont passées vos pièces.</li>
+  </ul>
+  <p>Harvester ne lit pas vos messages : il ne reçoit que les commandes que vous lui adressez explicitement. Il ne demande pas votre adresse électronique, ne vous piste pas hors de Discord, et n'installe rien sur votre appareil.</p>
+
+  <h2>3. Pourquoi</h2>
+  <p>Pour exécuter le jeu que vous avez demandé en lançant <code>/start</code>, et pour rien d'autre. Vos données ne sont ni vendues, ni louées, ni utilisées pour de la publicité, ni transmises à un tiers à des fins commerciales.</p>
+
+  <h2>4. Combien de temps</h2>
+  <ul>
+    <li><strong>Votre compte de jeu</strong> : tant que vous jouez, et jusqu'à ce que vous demandiez sa suppression.</li>
+    <li><strong>Le journal des opérations</strong> : douze mois. Au-delà, les écritures sont purgées et remplacées par un solde d'ouverture, qui préserve la vérification comptable sans conserver le détail.</li>
+    <li><strong>Les journaux techniques</strong> (erreurs, incidents) : quelques jours, le temps de diagnostiquer une panne.</li>
+  </ul>
+
+  <h2>5. Ce que vous pouvez faire, quand vous voulez</h2>
+  <ul>
+    <li><code>/account export</code> vous renvoie en message privé un fichier contenant tout ce que le bot conserve sur vous : compte, ferme, inventaire, animaux, progression, opérations.</li>
+    <li><code>/account delete</code> supprime votre compte définitivement, après une confirmation explicite. Votre pseudonyme, votre nom affiché et votre avatar sont effacés, votre ferme et vos biens sont détruits, et vous disparaissez des classements. L'opération est irréversible : aucune restauration n'est possible, et relancer <code>/start</code> crée une ferme vierge.</li>
+    <li><code>/settings</code> gouverne les notifications et les rappels.</li>
+  </ul>
+  <div class="note">
+    <p>Une nuance honnête sur la suppression : les lignes du journal comptable qui vous concernent ne sont pas effacées à l'instant même, elles sont détachées de votre identité. Elles ne portent plus ni pseudonyme, ni avatar, ni identifiant Discord — seulement un compte anonyme — et elles disparaissent à leur tour à la purge des douze mois. C'est ce qui permet de vérifier que la suppression d'un compte n'a pas servi à fabriquer de la monnaie.</p>
+  </div>
+
+  <h2>6. À qui vos données sont transmises</h2>
+  <ul>
+    <li><strong>Discord</strong>, forcément : c'est par lui que passent vos commandes et les réponses du bot. Sa propre politique s'applique à ce transit.</li>
+    <li><strong>top.gg</strong>, uniquement si vous votez pour le bot depuis ce site : il transmet alors votre identifiant Discord pour que la récompense de vote vous soit créditée.</li>
+    <li><strong>Vos propres intégrations</strong>, si vous en créez : une clé d'API (<code>/apikey</code>) ou un webhook (<code>/webhook</code>) envoie vos données là où vous le décidez. Vous en gardez le contrôle et pouvez les révoquer à tout moment.</li>
+  </ul>
+  <p>Aucun autre tiers ne reçoit quoi que ce soit.</p>
+
+  <h2>7. Sécurité</h2>
+  <p>Les échanges avec Discord et avec l'API du bot passent par des connexions chiffrées. Les clés d'API ne sont jamais stockées en clair, seulement sous forme d'empreinte, et les envois vers vos webhooks sont signés pour que vous puissiez vérifier qu'ils viennent bien du bot. L'accès à la base de données est réservé à l'administrateur de l'instance.</p>
+
+  <h2>8. Nous contacter</h2>
+  <p>Pour exercer vos droits d'accès, de rectification, d'effacement ou d'opposition, ou pour signaler un problème, écrivez à l'administrateur de l'instance sur laquelle vous jouez, ou ouvrez un ticket sur le <a href="https://github.com/belzeeebuth/full-claude-try/issues">dépôt du projet</a>. Une demande d'export et une demande de suppression sont immédiates et n'ont pas besoin de passer par nous : <code>/account export</code> et <code>/account delete</code> les traitent sur-le-champ.</p>
+
+  <h2>9. Modifications</h2>
+  <p>Cette page peut évoluer si le jeu change. La date de dernière mise à jour figure en tête, et l'historique complet des changements est visible dans le dépôt public.</p>
+
+  <p><a href="index.html">← Retour à l'accueil</a></p>
+</main>
+
+<footer>
+  <nav>
+    <a href="index.html">Accueil</a>
+    <a href="conditions.html">Conditions</a>
+    <a href="https://github.com/belzeeebuth/full-claude-try">GitHub</a>
+  </nav>
+</footer>
+
+</body>
+</html>

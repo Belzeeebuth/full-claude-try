@@ -1,0 +1,89 @@
+/* Feuille unique : le site est statique, sans build ni dépendance. Les
+   couleurs reprennent celles du rendu des images (src/render/brand.ts) pour
+   que la page et les captures forment un seul ensemble. */
+:root {
+  --ink: #16202e;
+  --card: #1b2331;
+  --card-soft: #223046;
+  --text: #f5f7fa;
+  --muted: #9fb0c4;
+  --leaf: #7ec850;
+  --leaf-dark: #4f9138;
+  --grain: #f0b429;
+  --line: #2c3a4f;
+  --max: 62rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font: 16px/1.65 "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+a { color: var(--leaf); }
+a:hover { color: var(--grain); }
+
+header, main, footer { max-width: var(--max); margin: 0 auto; padding: 0 1.25rem; }
+
+/* --- Bandeau ------------------------------------------------------------ */
+.hero {
+  text-align: center;
+  padding: 4rem 1.25rem 3rem;
+  background: linear-gradient(180deg, #24405e 0%, #3c6b52 100%);
+}
+.hero h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 0 0 .5rem; }
+.hero p { font-size: 1.15rem; color: #e8f3e0; max-width: 40rem; margin: 0 auto 1.75rem; }
+
+.btn {
+  display: inline-block;
+  padding: .8rem 1.6rem;
+  border-radius: .6rem;
+  font-weight: 700;
+  text-decoration: none;
+  background: var(--leaf);
+  color: var(--ink);
+}
+.btn:hover { background: var(--grain); color: var(--ink); }
+.btn.ghost { background: transparent; color: var(--text); border: 2px solid rgba(255,255,255,.35); }
+.btn.ghost:hover { background: rgba(255,255,255,.12); color: var(--text); }
+
+/* --- Contenu ------------------------------------------------------------ */
+section { padding: 3rem 0; border-top: 1px solid var(--line); }
+section:first-of-type { border-top: 0; }
+h2 { font-size: 1.6rem; margin: 0 0 1.25rem; }
+h3 { font-size: 1.05rem; margin: 0 0 .35rem; }
+
+.grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: .7rem; padding: 1.25rem; }
+.card p { margin: 0; color: var(--muted); font-size: .95rem; }
+
+figure { margin: 0 0 1.5rem; }
+figure img { width: 100%; height: auto; border-radius: .7rem; border: 1px solid var(--line); display: block; }
+figcaption { color: var(--muted); font-size: .9rem; padding-top: .5rem; }
+
+table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+th, td { text-align: left; padding: .55rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--grain); }
+td code { color: var(--leaf); }
+.table-wrap { overflow-x: auto; }
+
+code { background: var(--card-soft); padding: .1rem .35rem; border-radius: .3rem; font-size: .9em; }
+
+/* --- Pages légales ------------------------------------------------------ */
+.legal { padding: 3rem 0; }
+.legal h1 { font-size: 2rem; margin-bottom: .25rem; }
+.legal .updated { color: var(--muted); margin-top: 0; }
+.legal h2 { font-size: 1.25rem; margin-top: 2.25rem; }
+.legal li { margin-bottom: .4rem; }
+.note { background: var(--card); border-left: 3px solid var(--grain); border-radius: 0 .5rem .5rem 0; padding: 1rem 1.25rem; }
+
+/* --- Pied de page ------------------------------------------------------- */
+footer { padding: 2.5rem 1.25rem 3.5rem; color: var(--muted); font-size: .9rem; text-align: center; }
+footer nav a { margin: 0 .6rem; }
+
+@media (prefers-reduced-motion: no-preference) {
+  a, .btn { transition: color .15s, background-color .15s; }
+}

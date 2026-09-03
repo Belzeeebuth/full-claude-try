@@ -142,6 +142,32 @@ Pour les **votes top.gg** (facultatif) : sur la page du bot, onglet *Webhooks*,
 renseignez `https://<votre domaine>/api/v1/topgg` et un secret, recopié dans
 `TOPGG_WEBHOOK_SECRET` (voir [07 § 6](./docs/07-api-publique.md#6-webhook-entrant--votes-topgg)).
 
+### Site public et pages légales
+
+`site/` contient un site statique — présentation, politique de confidentialité,
+conditions d'utilisation — publié sur GitHub Pages par
+`.github/workflows/pages.yml` à chaque poussée sur la branche par défaut. Ni
+build ni dépendance : le dossier part tel quel.
+
+Ces deux pages ne sont pas décoratives. Discord **exige** une URL de politique
+de confidentialité et une URL de conditions d'utilisation pour vérifier une
+application, ce qui devient obligatoire au-delà de 100 serveurs, et une fiche
+top.gg attend une page de présentation. Renseignez-les dans le portail
+développeur, onglet *General Information*.
+
+Trois choses à faire avant la mise en ligne :
+
+1. remplacer `VOTRE_APPLICATION_ID` dans `site/index.html` par l'identifiant de
+   votre application (le bouton « Ajouter à mon serveur » en dépend) ;
+2. activer *Settings → Pages → Source: GitHub Actions* dans le dépôt ;
+3. relire le § 1 de `site/confidentialite.html` et le § 8 : ils désignent
+   l'administrateur de l'instance comme responsable du traitement et renvoient
+   aux tickets du dépôt. Si vous exploitez une instance publique, mettez-y un
+   contact réel.
+
+Les captures de `site/images/` sont copiées depuis `out/fr/` ; régénérez-les
+avec `npm run render:preview` puis recopiez-les si le rendu change.
+
 ---
 
 ## 5. Configuration
