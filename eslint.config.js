@@ -148,7 +148,16 @@ function restrict(...names) {
 
 module.exports = tseslint.config(
   {
-    ignores: ['dist/**', 'out/**', 'coverage/**', 'drizzle/**', 'node_modules/**'],
+    ignores: [
+      'dist/**',
+      'out/**',
+      'coverage/**',
+      'drizzle/**',
+      'node_modules/**',
+      // Sous-projet indépendant (analyse et comparaison de PC) : son propre
+      // outillage vit dans pc-analyzer/ (voir pc-analyzer/README.md).
+      'pc-analyzer/**',
+    ],
   },
 
   // ---------------------------------------------------------------------------

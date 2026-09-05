@@ -46,3 +46,7 @@ README.md
 
 # Poussière d'OS
 **/.DS_Store
+
+# Sous-projet indépendant (analyse et comparaison de PC) : rien à voir avec le
+# bot, il a son propre outillage et ses propres images (pc-analyzer/README.md).
+pc-analyzer

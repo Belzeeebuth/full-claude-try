@@ -1,0 +1,14 @@
+{
+  "name": "@pc-analyzer/db",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Schéma PostgreSQL (migrations SQL) et jeu de données de référence",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/check-schema.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8"
+  }
+}
