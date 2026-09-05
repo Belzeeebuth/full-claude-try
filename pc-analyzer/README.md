@@ -19,6 +19,16 @@ testé. Les applications (web, API, worker) sont spécifiées dans les docs et r
 | [`packages/db/migrations/0001_init.sql`](./packages/db/migrations/0001_init.sql) | Schéma PostgreSQL 16 (21 tables, énumérations, index trigramme, vue moteur) | ✅ validé dans PGlite |
 | [`packages/db/seed/0001_reference_seed.sql`](./packages/db/seed/0001_reference_seed.sql) | Jeu de données de référence illustratif (distributions, composants, support Linux, alias, jeux, ProtonDB, bancs) | ✅ |
 | [`packages/engine/src`](./packages/engine/src) | Moteur TypeScript pur : `linux/compatibility.ts`, `linux/distro-recommender.ts`, `performance/fps-estimator.ts`, `performance/pro-workloads.ts`, types, fixtures | ✅ 44 tests |
+| [`apps/demo`](./apps/demo) | Démo statique publiée sur GitHub Pages : le moteur exécuté dans le navigateur sur les six configurations de démonstration (fiche, diagnostic, Linux, FPS, pro, comparateur) | ✅ |
+
+## Démo en ligne
+
+La démo statique est publiée par le workflow GitHub Pages du dépôt sous
+**https://belzeeebuth.github.io/full-claude-try/pc-analyzer/** (les pages Harvester restent à la racine).
+Elle ne scrape rien : coller un lien marchand montre la détection du marchand et de la référence, puis
+invite à choisir une configuration de démonstration ; tout le reste (compatibilité Linux par distribution,
+recommandations, FPS Windows / natif / Proton, charges pro, comparateur) est calculé dans le navigateur par le
+moteur.
 
 ## Démarrage
 
@@ -28,6 +38,7 @@ npm ci                           # (si le lockfile est régénéré : npm instal
 npm test                         # tests du moteur
 npm run typecheck
 npm run db:check                 # rejoue migration + seed dans PGlite (Postgres en WebAssembly)
+npm run build:demo               # construit la démo statique dans apps/demo/dist
 ```
 
 ## Aperçu du moteur
@@ -53,8 +64,9 @@ navigateur (changer de résolution, de preset ou d'OS sans appel serveur).
 
 ```
 pc-analyzer/
-├── apps/web      Next.js 15 (à créer)      ├── packages/engine   ✅ moteur + tests
-├── apps/api      NestJS / Fastify (à créer) ├── packages/db       ✅ SQL + seed + vérification
+├── apps/demo     ✅ démo statique (GitHub Pages) ├── packages/engine   ✅ moteur + tests
+├── apps/web      Next.js 15 (à créer)            ├── packages/db       ✅ SQL + seed + vérification
+├── apps/api      NestJS / Fastify (à créer)
 ├── apps/worker   Crawlee / Playwright (à créer)
 └── docs/         ✅ 01 stack · 02 base de données · 03 algorithmes
 ```

@@ -44,6 +44,9 @@ const USAGE_AUDIENCE: Record<UserProfile['usage'], Audience> = {
 
 export const HARDWARE_WEIGHT = 0.65;
 
+/** À score égal, une distribution sans ajustement passe devant. */
+const BADGE_RANK: Record<Badge, number> = { green: 0, orange: 1, unknown: 2, red: 3 };
+
 export function recommendDistros(
   pc: PcConfiguration,
   distros: DistroRelease[],
@@ -147,7 +150,13 @@ export function recommendDistros(
   });
 
   return ranked
-    .sort((a, b) => b.score - a.score || b.hardwareScore - a.hardwareScore || a.distro.name.localeCompare(b.distro.name))
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        BADGE_RANK[a.badge] - BADGE_RANK[b.badge] ||
+        b.hardwareScore - a.hardwareScore ||
+        a.distro.name.localeCompare(b.distro.name),
+    )
     .slice(0, limit);
 }
 

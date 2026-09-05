@@ -8,11 +8,16 @@
     "node": ">=20.11.0"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "db:check": "node packages/db/scripts/check-schema.mjs"
+    "db:check": "node packages/db/scripts/check-schema.mjs",
+    "build:demo": "npm run build -w @pc-analyzer/demo"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }

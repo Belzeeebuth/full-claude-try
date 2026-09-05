@@ -1,15 +1,20 @@
-# Publication du site statique (dossier `site/`) sur GitHub Pages.
+# Publication du site statique sur GitHub Pages :
+#  - à la racine     : le dossier `site/` (Harvester), publié tel quel ;
+#  - sous /pc-analyzer : la démo statique de PC Analyzer, construite depuis
+#                      pc-analyzer/apps/demo (le moteur d'analyse tourne dans
+#                      le navigateur, aucun serveur).
 #
-# Le site n'a ni build ni dépendance : le dossier est publié tel quel. Le
-# déploiement ne part que depuis la branche par défaut, pour qu'une branche de
-# travail ne remplace jamais les pages légales en ligne — Discord et top.gg
-# pointent dessus.
+# Le déploiement automatique ne part que depuis la branche par défaut, pour
+# qu'une branche de travail ne remplace jamais les pages légales en ligne —
+# Discord et top.gg pointent dessus. Un lancement manuel (workflow_dispatch)
+# reste possible depuis une autre branche pour tester : il republie les pages
+# `site/` telles qu'elles sont sur cette branche, plus la démo.
 name: pages
 
 on:
   push:
     branches: [main]
-    paths: ['site/**', '.github/workflows/pages.yml']
+    paths: ['site/**', 'pc-analyzer/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
@@ -26,14 +31,39 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: pc-analyzer/package-lock.json
+
+      - name: Dépendances de la démo
+        working-directory: pc-analyzer
+        run: npm ci --no-audit --no-fund
+
+      - name: Construction de la démo
+        working-directory: pc-analyzer
+        run: npm run build:demo
+
+      # Le site final = pages Harvester à la racine + démo sous /pc-analyzer/.
+      - name: Assemblage du site
+        run: |
+          mkdir -p _site/pc-analyzer
+          cp -r site/. _site/
+          cp -r pc-analyzer/apps/demo/dist/. _site/pc-analyzer/
+          find _site -maxdepth 2 -type f | sort
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

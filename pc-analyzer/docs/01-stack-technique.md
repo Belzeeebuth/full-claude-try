@@ -93,6 +93,7 @@ connue se sert directement du cache : réponse en dizaines de millisecondes.
 ```
 pc-analyzer/
 ├── apps/
+│   ├── demo/                ✅ démo statique GitHub Pages : moteur + interface dans le navigateur (esbuild, sans framework)
 │   ├── web/                 Next.js — pages : /analyser, /pc/[id], /comparer, /jeux, /linux/[distro]
 │   ├── api/                 NestJS — modules : scraping, matching, diagnostic, linux, comparison, performance, admin
 │   └── worker/              Crawlee — adaptateurs marchands, pipeline d'extraction, jobs d'import

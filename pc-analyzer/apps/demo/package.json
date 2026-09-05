@@ -1,0 +1,15 @@
+{
+  "name": "@pc-analyzer/demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Démo statique (GitHub Pages) : le moteur PC Analyzer exécuté dans le navigateur sur les données de démonstration",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pc-analyzer/engine": "*"
+  }
+}
